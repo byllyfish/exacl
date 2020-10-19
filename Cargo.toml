@@ -1,0 +1,24 @@
+[package]
+name = "exacl"
+version = "0.1.0"
+authors = ["bfish"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bitflags = "1.2.1"
+log = "0.4.11"
+nix = "0.18.0"
+num_enum = "0.5.1"
+uuid = "0.8.1"
+scopeguard = "1.1.0"
+serde = { version = "1.0", features = ["derive"] }
+
+# Used by src/bin/exacl.
+env_logger = "0.7.1"
+structopt = "0.3.20"
+serde_json = "1.0.59"
+
+[build-dependencies]
+bindgen = "0.53.1"
