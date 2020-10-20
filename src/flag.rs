@@ -36,6 +36,8 @@ impl BitIterable for Flag {
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 enum FlagName {
+    defer_inherit = Flag::FLAG_DEFER_INHERIT.bits,
+    no_inherit = Flag::FLAG_NO_INHERIT.bits,
     inherited = Flag::ENTRY_INHERITED.bits,
     file_inherit = Flag::ENTRY_FILE_INHERIT.bits,
     directory_inherit = Flag::ENTRY_DIRECTORY_INHERIT.bits,
