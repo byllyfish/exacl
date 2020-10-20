@@ -1,4 +1,4 @@
-//! Supports extended access control lists (ACL's) on MacOS.
+//! Rust library to manipulate access control lists on MacOS.
 //!
 //! An Extended ACL specifies additional rules for file/directory access beyond
 //! the file mode permission bits.
