@@ -12,7 +12,9 @@ DIR1="$DIR/dir1"
 LINK1="$DIR/link1"
 
 ME=`id -un`
+ME_NUM=`id -u`
 MY_GROUP=`id -gn`
+MY_GROUP_NUM=`id -g`
 
 # Return true if file is readable.
 isReadable() {
@@ -55,7 +57,7 @@ oneTimeSetUp() {
 
 # Put quotes back on JSON text.
 quotifyJson() { 
-    echo "$1" | sed -E -e 's/([a-z_]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
+    echo "$1" | sed -E -e 's/([a-z0-9_]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
 }
 
 oneTimeTearDown() {
@@ -380,5 +382,42 @@ testWriteAllDirFlags() {
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[$entry_flags,no_inherit],allow:true}]" \
+        "${msg//\"}"
+}
+
+
+testWriteAclNumericUID() {
+    # Set ACL for current user to "deny read".
+    input=`quotifyJson "[{kind:user,name:$ME_NUM,perms:[read],flags:[],allow:false}]"`
+    msg=`echo "$input" | exacl --set $FILE1 2>&1`
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    ! isReadable "$FILE1" && isWritable "$FILE1"
+    assertEquals 0 $?
+
+    # Check ACL again using exacl.
+    msg=`exacl $FILE1`
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"}"
+}
+
+testWriteAclNumericGID() {
+    # Set ACL for current group to "deny read".
+    input=`quotifyJson "[{kind:group,name:$MY_GROUP_NUM,perms:[read],flags:[],allow:false}]"`
+    msg=`echo "$input" | exacl --set $FILE1 2>&1`
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    ! isReadable "$FILE1" && isWritable "$FILE1"
+    assertEquals 0 $?
+
+    # Check ACL again using exacl.
+    msg=`exacl $FILE1`
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:false}]" \
         "${msg//\"}"
 }
