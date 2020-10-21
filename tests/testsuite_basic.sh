@@ -272,19 +272,16 @@ testWriteAclToDir1() {
 }
 
 testWriteAclToLink1() {
-    # TODO: Symlink ACL's on MacOS are weird.
-
     # Set ACL to empty.
     input="[]"
     msg=`echo "$input" | exacl --set $LINK1 2>&1`
-    assertEquals 1 $?
+    assertEquals 0 $?
     assertEquals \
-        "File \"$LINK1\": Operation not supported (os error 45)" \
+        "" \
         "$msg"
 
     isReadableLink "$LINK1"
     assertEquals 0 $?
-    return 0    # -- FIXME -- work on fixing rest of this test later.
 
     # Set ACL for current user to "deny read".
     input=`quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]"`
@@ -295,7 +292,7 @@ testWriteAclToLink1() {
         "$msg"
 
     ! isReadableLink "$LINK1"
-    assertEquals 1 $?
+    assertEquals 0 $?
 
     # Check ACL using ls.
     msg=`ls -le $LINK1 2> /dev/null | grep -E '^ \d+: '`

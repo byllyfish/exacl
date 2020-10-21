@@ -56,6 +56,26 @@ pub(crate) fn xacl_get_file(path: &Path) -> io::Result<acl_t> {
     Ok(acl)
 }
 
+/// Set the acl for a symlink using `acl_set_fd`.
+fn xacl_set_file_symlink(c_path: &CString, acl: acl_t) -> io::Result<()> {
+    let fd = unsafe { open(c_path.as_ptr(), O_SYMLINK as i32) };
+    if fd < 0 {
+        let err = io::Error::last_os_error();
+        debug!("open({:?}) returned {}, err={}", c_path, fd, err);
+        return Err(err);
+    }
+    defer! { unsafe{ close(fd) }; }
+
+    let ret = unsafe { acl_set_fd(fd, acl) };
+    if ret != 0 {
+        let err = io::Error::last_os_error();
+        debug!("acl_set_fd({:?}) returned {}, err={}", c_path, ret, err);
+        return Err(err);
+    }
+
+    Ok(())
+}
+
 pub(crate) fn xacl_set_file(path: &Path, acl: acl_t) -> io::Result<()> {
     use std::os::unix::ffi::OsStrExt;
 
@@ -67,6 +87,13 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t) -> io::Result<()> {
             "acl_set_link_np({:?}) returned {}, err={}",
             c_path, ret, err
         );
+
+        // acl_set_link_np can return ENOTSUP for sym links.
+        if let Some(code) = err.raw_os_error() {
+            if code == ENOTSUP as i32 {
+                return xacl_set_file_symlink(&c_path, acl);
+            }
+        }
         return Err(err);
     }
 
