@@ -1,5 +1,6 @@
 //! Utility functions and constants for the underlying system API.
 
+use crate::bititer::BitIter;
 use crate::flag::Flag;
 use crate::perm::Perm;
 use crate::qualifier::Qualifier;
@@ -197,16 +198,17 @@ pub(crate) fn xacl_get_perm(entry: acl_entry_t) -> io::Result<Perm> {
         debug!("acl_get_permset() returned {}, err={}", ret, err);
         return Err(err);
     }
+
     assert!(!permset.is_null());
 
     let mut perms = Perm::empty();
-    for_each_1bit(Perm::all().bits(), |perm| {
-        let res = unsafe { acl_get_perm_np(permset, perm) };
+    for perm in BitIter(Perm::all()) {
+        let res = unsafe { acl_get_perm_np(permset, perm.bits()) };
         debug_assert!(res >= 0 && res <= 1);
         if res == 1 {
-            perms |= Perm::from_bits(perm).expect("unexpected permission bit");
+            perms |= perm;
         }
-    });
+    }
 
     Ok(perms)
 }
@@ -220,16 +222,17 @@ pub(crate) fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
         debug!("acl_get_flagset_np() returned {}, err={}", ret, err);
         return Err(err);
     }
+
     assert!(!flagset.is_null());
 
     let mut flags = Flag::empty();
-    for_each_1bit(Flag::all().bits(), |flag| {
-        let res = unsafe { acl_get_flag_np(flagset, flag) };
+    for flag in BitIter(Flag::all()) {
+        let res = unsafe { acl_get_flag_np(flagset, flag.bits()) };
         debug_assert!(res >= 0 && res <= 1);
         if res == 1 {
-            flags |= Flag::from_bits(flag).expect("unexpected flag bit");
+            flags |= flag;
         }
-    });
+    }
 
     Ok(flags)
 }
@@ -281,6 +284,7 @@ pub(crate) fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
     if ret != 0 {
         return Err(io::Error::last_os_error());
     }
+
     assert!(!permset.is_null());
 
     let ret = unsafe { acl_clear_perms(permset) };
@@ -288,10 +292,10 @@ pub(crate) fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
         return Err(io::Error::last_os_error());
     }
 
-    for_each_1bit(perms.bits(), |perm| {
-        let ret = unsafe { acl_add_perm(permset, perm) };
+    for perm in BitIter(perms) {
+        let ret = unsafe { acl_add_perm(permset, perm.bits()) };
         debug_assert!(ret == 0);
-    });
+    }
 
     Ok(())
 }
@@ -302,6 +306,7 @@ pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> 
     if ret != 0 {
         return Err(io::Error::last_os_error());
     }
+
     assert!(!flagset.is_null());
 
     let ret = unsafe { acl_clear_flags_np(flagset) };
@@ -309,30 +314,10 @@ pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> 
         return Err(io::Error::last_os_error());
     }
 
-    for_each_1bit(flags.bits(), |flag| {
-        let ret = unsafe { acl_add_flag_np(flagset, flag) };
+    for flag in BitIter(flags) {
+        let ret = unsafe { acl_add_flag_np(flagset, flag.bits()) };
         debug_assert!(ret == 0);
-    });
+    }
 
     Ok(())
-}
-
-/// Apply a function for each 1 bit in the bitset.
-fn for_each_1bit<F: FnMut(u32)>(bits: u32, mut func: F) {
-    for i in 0..32 {
-        if (1 << i) & bits != 0 {
-            func(1 << i);
-        }
-    }
-}
-
-#[test]
-fn test_for_each_1bit() {
-    let mut v = Vec::new();
-
-    for_each_1bit(0, |b| v.push(b));
-    assert_eq!(v.len(), 0);
-
-    for_each_1bit(1 + 2 + 4 + 32 + 2048, |b| v.push(b));
-    assert_eq!(v, vec![1, 2, 4, 32, 2048]);
 }
