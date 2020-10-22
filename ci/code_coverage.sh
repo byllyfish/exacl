@@ -24,12 +24,12 @@ cargo +nightly build
 
 if [ $arg1 = "open" ]; then
     echo "Producing HTML Report locally."
-    grcov ./target/debug/ -s src -t html --llvm --branch --ignore-not-existing -o ./target/debug/coverage/
+    grcov ./target/debug/ -s . -t html --llvm --branch --ignore-not-existing -o ./target/debug/coverage/
     open target/debug/coverage/index.html
 elif [ $arg1 = "codecov" ]; then
     echo "Producing lcov report and uploading it to codecov.io"
     zip -0 ccov.zip `find . \( -name "exacl*.gc*" \) -print`
-    grcov ccov.zip -s src -t lcov --llvm --branch --ignore-not-existing --ignore "/*" -o lcov.info
+    grcov ccov.zip -s . -t lcov --llvm --branch --ignore-not-existing --ignore "/*" -o lcov.info
     bash <(curl -s https://codecov.io/bash) -f lcov.info
 fi
 
