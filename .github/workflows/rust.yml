@@ -24,5 +24,6 @@ jobs:
     - name: Install test dependencies
       run: brew install shunit2
     - name: Run integration tests
-      run: ./run_tests.sh
-      working-directory: ./tests
+      run: ./tests/run_tests.sh
+    - name: Code Coverage
+      run: ./ci/code_coverage.sh codecov
