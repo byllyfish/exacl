@@ -5,9 +5,7 @@ use crate::sys::*;
 
 use bitflags::bitflags;
 use num_enum::TryFromPrimitive;
-use serde;
-use serde::de::{Deserialize, Deserializer, SeqAccess, Visitor};
-use serde::ser::{Serialize, SerializeSeq, Serializer};
+use serde::{Serialize, Deserialize, ser, de};
 use std::fmt;
 
 bitflags! {
@@ -32,7 +30,7 @@ impl BitIterable for Flag {
     }
 }
 
-#[derive(serde::Deserialize, serde::Serialize, TryFromPrimitive, Copy, Clone, Debug)]
+#[derive(Deserialize, Serialize, TryFromPrimitive, Copy, Clone, Debug)]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 enum FlagName {
@@ -56,11 +54,12 @@ impl FlagName {
     }
 }
 
-impl Serialize for Flag {
+impl ser::Serialize for Flag {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: Serializer,
+        S: ser::Serializer,
     {
+        use ser::SerializeSeq;
         let mut seq = serializer.serialize_seq(None)?;
 
         for flag in BitIter(*self) {
@@ -71,14 +70,14 @@ impl Serialize for Flag {
     }
 }
 
-impl<'de> Deserialize<'de> for Flag {
+impl<'de> de::Deserialize<'de> for Flag {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: Deserializer<'de>,
+        D: de::Deserializer<'de>,
     {
         struct FlagVisitor;
 
-        impl<'de> Visitor<'de> for FlagVisitor {
+        impl<'de> de::Visitor<'de> for FlagVisitor {
             type Value = Flag;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -87,7 +86,7 @@ impl<'de> Deserialize<'de> for Flag {
 
             fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
             where
-                A: SeqAccess<'de>,
+                A: de::SeqAccess<'de>,
             {
                 let mut flags: Flag = Default::default();
 

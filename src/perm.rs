@@ -5,9 +5,7 @@ use crate::sys::*;
 
 use bitflags::bitflags;
 use num_enum::TryFromPrimitive;
-use serde;
-use serde::de::{Deserialize, Deserializer, SeqAccess, Visitor};
-use serde::ser::{Serialize, SerializeSeq, Serializer};
+use serde::{de, ser, Serialize, Deserialize};
 use std::fmt;
 
 bitflags! {
@@ -69,7 +67,7 @@ impl BitIterable for Perm {
     }
 }
 
-#[derive(serde::Deserialize, serde::Serialize, TryFromPrimitive, Copy, Clone, Debug)]
+#[derive(Deserialize, Serialize, TryFromPrimitive, Copy, Clone, Debug)]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 enum PermName {
@@ -100,11 +98,12 @@ impl PermName {
     }
 }
 
-impl Serialize for Perm {
+impl ser::Serialize for Perm {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: Serializer,
+        S: ser::Serializer,
     {
+        use ser::SerializeSeq;
         let mut seq = serializer.serialize_seq(None)?;
 
         for perm in BitIter(*self) {
@@ -115,14 +114,14 @@ impl Serialize for Perm {
     }
 }
 
-impl<'de> Deserialize<'de> for Perm {
+impl<'de> de::Deserialize<'de> for Perm {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: Deserializer<'de>,
+        D: de::Deserializer<'de>,
     {
         struct PermVisitor;
 
-        impl<'de> Visitor<'de> for PermVisitor {
+        impl<'de> de::Visitor<'de> for PermVisitor {
             type Value = Perm;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -131,7 +130,7 @@ impl<'de> Deserialize<'de> for Perm {
 
             fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
             where
-                A: SeqAccess<'de>,
+                A: de::SeqAccess<'de>,
             {
                 let mut perms: Perm = Default::default();
 
