@@ -13,8 +13,12 @@ rustup install nightly
 cargo +nightly install grcov
 
 # Don't include "-Cpanic=abort" in RUSTFLAGS, otherwise bindgen build will fail.
+# Use exclusion patterns for lines and patterns: https://github.com/mozilla/grcov/pull/416
+
+br_lines='debug!|assert!'
+
 export CARGO_INCREMENTAL=0
-export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests"
+export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Cdebug-assertions=no -Zpanic_abort_tests --excl-br-line '$br_lines'"
 export RUSTDOCFLAGS="-Cpanic=abort"
 
 # Build & Test
@@ -23,7 +27,7 @@ cargo +nightly build
 ./tests/run_tests.sh
 
 if [ $arg1 = "open" ]; then
-    echo "Producing HTML Report locally."
+    echo "Producing HTML Report locally"
     grcov ./target/debug/ -s . -t html --llvm --branch --ignore-not-existing -o ./target/debug/coverage/
     open target/debug/coverage/index.html
 elif [ $arg1 = "codecov" ]; then
