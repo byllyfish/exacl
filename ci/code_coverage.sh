@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Script to analyze Rust code using grcov.
 #
