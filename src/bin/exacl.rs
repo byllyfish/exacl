@@ -27,46 +27,58 @@ struct Opt {
     files: Vec<PathBuf>,
 }
 
+const EXIT_SUCCESS: i32 = 0;
+const EXIT_FAILURE: i32 = 1;
+
 fn main() {
     env_logger::init();
 
     let opt = Opt::from_args();
-    if opt.set {
+    let exit_code = if opt.set {
         set_acl(&opt.files)
     } else {
         get_acl(&opt.files)
     };
+
+    process::exit(exit_code);
 }
 
-fn get_acl(files: &Vec<PathBuf>) {
+fn get_acl(files: &Vec<PathBuf>) -> i32 {
     for file in files {
         let result = dump_acl(file);
         if let Err(err) = result {
             eprintln!("File {:?}: {}", file, err);
-            process::exit(1)
+            return EXIT_FAILURE;
         }
     }
+
+    EXIT_SUCCESS
 }
 
-fn set_acl(files: &Vec<PathBuf>) {
+fn set_acl(files: &Vec<PathBuf>) -> i32 {
     let reader = io::BufReader::new(io::stdin());
-    let acl: Acl = serde_json::from_reader(reader).unwrap_or_else(|err| {
-        eprintln!("JSON parser error: {}", err);
-        process::exit(1);
-    });
+    let acl: Acl = match serde_json::from_reader(reader) {
+        Ok(acl) => acl,
+        Err(err) => {
+            eprintln!("JSON parser error: {}", err);
+            return EXIT_FAILURE;
+        }
+    };
 
     if let Some(msg) = validate_acl(&acl) {
         eprintln!("Invalid ACL: {}", msg);
-        process::exit(1);
+        return EXIT_FAILURE;
     }
 
     for file in files {
         let result = write_acl(file, &acl);
         if let Err(err) = result {
             eprintln!("File {:?}: {}", file, err);
-            process::exit(1)
+            return EXIT_FAILURE;
         }
     }
+
+    EXIT_SUCCESS
 }
 
 fn dump_acl(file: &Path) -> io::Result<()> {
