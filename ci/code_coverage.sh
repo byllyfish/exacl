@@ -8,13 +8,16 @@ set -e
 
 arg1="$1"
 
+# Install Rust nightly and grcov.
+rustup install nightly
+cargo +nightly install grcov
+
 # Don't include "-Cpanic=abort" in RUSTFLAGS, otherwise bindgen build will fail.
 export CARGO_INCREMENTAL=0
 export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests"
 export RUSTDOCFLAGS="-Cpanic=abort"
 
 # Build & Test
-cargo +nightly install grcov
 cargo +nightly test
 cargo +nightly build
 ./tests/run_tests.sh
