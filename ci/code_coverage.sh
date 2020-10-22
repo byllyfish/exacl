@@ -15,10 +15,10 @@ cargo +nightly install grcov
 # Don't include "-Cpanic=abort" in RUSTFLAGS, otherwise bindgen build will fail.
 # Use exclusion patterns for lines and patterns: https://github.com/mozilla/grcov/pull/416
 
-br_lines='debug!|assert!'
+excl_br_line='debug!|assert!'
 
 export CARGO_INCREMENTAL=0
-export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Cdebug-assertions=no -Zpanic_abort_tests --excl-br-line '$br_lines'"
+export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Cdebug-assertions=no -Zpanic_abort_tests"
 export RUSTDOCFLAGS="-Cpanic=abort"
 
 # Build & Test
@@ -28,12 +28,12 @@ cargo +nightly build
 
 if [ $arg1 = "open" ]; then
     echo "Producing HTML Report locally"
-    grcov ./target/debug/ -s . -t html --llvm --branch --ignore-not-existing -o ./target/debug/coverage/
+    grcov ./target/debug/ -s . -t html --llvm --branch --ignore-not-existing --ignore "/*" --excl-br-line "$excl_br_line" -o ./target/debug/coverage/
     open target/debug/coverage/index.html
 elif [ $arg1 = "codecov" ]; then
     echo "Producing lcov report and uploading it to codecov.io"
     zip -0 ccov.zip `find . \( -name "exacl*.gc*" \) -print`
-    grcov ccov.zip -s . -t lcov --llvm --branch --ignore-not-existing --ignore "/*" -o lcov.info
+    grcov ccov.zip -s . -t lcov --llvm --branch --ignore-not-existing --ignore "/*"  --excl-br-line "$excl_br_line" -o lcov.info
     bash <(curl -s https://codecov.io/bash) -f lcov.info
 fi
 
