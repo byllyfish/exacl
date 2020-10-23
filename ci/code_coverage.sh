@@ -15,7 +15,7 @@ cargo +nightly install grcov
 # Don't include "-Cpanic=abort" in RUSTFLAGS, otherwise bindgen build will fail.
 # Use exclusion patterns for lines and patterns: https://github.com/mozilla/grcov/pull/416
 
-excl_br_line='#\\[derive\\(|debug!|assert!|assert_eq!|process::exit\\('
+excl_br_line='#\[derive\(|debug!|assert!|assert_eq!|process::exit\('
 
 export CARGO_INCREMENTAL=0
 export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Cdebug-assertions=no -Zpanic_abort_tests"
