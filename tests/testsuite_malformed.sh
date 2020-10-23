@@ -112,3 +112,21 @@ testMisspelledAttribute() {
         'JSON parser error: unknown field `kin`, expected one of `kind`, `name`, `perms`, `flags`, `allow` at line 1 column 8' \
         "$msg"
 }
+
+testPermsInvalidType() {
+    input=`quotifyJson "[{kind:user,name:501,perms:0,flags:[],allow:true}]"`
+    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    assertEquals 1 $?
+    assertEquals \
+        'JSON parser error: invalid type: string "0", expected list of permissions at line 1 column 40' \
+        "$msg"
+}
+
+testFlagsInvalidType() {
+    input=`quotifyJson "[{kind:user,name:501,perms:[read],flags:0,allow:true}]"`
+    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    assertEquals 1 $?
+    assertEquals \
+        'JSON parser error: invalid type: string "0", expected list of flags at line 1 column 57' \
+        "$msg"
+}

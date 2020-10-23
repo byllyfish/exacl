@@ -5,7 +5,7 @@ use crate::sys::*;
 
 use bitflags::bitflags;
 use num_enum::TryFromPrimitive;
-use serde::{Serialize, Deserialize, ser, de};
+use serde::{de, ser, Deserialize, Serialize};
 use std::fmt;
 
 bitflags! {
@@ -81,7 +81,7 @@ impl<'de> de::Deserialize<'de> for Flag {
             type Value = Flag;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("flag values")
+                formatter.write_str("list of flags")
             }
 
             fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>

@@ -5,7 +5,7 @@ use crate::sys::*;
 
 use bitflags::bitflags;
 use num_enum::TryFromPrimitive;
-use serde::{de, ser, Serialize, Deserialize};
+use serde::{de, ser, Deserialize, Serialize};
 use std::fmt;
 
 bitflags! {
@@ -125,7 +125,7 @@ impl<'de> de::Deserialize<'de> for Perm {
             type Value = Perm;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("permission values")
+                formatter.write_str("list of permissions")
             }
 
             fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
