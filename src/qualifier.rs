@@ -87,18 +87,27 @@ fn gid_to_guid(gid: Gid) -> io::Result<Uuid> {
     Ok(guid)
 }
 
+/// Convert GUID to uid/gid.
+fn guid_to_id(guid: Uuid) -> io::Result<(uid_t, u32)> {
+    let mut id_c: uid_t = 0;
+    let mut idtype: i32 = 0;
+    let guid_ptr = guid.as_bytes().as_ptr() as *mut u8;
+
+    let ret = unsafe { mbr_uuid_to_id(guid_ptr, &mut id_c, &mut idtype) };
+    if ret != 0 {
+        return Err(io::Error::last_os_error());
+    }
+    assert!(idtype >= 0);
+
+    Ok((id_c, idtype as u32))
+}
+
 impl Qualifier {
     // Create qualifier object from a GUID.
     pub fn from_guid(guid: Uuid) -> io::Result<Qualifier> {
-        let mut id_c: uid_t = 0;
-        let mut idtype: ::std::os::raw::c_int = 0;
-        let guid_ptr = guid.as_bytes().as_ptr() as *mut u8;
-        let ret = unsafe { mbr_uuid_to_id(guid_ptr, &mut id_c, &mut idtype) };
-        if ret != 0 {
-            return Err(io::Error::last_os_error());
-        }
+        let (id_c, idtype) = guid_to_id(guid)?;
 
-        let qualifier = match idtype as u32 {
+        let qualifier = match idtype {
             ID_TYPE_UID => Qualifier::User(Uid::from_raw(id_c)),
             ID_TYPE_GID => Qualifier::Group(Gid::from_raw(id_c)),
             _ => Qualifier::Unknown(guid.to_string()),
@@ -137,4 +146,93 @@ impl Qualifier {
             Qualifier::Unknown(s) => s.clone(),
         }
     }
+}
+
+#[test]
+fn test_str_to_uid() {
+    assert!(str_to_uid("").is_err());
+    assert!(str_to_uid("non_existant").is_err());
+    assert_eq!(str_to_uid("500").ok(), Some(Uid::from_raw(500)));
+    assert_eq!(str_to_uid("_spotlight").ok(), Some(Uid::from_raw(89)));
+}
+
+#[test]
+fn test_str_to_gid() {
+    assert!(str_to_gid("").is_err());
+    assert!(str_to_gid("non_existant").is_err());
+    assert_eq!(str_to_gid("500").ok(), Some(Gid::from_raw(500)));
+    assert_eq!(str_to_gid("_spotlight").ok(), Some(Gid::from_raw(89)));
+    assert_eq!(str_to_gid("staff").ok(), Some(Gid::from_raw(20)));
+}
+
+#[test]
+fn test_uid_to_str() {
+    assert_eq!(uid_to_str(Uid::from_raw(1500)), "1500");
+    assert_eq!(uid_to_str(Uid::from_raw(89)), "_spotlight");
+}
+
+#[test]
+fn test_gid_to_str() {
+    assert_eq!(gid_to_str(Gid::from_raw(1500)), "1500");
+    assert_eq!(gid_to_str(Gid::from_raw(89)), "_spotlight");
+    assert_eq!(gid_to_str(Gid::from_raw(20)), "staff");
+}
+
+#[test]
+fn test_uid_to_guid() {
+    assert_eq!(
+        uid_to_guid(Uid::from_raw(89)).ok(),
+        Some(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap())
+    );
+
+    assert_eq!(
+        uid_to_guid(Uid::from_raw(1500)).ok(),
+        Some(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap())
+    );
+}
+
+#[test]
+fn test_gid_to_guid() {
+    assert_eq!(
+        gid_to_guid(Gid::from_raw(89)).ok(),
+        Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap())
+    );
+
+    assert_eq!(
+        gid_to_guid(Gid::from_raw(1500)).ok(),
+        Some(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap())
+    );
+
+    assert_eq!(
+        gid_to_guid(Gid::from_raw(20)).ok(),
+        Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap())
+    );
+}
+
+#[test]
+fn test_guid_to_id() {
+    assert_eq!(
+        guid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap()).ok(),
+        Some((89, ID_TYPE_UID))
+    );
+
+    assert_eq!(
+        guid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap()).ok(),
+        Some((1500, ID_TYPE_UID))
+    );
+
+    assert_eq!(
+        guid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap()).ok(),
+        Some((89, ID_TYPE_GID))
+    );
+
+    assert_eq!(
+        guid_to_id(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap()).ok(),
+        Some((1500, ID_TYPE_GID))
+    );
+
+    assert_eq!(
+        guid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap()).ok(),
+        Some((20, ID_TYPE_GID))
+    );
 }
