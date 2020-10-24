@@ -125,3 +125,14 @@ pub fn validate_acl(acl: &Acl) -> Option<String> {
 
     None
 }
+
+#[cfg(test)]
+mod tests {
+    use ctor::ctor;
+    use env_logger;
+
+    #[ctor]
+    fn init() {
+        env_logger::init();
+    }
+}
