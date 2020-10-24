@@ -41,10 +41,11 @@ fn test_read_acl() -> io::Result<()> {
 
 #[test]
 fn test_write_acl() -> io::Result<()> {
+    use AclEntryKind::*;
+
     let mut acl: Acl = Acl::new();
     let rwx = Perm::READ_DATA | Perm::WRITE_DATA | Perm::EXECUTE;
 
-    use AclEntryKind::*;
     acl.push(AclEntry::allow(User, "11501", rwx));
     acl.push(AclEntry::allow(User, "11502", rwx));
     acl.push(AclEntry::allow(User, "11503", rwx));
@@ -60,4 +61,43 @@ fn test_write_acl() -> io::Result<()> {
     assert_eq!(acl2, acl);
 
     Ok(())
+}
+
+#[test]
+fn test_write_acl_big() -> io::Result<()> {
+    use AclEntryKind::*;
+
+    let mut acl: Acl = Acl::new();
+    let rwx = Perm::READ_DATA | Perm::WRITE_DATA | Perm::EXECUTE;
+
+    for _ in 0..128 {
+        acl.push(AclEntry::allow(User, "11501", rwx));
+    }
+    assert_eq!(validate_acl(&acl), None);
+
+    let file = tempfile::NamedTempFile::new()?;
+    write_acl(&file.path(), &acl)?;
+
+    let acl2 = read_acl(&file.path())?;
+    assert_eq!(acl2, acl);
+
+    Ok(())
+}
+
+#[test]
+fn test_write_acl_too_big() {
+    use AclEntryKind::*;
+
+    let mut acl: Acl = Acl::new();
+    let rwx = Perm::READ_DATA | Perm::WRITE_DATA | Perm::EXECUTE;
+
+    for _ in 0..129 {
+        acl.push(AclEntry::allow(User, "11501", rwx));
+    }
+    assert_eq!(validate_acl(&acl), None);
+
+    let file = tempfile::NamedTempFile::new().unwrap();
+
+    let err = write_acl(&file.path(), &acl).err().unwrap();
+    assert!(err.to_string().contains("Cannot allocate memory"));
 }

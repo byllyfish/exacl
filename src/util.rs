@@ -48,7 +48,7 @@ pub(crate) fn xacl_get_file(path: &Path) -> io::Result<acl_t> {
         debug!("acl_get_link_np({:?}) returned null, err={}", c_path, err);
 
         // acl_get_link_np can return NULL (ENOENT) if the file exists, but
-        // there is no ACL. In the path exists, return an *empty* ACL.
+        // there is no ACL. If the path exists, return an *empty* ACL.
         if let Some(code) = err.raw_os_error() {
             if code == ENOENT as i32 && path_exists(path) {
                 debug!(" file exists! returning empty acl");
@@ -325,4 +325,15 @@ pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> 
     }
 
     Ok(())
+}
+
+#[test]
+fn test_acl_init() {
+    let acl = xacl_init(ACL_MAX_ENTRIES as usize).ok().unwrap();
+    assert!(!acl.is_null());
+    xacl_free(acl);
+
+    // Memory error if we try to allocate MAX_ENTRIES + 1.
+    let err = xacl_init((ACL_MAX_ENTRIES + 1) as usize).err().unwrap();
+    assert_eq!(err.raw_os_error(), Some(ENOMEM as i32));
 }
