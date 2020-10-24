@@ -67,7 +67,7 @@ fn xacl_set_file_symlink(c_path: &CString, acl: acl_t) -> io::Result<()> {
     let fd = unsafe { open(c_path.as_ptr(), O_SYMLINK as i32) };
     if fd < 0 {
         let err = errno();
-        debug!("open({:?}) returned {}, err={}", c_path, fd, err);
+        debug!("symlink open({:?}) returned {}, err={}", c_path, fd, err);
         return Err(err);
     }
     defer! { unsafe{ close(fd) }; }
@@ -336,4 +336,20 @@ fn test_acl_init() {
     // Memory error if we try to allocate MAX_ENTRIES + 1.
     let err = xacl_init((ACL_MAX_ENTRIES + 1) as usize).err().unwrap();
     assert_eq!(err.raw_os_error(), Some(ENOMEM as i32));
+}
+
+#[test]
+fn test_acl_too_big() {
+    let mut acl = xacl_init(3).ok().unwrap();
+    assert!(!acl.is_null());
+
+    for _ in 0..ACL_MAX_ENTRIES {
+        xacl_create_entry(&mut acl).unwrap();
+    }
+
+    // Memory error if we try to allocate MAX_ENTRIES + 1.
+    let err = xacl_create_entry(&mut acl).err().unwrap();
+    assert_eq!(err.raw_os_error(), Some(ENOMEM as i32));
+
+    xacl_free(acl);
 }

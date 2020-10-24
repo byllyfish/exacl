@@ -306,6 +306,15 @@ testWriteAclToLink1() {
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]" \
         "${msg//\"}"
+
+    # Set ACL back to empty. We've removed READ permission for the link, so
+    # this will fail.
+    input="[]"
+    msg=`echo "$input" | exacl --set $LINK1 2>&1`
+    assertEquals 1 $?
+    assertEquals \
+        "File \"$LINK1\": Permission denied (os error 13)" \
+        "$msg"
 }
 
 testWriteAllFilePerms() {
