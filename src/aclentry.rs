@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::io;
 
 /// Kind of ACL entry (e.g. user, group, or unknown).
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum AclEntryKind {
     User,
@@ -18,7 +18,7 @@ pub enum AclEntryKind {
 }
 
 /// ACL entry with allow/deny semantics.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct AclEntry {
     pub kind: AclEntryKind,
