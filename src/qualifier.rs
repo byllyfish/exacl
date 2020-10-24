@@ -2,12 +2,13 @@
 
 use crate::sys::*;
 
+use log::debug;
 use nix::unistd::{self, Gid, Uid};
 use std::io;
 use uuid::Uuid;
 
 /// Specifies the principal that is allowed/denied access to a resource.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Qualifier {
     User(Uid),
     Group(Gid),
@@ -70,7 +71,10 @@ fn uid_to_guid(uid: Uid) -> io::Result<Uuid> {
     let guid = Uuid::nil();
     let ret = unsafe { mbr_uid_to_uuid(uid.as_raw(), guid.as_bytes().as_ptr() as *mut u8) };
     if ret != 0 {
-        return Err(io::Error::last_os_error());
+        // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
+        let err = io::Error::from_raw_os_error(ret);
+        debug!("mbr_uid_to_uuid() returned err={}", err);
+        return Err(err);
     }
 
     Ok(guid)
@@ -81,7 +85,10 @@ fn gid_to_guid(gid: Gid) -> io::Result<Uuid> {
     let guid = Uuid::nil();
     let ret = unsafe { mbr_gid_to_uuid(gid.as_raw(), guid.as_bytes().as_ptr() as *mut u8) };
     if ret != 0 {
-        return Err(io::Error::last_os_error());
+        // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
+        let err = io::Error::from_raw_os_error(ret);
+        debug!("mbr_gid_to_uuid() returned err={}", err);
+        return Err(err);
     }
 
     Ok(guid)
@@ -95,7 +102,10 @@ fn guid_to_id(guid: Uuid) -> io::Result<(uid_t, u32)> {
 
     let ret = unsafe { mbr_uuid_to_id(guid_ptr, &mut id_c, &mut idtype) };
     if ret != 0 {
-        return Err(io::Error::last_os_error());
+        // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
+        let err = io::Error::from_raw_os_error(ret);
+        debug!("mbr_uuid_to_id() returned err={}", err);
+        return Err(err);
     }
     assert!(idtype >= 0);
 
@@ -110,7 +120,10 @@ impl Qualifier {
         let qualifier = match idtype {
             ID_TYPE_UID => Qualifier::User(Uid::from_raw(id_c)),
             ID_TYPE_GID => Qualifier::Group(Gid::from_raw(id_c)),
-            _ => Qualifier::Unknown(guid.to_string()),
+            other => {
+                debug!("Unknown idtype {}", other);
+                Qualifier::Unknown(guid.to_string())
+            }
         };
 
         Ok(qualifier)
@@ -235,4 +248,27 @@ fn test_guid_to_id() {
         guid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap()).ok(),
         Some((20, ID_TYPE_GID))
     );
+
+    let err = guid_to_id(Uuid::nil()).err().unwrap();
+    assert_eq!(err.raw_os_error().unwrap(), ENOENT as i32);
+}
+
+#[test]
+fn test_qualifier_ctor() {
+    let user =
+        Qualifier::from_guid(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap()).ok();
+    assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
+
+    let group =
+        Qualifier::from_guid(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap()).ok();
+    assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+
+    let err = Qualifier::from_guid(Uuid::nil()).err().unwrap();
+    assert_eq!(err.raw_os_error().unwrap(), ENOENT as i32);
+
+    let user = Qualifier::user_named("89").ok();
+    assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
+
+    let group = Qualifier::group_named("89").ok();
+    assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
 }
