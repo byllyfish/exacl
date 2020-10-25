@@ -7,9 +7,7 @@
 //!     exacl --set myfile
 //!
 
-use env_logger;
 use exacl::{read_acl, validate_acl, write_acl, Acl};
-use serde_json;
 use std::io;
 use std::path::{Path, PathBuf};
 use std::process;
@@ -43,7 +41,7 @@ fn main() {
     process::exit(exit_code);
 }
 
-fn get_acl(files: &Vec<PathBuf>) -> i32 {
+fn get_acl(files: &[PathBuf]) -> i32 {
     for file in files {
         let result = dump_acl(file);
         if let Err(err) = result {
@@ -55,7 +53,7 @@ fn get_acl(files: &Vec<PathBuf>) -> i32 {
     EXIT_SUCCESS
 }
 
-fn set_acl(files: &Vec<PathBuf>) -> i32 {
+fn set_acl(files: &[PathBuf]) -> i32 {
     let reader = io::BufReader::new(io::stdin());
     let acl: Acl = match serde_json::from_reader(reader) {
         Ok(acl) => acl,

@@ -94,7 +94,7 @@ pub fn read_acl(path: &Path) -> io::Result<Acl> {
 }
 
 /// Write ACL for a specific file.
-pub fn write_acl(path: &Path, acl: &Acl) -> io::Result<()> {
+pub fn write_acl(path: &Path, acl: &[AclEntry]) -> io::Result<()> {
     debug!("Writing ACL to {:?}: {:?}", path, acl);
 
     let new_acl = xacl_init(acl.len())?;
@@ -116,7 +116,7 @@ pub fn write_acl(path: &Path, acl: &Acl) -> io::Result<()> {
 /// Validate an ACL.
 ///
 /// Returns an optional error message if there is something wrong.
-pub fn validate_acl(acl: &Acl) -> Option<String> {
+pub fn validate_acl(acl: &[AclEntry]) -> Option<String> {
     for (i, entry) in acl.iter().enumerate() {
         if let Some(msg) = entry.validate() {
             return Some(format!("entry {}: {}", i, msg));
