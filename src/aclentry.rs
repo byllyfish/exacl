@@ -21,6 +21,7 @@ pub enum AclEntryKind {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct AclEntry {
+    // API subject to change!
     pub kind: AclEntryKind,
     pub name: String,
     pub perms: Perm,
@@ -51,12 +52,6 @@ impl AclEntry {
         }
     }
 
-    /// Set flags for entry.
-    pub fn with_flags<'a>(&'a mut self, flags: Flag) -> &'a AclEntry {
-        self.flags = flags;
-        self
-    }
-
     pub(crate) fn from_raw(entry: acl_entry_t) -> io::Result<AclEntry> {
         let (allow, qualifier) = xacl_get_tag_qualifier(entry)?;
         let perms = xacl_get_perm(entry)?;
@@ -78,7 +73,7 @@ impl AclEntry {
     }
 
     pub(crate) fn to_raw(&self, entry: acl_entry_t) -> io::Result<()> {
-        let qualifier = self.get_qualifier()?;
+        let qualifier = self.qualifier()?;
 
         xacl_set_tag_qualifier(entry, self.allow, &qualifier)?;
         xacl_set_perm(entry, self.perms)?;
@@ -87,7 +82,7 @@ impl AclEntry {
         Ok(())
     }
 
-    fn get_qualifier(&self) -> io::Result<Qualifier> {
+    fn qualifier(&self) -> io::Result<Qualifier> {
         let qualifier = match self.kind {
             AclEntryKind::User => Qualifier::user_named(&self.name)?,
             AclEntryKind::Group => Qualifier::group_named(&self.name)?,
@@ -104,7 +99,7 @@ impl AclEntry {
 
     /// Validate the entry.
     pub(crate) fn validate(&self) -> Option<String> {
-        if let Err(err) = self.get_qualifier() {
+        if let Err(err) = self.qualifier() {
             return Some(format!("{:?}: {}", self.name, err.to_string()));
         }
 

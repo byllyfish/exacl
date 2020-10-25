@@ -2,7 +2,7 @@
 
 use ctor::ctor;
 use env_logger;
-use exacl::{self, read_acl, validate_acl, write_acl, Acl, AclEntry, AclEntryKind, Perm};
+use exacl::{self, read_acl, validate_acl, write_acl, Acl, AclEntry, AclEntryKind, Flag, Perm};
 use log::debug;
 use std::io;
 use tempfile;
@@ -50,6 +50,7 @@ fn test_write_acl() -> io::Result<()> {
     acl.push(AclEntry::allow(User, "11502", rwx));
     acl.push(AclEntry::allow(User, "11503", rwx));
     acl.push(AclEntry::deny(User, "11504", rwx));
+    acl[3].flags = Flag::ENTRY_FILE_INHERIT | Flag::ENTRY_DIRECTORY_INHERIT;
 
     log_acl(&acl);
     assert_eq!(validate_acl(&acl), None);
