@@ -30,8 +30,13 @@ fn path_exists(path: &Path) -> bool {
 }
 
 // Convenience function to return errno.
-fn errno() -> io::Error {
+pub(crate) fn errno() -> io::Error {
     io::Error::last_os_error()
+}
+
+/// Return a custom io::Error with context.
+pub(crate) fn custom_error(msg: &str, name: &str) -> io::Error {
+    io::Error::new(io::ErrorKind::Other, format!("{}: {:?}", msg, name))
 }
 
 /// Get the native ACL for a specific file or directory.

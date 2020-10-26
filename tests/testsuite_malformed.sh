@@ -32,14 +32,14 @@ testInvalidUser() {
     msg=`echo "$input" | exacl --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
-        "Invalid ACL: entry 0: \"non_existant_user\": Unknown user name" \
+        "Invalid ACL: entry 0: unknown user name: \"non_existant_user\"" \
         "$msg"
 
     input=`quotifyJson "[{kind:user,name:4294967296,perms:[execute],flags:[],allow:true}]"`
     msg=`echo "$input" | exacl --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
-        "Invalid ACL: entry 0: \"4294967296\": Unknown user name" \
+        "Invalid ACL: entry 0: unknown user name: \"4294967296\"" \
         "$msg"
 }
 
@@ -48,14 +48,14 @@ testInvalidGroup() {
     msg=`echo "$input" | exacl --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
-        "Invalid ACL: entry 0: \"non_existant_group\": Unknown group name" \
+        "Invalid ACL: entry 0: unknown group name: \"non_existant_group\"" \
         "$msg"
 
     input=`quotifyJson "[{kind:group,name:4294967296,perms:[execute],flags:[],allow:true}]"`
     msg=`echo "$input" | exacl --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
-        "Invalid ACL: entry 0: \"4294967296\": Unknown group name" \
+        "Invalid ACL: entry 0: unknown group name: \"4294967296\"" \
         "$msg"
 }
 
@@ -64,7 +64,7 @@ testUnknownKind() {
     msg=`echo "$input" | exacl --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
-        'Invalid ACL: entry 0: "501": Kind `unknown` is not valid' \
+        'Invalid ACL: entry 0: unsupported kind: "unknown"' \
         "$msg"
 }
 

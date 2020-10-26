@@ -1,6 +1,7 @@
 //! Implements the Qualifier data type.
 
 use crate::sys::*;
+use crate::util::custom_error;
 
 use log::debug;
 use nix::unistd::{self, Gid, Uid};
@@ -25,8 +26,7 @@ fn str_to_uid(name: &str) -> io::Result<Uid> {
     if let Ok(Some(user)) = unistd::User::from_name(name) {
         Ok(user.uid)
     } else {
-        // FIXME report error from_name...
-        Err(io::Error::new(io::ErrorKind::NotFound, "Unknown user name"))
+        Err(custom_error("unknown user name", name))
     }
 }
 
@@ -40,11 +40,7 @@ fn str_to_gid(name: &str) -> io::Result<Gid> {
     if let Ok(Some(group)) = unistd::Group::from_name(name) {
         Ok(group.gid)
     } else {
-        // FIXME report error from_name.
-        Err(io::Error::new(
-            io::ErrorKind::NotFound,
-            "Unknown group name",
-        ))
+        Err(custom_error("unknown group name", name))
     }
 }
 
@@ -74,7 +70,7 @@ fn xuid_to_guid(uid: Uid) -> io::Result<Uuid> {
     if ret != 0 {
         // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
         let err = io::Error::from_raw_os_error(ret);
-        debug!("mbr_uid_to_uuid() returned err={}", err);
+        debug!("mbr_uid_to_uuid({}) returned err={}", uid, err);
         return Err(err);
     }
 
@@ -89,7 +85,7 @@ fn xgid_to_guid(gid: Gid) -> io::Result<Uuid> {
     if ret != 0 {
         // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
         let err = io::Error::from_raw_os_error(ret);
-        debug!("mbr_gid_to_uuid() returned err={}", err);
+        debug!("mbr_gid_to_uuid({}) returned err={}", gid, err);
         return Err(err);
     }
 
@@ -106,7 +102,7 @@ fn xguid_to_id(guid: Uuid) -> io::Result<(uid_t, u32)> {
     if ret != 0 {
         // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
         let err = io::Error::from_raw_os_error(ret);
-        debug!("mbr_uuid_to_id() returned err={}", err);
+        debug!("mbr_uuid_to_id({}) returned err={}", guid, err);
         return Err(err);
     }
     assert!(idtype >= 0);
@@ -146,10 +142,7 @@ impl Qualifier {
         match self {
             Qualifier::User(uid) => xuid_to_guid(*uid),
             Qualifier::Group(gid) => xgid_to_guid(*gid),
-            Qualifier::Unknown(_) => {
-                let err = io::Error::new(io::ErrorKind::InvalidInput, "Unknown ACL tag");
-                Err(err)
-            }
+            Qualifier::Unknown(tag) => Err(custom_error("unknown tag", tag)),
         }
     }
 
@@ -165,16 +158,24 @@ impl Qualifier {
 
 #[test]
 fn test_str_to_uid() {
-    assert!(str_to_uid("").is_err());
-    assert!(str_to_uid("non_existant").is_err());
+    let msg = str_to_uid("").unwrap_err().to_string();
+    assert_eq!(msg, "unknown user name: \"\"");
+
+    let msg = str_to_uid("non_existant").unwrap_err().to_string();
+    assert_eq!(msg, "unknown user name: \"non_existant\"");
+
     assert_eq!(str_to_uid("500").ok(), Some(Uid::from_raw(500)));
     assert_eq!(str_to_uid("_spotlight").ok(), Some(Uid::from_raw(89)));
 }
 
 #[test]
 fn test_str_to_gid() {
-    assert!(str_to_gid("").is_err());
-    assert!(str_to_gid("non_existant").is_err());
+    let msg = str_to_gid("").unwrap_err().to_string();
+    assert_eq!(msg, "unknown group name: \"\"");
+
+    let msg = str_to_gid("non_existant").unwrap_err().to_string();
+    assert_eq!(msg, "unknown group name: \"non_existant\"");
+
     assert_eq!(str_to_gid("500").ok(), Some(Gid::from_raw(500)));
     assert_eq!(str_to_gid("_spotlight").ok(), Some(Gid::from_raw(89)));
     assert_eq!(str_to_gid("staff").ok(), Some(Gid::from_raw(20)));

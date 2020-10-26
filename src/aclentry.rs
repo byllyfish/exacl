@@ -87,10 +87,7 @@ impl AclEntry {
             AclEntryKind::User => Qualifier::user_named(&self.name)?,
             AclEntryKind::Group => Qualifier::group_named(&self.name)?,
             AclEntryKind::Unknown => {
-                return Err(io::Error::new(
-                    io::ErrorKind::NotFound,
-                    "Kind `unknown` is not valid",
-                ));
+                return Err(custom_error("unsupported kind", "unknown"));
             }
         };
 
@@ -100,7 +97,7 @@ impl AclEntry {
     /// Validate the entry.
     pub(crate) fn validate(&self) -> Option<String> {
         if let Err(err) = self.qualifier() {
-            return Some(format!("{:?}: {}", self.name, err.to_string()));
+            return Some(err.to_string());
         }
 
         None
