@@ -35,8 +35,8 @@ pub(crate) fn errno() -> io::Error {
 }
 
 /// Return a custom io::Error with context.
-pub(crate) fn custom_error(msg: &str, name: &str) -> io::Error {
-    io::Error::new(io::ErrorKind::Other, format!("{}: {:?}", msg, name))
+pub(crate) fn custom_error(msg: &str) -> io::Error {
+    io::Error::new(io::ErrorKind::Other, msg)
 }
 
 /// Get the native ACL for a specific file or directory.

@@ -90,22 +90,23 @@ impl Acl {
 
     /// Construct ACL from AclEntry's.
     pub fn from_entries(entries: &[AclEntry]) -> io::Result<Acl> {
-        let new_acl = xacl_init(entries.len())?;
-
         // Use the smart pointer form of scopeguard; acl_p can change value.
+        let new_acl = xacl_init(entries.len())?;
         let mut acl_p = scopeguard::guard(new_acl, |a| {
             xacl_free(a);
         });
 
-        for entry in entries {
+        for (i, entry) in entries.iter().enumerate() {
             let entry_p = xacl_create_entry(&mut acl_p)?;
-            entry.to_raw(entry_p)?;
+            if let Err(err) = entry.to_raw(entry_p) {
+                return Err(custom_error(&format!("entry {}: {}", i, err)));
+            }
         }
 
         Ok(Acl(ScopeGuard::into_inner(acl_p)))
     }
 
-    /// Return a list of AclEntry's.
+    /// Return ACL as a list of AclEntry's.
     pub fn entries(&self) -> io::Result<Vec<AclEntry>> {
         let mut entries = Vec::<AclEntry>::new();
 
@@ -116,16 +117,6 @@ impl Acl {
         })?;
 
         Ok(entries)
-    }
-
-    /// Return an error message if there's an invalid entry.
-    pub fn validate_entries(entries: &[AclEntry]) -> Option<String> {
-        for (i, entry) in entries.iter().enumerate() {
-            if let Some(msg) = entry.validate() {
-                return Some(format!("entry {}: {}", i, msg));
-            }
-        }
-        None
     }
 }
 

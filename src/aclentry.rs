@@ -87,19 +87,10 @@ impl AclEntry {
             AclEntryKind::User => Qualifier::user_named(&self.name)?,
             AclEntryKind::Group => Qualifier::group_named(&self.name)?,
             AclEntryKind::Unknown => {
-                return Err(custom_error("unsupported kind", "unknown"));
+                return Err(custom_error("unsupported kind: \"unknown\""));
             }
         };
 
         Ok(qualifier)
-    }
-
-    /// Validate the entry.
-    pub(crate) fn validate(&self) -> Option<String> {
-        if let Err(err) = self.qualifier() {
-            return Some(err.to_string());
-        }
-
-        None
     }
 }

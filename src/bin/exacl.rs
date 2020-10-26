@@ -63,11 +63,6 @@ fn set_acl(files: &[PathBuf]) -> i32 {
         }
     };
 
-    if let Some(msg) = Acl::validate_entries(&entries) {
-        eprintln!("Invalid ACL: {}", msg);
-        return EXIT_FAILURE;
-    }
-
     let acl = match Acl::from_entries(&entries) {
         Ok(acl) => acl,
         Err(err) => {

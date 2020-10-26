@@ -35,7 +35,6 @@ fn test_read_acl() -> io::Result<()> {
     let entries = acl.entries()?;
 
     log_acl(&entries);
-    assert_eq!(Acl::validate_entries(&entries), None);
 
     Ok(())
 }
@@ -54,7 +53,6 @@ fn test_write_acl() -> io::Result<()> {
     entries[3].flags = Flag::ENTRY_FILE_INHERIT | Flag::ENTRY_DIRECTORY_INHERIT;
 
     log_acl(&entries);
-    assert_eq!(Acl::validate_entries(&entries), None);
 
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
@@ -78,7 +76,6 @@ fn test_write_acl_big() -> io::Result<()> {
     for _ in 0..128 {
         entries.push(AclEntry::allow(User, "11501", rwx));
     }
-    assert_eq!(Acl::validate_entries(&entries), None);
 
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
@@ -102,7 +99,6 @@ fn test_write_acl_too_big() {
     for _ in 0..129 {
         entries.push(AclEntry::allow(User, "11501", rwx));
     }
-    assert_eq!(Acl::validate_entries(&entries), None);
 
     let err = Acl::from_entries(&entries).err().unwrap();
     assert!(err.to_string().contains("Cannot allocate memory"));

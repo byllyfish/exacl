@@ -26,7 +26,7 @@ fn str_to_uid(name: &str) -> io::Result<Uid> {
     if let Ok(Some(user)) = unistd::User::from_name(name) {
         Ok(user.uid)
     } else {
-        Err(custom_error("unknown user name", name))
+        Err(custom_error(&format!("unknown user name: {:?}", name)))
     }
 }
 
@@ -40,7 +40,7 @@ fn str_to_gid(name: &str) -> io::Result<Gid> {
     if let Ok(Some(group)) = unistd::Group::from_name(name) {
         Ok(group.gid)
     } else {
-        Err(custom_error("unknown group name", name))
+        Err(custom_error(&format!("unknown group name: {:?}", name)))
     }
 }
 
@@ -142,7 +142,7 @@ impl Qualifier {
         match self {
             Qualifier::User(uid) => xuid_to_guid(*uid),
             Qualifier::Group(gid) => xgid_to_guid(*gid),
-            Qualifier::Unknown(tag) => Err(custom_error("unknown tag", tag)),
+            Qualifier::Unknown(tag) => Err(custom_error(&format!("unknown tag: {:?}", tag))),
         }
     }
 
