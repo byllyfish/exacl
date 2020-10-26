@@ -11,11 +11,13 @@
 //! # use std::error::Error;
 //! #
 //! # fn main() -> Result<(), Box<dyn Error>> {
+//! use exacl::Acl;
 //! use std::path::Path;
 //!
 //! let path = Path::new("./foo/bar.txt");
-//! let acl = exacl::read_acl(&path)?;
-//! for entry in &acl {
+//! let acl = Acl::read(&path)?;
+//!
+//! for entry in &acl.entries()? {
 //!     println!("{:?}", entry);
 //! }
 //! #
@@ -66,73 +68,69 @@ pub use aclentry::{AclEntry, AclEntryKind};
 pub use flag::Flag;
 pub use perm::Perm;
 
-use log::debug;
-use scopeguard::defer;
+use scopeguard::{self, ScopeGuard};
 use std::io;
 use std::path::Path;
 use util::*;
 
-/// Represents an access control list.
-pub type Acl = Vec<AclEntry>;
+/// Access Control List native object wrapper.
+pub struct Acl(acl_t);
 
-/// Read ACL for a specific file.
-pub fn read_acl(path: &Path) -> io::Result<Acl> {
-    let mut acl = Acl::new();
-
-    let acl_p = xacl_get_file(path)?;
-    defer! { xacl_free(acl_p) }
-
-    xacl_foreach(acl_p, |entry_p| {
-        let entry = AclEntry::from_raw(entry_p)?;
-        acl.push(entry);
-        Ok(())
-    })?;
-
-    debug!("Reading ACL from {:?}: {:?}", path, acl);
-
-    Ok(acl)
-}
-
-/// Write ACL for a specific file.
-pub fn write_acl(path: &Path, acl: &[AclEntry]) -> io::Result<()> {
-    debug!("Writing ACL to {:?}: {:?}", path, acl);
-
-    let new_acl = xacl_init(acl.len())?;
-
-    // Use the smart pointer form of scopeguard; acl_p can change value.
-    let mut acl_p = scopeguard::guard(new_acl, |a| {
-        xacl_free(a);
-    });
-
-    for entry in acl {
-        let entry_p = xacl_create_entry(&mut acl_p)?;
-        entry.to_raw(entry_p)?;
+impl Acl {
+    /// Read ACL for specified file.
+    pub fn read(path: &Path) -> io::Result<Acl> {
+        let acl_p = xacl_get_file(path)?;
+        Ok(Acl(acl_p))
     }
 
-    xacl_set_file(path, *acl_p)?;
-    Ok(())
-}
+    /// Write ACL for specified file.
+    pub fn write(&self, path: &Path) -> io::Result<()> {
+        xacl_set_file(path, self.0)
+    }
 
-/// Validate an ACL.
-///
-/// Returns an optional error message if there is something wrong.
-pub fn validate_acl(acl: &[AclEntry]) -> Option<String> {
-    for (i, entry) in acl.iter().enumerate() {
-        if let Some(msg) = entry.validate() {
-            return Some(format!("entry {}: {}", i, msg));
+    /// Construct ACL from AclEntry's.
+    pub fn from_entries(entries: &[AclEntry]) -> io::Result<Acl> {
+        let new_acl = xacl_init(entries.len())?;
+
+        // Use the smart pointer form of scopeguard; acl_p can change value.
+        let mut acl_p = scopeguard::guard(new_acl, |a| {
+            xacl_free(a);
+        });
+
+        for entry in entries {
+            let entry_p = xacl_create_entry(&mut acl_p)?;
+            entry.to_raw(entry_p)?;
         }
+
+        Ok(Acl(ScopeGuard::into_inner(acl_p)))
     }
 
-    None
+    /// Return a list of AclEntry's.
+    pub fn entries(&self) -> io::Result<Vec<AclEntry>> {
+        let mut entries = Vec::<AclEntry>::new();
+
+        xacl_foreach(self.0, |entry_p| {
+            let entry = AclEntry::from_raw(entry_p)?;
+            entries.push(entry);
+            Ok(())
+        })?;
+
+        Ok(entries)
+    }
+
+    /// Return an error message if there's an invalid entry.
+    pub fn validate_entries(entries: &[AclEntry]) -> Option<String> {
+        for (i, entry) in entries.iter().enumerate() {
+            if let Some(msg) = entry.validate() {
+                return Some(format!("entry {}: {}", i, msg));
+            }
+        }
+        None
+    }
 }
 
-#[cfg(test)]
-mod tests {
-    use ctor::ctor;
-    use env_logger;
-
-    #[ctor]
-    fn init() {
-        env_logger::init();
+impl Drop for Acl {
+    fn drop(&mut self) {
+        xacl_free(self.0);
     }
 }

@@ -7,7 +7,7 @@
 //!     exacl --set myfile
 //!
 
-use exacl::{read_acl, validate_acl, write_acl, Acl};
+use exacl::{Acl, AclEntry};
 use std::io;
 use std::path::{Path, PathBuf};
 use std::process;
@@ -55,21 +55,29 @@ fn get_acl(files: &[PathBuf]) -> i32 {
 
 fn set_acl(files: &[PathBuf]) -> i32 {
     let reader = io::BufReader::new(io::stdin());
-    let acl: Acl = match serde_json::from_reader(reader) {
-        Ok(acl) => acl,
+    let entries: Vec<AclEntry> = match serde_json::from_reader(reader) {
+        Ok(entries) => entries,
         Err(err) => {
             eprintln!("JSON parser error: {}", err);
             return EXIT_FAILURE;
         }
     };
 
-    if let Some(msg) = validate_acl(&acl) {
+    if let Some(msg) = Acl::validate_entries(&entries) {
         eprintln!("Invalid ACL: {}", msg);
         return EXIT_FAILURE;
     }
 
+    let acl = match Acl::from_entries(&entries) {
+        Ok(acl) => acl,
+        Err(err) => {
+            eprintln!("Invalid ACL: {}", err);
+            return EXIT_FAILURE;
+        }
+    };
+
     for file in files {
-        let result = write_acl(file, &acl);
+        let result = acl.write(file);
         if let Err(err) = result {
             eprintln!("File {:?}: {}", file, err);
             return EXIT_FAILURE;
@@ -80,8 +88,9 @@ fn set_acl(files: &[PathBuf]) -> i32 {
 }
 
 fn dump_acl(file: &Path) -> io::Result<()> {
-    let acl = read_acl(file)?;
-    serde_json::to_writer(io::stdout(), &acl)?;
+    let acl = Acl::read(file)?;
+    let entries = acl.entries()?;
+    serde_json::to_writer(io::stdout(), &entries)?;
     println!(); // add newline
     Ok(())
 }
