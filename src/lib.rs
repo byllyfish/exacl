@@ -118,6 +118,16 @@ impl Acl {
 
         Ok(entries)
     }
+
+    // Construct ACL from platform-dependent textual description.
+    pub fn from_platform_text(text: &str) -> io::Result<Acl> {
+        let acl_p = xacl_from_text(text)?;
+        Ok(Acl(acl_p))
+    }
+
+    pub fn to_platform_text(&self) -> String {
+        xacl_to_text(self.0)
+    }
 }
 
 impl Drop for Acl {

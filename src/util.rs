@@ -8,7 +8,7 @@ use crate::sys::*;
 
 use log::debug;
 use scopeguard::defer;
-use std::ffi::{c_void, CString};
+use std::ffi::{c_void, CStr, CString};
 use std::io;
 use std::path::Path;
 use std::ptr;
@@ -330,6 +330,33 @@ pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> 
     }
 
     Ok(())
+}
+
+pub(crate) fn xacl_from_text(text: &str) -> io::Result<acl_t> {
+    let cstr = CString::new(text.as_bytes())?;
+
+    let acl = unsafe { acl_from_text(cstr.as_ptr()) };
+    if acl.is_null() {
+        let err = errno();
+        debug!("acl_from_text({:?}) returned null, err={}", cstr, err);
+        return Err(err);
+    }
+
+    Ok(acl)
+}
+
+pub(crate) fn xacl_to_text(acl: acl_t) -> String {
+    let mut size: ssize_t = 0;
+    let ptr = unsafe { acl_to_text(acl, &mut size) };
+    if ptr.is_null() {
+        let err = errno();
+        return format!("<error: {}>", err);
+    }
+
+    let result = unsafe { CStr::from_ptr(ptr).to_string_lossy().into_owned() };
+
+    xacl_free(ptr);
+    result
 }
 
 #[test]

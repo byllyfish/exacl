@@ -34,6 +34,7 @@ fn test_read_acl() -> io::Result<()> {
     let acl = Acl::read(&file.path())?;
     let entries = acl.entries()?;
 
+    assert_eq!(entries.len(), 0);
     log_acl(&entries);
 
     Ok(())
@@ -46,17 +47,31 @@ fn test_write_acl() -> io::Result<()> {
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ_DATA | Perm::WRITE_DATA | Perm::EXECUTE;
 
+    entries.push(AclEntry::allow(Group, "_spotlight", rwx));
     entries.push(AclEntry::allow(User, "11501", rwx));
     entries.push(AclEntry::allow(User, "11502", rwx));
     entries.push(AclEntry::allow(User, "11503", rwx));
-    entries.push(AclEntry::deny(User, "11504", rwx));
-    entries[3].flags = Flag::ENTRY_FILE_INHERIT | Flag::ENTRY_DIRECTORY_INHERIT;
+    entries.push(AclEntry::deny(Group, "11504", rwx));
+    entries[4].flags = Flag::ENTRY_FILE_INHERIT | Flag::ENTRY_DIRECTORY_INHERIT;
 
     log_acl(&entries);
 
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
     acl.write(&file.path())?;
+
+    // Even though the last entry is a group, the `acl_to_text` representation
+    // displays it as `user`.
+    assert_eq!(
+        acl.to_platform_text(),
+        r#"!#acl 1
+group:ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000059:_spotlight:89:allow:read,write,execute
+user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CED:::allow:read,write,execute
+user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CEE:::allow:read,write,execute
+user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CEF:::allow:read,write,execute
+user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:read,write,execute
+"#
+    );
 
     let acl2 = Acl::read(&file.path())?;
     let entries2 = acl2.entries()?;
@@ -102,4 +117,37 @@ fn test_write_acl_too_big() {
 
     let err = Acl::from_entries(&entries).err().unwrap();
     assert!(err.to_string().contains("Cannot allocate memory"));
+}
+
+#[test]
+fn test_from_platform_text() {
+    let text = r#"!#acl 1
+user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CED:::allow:read,write,execute
+user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CEE:::allow:read,write,execute
+user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CEF:::allow:read,write,execute
+user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:read,write,execute
+"#;
+
+    let acl = Acl::from_platform_text(text).unwrap();
+    assert_eq!(acl.to_platform_text(), text);
+
+    let input = r#"!#acl 1
+group::_spotlight::allow:read,write,execute
+"#;
+    let output = r#"!#acl 1
+group:ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000059:_spotlight:89:allow:read,write,execute
+"#;
+    let acl = Acl::from_platform_text(input).unwrap();
+    assert_eq!(acl.to_platform_text(), output);
+
+    // Giving bad input can result in bad output.
+    let bad_input = r#"!#acl 1
+group:_spotlight:::allow:read,write,execute
+"#;
+    let bad_output = r#"!#acl 1
+user:00000000-0000-0000-0000-000000000000:::allow:read,write,execute
+"#;
+    let acl = Acl::from_platform_text(bad_input).unwrap();
+    assert_eq!(acl.to_platform_text(), bad_output);
+    //log_acl(&acl.entries().unwrap());
 }
