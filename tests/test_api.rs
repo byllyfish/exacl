@@ -149,5 +149,6 @@ user:00000000-0000-0000-0000-000000000000:::allow:read,write,execute
 "#;
     let acl = Acl::from_platform_text(bad_input).unwrap();
     assert_eq!(acl.to_platform_text(), bad_output);
-    //log_acl(&acl.entries().unwrap());
+
+    log_acl(&acl.entries().unwrap());
 }

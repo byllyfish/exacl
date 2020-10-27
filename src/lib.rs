@@ -108,7 +108,7 @@ impl Acl {
 
     /// Return ACL as a list of AclEntry's.
     pub fn entries(&self) -> io::Result<Vec<AclEntry>> {
-        let mut entries = Vec::<AclEntry>::new();
+        let mut entries = Vec::<AclEntry>::with_capacity(xacl_entry_count(self.0));
 
         xacl_foreach(self.0, |entry_p| {
             let entry = AclEntry::from_raw(entry_p)?;

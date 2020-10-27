@@ -13,6 +13,7 @@ use uuid::Uuid;
 pub enum Qualifier {
     User(Uid),
     Group(Gid),
+    Guid(Uuid),
     Unknown(String),
 }
 
@@ -113,7 +114,17 @@ fn xguid_to_id(guid: Uuid) -> io::Result<(uid_t, u32)> {
 impl Qualifier {
     // Create qualifier object from a GUID.
     pub fn from_guid(guid: Uuid) -> io::Result<Qualifier> {
-        let (id_c, idtype) = xguid_to_id(guid)?;
+        let (id_c, idtype) = match xguid_to_id(guid) {
+            Ok(info) => info,
+            Err(err) => {
+                const ERR_NOT_FOUND: i32 = ENOENT as i32;
+                if let Some(ERR_NOT_FOUND) = err.raw_os_error() {
+                    return Ok(Qualifier::Guid(guid));
+                } else {
+                    return Err(err);
+                }
+            }
+        };
 
         let qualifier = match idtype {
             ID_TYPE_UID => Qualifier::User(Uid::from_raw(id_c)),
@@ -142,6 +153,7 @@ impl Qualifier {
         match self {
             Qualifier::User(uid) => xuid_to_guid(*uid),
             Qualifier::Group(gid) => xgid_to_guid(*gid),
+            Qualifier::Guid(guid) => Ok(*guid),
             Qualifier::Unknown(tag) => Err(custom_error(&format!("unknown tag: {:?}", tag))),
         }
     }
@@ -151,6 +163,7 @@ impl Qualifier {
         match self {
             Qualifier::User(uid) => uid_to_str(*uid),
             Qualifier::Group(gid) => gid_to_str(*gid),
+            Qualifier::Guid(guid) => guid.to_string(),
             Qualifier::Unknown(s) => s.clone(),
         }
     }
@@ -266,8 +279,8 @@ fn test_qualifier_ctor() {
         Qualifier::from_guid(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap()).ok();
     assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
 
-    let err = Qualifier::from_guid(Uuid::nil()).err().unwrap();
-    assert_eq!(err.raw_os_error().unwrap(), ENOENT as i32);
+    let user = Qualifier::from_guid(Uuid::nil()).ok();
+    assert_eq!(user, Some(Qualifier::Guid(Uuid::nil())));
 
     let user = Qualifier::user_named("89").ok();
     assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));

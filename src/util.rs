@@ -111,6 +111,19 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t) -> io::Result<()> {
     Ok(())
 }
 
+/// Return number of entries in the ACL.
+pub(crate) fn xacl_entry_count(acl: acl_t) -> usize {
+    let mut count = 0;
+
+    xacl_foreach(acl, |_| {
+        count += 1;
+        Ok(())
+    })
+    .unwrap();
+
+    count
+}
+
 /// Iterate over entries in a native ACL.
 pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
     acl: acl_t,
@@ -163,6 +176,19 @@ pub(crate) fn xacl_create_entry(acl: &mut acl_t) -> io::Result<acl_entry_t> {
     Ok(entry)
 }
 
+fn xacl_get_tag_type(entry: acl_entry_t) -> io::Result<acl_tag_t> {
+    let mut tag: acl_tag_t = 0;
+
+    let ret = unsafe { acl_get_tag_type(entry, &mut tag) };
+    if ret != 0 {
+        let err = errno();
+        debug!("acl_get_tag_type() returned {}, err={}", ret, err);
+        return Err(err);
+    }
+
+    Ok(tag)
+}
+
 /// Get the GUID qualifier and resolve it to a User/Group if possible.
 ///
 /// Only call this function for ACL_EXTENDED_ALLOW or ACL_EXTENDED_DENY.
@@ -181,19 +207,13 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
 
 /// Get tag and qualifier from the entry.
 pub(crate) fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
-    let mut tag = 0;
-    let ret = unsafe { acl_get_tag_type(entry, &mut tag) };
-    if ret != 0 {
-        let err = errno();
-        debug!("acl_get_tag_type() returned {}, err={}", ret, err);
-        return Err(err);
-    }
+    let tag = xacl_get_tag_type(entry)?;
 
     #[allow(non_upper_case_globals)]
     let result = match tag {
         acl_tag_t_ACL_EXTENDED_ALLOW => (true, xacl_get_qualifier(entry)?),
         acl_tag_t_ACL_EXTENDED_DENY => (false, xacl_get_qualifier(entry)?),
-        _ => (false, Qualifier::Unknown(tag.to_string())),
+        _ => (false, Qualifier::Unknown(format!("@tag:{}", tag))),
     };
 
     Ok(result)
@@ -247,6 +267,18 @@ pub(crate) fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
     Ok(flags)
 }
 
+/// Set tag for ACL entry.
+fn xacl_set_tag_type(entry: acl_entry_t, tag: acl_tag_t) -> io::Result<()> {
+    let ret = unsafe { acl_set_tag_type(entry, tag) };
+    if ret != 0 {
+        let err = errno();
+        debug!("acl_set_tag_type() returned {}, err={}", ret, err);
+        return Err(err);
+    }
+
+    Ok(())
+}
+
 /// Set qualifier for entry.
 fn xacl_set_qualifier(entry: acl_entry_t, qualifier: &Qualifier) -> io::Result<()> {
     // Translate qualifier User/Group to guid.
@@ -277,11 +309,7 @@ pub(crate) fn xacl_set_tag_qualifier(
         acl_tag_t_ACL_EXTENDED_DENY
     };
 
-    let ret = unsafe { acl_set_tag_type(entry, tag) };
-    if ret != 0 {
-        return Err(errno());
-    }
-
+    xacl_set_tag_type(entry, tag)?;
     xacl_set_qualifier(entry, &qualifier)?;
 
     Ok(())
@@ -359,29 +387,71 @@ pub(crate) fn xacl_to_text(acl: acl_t) -> String {
     result
 }
 
-#[test]
-fn test_acl_init() {
-    let acl = xacl_init(ACL_MAX_ENTRIES as usize).ok().unwrap();
-    assert!(!acl.is_null());
-    xacl_free(acl);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ctor::ctor;
+    use env_logger;
 
-    // Memory error if we try to allocate MAX_ENTRIES + 1.
-    let err = xacl_init((ACL_MAX_ENTRIES + 1) as usize).err().unwrap();
-    assert_eq!(err.raw_os_error(), Some(ENOMEM as i32));
-}
-
-#[test]
-fn test_acl_too_big() {
-    let mut acl = xacl_init(3).ok().unwrap();
-    assert!(!acl.is_null());
-
-    for _ in 0..ACL_MAX_ENTRIES {
-        xacl_create_entry(&mut acl).unwrap();
+    #[ctor]
+    fn init() {
+        env_logger::init();
     }
 
-    // Memory error if we try to allocate MAX_ENTRIES + 1.
-    let err = xacl_create_entry(&mut acl).err().unwrap();
-    assert_eq!(err.raw_os_error(), Some(ENOMEM as i32));
+    #[test]
+    fn test_acl_init() {
+        let acl = xacl_init(ACL_MAX_ENTRIES as usize).ok().unwrap();
+        assert!(!acl.is_null());
+        xacl_free(acl);
 
-    xacl_free(acl);
+        // Memory error if we try to allocate MAX_ENTRIES + 1.
+        let err = xacl_init((ACL_MAX_ENTRIES + 1) as usize).err().unwrap();
+        assert_eq!(err.raw_os_error(), Some(ENOMEM as i32));
+    }
+
+    #[test]
+    fn test_acl_too_big() {
+        let mut acl = xacl_init(3).ok().unwrap();
+        assert!(!acl.is_null());
+
+        for _ in 0..ACL_MAX_ENTRIES {
+            xacl_create_entry(&mut acl).unwrap();
+        }
+
+        // Memory error if we try to allocate MAX_ENTRIES + 1.
+        let err = xacl_create_entry(&mut acl).err().unwrap();
+        assert_eq!(err.raw_os_error(), Some(ENOMEM as i32));
+
+        xacl_free(acl);
+    }
+
+    #[test]
+    fn test_acl_api_misuse() {
+        let mut acl = xacl_init(1).unwrap();
+        let entry = xacl_create_entry(&mut acl).unwrap();
+
+        // Setting tag other than 1 or 2 results in EINVAL error.
+        let err = xacl_set_tag_type(entry, 0).err().unwrap();
+        assert_eq!(err.raw_os_error(), Some(EINVAL as i32));
+
+        // Setting qualifier without first setting tag to a valid value results in EINVAL.
+        let err = xacl_set_qualifier(entry, &Qualifier::Guid(Uuid::nil()))
+            .err()
+            .unwrap();
+        assert_eq!(err.raw_os_error(), Some(EINVAL as i32));
+
+        assert_eq!(xacl_to_text(acl), "!#acl 1\n");
+
+        let entry2 = xacl_create_entry(&mut acl).unwrap();
+        xacl_set_tag_type(entry2, 1).unwrap();
+
+        assert_eq!(
+            xacl_to_text(acl),
+            "!#acl 1\nuser:00000000-0000-0000-0000-000000000000:::allow\n"
+        );
+
+        // There are still two entries... one is corrupt.
+        assert_eq!(xacl_entry_count(acl), 2);
+        xacl_free(acl);
+    }
 }

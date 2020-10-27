@@ -60,6 +60,7 @@ impl AclEntry {
         let (kind, name) = match qualifier {
             Qualifier::User(_) => (AclEntryKind::User, qualifier.name()),
             Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name()),
+            Qualifier::Guid(_) => (AclEntryKind::User, qualifier.name()),
             Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
         };
 
@@ -93,4 +94,16 @@ impl AclEntry {
 
         Ok(qualifier)
     }
+}
+
+#[test]
+fn test_from_raw_on_corrupt_entry() {
+    let mut acl = xacl_init(1).unwrap();
+    let entry_p = xacl_create_entry(&mut acl).unwrap();
+
+    let entry = AclEntry::from_raw(entry_p).unwrap();
+    assert_eq!(entry.allow, false);
+    assert_eq!(entry.name, "@tag:0");
+
+    xacl_free(acl);
 }
