@@ -5,3 +5,6 @@
 #![allow(clippy::redundant_static_lifetimes)]
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+
+#[cfg(target_os = "linux")]
+type acl_flag_t = u32;

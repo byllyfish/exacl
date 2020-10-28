@@ -12,12 +12,25 @@ bitflags! {
     /// Represents ACL inheritance flags.
     #[derive(Default)]
     pub struct Flag : acl_flag_t {
+        #[cfg(target_os = "macos")]
         const FLAG_DEFER_INHERIT = acl_flag_t_ACL_FLAG_DEFER_INHERIT;
+
+        #[cfg(target_os = "macos")]
         const FLAG_NO_INHERIT = acl_flag_t_ACL_FLAG_NO_INHERIT;
+
+        #[cfg(target_os = "macos")]
         const ENTRY_INHERITED = acl_flag_t_ACL_ENTRY_INHERITED;
+
+        #[cfg(target_os = "macos")]
         const ENTRY_FILE_INHERIT = acl_flag_t_ACL_ENTRY_FILE_INHERIT;
+
+        #[cfg(target_os = "macos")]
         const ENTRY_DIRECTORY_INHERIT = acl_flag_t_ACL_ENTRY_DIRECTORY_INHERIT;
+
+        #[cfg(target_os = "macos")]
         const ENTRY_LIMIT_INHERIT = acl_flag_t_ACL_ENTRY_LIMIT_INHERIT;
+
+        #[cfg(target_os = "macos")]
         const ENTRY_ONLY_INHERIT = acl_flag_t_ACL_ENTRY_ONLY_INHERIT;
     }
 }
@@ -34,12 +47,25 @@ impl BitIterable for Flag {
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 enum FlagName {
+    #[cfg(target_os = "macos")]
     defer_inherit = Flag::FLAG_DEFER_INHERIT.bits,
+
+    #[cfg(target_os = "macos")]
     no_inherit = Flag::FLAG_NO_INHERIT.bits,
+
+    #[cfg(target_os = "macos")]
     inherited = Flag::ENTRY_INHERITED.bits,
+
+    #[cfg(target_os = "macos")]
     file_inherit = Flag::ENTRY_FILE_INHERIT.bits,
+
+    #[cfg(target_os = "macos")]
     directory_inherit = Flag::ENTRY_DIRECTORY_INHERIT.bits,
+
+    #[cfg(target_os = "macos")]
     limit_inherit = Flag::ENTRY_LIMIT_INHERIT.bits,
+
+    #[cfg(target_os = "macos")]
     only_inherit = Flag::ENTRY_ONLY_INHERIT.bits,
 }
 

@@ -12,49 +12,64 @@ bitflags! {
     /// Represents ACL entry file access permissions.
     #[derive(Default)]
     pub struct Perm : acl_perm_t {
-        /// Read permission for a file (read).
-        /// Same bit as LIST_DIRECTORY.
-        const READ_DATA = acl_perm_t_ACL_READ_DATA;
+        /// READ_DATA permission for a file.
+        /// LIST_DIRECTORY permission for a directory.
+        #[cfg(target_os = "macos")]
+        const READ = acl_perm_t_ACL_READ_DATA;
 
-        /// Read permission for a directory to list its contents (list).
-        /// Same bit as READ_DATA.
-        const LIST_DIRECTORY = acl_perm_t_ACL_LIST_DIRECTORY;
+        /// WRITE_DATA permission for a file.
+        /// ADD_FILE permission for a directory.
+        #[cfg(target_os = "macos")]
+        const WRITE = acl_perm_t_ACL_WRITE_DATA;
 
-        /// Write permission for a file (write).
-        /// Same bit as ADD_FILE.
-        const WRITE_DATA = acl_perm_t_ACL_WRITE_DATA;
-
-        /// Add file permission for a directory (add_file).
-        /// Same bit as WRITE_DATA.
-        const ADD_FILE = acl_perm_t_ACL_ADD_FILE;
-
-        /// Execute permission for a file (execute).
-        /// Same bit as SEARCH.
+        /// EXECUTE permission for a file.
+        /// SEARCH permission for a directory.
+        #[cfg(target_os = "macos")]
         const EXECUTE = acl_perm_t_ACL_EXECUTE;
 
-        /// Search permission for a directory (search).
-        /// Same bit as EXECUTE.
-        const SEARCH = acl_perm_t_ACL_SEARCH;
-
-        /// Delete permission for a file (delete).
+        /// DELETE permission for a file.
+        #[cfg(target_os = "macos")]
         const DELETE = acl_perm_t_ACL_DELETE;
 
-        /// Append permission for a file (append).
-        /// Same bit as ADD_SUBDIRECTORY.
-        const APPEND_DATA = acl_perm_t_ACL_APPEND_DATA;
+        /// APPEND_DATA permission for a file.
+        /// ADD_SUBDIRECTORY permission for a directory.
+        #[cfg(target_os = "macos")]
+        const APPEND = acl_perm_t_ACL_APPEND_DATA;
 
-        /// Add subdirectory permission for a directory.
-        /// Same bit as APPEND_DATA.
-        const ADD_SUBDIRECTORY = acl_perm_t_ACL_ADD_SUBDIRECTORY;
-
+        /// DELETE_CHILD permission for a directory.
+        #[cfg(target_os = "macos")]
         const DELETE_CHILD = acl_perm_t_ACL_DELETE_CHILD;
+
+        /// READ_ATTRIBUTES permission for file or directory.
+        #[cfg(target_os = "macos")]
         const READ_ATTRIBUTES = acl_perm_t_ACL_READ_ATTRIBUTES;
+
+        /// WRITE_ATTRIBUTES permission for a file or directory.
+        #[cfg(target_os = "macos")]
         const WRITE_ATTRIBUTES = acl_perm_t_ACL_WRITE_ATTRIBUTES;
+
+        /// READ_EXTATTRIBUTES permission for a file or directory.
+        #[cfg(target_os = "macos")]
         const READ_EXTATTRIBUTES = acl_perm_t_ACL_READ_EXTATTRIBUTES;
+
+        /// WRITE_EXTATTRIBUTES permission for a file or directory.
+        #[cfg(target_os = "macos")]
         const WRITE_EXTATTRIBUTES = acl_perm_t_ACL_WRITE_EXTATTRIBUTES;
+
+        /// READ_SECURITY permission for a file or directory.
+        #[cfg(target_os = "macos")]
         const READ_SECURITY = acl_perm_t_ACL_READ_SECURITY;
+
+        /// WRITE_SECURITY permission for a file or directory.
+        #[cfg(target_os = "macos")]
         const WRITE_SECURITY = acl_perm_t_ACL_WRITE_SECURITY;
+
+        /// CHANGE_OWNER permission for a file or directory.
+        #[cfg(target_os = "macos")]
         const CHANGE_OWNER = acl_perm_t_ACL_CHANGE_OWNER;
+
+        /// SYNCHRONIZE permission (unsupported).
+        #[cfg(target_os = "macos")]
         const SYNCHRONIZE = acl_perm_t_ACL_SYNCHRONIZE;
     }
 }
@@ -154,10 +169,11 @@ mod perm_tests {
     use super::*;
 
     #[test]
+    #[cfg(target_os = "macos")]
     fn test_perm_equivalences() {
-        assert_eq!(Perm::READ_DATA, Perm::LIST_DIRECTORY);
-        assert_eq!(Perm::WRITE_DATA, Perm::ADD_FILE);
-        assert_eq!(Perm::EXECUTE, Perm::SEARCH);
-        assert_eq!(Perm::APPEND_DATA, Perm::ADD_SUBDIRECTORY);
+        assert_eq!(acl_perm_t_ACL_READ_DATA, acl_perm_t_ACL_LIST_DIRECTORY);
+        assert_eq!(acl_perm_t_ACL_WRITE_DATA, acl_perm_t_ACL_ADD_FILE);
+        assert_eq!(acl_perm_t_ACL_EXECUTE, acl_perm_t_ACL_SEARCH);
+        assert_eq!(acl_perm_t_ACL_APPEND_DATA, acl_perm_t_ACL_ADD_SUBDIRECTORY);
     }
 }

@@ -45,7 +45,7 @@ fn test_write_acl() -> io::Result<()> {
     use AclEntryKind::*;
 
     let mut entries = Vec::<AclEntry>::new();
-    let rwx = Perm::READ_DATA | Perm::WRITE_DATA | Perm::EXECUTE;
+    let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
     entries.push(AclEntry::allow(Group, "_spotlight", rwx));
     entries.push(AclEntry::allow(User, "11501", rwx));
@@ -86,7 +86,7 @@ fn test_write_acl_big() -> io::Result<()> {
     use AclEntryKind::*;
 
     let mut entries = Vec::<AclEntry>::new();
-    let rwx = Perm::READ_DATA | Perm::WRITE_DATA | Perm::EXECUTE;
+    let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
     for _ in 0..128 {
         entries.push(AclEntry::allow(User, "11501", rwx));
@@ -109,7 +109,7 @@ fn test_write_acl_too_big() {
     use AclEntryKind::*;
 
     let mut entries = Vec::<AclEntry>::new();
-    let rwx = Perm::READ_DATA | Perm::WRITE_DATA | Perm::EXECUTE;
+    let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
     for _ in 0..129 {
         entries.push(AclEntry::allow(User, "11501", rwx));
