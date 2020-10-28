@@ -8,15 +8,6 @@ use num_enum::TryFromPrimitive;
 use serde::{de, ser, Deserialize, Serialize};
 use std::fmt;
 
-#[cfg(target_os = "macos")]
-const ACL_READ: acl_perm_t = acl_perm_t_ACL_READ_DATA;
-
-#[cfg(target_os = "macos")]
-const ACL_WRITE: acl_perm_t = acl_perm_t_ACL_WRITE_DATA;
-
-#[cfg(target_os = "macos")]
-const ACL_EXECUTE: acl_perm_t = acl_perm_t_ACL_EXECUTE;
-
 bitflags! {
     /// Represents ACL entry file access permissions.
     #[derive(Default)]
@@ -93,46 +84,46 @@ impl BitIterable for Perm {
 #[allow(non_camel_case_types)]
 enum PermName {
     #[cfg(target_os = "macos")]
-    read = acl_perm_t_ACL_READ_DATA,
+    read = Perm::READ.bits,
 
     #[cfg(target_os = "macos")]
-    write = acl_perm_t_ACL_WRITE_DATA,
+    write = Perm::WRITE.bits,
 
     #[cfg(target_os = "macos")]
-    execute = acl_perm_t_ACL_EXECUTE,
+    execute = Perm::EXECUTE.bits,
 
     #[cfg(target_os = "macos")]
-    delete = acl_perm_t_ACL_DELETE,
+    delete = Perm::DELETE.bits,
 
     #[cfg(target_os = "macos")]
-    append = acl_perm_t_ACL_APPEND_DATA,
+    append = Perm::APPEND.bits,
 
     #[cfg(target_os = "macos")]
-    delete_child = acl_perm_t_ACL_DELETE_CHILD,
+    delete_child = Perm::DELETE_CHILD.bits,
 
     #[cfg(target_os = "macos")]
-    readattr = acl_perm_t_ACL_READ_ATTRIBUTES,
+    readattr = Perm::READ_ATTRIBUTES.bits,
 
     #[cfg(target_os = "macos")]
-    writeattr = acl_perm_t_ACL_WRITE_ATTRIBUTES,
+    writeattr = Perm::WRITE_ATTRIBUTES.bits,
 
     #[cfg(target_os = "macos")]
-    readextattr = acl_perm_t_ACL_READ_EXTATTRIBUTES,
+    readextattr = Perm::READ_EXTATTRIBUTES.bits,
 
     #[cfg(target_os = "macos")]
-    writeextattr = acl_perm_t_ACL_WRITE_EXTATTRIBUTES,
+    writeextattr = Perm::WRITE_EXTATTRIBUTES.bits,
 
     #[cfg(target_os = "macos")]
-    readsecurity = acl_perm_t_ACL_READ_SECURITY,
+    readsecurity = Perm::READ_SECURITY.bits,
 
     #[cfg(target_os = "macos")]
-    writesecurity = acl_perm_t_ACL_WRITE_SECURITY,
+    writesecurity = Perm::WRITE_SECURITY.bits,
 
     #[cfg(target_os = "macos")]
-    chown = acl_perm_t_ACL_CHANGE_OWNER,
+    chown = Perm::CHANGE_OWNER.bits,
 
     #[cfg(target_os = "macos")]
-    sync = acl_perm_t_ACL_SYNCHRONIZE,
+    sync = Perm::SYNCHRONIZE.bits,
 }
 
 impl PermName {
@@ -198,11 +189,11 @@ impl<'de> de::Deserialize<'de> for Perm {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
+#[cfg(target_os = "macos")]
 mod perm_tests {
     use super::*;
 
     #[test]
-    #[cfg(target_os = "macos")]
     fn test_perm_equivalences() {
         assert_eq!(acl_perm_t_ACL_READ_DATA, acl_perm_t_ACL_LIST_DIRECTORY);
         assert_eq!(acl_perm_t_ACL_WRITE_DATA, acl_perm_t_ACL_ADD_FILE);

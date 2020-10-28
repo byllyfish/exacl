@@ -71,6 +71,9 @@ enum FlagName {
 
     #[cfg(target_os = "macos")]
     only_inherit = Flag::ENTRY_ONLY_INHERIT.bits,
+
+    #[cfg(target_os = "linux")]
+    none = Flag::NONE.bits,
 }
 
 impl FlagName {
