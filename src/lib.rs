@@ -25,41 +25,11 @@
 //! # }
 //! ```
 //!
-//! Once you have the ACL vector, you can modify it as you please. There are
-//! no changes until you write the file's ACL with the `write_acl` function.
-//! If path is a symlink, the symlink's ACL is written.
-//!
-//! ```ignore
-//! use exacl::AclEntryKind::*;
-//! use exacl::Perm::*;
-//! use exacl::Flag::*;
-//! let acl = vec![
-//!     AclEntry::allow(User, "bfish", READ_DATA),
-//!     AclEntry::deny(User, "bfish", WRITE_DATA).with_flags(ENTRY_FILE_INHERIT),
-//!     AclEntry::allow(Group, "staff", READ_DATA | WRITE_DATA)
-//! ];
-//! exacl::write_acl(&path, &acl)?;
-//! ```
-//!
-//! This example shows how to clear the inherited flag:
-//!
-//! ```ignore
-//! use exacl::Flag;
-//! let mut acl = xacl::read_acl(path)?;
-//! for entry in &acl {
-//!     entry.flags.clear(Flag::ENTRY_INHERITED);
-//! }
-//! exacl::write_acl(path, &acl)?;
-//! ```
-//!
-//! Known Issue: The current API doesn't support reading/writing flags for the
-//! ACL itself, which is possible using the `acl_get_flagset_np()` function.
 
 mod aclentry;
 mod bititer;
 mod flag;
 mod perm;
-mod qualifier;
 mod sys;
 mod util;
 
