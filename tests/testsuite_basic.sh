@@ -57,7 +57,7 @@ oneTimeSetUp() {
 
 # Put quotes back on JSON text.
 quotifyJson() { 
-    echo "$1" | sed -E -e 's/([a-z0-9_]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
+    echo "$1" | sed -E -e 's/([A-Za-z0-9_-]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
 }
 
 oneTimeTearDown() {
@@ -425,5 +425,37 @@ testWriteAclNumericGID() {
     assertEquals 0 $?
     assertEquals \
         "[{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"}"
+}
+
+testWriteAclGUID() {
+    # Set ACL for _spotlight group to "deny read" using GUID.
+    spotlight_group="ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000059"
+    input=`quotifyJson "[{kind:group,name:$spotlight_group,perms:[read],flags:[],allow:false}]"`
+    msg=`echo "$input" | exacl --set $FILE1 2>&1`
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Check ACL again using exacl.
+    msg=`exacl $FILE1`
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:group,name:_spotlight,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"}"
+}
+
+testWriteAclGUID_nil() {
+    # Set ACL for _spotlight group to "deny read" using GUID.
+    nil_uuid="00000000-0000-0000-0000-000000000000"
+    input=`quotifyJson "[{kind:group,name:$nil_uuid,perms:[read],flags:[],allow:false}]"`
+    msg=`echo "$input" | exacl --set $FILE1 2>&1`
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Check ACL again using exacl. Note: change in kind.
+    msg=`exacl $FILE1`
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:$nil_uuid,perms:[read],flags:[],allow:false}]" \
         "${msg//\"}"
 }

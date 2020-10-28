@@ -8,7 +8,7 @@ alias exacl=../target/debug/exacl
 
 # Put quotes back on JSON text.
 quotifyJson() { 
-    echo "$1" | sed -E -e 's/([a-z0-9_]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
+    echo "$1" | sed -E -e 's/([A-Za-z0-9_-]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
 }
 
 testInvalidType() {
@@ -56,6 +56,15 @@ testInvalidGroup() {
     assertEquals 1 $?
     assertEquals \
         "Invalid ACL: entry 0: unknown group name: \"4294967296\"" \
+        "$msg"
+}
+
+testInvalidGUID() {
+    input=`quotifyJson "[{kind:group,name:00000000-0000-0000-000-000000000000,perms:[execute],flags:[],allow:true}]"`
+    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    assertEquals 1 $?
+    assertEquals \
+        "Invalid ACL: entry 0: unknown group name: \"00000000-0000-0000-000-000000000000\"" \
         "$msg"
 }
 
