@@ -19,30 +19,32 @@ pub enum Qualifier {
 
 /// Convert user name to uid.
 fn str_to_uid(name: &str) -> io::Result<Uid> {
+    // Lookup user by user name.
+    if let Ok(Some(user)) = unistd::User::from_name(name) {
+        return Ok(user.uid);
+    }
+
     // Try to parse name as a decimal user ID.
     if let Ok(num) = name.parse::<u32>() {
         return Ok(Uid::from_raw(num));
     }
 
-    if let Ok(Some(user)) = unistd::User::from_name(name) {
-        Ok(user.uid)
-    } else {
-        Err(custom_error(&format!("unknown user name: {:?}", name)))
-    }
+    Err(custom_error(&format!("unknown user name: {:?}", name)))
 }
 
 /// Convert group name to gid.
 fn str_to_gid(name: &str) -> io::Result<Gid> {
+    // Lookup group by group name.
+    if let Ok(Some(group)) = unistd::Group::from_name(name) {
+        return Ok(group.gid);
+    }
+
     // Try to parse name as a decimal group ID.
     if let Ok(num) = name.parse::<u32>() {
         return Ok(Gid::from_raw(num));
     }
 
-    if let Ok(Some(group)) = unistd::Group::from_name(name) {
-        Ok(group.gid)
-    } else {
-        Err(custom_error(&format!("unknown group name: {:?}", name)))
-    }
+    Err(custom_error(&format!("unknown group name: {:?}", name)))
 }
 
 /// Convert uid to user name.
@@ -112,7 +114,7 @@ fn xguid_to_id(guid: Uuid) -> io::Result<(uid_t, u32)> {
 }
 
 impl Qualifier {
-    // Create qualifier object from a GUID.
+    /// Create qualifier object from a GUID.
     pub fn from_guid(guid: Uuid) -> io::Result<Qualifier> {
         let (id_c, idtype) = match xguid_to_id(guid) {
             Ok(info) => info,
@@ -138,14 +140,33 @@ impl Qualifier {
         Ok(qualifier)
     }
 
+    /// Create qualifier object from a user name.
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
-        let uid = str_to_uid(name)?;
-        Ok(Qualifier::User(uid))
+        match str_to_uid(name) {
+            Ok(uid) => Ok(Qualifier::User(uid)),
+            Err(err) => {
+                // Try to parse name as a GUID.
+                if let Ok(uuid) = Uuid::parse_str(name) {
+                    Qualifier::from_guid(uuid)
+                } else {
+                    Err(err)
+                }
+            }
+        }
     }
 
+    /// Create qualifier object from a group name.
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
-        let gid = str_to_gid(name)?;
-        Ok(Qualifier::Group(gid))
+        match str_to_gid(name) {
+            Ok(gid) => Ok(Qualifier::Group(gid)),
+            Err(err) => {
+                if let Ok(uuid) = Uuid::parse_str(name) {
+                    Qualifier::from_guid(uuid)
+                } else {
+                    Err(err)
+                }
+            }
+        }
     }
 
     /// Return the GUID for the user/group.
@@ -285,6 +306,18 @@ fn test_qualifier_ctor() {
     let user = Qualifier::user_named("89").ok();
     assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
 
+    let user = Qualifier::user_named("_spotlight").ok();
+    assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
+
+    let user = Qualifier::user_named("ffffeeee-dddd-cccc-bbbb-aaaa00000059").ok();
+    assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
+
     let group = Qualifier::group_named("89").ok();
+    assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+
+    let group = Qualifier::group_named("_spotlight").ok();
+    assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+
+    let group = Qualifier::group_named("abcdefab-cdef-abcd-efab-cdef00000059").ok();
     assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
 }
