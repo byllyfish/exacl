@@ -387,8 +387,10 @@ pub(crate) fn xacl_to_text(acl: acl_t) -> String {
     result
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 #[cfg(test)]
-mod tests {
+mod util_tests {
     use super::*;
     use ctor::ctor;
     use env_logger;

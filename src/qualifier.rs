@@ -8,7 +8,8 @@ use nix::unistd::{self, Gid, Uid};
 use std::io;
 use uuid::Uuid;
 
-/// Specifies the principal that is allowed/denied access to a resource.
+/// A Qualifier specifies the principal that is allowed/denied access to a
+/// resource.
 #[derive(Debug, PartialEq)]
 pub enum Qualifier {
     User(Uid),
@@ -16,6 +17,85 @@ pub enum Qualifier {
     Guid(Uuid),
     Unknown(String),
 }
+
+impl Qualifier {
+    /// Create qualifier object from a GUID.
+    pub fn from_guid(guid: Uuid) -> io::Result<Qualifier> {
+        let (id_c, idtype) = match xguid_to_id(guid) {
+            Ok(info) => info,
+            Err(err) => {
+                const ERR_NOT_FOUND: i32 = ENOENT as i32;
+                if let Some(ERR_NOT_FOUND) = err.raw_os_error() {
+                    return Ok(Qualifier::Guid(guid));
+                } else {
+                    return Err(err);
+                }
+            }
+        };
+
+        let qualifier = match idtype {
+            ID_TYPE_UID => Qualifier::User(Uid::from_raw(id_c)),
+            ID_TYPE_GID => Qualifier::Group(Gid::from_raw(id_c)),
+            other => {
+                debug!("Unknown idtype {}", other);
+                Qualifier::Unknown(guid.to_string())
+            }
+        };
+
+        Ok(qualifier)
+    }
+
+    /// Create qualifier object from a user name.
+    pub fn user_named(name: &str) -> io::Result<Qualifier> {
+        match str_to_uid(name) {
+            Ok(uid) => Ok(Qualifier::User(uid)),
+            Err(err) => {
+                // Try to parse name as a GUID.
+                if let Ok(uuid) = Uuid::parse_str(name) {
+                    Qualifier::from_guid(uuid)
+                } else {
+                    Err(err)
+                }
+            }
+        }
+    }
+
+    /// Create qualifier object from a group name.
+    pub fn group_named(name: &str) -> io::Result<Qualifier> {
+        match str_to_gid(name) {
+            Ok(gid) => Ok(Qualifier::Group(gid)),
+            Err(err) => {
+                if let Ok(uuid) = Uuid::parse_str(name) {
+                    Qualifier::from_guid(uuid)
+                } else {
+                    Err(err)
+                }
+            }
+        }
+    }
+
+    /// Return the GUID for the user/group.
+    pub fn guid(&self) -> io::Result<Uuid> {
+        match self {
+            Qualifier::User(uid) => xuid_to_guid(*uid),
+            Qualifier::Group(gid) => xgid_to_guid(*gid),
+            Qualifier::Guid(guid) => Ok(*guid),
+            Qualifier::Unknown(tag) => Err(custom_error(&format!("unknown tag: {:?}", tag))),
+        }
+    }
+
+    /// Return the name of the user/group.
+    pub fn name(&self) -> String {
+        match self {
+            Qualifier::User(uid) => uid_to_str(*uid),
+            Qualifier::Group(gid) => gid_to_str(*gid),
+            Qualifier::Guid(guid) => guid.to_string(),
+            Qualifier::Unknown(s) => s.clone(),
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 /// Convert user name to uid.
 fn str_to_uid(name: &str) -> io::Result<Uid> {
@@ -113,211 +193,143 @@ fn xguid_to_id(guid: Uuid) -> io::Result<(uid_t, u32)> {
     Ok((id_c, idtype as u32))
 }
 
-impl Qualifier {
-    /// Create qualifier object from a GUID.
-    pub fn from_guid(guid: Uuid) -> io::Result<Qualifier> {
-        let (id_c, idtype) = match xguid_to_id(guid) {
-            Ok(info) => info,
-            Err(err) => {
-                const ERR_NOT_FOUND: i32 = ENOENT as i32;
-                if let Some(ERR_NOT_FOUND) = err.raw_os_error() {
-                    return Ok(Qualifier::Guid(guid));
-                } else {
-                    return Err(err);
-                }
-            }
-        };
+////////////////////////////////////////////////////////////////////////////////
 
-        let qualifier = match idtype {
-            ID_TYPE_UID => Qualifier::User(Uid::from_raw(id_c)),
-            ID_TYPE_GID => Qualifier::Group(Gid::from_raw(id_c)),
-            other => {
-                debug!("Unknown idtype {}", other);
-                Qualifier::Unknown(guid.to_string())
-            }
-        };
+#[cfg(test)]
+mod qualifier_tests {
+    use super::*;
 
-        Ok(qualifier)
+    #[test]
+    fn test_str_to_uid() {
+        let msg = str_to_uid("").unwrap_err().to_string();
+        assert_eq!(msg, "unknown user name: \"\"");
+
+        let msg = str_to_uid("non_existant").unwrap_err().to_string();
+        assert_eq!(msg, "unknown user name: \"non_existant\"");
+
+        assert_eq!(str_to_uid("500").ok(), Some(Uid::from_raw(500)));
+        assert_eq!(str_to_uid("_spotlight").ok(), Some(Uid::from_raw(89)));
     }
 
-    /// Create qualifier object from a user name.
-    pub fn user_named(name: &str) -> io::Result<Qualifier> {
-        match str_to_uid(name) {
-            Ok(uid) => Ok(Qualifier::User(uid)),
-            Err(err) => {
-                // Try to parse name as a GUID.
-                if let Ok(uuid) = Uuid::parse_str(name) {
-                    Qualifier::from_guid(uuid)
-                } else {
-                    Err(err)
-                }
-            }
-        }
+    #[test]
+    fn test_str_to_gid() {
+        let msg = str_to_gid("").unwrap_err().to_string();
+        assert_eq!(msg, "unknown group name: \"\"");
+
+        let msg = str_to_gid("non_existant").unwrap_err().to_string();
+        assert_eq!(msg, "unknown group name: \"non_existant\"");
+
+        assert_eq!(str_to_gid("500").ok(), Some(Gid::from_raw(500)));
+        assert_eq!(str_to_gid("_spotlight").ok(), Some(Gid::from_raw(89)));
+        assert_eq!(str_to_gid("staff").ok(), Some(Gid::from_raw(20)));
     }
 
-    /// Create qualifier object from a group name.
-    pub fn group_named(name: &str) -> io::Result<Qualifier> {
-        match str_to_gid(name) {
-            Ok(gid) => Ok(Qualifier::Group(gid)),
-            Err(err) => {
-                if let Ok(uuid) = Uuid::parse_str(name) {
-                    Qualifier::from_guid(uuid)
-                } else {
-                    Err(err)
-                }
-            }
-        }
+    #[test]
+    fn test_uid_to_str() {
+        assert_eq!(uid_to_str(Uid::from_raw(1500)), "1500");
+        assert_eq!(uid_to_str(Uid::from_raw(89)), "_spotlight");
     }
 
-    /// Return the GUID for the user/group.
-    pub fn guid(&self) -> io::Result<Uuid> {
-        match self {
-            Qualifier::User(uid) => xuid_to_guid(*uid),
-            Qualifier::Group(gid) => xgid_to_guid(*gid),
-            Qualifier::Guid(guid) => Ok(*guid),
-            Qualifier::Unknown(tag) => Err(custom_error(&format!("unknown tag: {:?}", tag))),
-        }
+    #[test]
+    fn test_gid_to_str() {
+        assert_eq!(gid_to_str(Gid::from_raw(1500)), "1500");
+        assert_eq!(gid_to_str(Gid::from_raw(89)), "_spotlight");
+        assert_eq!(gid_to_str(Gid::from_raw(20)), "staff");
     }
 
-    /// Return the name of the user/group.
-    pub fn name(&self) -> String {
-        match self {
-            Qualifier::User(uid) => uid_to_str(*uid),
-            Qualifier::Group(gid) => gid_to_str(*gid),
-            Qualifier::Guid(guid) => guid.to_string(),
-            Qualifier::Unknown(s) => s.clone(),
-        }
+    #[test]
+    fn test_uid_to_guid() {
+        assert_eq!(
+            xuid_to_guid(Uid::from_raw(89)).ok(),
+            Some(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap())
+        );
+
+        assert_eq!(
+            xuid_to_guid(Uid::from_raw(1500)).ok(),
+            Some(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap())
+        );
     }
-}
 
-#[test]
-fn test_str_to_uid() {
-    let msg = str_to_uid("").unwrap_err().to_string();
-    assert_eq!(msg, "unknown user name: \"\"");
+    #[test]
+    fn test_gid_to_guid() {
+        assert_eq!(
+            xgid_to_guid(Gid::from_raw(89)).ok(),
+            Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap())
+        );
 
-    let msg = str_to_uid("non_existant").unwrap_err().to_string();
-    assert_eq!(msg, "unknown user name: \"non_existant\"");
+        assert_eq!(
+            xgid_to_guid(Gid::from_raw(1500)).ok(),
+            Some(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap())
+        );
 
-    assert_eq!(str_to_uid("500").ok(), Some(Uid::from_raw(500)));
-    assert_eq!(str_to_uid("_spotlight").ok(), Some(Uid::from_raw(89)));
-}
+        assert_eq!(
+            xgid_to_guid(Gid::from_raw(20)).ok(),
+            Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap())
+        );
+    }
 
-#[test]
-fn test_str_to_gid() {
-    let msg = str_to_gid("").unwrap_err().to_string();
-    assert_eq!(msg, "unknown group name: \"\"");
+    #[test]
+    fn test_guid_to_id() {
+        assert_eq!(
+            xguid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap()).ok(),
+            Some((89, ID_TYPE_UID))
+        );
 
-    let msg = str_to_gid("non_existant").unwrap_err().to_string();
-    assert_eq!(msg, "unknown group name: \"non_existant\"");
+        assert_eq!(
+            xguid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap()).ok(),
+            Some((1500, ID_TYPE_UID))
+        );
 
-    assert_eq!(str_to_gid("500").ok(), Some(Gid::from_raw(500)));
-    assert_eq!(str_to_gid("_spotlight").ok(), Some(Gid::from_raw(89)));
-    assert_eq!(str_to_gid("staff").ok(), Some(Gid::from_raw(20)));
-}
+        assert_eq!(
+            xguid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap()).ok(),
+            Some((89, ID_TYPE_GID))
+        );
 
-#[test]
-fn test_uid_to_str() {
-    assert_eq!(uid_to_str(Uid::from_raw(1500)), "1500");
-    assert_eq!(uid_to_str(Uid::from_raw(89)), "_spotlight");
-}
+        assert_eq!(
+            xguid_to_id(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap()).ok(),
+            Some((1500, ID_TYPE_GID))
+        );
 
-#[test]
-fn test_gid_to_str() {
-    assert_eq!(gid_to_str(Gid::from_raw(1500)), "1500");
-    assert_eq!(gid_to_str(Gid::from_raw(89)), "_spotlight");
-    assert_eq!(gid_to_str(Gid::from_raw(20)), "staff");
-}
+        assert_eq!(
+            xguid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap()).ok(),
+            Some((20, ID_TYPE_GID))
+        );
 
-#[test]
-fn test_uid_to_guid() {
-    assert_eq!(
-        xuid_to_guid(Uid::from_raw(89)).ok(),
-        Some(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap())
-    );
+        let err = xguid_to_id(Uuid::nil()).err().unwrap();
+        assert_eq!(err.raw_os_error().unwrap(), ENOENT as i32);
+    }
 
-    assert_eq!(
-        xuid_to_guid(Uid::from_raw(1500)).ok(),
-        Some(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap())
-    );
-}
+    #[test]
+    fn test_qualifier_ctor() {
+        let user =
+            Qualifier::from_guid(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap())
+                .ok();
+        assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
 
-#[test]
-fn test_gid_to_guid() {
-    assert_eq!(
-        xgid_to_guid(Gid::from_raw(89)).ok(),
-        Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap())
-    );
+        let group =
+            Qualifier::from_guid(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap())
+                .ok();
+        assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
 
-    assert_eq!(
-        xgid_to_guid(Gid::from_raw(1500)).ok(),
-        Some(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap())
-    );
+        let user = Qualifier::from_guid(Uuid::nil()).ok();
+        assert_eq!(user, Some(Qualifier::Guid(Uuid::nil())));
 
-    assert_eq!(
-        xgid_to_guid(Gid::from_raw(20)).ok(),
-        Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap())
-    );
-}
+        let user = Qualifier::user_named("89").ok();
+        assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
 
-#[test]
-fn test_guid_to_id() {
-    assert_eq!(
-        xguid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap()).ok(),
-        Some((89, ID_TYPE_UID))
-    );
+        let user = Qualifier::user_named("_spotlight").ok();
+        assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
 
-    assert_eq!(
-        xguid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap()).ok(),
-        Some((1500, ID_TYPE_UID))
-    );
+        let user = Qualifier::user_named("ffffeeee-dddd-cccc-bbbb-aaaa00000059").ok();
+        assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
 
-    assert_eq!(
-        xguid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap()).ok(),
-        Some((89, ID_TYPE_GID))
-    );
+        let group = Qualifier::group_named("89").ok();
+        assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
 
-    assert_eq!(
-        xguid_to_id(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap()).ok(),
-        Some((1500, ID_TYPE_GID))
-    );
+        let group = Qualifier::group_named("_spotlight").ok();
+        assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
 
-    assert_eq!(
-        xguid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap()).ok(),
-        Some((20, ID_TYPE_GID))
-    );
-
-    let err = xguid_to_id(Uuid::nil()).err().unwrap();
-    assert_eq!(err.raw_os_error().unwrap(), ENOENT as i32);
-}
-
-#[test]
-fn test_qualifier_ctor() {
-    let user =
-        Qualifier::from_guid(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap()).ok();
-    assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
-
-    let group =
-        Qualifier::from_guid(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap()).ok();
-    assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
-
-    let user = Qualifier::from_guid(Uuid::nil()).ok();
-    assert_eq!(user, Some(Qualifier::Guid(Uuid::nil())));
-
-    let user = Qualifier::user_named("89").ok();
-    assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
-
-    let user = Qualifier::user_named("_spotlight").ok();
-    assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
-
-    let user = Qualifier::user_named("ffffeeee-dddd-cccc-bbbb-aaaa00000059").ok();
-    assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
-
-    let group = Qualifier::group_named("89").ok();
-    assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
-
-    let group = Qualifier::group_named("_spotlight").ok();
-    assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
-
-    let group = Qualifier::group_named("abcdefab-cdef-abcd-efab-cdef00000059").ok();
-    assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+        let group = Qualifier::group_named("abcdefab-cdef-abcd-efab-cdef00000059").ok();
+        assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+    }
 }

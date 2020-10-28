@@ -96,14 +96,21 @@ impl AclEntry {
     }
 }
 
-#[test]
-fn test_from_raw_on_corrupt_entry() {
-    let mut acl = xacl_init(1).unwrap();
-    let entry_p = xacl_create_entry(&mut acl).unwrap();
+////////////////////////////////////////////////////////////////////////////////
 
-    let entry = AclEntry::from_raw(entry_p).unwrap();
-    assert_eq!(entry.allow, false);
-    assert_eq!(entry.name, "@tag:0");
+#[cfg(test)]
+mod aclentry_tests {
+    use super::*;
 
-    xacl_free(acl);
+    #[test]
+    fn test_from_raw_on_corrupt_entry() {
+        let mut acl = xacl_init(1).unwrap();
+        let entry_p = xacl_create_entry(&mut acl).unwrap();
+
+        let entry = AclEntry::from_raw(entry_p).unwrap();
+        assert_eq!(entry.allow, false);
+        assert_eq!(entry.name, "@tag:0");
+
+        xacl_free(acl);
+    }
 }

@@ -147,10 +147,17 @@ impl<'de> de::Deserialize<'de> for Perm {
     }
 }
 
-#[test]
-fn test_perm_equivalences() {
-    assert_eq!(Perm::READ_DATA, Perm::LIST_DIRECTORY);
-    assert_eq!(Perm::WRITE_DATA, Perm::ADD_FILE);
-    assert_eq!(Perm::EXECUTE, Perm::SEARCH);
-    assert_eq!(Perm::APPEND_DATA, Perm::ADD_SUBDIRECTORY);
+////////////////////////////////////////////////////////////////////////////////
+
+#[cfg(test)]
+mod perm_tests {
+    use super::*;
+
+    #[test]
+    fn test_perm_equivalences() {
+        assert_eq!(Perm::READ_DATA, Perm::LIST_DIRECTORY);
+        assert_eq!(Perm::WRITE_DATA, Perm::ADD_FILE);
+        assert_eq!(Perm::EXECUTE, Perm::SEARCH);
+        assert_eq!(Perm::APPEND_DATA, Perm::ADD_SUBDIRECTORY);
+    }
 }
