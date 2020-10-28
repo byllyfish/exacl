@@ -155,6 +155,7 @@ fn gid_to_str(gid: Gid) -> String {
 }
 
 /// Convert uid to GUID.
+#[cfg(target_os = "macos")]
 fn xuid_to_guid(uid: Uid) -> io::Result<Uuid> {
     let guid = Uuid::nil();
 
@@ -170,6 +171,7 @@ fn xuid_to_guid(uid: Uid) -> io::Result<Uuid> {
 }
 
 /// Convert gid to GUID.
+#[cfg(target_os = "macos")]
 fn xgid_to_guid(gid: Gid) -> io::Result<Uuid> {
     let guid = Uuid::nil();
 
@@ -185,6 +187,7 @@ fn xgid_to_guid(gid: Gid) -> io::Result<Uuid> {
 }
 
 /// Convert GUID to uid/gid.
+#[cfg(target_os = "macos")]
 fn xguid_to_id(guid: Uuid) -> io::Result<(uid_t, u32)> {
     let mut id_c: uid_t = 0;
     let mut idtype: i32 = 0;
@@ -371,6 +374,7 @@ pub(crate) fn custom_error(msg: &str) -> io::Error {
 ///
 /// If path is a symlink, get the link's ACL. Client must call xacl_free when
 /// done.
+#[cfg(target_os = "macos")]
 pub(crate) fn xacl_get_file(path: &Path) -> io::Result<acl_t> {
     use std::os::unix::ffi::OsStrExt;
     let c_path = CString::new(path.as_os_str().as_bytes())?;
@@ -396,6 +400,7 @@ pub(crate) fn xacl_get_file(path: &Path) -> io::Result<acl_t> {
 }
 
 /// Set the acl for a symlink using `acl_set_fd`.
+#[cfg(target_os = "macos")]
 fn xacl_set_file_symlink(c_path: &CString, acl: acl_t) -> io::Result<()> {
     let fd = unsafe { open(c_path.as_ptr(), O_SYMLINK as i32) };
     if fd < 0 {
@@ -415,6 +420,7 @@ fn xacl_set_file_symlink(c_path: &CString, acl: acl_t) -> io::Result<()> {
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
 pub(crate) fn xacl_set_file(path: &Path, acl: acl_t) -> io::Result<()> {
     use std::os::unix::ffi::OsStrExt;
 
@@ -452,13 +458,19 @@ pub(crate) fn xacl_entry_count(acl: acl_t) -> usize {
     count
 }
 
+#[cfg(target_os = "macos")]
+const ACL_FIRST_ENTRY: i32 = acl_entry_id_t_ACL_FIRST_ENTRY;
+
+#[cfg(target_os = "macos")]
+const ACL_NEXT_ENTRY: i32 = acl_entry_id_t_ACL_NEXT_ENTRY;
+
 /// Iterate over entries in a native ACL.
 pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
     acl: acl_t,
     mut func: F,
 ) -> io::Result<()> {
     let mut entry: acl_entry_t = ptr::null_mut();
-    let mut entry_id = acl_entry_id_t_ACL_FIRST_ENTRY;
+    let mut entry_id = ACL_FIRST_ENTRY;
 
     assert!(!acl.is_null());
     loop {
@@ -469,7 +481,7 @@ pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
         }
         assert!(!entry.is_null());
         func(entry)?;
-        entry_id = acl_entry_id_t_ACL_NEXT_ENTRY;
+        entry_id = ACL_NEXT_ENTRY;
     }
 
     Ok(())
@@ -572,6 +584,7 @@ pub(crate) fn xacl_get_perm(entry: acl_entry_t) -> io::Result<Perm> {
 }
 
 /// Get flags from the entry.
+#[cfg(target_os = "macos")]
 pub(crate) fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
     let mut flagset: acl_flagset_t = std::ptr::null_mut();
     let ret = unsafe { acl_get_flagset_np(entry as *mut c_void, &mut flagset) };
@@ -666,6 +679,7 @@ pub(crate) fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
 pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
     let mut flagset: acl_flagset_t = std::ptr::null_mut();
     let ret = unsafe { acl_get_flagset_np(entry as *mut c_void, &mut flagset) };
@@ -710,8 +724,8 @@ pub(crate) fn xacl_to_text(acl: acl_t) -> String {
     }
 
     let result = unsafe { CStr::from_ptr(ptr).to_string_lossy().into_owned() };
-
     xacl_free(ptr);
+
     result
 }
 
