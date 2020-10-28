@@ -32,6 +32,10 @@ bitflags! {
 
         #[cfg(target_os = "macos")]
         const ENTRY_ONLY_INHERIT = acl_flag_t_ACL_ENTRY_ONLY_INHERIT;
+
+        /// Linux ACL's don't use flags.
+        #[cfg(target_os = "linux")]
+        const NONE = 0;
     }
 }
 

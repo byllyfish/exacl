@@ -8,24 +8,30 @@ use num_enum::TryFromPrimitive;
 use serde::{de, ser, Deserialize, Serialize};
 use std::fmt;
 
+#[cfg(target_os = "macos")]
+const ACL_READ: acl_perm_t = acl_perm_t_ACL_READ_DATA;
+
+#[cfg(target_os = "macos")]
+const ACL_WRITE: acl_perm_t = acl_perm_t_ACL_WRITE_DATA;
+
+#[cfg(target_os = "macos")]
+const ACL_EXECUTE: acl_perm_t = acl_perm_t_ACL_EXECUTE;
+
 bitflags! {
     /// Represents ACL entry file access permissions.
     #[derive(Default)]
     pub struct Perm : acl_perm_t {
         /// READ_DATA permission for a file.
         /// LIST_DIRECTORY permission for a directory.
-        #[cfg(target_os = "macos")]
-        const READ = acl_perm_t_ACL_READ_DATA;
+        const READ = ACL_READ;
 
         /// WRITE_DATA permission for a file.
         /// ADD_FILE permission for a directory.
-        #[cfg(target_os = "macos")]
-        const WRITE = acl_perm_t_ACL_WRITE_DATA;
+        const WRITE = ACL_WRITE;
 
         /// EXECUTE permission for a file.
         /// SEARCH permission for a directory.
-        #[cfg(target_os = "macos")]
-        const EXECUTE = acl_perm_t_ACL_EXECUTE;
+        const EXECUTE = ACL_EXECUTE;
 
         /// DELETE permission for a file.
         #[cfg(target_os = "macos")]
@@ -86,19 +92,46 @@ impl BitIterable for Perm {
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 enum PermName {
+    #[cfg(target_os = "macos")]
     read = acl_perm_t_ACL_READ_DATA,
+
+    #[cfg(target_os = "macos")]
     write = acl_perm_t_ACL_WRITE_DATA,
+
+    #[cfg(target_os = "macos")]
     execute = acl_perm_t_ACL_EXECUTE,
+
+    #[cfg(target_os = "macos")]
     delete = acl_perm_t_ACL_DELETE,
+
+    #[cfg(target_os = "macos")]
     append = acl_perm_t_ACL_APPEND_DATA,
+
+    #[cfg(target_os = "macos")]
     delete_child = acl_perm_t_ACL_DELETE_CHILD,
+
+    #[cfg(target_os = "macos")]
     readattr = acl_perm_t_ACL_READ_ATTRIBUTES,
+
+    #[cfg(target_os = "macos")]
     writeattr = acl_perm_t_ACL_WRITE_ATTRIBUTES,
+
+    #[cfg(target_os = "macos")]
     readextattr = acl_perm_t_ACL_READ_EXTATTRIBUTES,
+
+    #[cfg(target_os = "macos")]
     writeextattr = acl_perm_t_ACL_WRITE_EXTATTRIBUTES,
+
+    #[cfg(target_os = "macos")]
     readsecurity = acl_perm_t_ACL_READ_SECURITY,
+
+    #[cfg(target_os = "macos")]
     writesecurity = acl_perm_t_ACL_WRITE_SECURITY,
+
+    #[cfg(target_os = "macos")]
     chown = acl_perm_t_ACL_CHANGE_OWNER,
+
+    #[cfg(target_os = "macos")]
     sync = acl_perm_t_ACL_SYNCHRONIZE,
 }
 
