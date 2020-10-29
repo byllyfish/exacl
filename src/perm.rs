@@ -83,13 +83,10 @@ impl BitIterable for Perm {
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 enum PermName {
-    #[cfg(target_os = "macos")]
     read = Perm::READ.bits,
 
-    #[cfg(target_os = "macos")]
     write = Perm::WRITE.bits,
 
-    #[cfg(target_os = "macos")]
     execute = Perm::EXECUTE.bits,
 
     #[cfg(target_os = "macos")]

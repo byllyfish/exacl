@@ -41,6 +41,7 @@ fn test_read_acl() -> io::Result<()> {
 }
 
 #[test]
+#[cfg(target_os = "macos")]
 fn test_write_acl() -> io::Result<()> {
     use AclEntryKind::*;
 

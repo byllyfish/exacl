@@ -59,6 +59,7 @@ impl AclEntry {
         let (kind, name) = match qualifier {
             Qualifier::User(_) => (AclEntryKind::User, qualifier.name()),
             Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name()),
+            #[cfg(target_os = "macos")]
             Qualifier::Guid(_) => (AclEntryKind::User, qualifier.name()),
             Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
         };

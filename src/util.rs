@@ -12,6 +12,7 @@ use std::ffi::{c_void, CStr, CString};
 use std::io;
 use std::path::Path;
 use std::ptr;
+#[cfg(target_os = "macos")]
 use uuid::Uuid;
 
 // Re-export acl_entry_t and acl_t from crate::sys.
@@ -58,6 +59,7 @@ impl Qualifier {
     }
 
     /// Create qualifier object from a user name.
+    #[cfg(target_os = "macos")]
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
         match str_to_uid(name) {
             Ok(uid) => Ok(Qualifier::User(uid)),
@@ -72,7 +74,17 @@ impl Qualifier {
         }
     }
 
+    /// Create qualifier object from a user name.
+    #[cfg(target_os = "linux")]
+    pub fn user_named(name: &str) -> io::Result<Qualifier> {
+        match str_to_uid(name) {
+            Ok(uid) => Ok(Qualifier::User(uid)),
+            Err(err) => Err(err)
+        }
+    }
+
     /// Create qualifier object from a group name.
+    #[cfg(target_os = "macos")]
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
         match str_to_gid(name) {
             Ok(gid) => Ok(Qualifier::Group(gid)),
@@ -83,6 +95,15 @@ impl Qualifier {
                     Err(err)
                 }
             }
+        }
+    }
+
+    /// Create qualifier object from a group name.
+    #[cfg(target_os = "linux")]
+    pub fn group_named(name: &str) -> io::Result<Qualifier> {
+        match str_to_gid(name) {
+            Ok(gid) => Ok(Qualifier::Group(gid)),
+            Err(err) => Err(err)
         }
     }
 
@@ -493,7 +514,7 @@ pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
 
     assert!(!acl.is_null());
     loop {
-        let ret = unsafe { acl_get_entry(acl, entry_id, &mut entry) };
+        let ret = unsafe { acl_get_entry(acl, entry_id as i32, &mut entry) };
         if ret != 0 {
             // Errno is always EINVAL.
             break;
@@ -580,6 +601,11 @@ pub(crate) fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qu
     Ok(result)
 }
 
+#[cfg(target_os = "linux")]
+pub(crate) fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
+    Err(custom_error("Not implemented on linux"))
+}
+
 // Get permissions from the entry.
 pub(crate) fn xacl_get_perm(entry: acl_entry_t) -> io::Result<Perm> {
     let mut permset: acl_permset_t = std::ptr::null_mut();
@@ -647,6 +673,7 @@ fn xacl_set_tag_type(entry: acl_entry_t, tag: acl_tag_t) -> io::Result<()> {
 }
 
 /// Set qualifier for entry.
+#[cfg(target_os = "macos")]
 fn xacl_set_qualifier(entry: acl_entry_t, qualifier: &Qualifier) -> io::Result<()> {
     // Translate qualifier User/Group to guid.
     let guid = qualifier.guid()?;
@@ -662,6 +689,7 @@ fn xacl_set_qualifier(entry: acl_entry_t, qualifier: &Qualifier) -> io::Result<(
 }
 
 /// Set tag and qualifier for ACL entry.
+#[cfg(target_os = "macos")]
 pub(crate) fn xacl_set_tag_qualifier(
     entry: acl_entry_t,
     allow: bool,
@@ -680,6 +708,15 @@ pub(crate) fn xacl_set_tag_qualifier(
     xacl_set_qualifier(entry, &qualifier)?;
 
     Ok(())
+}
+
+#[cfg(target_os = "linux")]
+pub(crate) fn xacl_set_tag_qualifier(
+    entry: acl_entry_t,
+    allow: bool,
+    qualifier: &Qualifier,
+) -> io::Result<()> {
+    Err(custom_error("Not implemented on linux"))
 }
 
 /// Set permissions for the entry.

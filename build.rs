@@ -4,9 +4,9 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
-    // Tell cargo to tell rustc to link the system bzip2
-    // shared library.
-    //println!("cargo:rustc-link-lib=bz2");
+    // Tell cargo to tell rustc to link libacl.so, only on Linux.
+    #[cfg(target_os = "linux")]
+    println!("cargo:rustc-link-lib=acl");
 
     // Tell cargo to invalidate the built crate whenever the wrapper changes
     println!("cargo:rerun-if-changed=wrapper.h");
