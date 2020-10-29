@@ -79,7 +79,7 @@ impl Qualifier {
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
         match str_to_uid(name) {
             Ok(uid) => Ok(Qualifier::User(uid)),
-            Err(err) => Err(err)
+            Err(err) => Err(err),
         }
     }
 
@@ -103,7 +103,7 @@ impl Qualifier {
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
         match str_to_gid(name) {
             Ok(gid) => Ok(Qualifier::Group(gid)),
-            Err(err) => Err(err)
+            Err(err) => Err(err),
         }
     }
 
@@ -246,7 +246,12 @@ mod qualifier_tests {
         assert_eq!(msg, "unknown user name: \"non_existant\"");
 
         assert_eq!(str_to_uid("500").ok(), Some(Uid::from_raw(500)));
+
+        #[cfg(target_os = "macos")]
         assert_eq!(str_to_uid("_spotlight").ok(), Some(Uid::from_raw(89)));
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(str_to_uid("bin").ok(), Some(Uid::from_raw(2)));
     }
 
     #[test]
@@ -258,21 +263,34 @@ mod qualifier_tests {
         assert_eq!(msg, "unknown group name: \"non_existant\"");
 
         assert_eq!(str_to_gid("500").ok(), Some(Gid::from_raw(500)));
+
+        #[cfg(target_os = "macos")]
         assert_eq!(str_to_gid("_spotlight").ok(), Some(Gid::from_raw(89)));
-        assert_eq!(str_to_gid("staff").ok(), Some(Gid::from_raw(20)));
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(str_to_gid("bin").ok(), Some(Gid::from_raw(2)));
     }
 
     #[test]
     fn test_uid_to_str() {
         assert_eq!(uid_to_str(Uid::from_raw(1500)), "1500");
+
+        #[cfg(target_os = "macos")]
         assert_eq!(uid_to_str(Uid::from_raw(89)), "_spotlight");
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(uid_to_str(Uid::from_raw(2)), "bin");
     }
 
     #[test]
     fn test_gid_to_str() {
         assert_eq!(gid_to_str(Gid::from_raw(1500)), "1500");
+
+        #[cfg(target_os = "macos")]
         assert_eq!(gid_to_str(Gid::from_raw(89)), "_spotlight");
-        assert_eq!(gid_to_str(Gid::from_raw(20)), "staff");
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(gid_to_str(Gid::from_raw(2)), "bin");
     }
 
     #[test]
@@ -362,11 +380,20 @@ mod qualifier_tests {
         let user = Qualifier::user_named("89").ok();
         assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
 
-        let user = Qualifier::user_named("_spotlight").ok();
-        assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
+        #[cfg(target_os = "macos")]
+        {
+            let user = Qualifier::user_named("_spotlight").ok();
+            assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
 
-        let user = Qualifier::user_named("ffffeeee-dddd-cccc-bbbb-aaaa00000059").ok();
-        assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
+            let user = Qualifier::user_named("ffffeeee-dddd-cccc-bbbb-aaaa00000059").ok();
+            assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            let user = Qualifier::user_named("bin").ok();
+            assert_eq!(user, Some(Qualifier::User(Uid::from_raw(2))));
+        }
     }
 
     #[test]
@@ -374,11 +401,20 @@ mod qualifier_tests {
         let group = Qualifier::group_named("89").ok();
         assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
 
-        let group = Qualifier::group_named("_spotlight").ok();
-        assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+        #[cfg(target_os = "macos")]
+        {
+            let group = Qualifier::group_named("_spotlight").ok();
+            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
 
-        let group = Qualifier::group_named("abcdefab-cdef-abcd-efab-cdef00000059").ok();
-        assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+            let group = Qualifier::group_named("abcdefab-cdef-abcd-efab-cdef00000059").ok();
+            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            let group = Qualifier::group_named("bin").ok();
+            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(2))));
+        }
     }
 }
 
