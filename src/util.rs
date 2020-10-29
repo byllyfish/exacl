@@ -255,6 +255,7 @@ mod qualifier_tests {
     }
 
     #[test]
+    #[cfg(target_os = "macos")]
     fn test_uid_to_guid() {
         assert_eq!(
             xuid_to_guid(Uid::from_raw(89)).ok(),
@@ -268,6 +269,7 @@ mod qualifier_tests {
     }
 
     #[test]
+    #[cfg(target_os = "macos")]
     fn test_gid_to_guid() {
         assert_eq!(
             xgid_to_guid(Gid::from_raw(89)).ok(),
@@ -286,6 +288,7 @@ mod qualifier_tests {
     }
 
     #[test]
+    #[cfg(target_os = "macos")]
     fn test_guid_to_id() {
         assert_eq!(
             xguid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap()).ok(),
@@ -317,6 +320,7 @@ mod qualifier_tests {
     }
 
     #[test]
+    #[cfg(target_os = "macos")]
     fn test_from_guid() {
         let user =
             Qualifier::from_guid(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap())
@@ -412,7 +416,7 @@ pub(crate) fn xacl_get_file(path: &Path) -> io::Result<acl_t> {
 
 #[cfg(target_os = "linux")]
 pub(crate) fn xacl_get_file(path: &Path) -> io::Result<acl_t> {
-    Err(custom_err("linux not implemented yet"))
+    Err(custom_error("linux not implemented yet"))
 }
 
 /// Set the acl for a symlink using `acl_set_fd`.
@@ -463,7 +467,7 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t) -> io::Result<()> {
 
 #[cfg(target_os = "linux")]
 pub(crate) fn xacl_set_file(path: &Path, acl: acl_t) -> io::Result<()> {
-    Err(custom_err("linux not implemented yet"))
+    Err(custom_error("linux not implemented yet"))
 }
 
 /// Return number of entries in the ACL.
@@ -759,6 +763,7 @@ pub(crate) fn xacl_to_text(acl: acl_t) -> String {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
+#[cfg(target_os = "macos")]
 mod util_tests {
     use super::*;
     use ctor::ctor;
