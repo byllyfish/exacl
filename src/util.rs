@@ -27,6 +27,16 @@ pub enum Qualifier {
 
     #[cfg(target_os = "macos")]
     Guid(Uuid),
+
+    #[cfg(target_os = "linux")]
+    UserObj,
+    #[cfg(target_os = "linux")]
+    GroupObj,
+    #[cfg(target_os = "linux")]
+    Other,
+    #[cfg(target_os = "linux")]
+    Mask,
+
     Unknown(String),
 }
 
@@ -77,9 +87,14 @@ impl Qualifier {
     /// Create qualifier object from a user name.
     #[cfg(target_os = "linux")]
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
-        match str_to_uid(name) {
-            Ok(uid) => Ok(Qualifier::User(uid)),
-            Err(err) => Err(err),
+        match name {
+            "@owner" => Ok(Qualifier::UserObj),
+            "@other" => Ok(Qualifier::Other),
+            "@mask" => Ok(Qualifier::Mask),
+            s => match str_to_uid(s) {
+                Ok(uid) => Ok(Qualifier::User(uid)),
+                Err(err) => Err(err),
+            },
         }
     }
 
@@ -101,9 +116,14 @@ impl Qualifier {
     /// Create qualifier object from a group name.
     #[cfg(target_os = "linux")]
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
-        match str_to_gid(name) {
-            Ok(gid) => Ok(Qualifier::Group(gid)),
-            Err(err) => Err(err),
+        match name {
+            "@owner" => Ok(Qualifier::GroupObj),
+            "@other" => Ok(Qualifier::Other),
+            "@mask" => Ok(Qualifier::Mask),
+            s => match str_to_gid(s) {
+                Ok(gid) => Ok(Qualifier::Group(gid)),
+                Err(err) => Err(err),
+            },
         }
     }
 
@@ -125,6 +145,13 @@ impl Qualifier {
             Qualifier::Group(gid) => gid_to_str(*gid),
             #[cfg(target_os = "macos")]
             Qualifier::Guid(guid) => guid.to_string(),
+            #[cfg(target_os = "linux")]
+            Qualifier::UserObj | Qualifier::GroupObj => "@owner".to_string(),
+            #[cfg(target_os = "linux")]
+            Qualifier::Other => "@other".to_string(),
+            #[cfg(target_os = "linux")]
+            Qualifier::Mask => "@mask".to_string(),
+
             Qualifier::Unknown(s) => s.clone(),
         }
     }
@@ -473,7 +500,17 @@ pub(crate) fn xacl_get_file(path: &Path) -> io::Result<acl_t> {
 
 #[cfg(target_os = "linux")]
 pub(crate) fn xacl_get_file(path: &Path) -> io::Result<acl_t> {
-    Err(custom_error("linux not implemented yet"))
+    use std::os::unix::ffi::OsStrExt;
+    let c_path = CString::new(path.as_os_str().as_bytes())?;
+
+    let acl = unsafe { acl_get_file(c_path.as_ptr(), ACL_TYPE_ACCESS) };
+    if acl.is_null() {
+        let err = errno();
+        debug!("acl_get_file({:?}) returned null, err={}", c_path, err);
+        return Err(err);
+    }
+
+    Ok(acl)
 }
 
 /// Set the acl for a symlink using `acl_set_fd`.
@@ -524,7 +561,17 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t) -> io::Result<()> {
 
 #[cfg(target_os = "linux")]
 pub(crate) fn xacl_set_file(path: &Path, acl: acl_t) -> io::Result<()> {
-    Err(custom_error("linux not implemented yet"))
+    use std::os::unix::ffi::OsStrExt;
+
+    let c_path = CString::new(path.as_os_str().as_bytes())?;
+    let ret = unsafe { acl_set_file(c_path.as_ptr(), ACL_TYPE_ACCESS, acl) };
+    if ret != 0 {
+        let err = errno();
+        debug!("acl_set_file({:?}) returned {}, err={}", c_path, ret, err);
+        return Err(err);
+    }
+
+    Ok(())
 }
 
 /// Return number of entries in the ACL.
@@ -540,6 +587,19 @@ pub(crate) fn xacl_entry_count(acl: acl_t) -> usize {
     count
 }
 
+/// Return next entry in ACL.
+fn xacl_get_entry(acl: acl_t, entry_id: i32, entry_p: *mut acl_entry_t) -> bool {
+    let ret = unsafe { acl_get_entry(acl, entry_id, entry_p) };
+
+    // MacOS: Zero means there is more.
+    #[cfg(target_os = "macos")]
+    return ret == 0;
+
+    // Linux: One means there is more.
+    #[cfg(target_os = "linux")]
+    return ret == 1;
+}
+
 /// Iterate over entries in a native ACL.
 pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
     acl: acl_t,
@@ -550,9 +610,7 @@ pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
 
     assert!(!acl.is_null());
     loop {
-        let ret = unsafe { acl_get_entry(acl, entry_id as i32, &mut entry) };
-        if ret != 0 {
-            // Errno is always EINVAL.
+        if !xacl_get_entry(acl, entry_id as i32, &mut entry) {
             break;
         }
         assert!(!entry.is_null());
@@ -608,6 +666,7 @@ fn xacl_get_tag_type(entry: acl_entry_t) -> io::Result<acl_tag_t> {
 /// Get the GUID qualifier and resolve it to a User/Group if possible.
 ///
 /// Only call this function for ACL_EXTENDED_ALLOW or ACL_EXTENDED_DENY.
+// TODO(bfish): use generic function for both linux/macos.
 #[cfg(target_os = "macos")]
 fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     let uuid_ptr = unsafe { acl_get_qualifier(entry) as *mut Uuid };
@@ -638,8 +697,39 @@ pub(crate) fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qu
 }
 
 #[cfg(target_os = "linux")]
+fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
+    let tag = xacl_get_tag_type(entry)?;
+
+    let id = if tag == ACL_USER as i32 || tag == ACL_GROUP as i32 {
+        let id_ptr = unsafe { acl_get_qualifier(entry) as *mut uid_t };
+        if id_ptr.is_null() {
+            let err = errno();
+            debug!("acl_get_qualifier returned NULL, err={}", err);
+            return Err(err);
+        }
+        defer! { xacl_free(id_ptr) };
+        Some(unsafe { *id_ptr })
+    } else {
+        None
+    };
+
+    let result = match tag as u32 {
+        ACL_USER => Qualifier::User(Uid::from_raw(id.unwrap())),
+        ACL_GROUP => Qualifier::Group(Gid::from_raw(id.unwrap())),
+        ACL_USER_OBJ => Qualifier::UserObj,
+        ACL_GROUP_OBJ => Qualifier::GroupObj,
+        ACL_OTHER => Qualifier::Other,
+        ACL_MASK => Qualifier::Mask,
+        tag => Qualifier::Unknown(format!("@tag:{}", tag)),
+    };
+
+    Ok(result)
+}
+
+#[cfg(target_os = "linux")]
 pub(crate) fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
-    Err(custom_error("Not implemented on linux"))
+    let qualifier = xacl_get_qualifier(entry)?;
+    Ok((true, qualifier))
 }
 
 // Get permissions from the entry.
@@ -747,12 +837,53 @@ pub(crate) fn xacl_set_tag_qualifier(
 }
 
 #[cfg(target_os = "linux")]
+fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
+    let id_ptr = &mut id as *mut uid_t;
+    let ret = unsafe { acl_set_qualifier(entry, id_ptr as *mut c_void) };
+    if ret != 0 {
+        let err = errno();
+        debug!("acl_set_qualifier() returned {}, err={}", ret, err);
+        return Err(err);
+    }
+
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
 pub(crate) fn xacl_set_tag_qualifier(
     entry: acl_entry_t,
     allow: bool,
     qualifier: &Qualifier,
 ) -> io::Result<()> {
-    Err(custom_error("Not implemented on linux"))
+    assert!(allow);
+
+    match qualifier {
+        Qualifier::User(uid) => {
+            xacl_set_tag_type(entry, ACL_USER as i32)?;
+            xacl_set_qualifier(entry, uid.as_raw())?;
+        }
+        Qualifier::Group(gid) => {
+            xacl_set_tag_type(entry, ACL_GROUP as i32)?;
+            xacl_set_qualifier(entry, gid.as_raw())?;
+        }
+        Qualifier::UserObj => {
+            xacl_set_tag_type(entry, ACL_USER_OBJ as i32)?;
+        }
+        Qualifier::GroupObj => {
+            xacl_set_tag_type(entry, ACL_GROUP_OBJ as i32)?;
+        }
+        Qualifier::Other => {
+            xacl_set_tag_type(entry, ACL_OTHER as i32)?;
+        }
+        Qualifier::Mask => {
+            xacl_set_tag_type(entry, ACL_MASK as i32)?;
+        }
+        Qualifier::Unknown(tag) => {
+            return Err(custom_error(&format!("Unknown tag: {}", tag)));
+        }
+    }
+
+    Ok(())
 }
 
 /// Set permissions for the entry.

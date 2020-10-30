@@ -61,6 +61,10 @@ impl AclEntry {
             Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name()),
             #[cfg(target_os = "macos")]
             Qualifier::Guid(_) => (AclEntryKind::User, qualifier.name()),
+            #[cfg(target_os = "linux")]
+            Qualifier::UserObj | Qualifier::Other => (AclEntryKind::User, qualifier.name()),
+            #[cfg(target_os = "linux")]
+            Qualifier::GroupObj | Qualifier::Mask => (AclEntryKind::Group, qualifier.name()),
             Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
         };
 
@@ -108,8 +112,13 @@ mod aclentry_tests {
         let entry_p = xacl_create_entry(&mut acl).unwrap();
 
         let entry = AclEntry::from_raw(entry_p).unwrap();
-        assert_eq!(entry.allow, false);
         assert_eq!(entry.name, "@tag:0");
+
+        #[cfg(target_os = "macos")]
+        assert_eq!(entry.allow, false);
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(entry.allow, true);
 
         xacl_free(acl);
     }

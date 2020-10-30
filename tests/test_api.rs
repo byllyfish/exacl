@@ -34,7 +34,12 @@ fn test_read_acl() -> io::Result<()> {
     let acl = Acl::read(&file.path())?;
     let entries = acl.entries()?;
 
+    #[cfg(target_os = "macos")]
     assert_eq!(entries.len(), 0);
+
+    #[cfg(target_os = "linux")]
+    assert_eq!(entries.len(), 3);
+
     log_acl(&entries);
 
     Ok(())
@@ -42,7 +47,7 @@ fn test_read_acl() -> io::Result<()> {
 
 #[test]
 #[cfg(target_os = "macos")]
-fn test_write_acl() -> io::Result<()> {
+fn test_write_acl_macos() -> io::Result<()> {
     use AclEntryKind::*;
 
     let mut entries = Vec::<AclEntry>::new();
@@ -83,6 +88,55 @@ user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:
 }
 
 #[test]
+#[cfg(target_os = "linux")]
+fn test_write_acl_linux() -> io::Result<()> {
+    use AclEntryKind::*;
+
+    let mut entries = Vec::<AclEntry>::new();
+    let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
+
+    entries.push(AclEntry::allow(Group, "bin", rwx));
+    entries.push(AclEntry::allow(User, "11501", rwx));
+    entries.push(AclEntry::allow(User, "11502", rwx));
+    entries.push(AclEntry::allow(User, "11503", rwx));
+    entries.push(AclEntry::allow(User, "@owner", rwx));
+    entries.push(AclEntry::allow(Group, "@owner", rwx));
+    entries.push(AclEntry::allow(User, "@other", rwx));
+    entries.push(AclEntry::allow(Group, "@mask", rwx));
+
+    log_acl(&entries);
+
+    let file = tempfile::NamedTempFile::new()?;
+    let acl = Acl::from_entries(&entries)?;
+    acl.write(&file.path())?;
+
+    // Even though the last entry is a group, the `acl_to_text` representation
+    // displays it as `user`.
+    assert_eq!(
+        acl.to_platform_text(),
+        r#"user::rwx
+user:11501:rwx
+user:11502:rwx
+user:11503:rwx
+group::rwx
+group:bin:rwx
+mask::rwx
+other::rwx
+"#
+    );
+
+    let acl2 = Acl::read(&file.path())?;
+    let entries2 = acl2.entries()?;
+
+    // FIXME(bfish): Implement Ord for AclEntry.
+    //entries.sort();
+    //entries2.sort();
+    //assert_eq!(entries2, entries);
+
+    Ok(())
+}
+#[test]
+#[cfg(target_os = "macos")]
 fn test_write_acl_big() -> io::Result<()> {
     use AclEntryKind::*;
 
@@ -106,6 +160,7 @@ fn test_write_acl_big() -> io::Result<()> {
 }
 
 #[test]
+#[cfg(target_os = "macos")]
 fn test_write_acl_too_big() {
     use AclEntryKind::*;
 
@@ -121,6 +176,7 @@ fn test_write_acl_too_big() {
 }
 
 #[test]
+#[cfg(target_os = "macos")]
 fn test_from_platform_text() {
     let text = r#"!#acl 1
 user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CED:::allow:read,write,execute
