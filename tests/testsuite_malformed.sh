@@ -4,7 +4,12 @@
 #
 # To run:  `shunit2 testsuite_malformed.sh`
 
+set -o pipefail
+
 alias exacl=../target/debug/exacl
+
+# Retrieve name of OS: "Darwin" or "Linux"
+CURRENT_OS=`uname -s`
 
 # Put quotes back on JSON text.
 quotifyJson() { 
@@ -88,10 +93,17 @@ testMissingFlags() {
 
 testInvalidFlag() {
     input=`quotifyJson "[{kind:user,name:501,perms:[execute],flags:[whatever],allow:true}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | exacl --set non_existant 2>&1 | sed -E -e 's/\`//g'`
     assertEquals 1 $?
+
+    if [ "$CURRENT_OS" = "Darwin" ]; then
+        expected='expected one of defer_inherit, no_inherit, inherited, file_inherit, directory_inherit, limit_inherit, only_inherit'
+    else
+        expected='expected none'
+    fi
+
     assertEquals \
-        'JSON parser error: unknown variant `whatever`, expected one of `defer_inherit`, `no_inherit`, `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit` at line 1 column 68' \
+        "JSON parser error: unknown variant whatever, $expected at line 1 column 68" \
         "$msg"
 }
 
