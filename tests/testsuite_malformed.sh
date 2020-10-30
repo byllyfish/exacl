@@ -1,12 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 
 # Test suite that tests exacl tool with malformed input.
-#
-# To run:  `shunit2 testsuite_malformed.sh`
 
-set -o pipefail
+set -u -o pipefail
 
-alias exacl=../target/debug/exacl
+EXACL='../target/debug/exacl'
 
 # Retrieve name of OS: "Darwin" or "Linux"
 CURRENT_OS=`uname -s`
@@ -18,14 +16,14 @@ quotifyJson() {
 
 testInvalidType() {
     input="{}"
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         "JSON parser error: invalid type: map, expected a sequence at line 1 column 1" \
         "$msg"
 
     input="["
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         "JSON parser error: EOF while parsing a list at line 2 column 0" \
@@ -34,14 +32,14 @@ testInvalidType() {
 
 testInvalidUser() {
     input=`quotifyJson "[{kind:user,name:non_existant_user,perms:[execute],flags:[],allow:true}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         "Invalid ACL: entry 0: unknown user name: \"non_existant_user\"" \
         "$msg"
 
     input=`quotifyJson "[{kind:user,name:4294967296,perms:[execute],flags:[],allow:true}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         "Invalid ACL: entry 0: unknown user name: \"4294967296\"" \
@@ -50,14 +48,14 @@ testInvalidUser() {
 
 testInvalidGroup() {
     input=`quotifyJson "[{kind:group,name:non_existant_group,perms:[execute],flags:[],allow:true}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         "Invalid ACL: entry 0: unknown group name: \"non_existant_group\"" \
         "$msg"
 
     input=`quotifyJson "[{kind:group,name:4294967296,perms:[execute],flags:[],allow:true}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         "Invalid ACL: entry 0: unknown group name: \"4294967296\"" \
@@ -66,7 +64,7 @@ testInvalidGroup() {
 
 testInvalidGUID() {
     input=`quotifyJson "[{kind:group,name:00000000-0000-0000-000-000000000000,perms:[execute],flags:[],allow:true}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         "Invalid ACL: entry 0: unknown group name: \"00000000-0000-0000-000-000000000000\"" \
@@ -75,7 +73,7 @@ testInvalidGUID() {
 
 testUnknownKind() {
     input=`quotifyJson "[{kind:unknown,name:501,perms:[execute],flags:[],allow:true}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         'Invalid ACL: entry 0: unsupported kind: "unknown"' \
@@ -84,7 +82,7 @@ testUnknownKind() {
 
 testMissingFlags() {
     input=`quotifyJson "[{kind:user,name:501,perms:[execute],allow:true}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         'JSON parser error: missing field `flags` at line 1 column 62' \
@@ -93,7 +91,7 @@ testMissingFlags() {
 
 testInvalidFlag() {
     input=`quotifyJson "[{kind:user,name:501,perms:[execute],flags:[whatever],allow:true}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1 | sed -E -e 's/\`//g'`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1 | sed -E -e 's/\`//g'`
     assertEquals 1 $?
 
     if [ "$CURRENT_OS" = "Darwin" ]; then
@@ -109,7 +107,7 @@ testInvalidFlag() {
 
 testExtraAttribute() {
     input=`quotifyJson "[{kind:user,name:501,perms:[execute],flags:[],allow:true,ignore:0}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         'JSON parser error: unknown field `ignore`, expected one of `kind`, `name`, `perms`, `flags`, `allow` at line 1 column 82' \
@@ -118,7 +116,7 @@ testExtraAttribute() {
 
 testDuplicateAttribute() {
     input=`quotifyJson "[{kind:user,name:501,perms:[execute],flags:[],allow:true,allow:false}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         'JSON parser error: duplicate field `allow` at line 1 column 81' \
@@ -127,7 +125,7 @@ testDuplicateAttribute() {
 
 testMisspelledAttribute() {
     input=`quotifyJson "[{kin:user,name:501,perms:[execute],flags:[],allow:true}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         'JSON parser error: unknown field `kin`, expected one of `kind`, `name`, `perms`, `flags`, `allow` at line 1 column 8' \
@@ -136,7 +134,7 @@ testMisspelledAttribute() {
 
 testPermsInvalidType() {
     input=`quotifyJson "[{kind:user,name:501,perms:0,flags:[],allow:true}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         'JSON parser error: invalid type: string "0", expected list of permissions at line 1 column 40' \
@@ -145,9 +143,11 @@ testPermsInvalidType() {
 
 testFlagsInvalidType() {
     input=`quotifyJson "[{kind:user,name:501,perms:[read],flags:0,allow:true}]"`
-    msg=`echo "$input" | exacl --set non_existant 2>&1`
+    msg=`echo "$input" | $EXACL --set non_existant 2>&1`
     assertEquals 1 $?
     assertEquals \
         'JSON parser error: invalid type: string "0", expected list of flags at line 1 column 57' \
         "$msg"
 }
+
+. shunit2

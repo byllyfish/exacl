@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Run all test suites using shunit2.
 
@@ -11,5 +11,5 @@ if [ ! -f ../target/debug/exacl ]; then
 fi
 
 for t in testsuite_*.sh ; do 
-    shunit2 $t
+    ./$t
 done
