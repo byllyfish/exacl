@@ -966,6 +966,32 @@ pub(crate) fn xacl_to_text(acl: acl_t) -> String {
     result
 }
 
+#[cfg(target_os = "linux")]
+pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
+    let mut last: i32 = 0;
+
+    let ret = unsafe { acl_check(acl, &mut last) };
+    if ret < 0 {
+        let err = errno();
+        debug!("acl_check() returned {}, err={}", ret, err);
+        return Err(err);
+    }
+
+    if ret == 0 {
+        return Ok(());
+    }
+
+    let msg = match ret as u32 {
+        ACL_MULTI_ERROR => "multiple ACL entries with a tag that may occur at most once",
+        ACL_DUPLICATE_ERROR => "multiple ACL entries with the same user/group ID",
+        ACL_MISS_ERROR => "required ACL entry is missing",
+        ACL_ENTRY_ERROR => "invalid ACL entry tag type",
+        _ => "unknown acl_check error message",
+    };
+
+    return Err(custom_error(msg));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]

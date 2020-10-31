@@ -2,6 +2,8 @@
 
 # Run all test suites using shunit2.
 
+OS=`uname -s`
+
 script_dir=`dirname "$0"`
 cd "$script_dir"
 
@@ -10,6 +12,6 @@ if [ ! -f ../target/debug/exacl ]; then
     exit 1
 fi
 
-for t in testsuite_*.sh ; do 
+for t in testsuite*_all.sh testsuite*_${OS,,}.sh; do 
     ./$t
 done

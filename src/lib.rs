@@ -55,6 +55,7 @@ impl Acl {
 
     /// Write ACL for specified file.
     pub fn write(&self, path: &Path) -> io::Result<()> {
+        xacl_check(self.0)?;
         xacl_set_file(path, self.0)
     }
 
