@@ -855,7 +855,9 @@ pub(crate) fn xacl_set_tag_qualifier(
     allow: bool,
     qualifier: &Qualifier,
 ) -> io::Result<()> {
-    assert!(allow);
+    if !allow {
+        return Err(custom_error("allow=false is not supported on Linux"));
+    }
 
     match qualifier {
         Qualifier::User(uid) => {
@@ -879,7 +881,7 @@ pub(crate) fn xacl_set_tag_qualifier(
             xacl_set_tag_type(entry, ACL_MASK as i32)?;
         }
         Qualifier::Unknown(tag) => {
-            return Err(custom_error(&format!("Unknown tag: {}", tag)));
+            return Err(custom_error(&format!("unknown tag: {}", tag)));
         }
     }
 
