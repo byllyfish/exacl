@@ -209,3 +209,20 @@ user:00000000-0000-0000-0000-000000000000:::allow:read,write,execute
 
     log_acl(&acl.entries().unwrap());
 }
+
+#[test]
+#[cfg(target_os = "linux")]
+fn test_from_platform_text() {
+    let text = r#"user::rwx
+user:11501:rwx
+user:11502:rwx
+user:11503:rwx
+group::rwx
+group:bin:rwx
+mask::rwx
+other::rwx
+"#;
+
+    let acl = Acl::from_platform_text(text).unwrap();
+    assert_eq!(acl.to_platform_text(), text);
+}
