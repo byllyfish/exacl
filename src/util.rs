@@ -966,6 +966,11 @@ pub(crate) fn xacl_to_text(acl: acl_t) -> String {
     result
 }
 
+#[cfg(target_os = "macos")]
+pub(crate) fn xacl_check(_acl: acl_t) -> io::Result<()> {
+    Ok(())
+}
+
 #[cfg(target_os = "linux")]
 pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
     let mut last: i32 = 0;
