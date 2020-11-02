@@ -126,12 +126,11 @@ other::rwx
     );
 
     let acl2 = Acl::read(&file.path())?;
-    let entries2 = acl2.entries()?;
+    let mut entries2 = acl2.entries()?;
 
-    // FIXME(bfish): Implement Ord for AclEntry.
-    //entries.sort();
-    //entries2.sort();
-    //assert_eq!(entries2, entries);
+    entries.sort();
+    entries2.sort();
+    assert_eq!(entries2, entries);
 
     Ok(())
 }

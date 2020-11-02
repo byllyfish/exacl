@@ -5,10 +5,11 @@ use crate::perm::Perm;
 use crate::util::*;
 
 use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
 use std::io;
 
 /// Kind of ACL entry (e.g. user, group, or unknown).
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, PartialOrd, Eq, Ord)]
 #[serde(rename_all = "lowercase")]
 pub enum AclEntryKind {
     User,
@@ -17,7 +18,7 @@ pub enum AclEntryKind {
 }
 
 /// ACL entry with allow/deny semantics.
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct AclEntry {
     // API subject to change!
@@ -26,6 +27,28 @@ pub struct AclEntry {
     pub perms: Perm,
     pub flags: Flag,
     pub allow: bool,
+}
+
+impl Ord for AclEntry {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let ret = self.allow.cmp(&other.allow);
+        if ret != Ordering::Equal {
+            return ret;
+        }
+
+        let ret = self.kind.cmp(&other.kind);
+        if ret != Ordering::Equal {
+            return ret;
+        }
+
+        self.name.cmp(&other.name)
+    }
+}
+
+impl PartialOrd for AclEntry {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(&other))
+    }
 }
 
 impl AclEntry {
@@ -121,5 +144,34 @@ mod aclentry_tests {
         assert_eq!(entry.allow, true);
 
         xacl_free(acl);
+    }
+
+    #[test]
+    fn test_ordering() {
+        use AclEntryKind::*;
+
+        let mut acl = vec![
+            AclEntry::deny(User, "c", Perm::READ),
+            AclEntry::allow(User, "f", Perm::WRITE),
+            AclEntry::allow(Group, "b", Perm::EXECUTE),
+            AclEntry::allow(Group, "d", Perm::EXECUTE),
+            AclEntry::allow(User, "@z", Perm::READ),
+            AclEntry::allow(Group, "@z", Perm::READ),
+            AclEntry::deny(User, "a", Perm::READ),
+        ];
+
+        acl.sort();
+
+        let acl_sorted = vec![
+            AclEntry::deny(User, "a", Perm::READ),
+            AclEntry::deny(User, "c", Perm::READ),
+            AclEntry::allow(User, "@z", Perm::READ),
+            AclEntry::allow(User, "f", Perm::WRITE),
+            AclEntry::allow(Group, "@z", Perm::READ),
+            AclEntry::allow(Group, "b", Perm::EXECUTE),
+            AclEntry::allow(Group, "d", Perm::EXECUTE),
+        ];
+
+        assert_eq!(acl, acl_sorted);
     }
 }
