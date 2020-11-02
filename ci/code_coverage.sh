@@ -7,6 +7,7 @@
 set -e
 
 arg1="$1"
+os=`uname -s | tr A-Z a-z`
 
 # Install Rust nightly and grcov.
 rustup install nightly
@@ -34,7 +35,7 @@ elif [ $arg1 = "codecov" ]; then
     echo "Producing lcov report and uploading it to codecov.io"
     zip -0 ccov.zip `find . \( -name "exacl*.gc*" \) -print`
     grcov ccov.zip -s . -t lcov --llvm --branch --ignore-not-existing --ignore "/*"  --excl-br-line "$excl_br_line" -o lcov.info
-    bash <(curl -s https://codecov.io/bash) -f lcov.info
+    bash <(curl -s https://codecov.io/bash) -f lcov.info -n "$os"
 fi
 
 exit 0
