@@ -1,6 +1,8 @@
 #!/bin/bash
 
-# Run all test suites using shunit2.
+# Run all test suites.
+
+set -u
 
 OS=`uname -s | tr A-Z a-z`
 
@@ -12,6 +14,8 @@ if [ ! -f ../target/debug/exacl ]; then
     exit 1
 fi
 
-for t in testsuite*_all.sh testsuite*_${OS}.sh; do 
+for t in testsuite*_all.sh testsuite*_${OS}.sh; do
+    # Before running test, print name of file underlined with = signs.
+    printf "\n%s\n%s\n" "$t" `printf '=%.0s' $(seq 1 ${#t})`
     ./$t
 done
