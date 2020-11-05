@@ -34,13 +34,7 @@ jobs:
       run: ./tests/run_tests.sh
     - name: Code coverage
       run: ./ci/code_coverage.sh codecov
+    - name: Build docs (Linux)
+      run: ./ci/build_docs.sh
+      if: runner.os == 'Linux'
 
-  docs:
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build docs
-        run: ./ci/build_docs.sh
