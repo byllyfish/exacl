@@ -26,6 +26,8 @@
 //! ```
 //!
 
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 mod aclentry;
 mod bititer;
 mod flag;

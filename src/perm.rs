@@ -25,48 +25,59 @@ bitflags! {
         const EXECUTE = ACL_EXECUTE;
 
         /// DELETE permission for a file.
-        #[cfg(target_os = "macos")]
+        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const DELETE = acl_perm_t_ACL_DELETE;
 
         /// APPEND_DATA permission for a file.
         /// ADD_SUBDIRECTORY permission for a directory.
-        #[cfg(target_os = "macos")]
+        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const APPEND = acl_perm_t_ACL_APPEND_DATA;
 
         /// DELETE_CHILD permission for a directory.
-        #[cfg(target_os = "macos")]
+        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const DELETE_CHILD = acl_perm_t_ACL_DELETE_CHILD;
 
         /// READ_ATTRIBUTES permission for file or directory.
-        #[cfg(target_os = "macos")]
+        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const READ_ATTRIBUTES = acl_perm_t_ACL_READ_ATTRIBUTES;
 
         /// WRITE_ATTRIBUTES permission for a file or directory.
-        #[cfg(target_os = "macos")]
+        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const WRITE_ATTRIBUTES = acl_perm_t_ACL_WRITE_ATTRIBUTES;
 
         /// READ_EXTATTRIBUTES permission for a file or directory.
-        #[cfg(target_os = "macos")]
+        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const READ_EXTATTRIBUTES = acl_perm_t_ACL_READ_EXTATTRIBUTES;
 
         /// WRITE_EXTATTRIBUTES permission for a file or directory.
-        #[cfg(target_os = "macos")]
+        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const WRITE_EXTATTRIBUTES = acl_perm_t_ACL_WRITE_EXTATTRIBUTES;
 
         /// READ_SECURITY permission for a file or directory.
-        #[cfg(target_os = "macos")]
+        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const READ_SECURITY = acl_perm_t_ACL_READ_SECURITY;
 
         /// WRITE_SECURITY permission for a file or directory.
-        #[cfg(target_os = "macos")]
+        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const WRITE_SECURITY = acl_perm_t_ACL_WRITE_SECURITY;
 
         /// CHANGE_OWNER permission for a file or directory.
-        #[cfg(target_os = "macos")]
+        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const CHANGE_OWNER = acl_perm_t_ACL_CHANGE_OWNER;
 
         /// SYNCHRONIZE permission (unsupported).
-        #[cfg(target_os = "macos")]
+        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const SYNCHRONIZE = acl_perm_t_ACL_SYNCHRONIZE;
     }
 }
