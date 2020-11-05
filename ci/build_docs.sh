@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Script to build rust docs.
+
+set -e
+
+arg1="$1"
+
+# Install Rust nightly.
+rustup install nightly
+
+export RUSTDOCFLAGS='--cfg docsrs'
+
+if [ "$arg1" = "open" ]; then
+    cargo +nightly doc --no-deps --open
+else
+    cargo +nightly doc --no-deps
+fi
+
+exit 0
