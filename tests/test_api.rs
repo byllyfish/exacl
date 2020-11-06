@@ -58,7 +58,7 @@ fn test_write_acl_macos() -> io::Result<()> {
     entries.push(AclEntry::allow(User, "11502", rwx));
     entries.push(AclEntry::allow(User, "11503", rwx));
     entries.push(AclEntry::deny(Group, "11504", rwx));
-    entries[4].flags = Flag::ENTRY_FILE_INHERIT | Flag::ENTRY_DIRECTORY_INHERIT;
+    entries[4].flags = Flag::FILE_INHERIT | Flag::DIRECTORY_INHERIT;
 
     log_acl(&entries);
 

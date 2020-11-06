@@ -12,38 +12,45 @@ bitflags! {
     /// Represents ACL inheritance flags.
     #[derive(Default)]
     pub struct Flag : acl_flag_t {
+        /// ACL Flag.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const FLAG_DEFER_INHERIT = np::ACL_FLAG_DEFER_INHERIT;
+        const DEFER_INHERIT = np::ACL_FLAG_DEFER_INHERIT;
 
+        /// ACL Flag.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const FLAG_NO_INHERIT = np::ACL_FLAG_NO_INHERIT;
+        const NO_INHERIT = np::ACL_FLAG_NO_INHERIT;
 
+        /// ACL entry was inherited.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const ENTRY_INHERITED = np::ACL_ENTRY_INHERITED;
+        const INHERITED = np::ACL_ENTRY_INHERITED;
 
+        /// Inherit to files.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const ENTRY_FILE_INHERIT = np::ACL_ENTRY_FILE_INHERIT;
+        const FILE_INHERIT = np::ACL_ENTRY_FILE_INHERIT;
 
+        /// Inherit to directories.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const ENTRY_DIRECTORY_INHERIT = np::ACL_ENTRY_DIRECTORY_INHERIT;
+        const DIRECTORY_INHERIT = np::ACL_ENTRY_DIRECTORY_INHERIT;
 
+        /// Clear the DIRECTORY_INHERIT flag in the ACL entry that is inherited.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const ENTRY_LIMIT_INHERIT = np::ACL_ENTRY_LIMIT_INHERIT;
+        const LIMIT_INHERIT = np::ACL_ENTRY_LIMIT_INHERIT;
 
+        /// Don't consider this entry when processing the ACL. Just inherit it.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const ENTRY_ONLY_INHERIT = np::ACL_ENTRY_ONLY_INHERIT;
+        const ONLY_INHERIT = np::ACL_ENTRY_ONLY_INHERIT;
 
         /// Linux ACL's don't use flags.
         #[cfg(any(docsrs, target_os = "linux"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
-        const NONE = 0;
+        const DEFAULT = 0;
     }
 }
 
@@ -60,28 +67,28 @@ impl BitIterable for Flag {
 #[allow(non_camel_case_types)]
 enum FlagName {
     #[cfg(target_os = "macos")]
-    defer_inherit = Flag::FLAG_DEFER_INHERIT.bits,
+    defer_inherit = Flag::DEFER_INHERIT.bits,
 
     #[cfg(target_os = "macos")]
-    no_inherit = Flag::FLAG_NO_INHERIT.bits,
+    no_inherit = Flag::NO_INHERIT.bits,
 
     #[cfg(target_os = "macos")]
-    inherited = Flag::ENTRY_INHERITED.bits,
+    inherited = Flag::INHERITED.bits,
 
     #[cfg(target_os = "macos")]
-    file_inherit = Flag::ENTRY_FILE_INHERIT.bits,
+    file_inherit = Flag::FILE_INHERIT.bits,
 
     #[cfg(target_os = "macos")]
-    directory_inherit = Flag::ENTRY_DIRECTORY_INHERIT.bits,
+    directory_inherit = Flag::DIRECTORY_INHERIT.bits,
 
     #[cfg(target_os = "macos")]
-    limit_inherit = Flag::ENTRY_LIMIT_INHERIT.bits,
+    limit_inherit = Flag::LIMIT_INHERIT.bits,
 
     #[cfg(target_os = "macos")]
-    only_inherit = Flag::ENTRY_ONLY_INHERIT.bits,
+    only_inherit = Flag::ONLY_INHERIT.bits,
 
     #[cfg(target_os = "linux")]
-    none = Flag::NONE.bits,
+    default = Flag::DEFAULT.bits,
 }
 
 impl FlagName {
