@@ -14,31 +14,31 @@ bitflags! {
     pub struct Flag : acl_flag_t {
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const FLAG_DEFER_INHERIT = acl_flag_t_ACL_FLAG_DEFER_INHERIT;
+        const FLAG_DEFER_INHERIT = np::ACL_FLAG_DEFER_INHERIT;
 
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const FLAG_NO_INHERIT = acl_flag_t_ACL_FLAG_NO_INHERIT;
+        const FLAG_NO_INHERIT = np::ACL_FLAG_NO_INHERIT;
 
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const ENTRY_INHERITED = acl_flag_t_ACL_ENTRY_INHERITED;
+        const ENTRY_INHERITED = np::ACL_ENTRY_INHERITED;
 
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const ENTRY_FILE_INHERIT = acl_flag_t_ACL_ENTRY_FILE_INHERIT;
+        const ENTRY_FILE_INHERIT = np::ACL_ENTRY_FILE_INHERIT;
 
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const ENTRY_DIRECTORY_INHERIT = acl_flag_t_ACL_ENTRY_DIRECTORY_INHERIT;
+        const ENTRY_DIRECTORY_INHERIT = np::ACL_ENTRY_DIRECTORY_INHERIT;
 
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const ENTRY_LIMIT_INHERIT = acl_flag_t_ACL_ENTRY_LIMIT_INHERIT;
+        const ENTRY_LIMIT_INHERIT = np::ACL_ENTRY_LIMIT_INHERIT;
 
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const ENTRY_ONLY_INHERIT = acl_flag_t_ACL_ENTRY_ONLY_INHERIT;
+        const ENTRY_ONLY_INHERIT = np::ACL_ENTRY_ONLY_INHERIT;
 
         /// Linux ACL's don't use flags.
         #[cfg(any(docsrs, target_os = "linux"))]

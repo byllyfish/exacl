@@ -27,58 +27,58 @@ bitflags! {
         /// DELETE permission for a file.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const DELETE = acl_perm_t_ACL_DELETE;
+        const DELETE = np::ACL_DELETE;
 
         /// APPEND_DATA permission for a file.
         /// ADD_SUBDIRECTORY permission for a directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const APPEND = acl_perm_t_ACL_APPEND_DATA;
+        const APPEND = np::ACL_APPEND_DATA;
 
         /// DELETE_CHILD permission for a directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const DELETE_CHILD = acl_perm_t_ACL_DELETE_CHILD;
+        const DELETE_CHILD = np::ACL_DELETE_CHILD;
 
         /// READ_ATTRIBUTES permission for file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const READ_ATTRIBUTES = acl_perm_t_ACL_READ_ATTRIBUTES;
+        const READ_ATTRIBUTES = np::ACL_READ_ATTRIBUTES;
 
         /// WRITE_ATTRIBUTES permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const WRITE_ATTRIBUTES = acl_perm_t_ACL_WRITE_ATTRIBUTES;
+        const WRITE_ATTRIBUTES = np::ACL_WRITE_ATTRIBUTES;
 
         /// READ_EXTATTRIBUTES permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const READ_EXTATTRIBUTES = acl_perm_t_ACL_READ_EXTATTRIBUTES;
+        const READ_EXTATTRIBUTES = np::ACL_READ_EXTATTRIBUTES;
 
         /// WRITE_EXTATTRIBUTES permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const WRITE_EXTATTRIBUTES = acl_perm_t_ACL_WRITE_EXTATTRIBUTES;
+        const WRITE_EXTATTRIBUTES = np::ACL_WRITE_EXTATTRIBUTES;
 
         /// READ_SECURITY permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const READ_SECURITY = acl_perm_t_ACL_READ_SECURITY;
+        const READ_SECURITY = np::ACL_READ_SECURITY;
 
         /// WRITE_SECURITY permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const WRITE_SECURITY = acl_perm_t_ACL_WRITE_SECURITY;
+        const WRITE_SECURITY = np::ACL_WRITE_SECURITY;
 
         /// CHANGE_OWNER permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const CHANGE_OWNER = acl_perm_t_ACL_CHANGE_OWNER;
+        const CHANGE_OWNER = np::ACL_CHANGE_OWNER;
 
         /// SYNCHRONIZE permission (unsupported).
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const SYNCHRONIZE = acl_perm_t_ACL_SYNCHRONIZE;
+        const SYNCHRONIZE = np::ACL_SYNCHRONIZE;
     }
 }
 
