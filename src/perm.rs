@@ -43,42 +43,42 @@ bitflags! {
         /// READ_ATTRIBUTES permission for file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const READ_ATTRIBUTES = np::ACL_READ_ATTRIBUTES;
+        const READATTR = np::ACL_READ_ATTRIBUTES;
 
         /// WRITE_ATTRIBUTES permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const WRITE_ATTRIBUTES = np::ACL_WRITE_ATTRIBUTES;
+        const WRITEATTR = np::ACL_WRITE_ATTRIBUTES;
 
         /// READ_EXTATTRIBUTES permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const READ_EXTATTRIBUTES = np::ACL_READ_EXTATTRIBUTES;
+        const READEXTATTR = np::ACL_READ_EXTATTRIBUTES;
 
         /// WRITE_EXTATTRIBUTES permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const WRITE_EXTATTRIBUTES = np::ACL_WRITE_EXTATTRIBUTES;
+        const WRITEEXTATTR = np::ACL_WRITE_EXTATTRIBUTES;
 
         /// READ_SECURITY permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const READ_SECURITY = np::ACL_READ_SECURITY;
+        const READSECURITY = np::ACL_READ_SECURITY;
 
         /// WRITE_SECURITY permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const WRITE_SECURITY = np::ACL_WRITE_SECURITY;
+        const WRITESECURITY = np::ACL_WRITE_SECURITY;
 
         /// CHANGE_OWNER permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const CHANGE_OWNER = np::ACL_CHANGE_OWNER;
+        const CHOWN = np::ACL_CHANGE_OWNER;
 
         /// SYNCHRONIZE permission (unsupported).
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const SYNCHRONIZE = np::ACL_SYNCHRONIZE;
+        const SYNC = np::ACL_SYNCHRONIZE;
     }
 }
 
@@ -110,28 +110,28 @@ enum PermName {
     delete_child = Perm::DELETE_CHILD.bits,
 
     #[cfg(target_os = "macos")]
-    readattr = Perm::READ_ATTRIBUTES.bits,
+    readattr = Perm::READATTR.bits,
 
     #[cfg(target_os = "macos")]
-    writeattr = Perm::WRITE_ATTRIBUTES.bits,
+    writeattr = Perm::WRITEATTR.bits,
 
     #[cfg(target_os = "macos")]
-    readextattr = Perm::READ_EXTATTRIBUTES.bits,
+    readextattr = Perm::READEXTATTR.bits,
 
     #[cfg(target_os = "macos")]
-    writeextattr = Perm::WRITE_EXTATTRIBUTES.bits,
+    writeextattr = Perm::WRITEEXTATTR.bits,
 
     #[cfg(target_os = "macos")]
-    readsecurity = Perm::READ_SECURITY.bits,
+    readsecurity = Perm::READSECURITY.bits,
 
     #[cfg(target_os = "macos")]
-    writesecurity = Perm::WRITE_SECURITY.bits,
+    writesecurity = Perm::WRITESECURITY.bits,
 
     #[cfg(target_os = "macos")]
-    chown = Perm::CHANGE_OWNER.bits,
+    chown = Perm::CHOWN.bits,
 
     #[cfg(target_os = "macos")]
-    sync = Perm::SYNCHRONIZE.bits,
+    sync = Perm::SYNC.bits,
 }
 
 impl PermName {
