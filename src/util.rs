@@ -783,7 +783,7 @@ pub(crate) fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
 
 #[cfg(target_os = "linux")]
 pub(crate) fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
-    Ok(Flag::NONE) // noop
+    Ok(Flag::DEFAULT) // noop
 }
 
 /// Set tag for ACL entry.
