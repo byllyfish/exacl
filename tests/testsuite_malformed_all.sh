@@ -97,7 +97,7 @@ testInvalidFlag() {
     if [ "$CURRENT_OS" = "Darwin" ]; then
         expected='expected one of defer_inherit, no_inherit, inherited, file_inherit, directory_inherit, limit_inherit, only_inherit'
     else
-        expected='expected none'
+        expected='expected default'
     fi
 
     assertEquals \
