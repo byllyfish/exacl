@@ -86,3 +86,36 @@ pub mod np {
     pub const ACL_ENTRY_LIMIT_INHERIT: acl_flag_t = 0;
     pub const ACL_ENTRY_ONLY_INHERIT: acl_flag_t = 0;
 }
+
+// Convenience constants where the API expects an i32 type, but bindgen
+// provides u32.
+
+#[allow(clippy::cast_possible_wrap)]
+pub const ENOENT_I32: i32 = ENOENT as i32;
+
+#[allow(clippy::cast_possible_wrap)]
+pub const ENOTSUP_I32: i32 = ENOTSUP as i32;
+
+#[allow(clippy::cast_possible_wrap)]
+pub const EINVAL_I32: i32 = EINVAL as i32;
+
+#[allow(clippy::cast_possible_wrap)]
+pub const ENOMEM_I32: i32 = ENOMEM as i32;
+
+#[cfg(target_os = "macos")]
+#[allow(clippy::cast_possible_wrap)]
+pub const O_SYMLINK_I32: i32 = O_SYMLINK as i32;
+
+// Verify that all constants will not wrap when converted to i32.
+#[cfg(test)]
+fn test_constants_u32_to_i32() {
+    const I32_MAX: u32 = i32::MAX as u32;
+
+    assert!(ENOENT <= I32_MAX);
+    assert!(ENOTSUP <= I32_MAX);
+    assert!(EINVAL <= I32_MAX);
+    assert!(ENOMEM <= I32_MAX);
+
+    #[cfg(target_os = "macos")]
+    assert!(O_SYMLINK <= I32_MAX);
+}

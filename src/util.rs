@@ -49,8 +49,7 @@ impl Qualifier {
         let (id_c, idtype) = match xguid_to_id(guid) {
             Ok(info) => info,
             Err(err) => {
-                const ERR_NOT_FOUND: i32 = ENOENT as i32;
-                if let Some(ERR_NOT_FOUND) = err.raw_os_error() {
+                if let Some(ENOENT_I32) = err.raw_os_error() {
                     return Ok(Qualifier::Guid(guid));
                 } else {
                     return Err(err);
@@ -384,7 +383,7 @@ mod qualifier_tests {
         );
 
         let err = xguid_to_id(Uuid::nil()).err().unwrap();
-        assert_eq!(err.raw_os_error().unwrap(), ENOENT as i32);
+        assert_eq!(err.raw_os_error().unwrap(), ENOENT_I32);
     }
 
     #[test]
@@ -506,8 +505,8 @@ pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t
 
         // acl_get_file et al. can return NULL (ENOENT) if the file exists, but
         // there is no ACL. If the path exists, return an *empty* ACL.
-        if let Some(code) = err.raw_os_error() {
-            if code == ENOENT as i32 && path_exists(&path, symlink_only) {
+        if let Some(ENOENT_I32) = err.raw_os_error() {
+            if path_exists(&path, symlink_only) {
                 debug!(" file exists! returning empty acl");
                 return xacl_init(1);
             }
@@ -542,7 +541,7 @@ pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t
 /// Set the acl for a symlink using `acl_set_fd`.
 #[cfg(target_os = "macos")]
 fn xacl_set_file_symlink(c_path: &CString, acl: acl_t) -> io::Result<()> {
-    let fd = unsafe { open(c_path.as_ptr(), O_SYMLINK as i32) };
+    let fd = unsafe { open(c_path.as_ptr(), O_SYMLINK_I32) };
     if fd < 0 {
         let err = errno();
         debug!("symlink open({:?}) returned {}, err={}", c_path, fd, err);
@@ -580,8 +579,8 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::
 
         // acl_set_link_np() returns ENOTSUP for symlinks. Work-around this
         // by using acl_set_fd().
-        if let Some(code) = err.raw_os_error() {
-            if symlink_only && code == ENOTSUP as i32 {
+        if let Some(ENOTSUP_I32) = err.raw_os_error() {
+            if symlink_only {
                 return xacl_set_file_symlink(&c_path, acl);
             }
         }
@@ -1063,7 +1062,7 @@ mod util_tests {
 
         // Memory error if we try to allocate MAX_ENTRIES + 1.
         let err = xacl_init((ACL_MAX_ENTRIES + 1) as usize).err().unwrap();
-        assert_eq!(err.raw_os_error(), Some(ENOMEM as i32));
+        assert_eq!(err.raw_os_error(), Some(ENOMEM_I32));
     }
 
     #[test]
@@ -1077,7 +1076,7 @@ mod util_tests {
 
         // Memory error if we try to allocate MAX_ENTRIES + 1.
         let err = xacl_create_entry(&mut acl).err().unwrap();
-        assert_eq!(err.raw_os_error(), Some(ENOMEM as i32));
+        assert_eq!(err.raw_os_error(), Some(ENOMEM_I32));
 
         xacl_free(acl);
     }
@@ -1089,13 +1088,13 @@ mod util_tests {
 
         // Setting tag other than 1 or 2 results in EINVAL error.
         let err = xacl_set_tag_type(entry, 0).err().unwrap();
-        assert_eq!(err.raw_os_error(), Some(EINVAL as i32));
+        assert_eq!(err.raw_os_error(), Some(EINVAL_I32));
 
         // Setting qualifier without first setting tag to a valid value results in EINVAL.
         let err = xacl_set_qualifier(entry, &Qualifier::Guid(Uuid::nil()))
             .err()
             .unwrap();
-        assert_eq!(err.raw_os_error(), Some(EINVAL as i32));
+        assert_eq!(err.raw_os_error(), Some(EINVAL_I32));
 
         assert_eq!(xacl_to_text(acl), "!#acl 1\n");
 
