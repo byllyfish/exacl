@@ -1038,7 +1038,7 @@ pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
         _ => "unknown acl_check error message",
     };
 
-    return Err(custom_error(msg));
+    Err(custom_error(msg))
 }
 
 ////////////////////////////////////////////////////////////////////////////////

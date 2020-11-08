@@ -12,6 +12,7 @@ for name in $IGNORE; do
     allow="$allow -A clippy::$name"
 done
 
+rustup component add clippy
 cargo clean
 cargo clippy -- -D clippy::all -W clippy::pedantic $allow
 
