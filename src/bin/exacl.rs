@@ -7,7 +7,7 @@
 //!     exacl --set myfile
 //!
 
-use exacl::{Acl, AclEntry};
+use exacl::{Acl, AclEntry, AclOption};
 use std::io;
 use std::path::{Path, PathBuf};
 use std::process;
@@ -19,6 +19,9 @@ struct Opt {
     /// Set file's ACL.
     #[structopt(long)]
     set: bool,
+
+    #[structopt(short = "h", long)]
+    symlink: bool,
 
     /// Input files
     #[structopt(parse(from_os_str))]
@@ -32,18 +35,25 @@ fn main() {
     env_logger::init();
 
     let opt = Opt::from_args();
-    let exit_code = if opt.set {
-        set_acl(&opt.files)
+
+    let options = if opt.symlink {
+        AclOption::SYMLINK_ONLY
     } else {
-        get_acl(&opt.files)
+        Default::default()
+    };
+
+    let exit_code = if opt.set {
+        set_acl(&opt.files, options)
+    } else {
+        get_acl(&opt.files, options)
     };
 
     process::exit(exit_code);
 }
 
-fn get_acl(files: &[PathBuf]) -> i32 {
+fn get_acl(files: &[PathBuf], options: AclOption) -> i32 {
     for file in files {
-        let result = dump_acl(file);
+        let result = dump_acl(file, options);
         if let Err(err) = result {
             eprintln!("File {:?}: {}", file, err);
             return EXIT_FAILURE;
@@ -53,7 +63,7 @@ fn get_acl(files: &[PathBuf]) -> i32 {
     EXIT_SUCCESS
 }
 
-fn set_acl(files: &[PathBuf]) -> i32 {
+fn set_acl(files: &[PathBuf], options: AclOption) -> i32 {
     let reader = io::BufReader::new(io::stdin());
     let entries: Vec<AclEntry> = match serde_json::from_reader(reader) {
         Ok(entries) => entries,
@@ -72,7 +82,7 @@ fn set_acl(files: &[PathBuf]) -> i32 {
     };
 
     for file in files {
-        let result = acl.write(file);
+        let result = acl.write(file, options);
         if let Err(err) = result {
             eprintln!("File {:?}: {}", file, err);
             return EXIT_FAILURE;
@@ -82,8 +92,8 @@ fn set_acl(files: &[PathBuf]) -> i32 {
     EXIT_SUCCESS
 }
 
-fn dump_acl(file: &Path) -> io::Result<()> {
-    let acl = Acl::read(file)?;
+fn dump_acl(file: &Path, options: AclOption) -> io::Result<()> {
+    let acl = Acl::read(file, options)?;
     let entries = acl.entries()?;
     serde_json::to_writer(io::stdout(), &entries)?;
     println!(); // add newline

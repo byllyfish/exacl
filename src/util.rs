@@ -1,4 +1,6 @@
 //! Utility functions and constants for the underlying system API.
+//!
+//! This module wraps all unsafe code from the native API.
 
 use crate::bititer::BitIter;
 use crate::flag::Flag;
@@ -455,8 +457,13 @@ pub(crate) fn xacl_free<T>(ptr: *mut T) {
 }
 
 /// Return true if path exists, even if it's a symlink to nowhere.
-fn path_exists(path: &Path) -> bool {
-    path.symlink_metadata().is_ok()
+#[cfg(target_os = "macos")]
+fn path_exists(path: &Path, symlink_only: bool) -> bool {
+    if symlink_only {
+        path.symlink_metadata().is_ok()
+    } else {
+        path.exists()
+    }
 }
 
 // Convenience function to return errno.
@@ -471,22 +478,36 @@ pub(crate) fn custom_error(msg: &str) -> io::Error {
 
 /// Get the native ACL for a specific file or directory.
 ///
-/// If path is a symlink, get the link's ACL. Client must call xacl_free when
-/// done.
+/// If the file is a symlink, the `symlink_only` argument determines whether to
+/// get the ACL from the symlink itself (true) or the file it points to (false).
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_get_file(path: &Path) -> io::Result<acl_t> {
+pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t> {
     use std::os::unix::ffi::OsStrExt;
-    let c_path = CString::new(path.as_os_str().as_bytes())?;
 
-    let acl = unsafe { acl_get_link_np(c_path.as_ptr(), acl_type_t_ACL_TYPE_EXTENDED) };
+    let c_path = CString::new(path.as_os_str().as_bytes())?;
+    let acl = if symlink_only {
+        unsafe { acl_get_link_np(c_path.as_ptr(), acl_type_t_ACL_TYPE_EXTENDED) }
+    } else {
+        unsafe { acl_get_file(c_path.as_ptr(), acl_type_t_ACL_TYPE_EXTENDED) }
+    };
+
     if acl.is_null() {
         let err = errno();
-        debug!("acl_get_link_np({:?}) returned null, err={}", c_path, err);
+        debug!(
+            "{}({:?}) returned null, err={}",
+            if symlink_only {
+                "acl_get_link_np"
+            } else {
+                "acl_get_file"
+            },
+            c_path,
+            err
+        );
 
-        // acl_get_link_np can return NULL (ENOENT) if the file exists, but
+        // acl_get_file et al. can return NULL (ENOENT) if the file exists, but
         // there is no ACL. If the path exists, return an *empty* ACL.
         if let Some(code) = err.raw_os_error() {
-            if code == ENOENT as i32 && path_exists(path) {
+            if code == ENOENT as i32 && path_exists(&path, symlink_only) {
                 debug!(" file exists! returning empty acl");
                 return xacl_init(1);
             }
@@ -499,11 +520,16 @@ pub(crate) fn xacl_get_file(path: &Path) -> io::Result<acl_t> {
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn xacl_get_file(path: &Path) -> io::Result<acl_t> {
+pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t> {
     use std::os::unix::ffi::OsStrExt;
-    let c_path = CString::new(path.as_os_str().as_bytes())?;
 
+    if symlink_only {
+        return Err(custom_error("Linux does not support symlinks with ACL's."));
+    }
+
+    let c_path = CString::new(path.as_os_str().as_bytes())?;
     let acl = unsafe { acl_get_file(c_path.as_ptr(), ACL_TYPE_ACCESS) };
+
     if acl.is_null() {
         let err = errno();
         debug!("acl_get_file({:?}) returned null, err={}", c_path, err);
@@ -535,11 +561,16 @@ fn xacl_set_file_symlink(c_path: &CString, acl: acl_t) -> io::Result<()> {
 }
 
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_set_file(path: &Path, acl: acl_t) -> io::Result<()> {
+pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::Result<()> {
     use std::os::unix::ffi::OsStrExt;
 
     let c_path = CString::new(path.as_os_str().as_bytes())?;
-    let ret = unsafe { acl_set_link_np(c_path.as_ptr(), acl_type_t_ACL_TYPE_EXTENDED, acl) };
+    let ret = if symlink_only {
+        unsafe { acl_set_link_np(c_path.as_ptr(), acl_type_t_ACL_TYPE_EXTENDED, acl) }
+    } else {
+        unsafe { acl_set_file(c_path.as_ptr(), acl_type_t_ACL_TYPE_EXTENDED, acl) }
+    };
+
     if ret != 0 {
         let err = errno();
         debug!(
@@ -547,9 +578,10 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t) -> io::Result<()> {
             c_path, ret, err
         );
 
-        // acl_set_link_np can return ENOTSUP for sym links.
+        // acl_set_link_np() returns ENOTSUP for symlinks. Work-around this
+        // by using acl_set_fd().
         if let Some(code) = err.raw_os_error() {
-            if code == ENOTSUP as i32 {
+            if symlink_only && code == ENOTSUP as i32 {
                 return xacl_set_file_symlink(&c_path, acl);
             }
         }
@@ -560,8 +592,12 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t) -> io::Result<()> {
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn xacl_set_file(path: &Path, acl: acl_t) -> io::Result<()> {
+pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::Result<()> {
     use std::os::unix::ffi::OsStrExt;
+
+    if symlink_only {
+        return Err(custom_error("Linux does not support symlinks with ACL's"));
+    }
 
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let ret = unsafe { acl_set_file(c_path.as_ptr(), ACL_TYPE_ACCESS, acl) };
@@ -893,14 +929,18 @@ pub(crate) fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
     let mut permset: acl_permset_t = std::ptr::null_mut();
     let ret = unsafe { acl_get_permset(entry, &mut permset) };
     if ret != 0 {
-        return Err(errno());
+        let err = errno();
+        debug!("acl_get_permset() returned {}, err={}", ret, err);
+        return Err(err);
     }
 
     assert!(!permset.is_null());
 
     let ret = unsafe { acl_clear_perms(permset) };
     if ret != 0 {
-        return Err(errno());
+        let err = errno();
+        debug!("acl_clear_perms() returned {}, err={}", ret, err);
+        return Err(err);
     }
 
     for perm in BitIter(perms) {
@@ -916,14 +956,18 @@ pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> 
     let mut flagset: acl_flagset_t = std::ptr::null_mut();
     let ret = unsafe { acl_get_flagset_np(entry as *mut c_void, &mut flagset) };
     if ret != 0 {
-        return Err(errno());
+        let err = errno();
+        debug!("acl_get_flagset_np() returned {}, err={}", ret, err);
+        return Err(err);
     }
 
     assert!(!flagset.is_null());
 
     let ret = unsafe { acl_clear_flags_np(flagset) };
     if ret != 0 {
-        return Err(errno());
+        let err = errno();
+        debug!("acl_clear_flags_np() returned {}, err={}", ret, err);
+        return Err(err);
     }
 
     for flag in BitIter(flags) {

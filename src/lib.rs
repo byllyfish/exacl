@@ -15,7 +15,7 @@
 //! use std::path::Path;
 //!
 //! let path = Path::new("./foo/bar.txt");
-//! let acl = Acl::read(&path)?;
+//! let acl = Acl::read(&path, Default::default())?;
 //!
 //! for entry in &acl.entries()? {
 //!     println!("{:?}", entry);
@@ -40,25 +40,38 @@ pub use aclentry::{AclEntry, AclEntryKind};
 pub use flag::Flag;
 pub use perm::Perm;
 
+use bitflags::bitflags;
 use scopeguard::{self, ScopeGuard};
 use std::io;
 use std::path::Path;
 use util::*;
+
+bitflags! {
+    #[derive(Default)]
+    pub struct AclOption : u32 {
+        /// Get/set the ACL of the symlink itself.
+        const SYMLINK_ONLY = 0x01;
+    }
+}
 
 /// Access Control List native object wrapper.
 pub struct Acl(acl_t);
 
 impl Acl {
     /// Read ACL for specified file.
-    pub fn read(path: &Path) -> io::Result<Acl> {
-        let acl_p = xacl_get_file(path)?;
+    pub fn read(path: &Path, options: AclOption) -> io::Result<Acl> {
+        let symlink_only = options.contains(AclOption::SYMLINK_ONLY);
+        let acl_p = xacl_get_file(path, symlink_only)?;
+
         Ok(Acl(acl_p))
     }
 
     /// Write ACL for specified file.
-    pub fn write(&self, path: &Path) -> io::Result<()> {
+    pub fn write(&self, path: &Path, options: AclOption) -> io::Result<()> {
+        let symlink_only = options.contains(AclOption::SYMLINK_ONLY);
+
         xacl_check(self.0)?;
-        xacl_set_file(path, self.0)
+        xacl_set_file(path, self.0, symlink_only)
     }
 
     /// Construct ACL from AclEntry's.
