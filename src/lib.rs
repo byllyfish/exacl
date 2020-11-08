@@ -1,21 +1,16 @@
-//! Rust library to manipulate access control lists on MacOS.
+//! Rust library to manipulate access control lists.
 //!
-//! An Extended ACL specifies additional rules for file/directory access beyond
-//! the file mode permission bits.
-//!
-//! You can read a file's ACL with the `read_acl` function. The ACL is
-//! represented as Vec<AclEntry>. If the given path is a symlink, the symlink's
-//! ACL is returned.
+//! Supports `macOS` and `Linux`.
 //!
 //! ```no_run
 //! # use std::error::Error;
 //! #
 //! # fn main() -> Result<(), Box<dyn Error>> {
-//! use exacl::Acl;
+//! use exacl::{Acl, AclOption};
 //! use std::path::Path;
 //!
 //! let path = Path::new("./foo/bar.txt");
-//! let acl = Acl::read(&path, Default::default())?;
+//! let acl = Acl::read(&path, AclOption::default())?;
 //!
 //! for entry in &acl.entries()? {
 //!     println!("{:?}", entry);
