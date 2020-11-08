@@ -1,15 +1,10 @@
 #!/bin/bash
 
-# Basic test suite for exacl tool.
+# Basic test suite for exacl tool (Linux).
 
 set -u -o pipefail
 
 EXACL='../target/debug/exacl'
-
-DIR="test_dir-mac_os-test_dir"
-FILE1="$DIR/file1"
-DIR1="$DIR/dir1"
-LINK1="$DIR/link1"
 
 ME=`id -un`
 ME_NUM=`id -u`
@@ -44,29 +39,24 @@ fileperms() {
     stat -c "%A" "$1" 
 }
 
-oneTimeSetUp() {
-    # Create an empty temporary directory.
-    if [ -d "$DIR" ]; then
-        rm -rf "$DIR"
-    fi
+# Put quotes back on JSON text.
+quotifyJson() { 
+    echo "$1" | sed -E -e 's/([@A-Za-z0-9_-]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
+}
 
-    mkdir "$DIR"
+# Called by shunit2 before all tests run.
+oneTimeSetUp() {
+    # Use temp directory managed by shunit2.
+    DIR="$SHUNIT_TMPDIR"
+    FILE1="$DIR/file1"
+    DIR1="$DIR/dir1"
+    LINK1="$DIR/link1"
 
     # Create empty file, dir, and link.
     umask 077
     touch "$FILE1"
     mkdir "$DIR1"
     ln -s link1_to_nowhere "$LINK1"
-}
-
-# Put quotes back on JSON text.
-quotifyJson() { 
-    echo "$1" | sed -E -e 's/([@A-Za-z0-9_-]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
-}
-
-oneTimeTearDown() {
-    # Delete our temporary directory.
-    rm -rf "$DIR"
 }
 
 REQUIRED_ENTRIES="{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}"
