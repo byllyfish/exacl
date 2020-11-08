@@ -179,7 +179,7 @@ impl<'de> de::Deserialize<'de> for Perm {
             where
                 A: de::SeqAccess<'de>,
             {
-                let mut perms: Perm = Default::default();
+                let mut perms: Perm = Perm::empty();
 
                 while let Some(value) = seq.next_element()? {
                     let name: PermName = value;

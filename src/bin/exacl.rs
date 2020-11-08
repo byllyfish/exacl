@@ -1,4 +1,4 @@
-//! Program to get/set extended ACL's on MacOS.
+//! Program to get/set extended ACL's.
 //!
 //! To read an ACL from myfile and write it to stdout as JSON:
 //!     exacl myfile
@@ -6,6 +6,8 @@
 //! To set the ACL for myfile from JSON passed via stdin (complete replacement):
 //!     exacl --set myfile
 //!
+//! To get/set the ACL of a symlink itself, instead of the file it points to,
+//! use the -h option.
 
 use exacl::{Acl, AclEntry, AclOption};
 use std::io;
@@ -39,7 +41,7 @@ fn main() {
     let options = if opt.symlink {
         AclOption::SYMLINK_ONLY
     } else {
-        Default::default()
+        AclOption::default()
     };
 
     let exit_code = if opt.set {

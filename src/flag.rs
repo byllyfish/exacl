@@ -136,7 +136,7 @@ impl<'de> de::Deserialize<'de> for Flag {
             where
                 A: de::SeqAccess<'de>,
             {
-                let mut flags: Flag = Default::default();
+                let mut flags: Flag = Flag::empty();
 
                 while let Some(value) = seq.next_element()? {
                     let name: FlagName = value;
