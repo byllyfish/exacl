@@ -163,7 +163,7 @@ testReadAclForLink1() {
     # Test symlink with no ACL. Not supported on Linux.
     msg=`$EXACL -h $LINK1 2>&1`
     assertEquals 1 $?
-    assertEquals "File \"$LINK1\": Linux does not support symlinks with ACL's" "$msg"
+    assertEquals "File \"$LINK1\": Linux does not support symlinks with ACL's." "$msg"
 }
 
 testWriteAclToMissingFile() {
