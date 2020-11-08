@@ -108,10 +108,8 @@ fn test_write_acl_linux() -> io::Result<()> {
 
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
-    acl.write(&file.path())?;
+    acl.write(&file.path(), Default::default())?;
 
-    // Even though the last entry is a group, the `acl_to_text` representation
-    // displays it as `user`.
     assert_eq!(
         acl.to_platform_text(),
         r#"user::rwx
@@ -125,7 +123,7 @@ other::rwx
 "#
     );
 
-    let acl2 = Acl::read(&file.path())?;
+    let acl2 = Acl::read(&file.path(), Default::default())?;
     let mut entries2 = acl2.entries()?;
 
     entries.sort();
