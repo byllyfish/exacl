@@ -3,6 +3,8 @@
 #![allow(nonstandard_style)]
 #![allow(dead_code)]
 #![allow(clippy::redundant_static_lifetimes)]
+#![allow(clippy::unseparated_literal_suffix)]
+#![allow(clippy::unreadable_literal)]
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
