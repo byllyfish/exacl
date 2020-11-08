@@ -80,15 +80,23 @@ impl AclEntry {
         let flags = xacl_get_flags(entry)?;
 
         let (kind, name) = match qualifier {
-            Qualifier::User(_) => (AclEntryKind::User, qualifier.name()),
-            Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name()),
-            #[cfg(target_os = "macos")]
-            Qualifier::Guid(_) => (AclEntryKind::User, qualifier.name()),
-            #[cfg(target_os = "linux")]
-            Qualifier::UserObj | Qualifier::Other => (AclEntryKind::User, qualifier.name()),
-            #[cfg(target_os = "linux")]
-            Qualifier::GroupObj | Qualifier::Mask => (AclEntryKind::Group, qualifier.name()),
             Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
+
+            #[cfg(target_os = "macos")]
+            Qualifier::User(_) | Qualifier::Guid(_) => (AclEntryKind::User, qualifier.name()),
+
+            #[cfg(target_os = "macos")]
+            Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name()),
+
+            #[cfg(target_os = "linux")]
+            Qualifier::User(_) | Qualifier::UserObj | Qualifier::Other => {
+                (AclEntryKind::User, qualifier.name())
+            }
+
+            #[cfg(target_os = "linux")]
+            Qualifier::Group(_) | Qualifier::GroupObj | Qualifier::Mask => {
+                (AclEntryKind::Group, qualifier.name())
+            }
         };
 
         Ok(AclEntry {
