@@ -1,7 +1,6 @@
 //! Implements a generic bit iterator.
 
 use std::cmp::PartialEq;
-use std::default::Default;
 use std::ops::{BitAnd, BitXorAssign};
 
 pub trait BitIterable:

@@ -641,16 +641,16 @@ pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
     mut func: F,
 ) -> io::Result<()> {
     let mut entry: acl_entry_t = ptr::null_mut();
-    let mut entry_id = ACL_FIRST_ENTRY;
+    let mut entry_id = ACL_FIRST_ENTRY_I32;
 
     assert!(!acl.is_null());
     loop {
-        if !xacl_get_entry(acl, entry_id as i32, &mut entry) {
+        if !xacl_get_entry(acl, entry_id, &mut entry) {
             break;
         }
         assert!(!entry.is_null());
         func(entry)?;
-        entry_id = ACL_NEXT_ENTRY;
+        entry_id = ACL_NEXT_ENTRY_I32;
     }
 
     Ok(())
@@ -659,8 +659,8 @@ pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
 /// Create a new empty ACL with the given capacity.
 ///
 /// Client must call xacl_free when done.
-pub(crate) fn xacl_init(capacity: usize) -> io::Result<acl_t> {
-    let acl = unsafe { acl_init(capacity as i32) }; // FIXME
+pub(crate) fn xacl_init(capacity: i32) -> io::Result<acl_t> {
+    let acl = unsafe { acl_init(capacity) }; // FIXME
     if acl.is_null() {
         let err = errno();
         debug!("acl_init({}) returned null, err={}", capacity, err);
@@ -735,7 +735,7 @@ pub(crate) fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qu
 fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     let tag = xacl_get_tag_type(entry)?;
 
-    let id = if tag == ACL_USER as i32 || tag == ACL_GROUP as i32 {
+    let id = if tag == ACL_USER_I32 || tag == ACL_GROUP_I32 {
         let id_ptr = unsafe { acl_get_qualifier(entry) as *mut uid_t };
         if id_ptr.is_null() {
             let err = errno();
@@ -896,24 +896,24 @@ pub(crate) fn xacl_set_tag_qualifier(
 
     match qualifier {
         Qualifier::User(uid) => {
-            xacl_set_tag_type(entry, ACL_USER as i32)?;
+            xacl_set_tag_type(entry, ACL_USER_I32)?;
             xacl_set_qualifier(entry, uid.as_raw())?;
         }
         Qualifier::Group(gid) => {
-            xacl_set_tag_type(entry, ACL_GROUP as i32)?;
+            xacl_set_tag_type(entry, ACL_GROUP_I32)?;
             xacl_set_qualifier(entry, gid.as_raw())?;
         }
         Qualifier::UserObj => {
-            xacl_set_tag_type(entry, ACL_USER_OBJ as i32)?;
+            xacl_set_tag_type(entry, ACL_USER_OBJ_I32)?;
         }
         Qualifier::GroupObj => {
-            xacl_set_tag_type(entry, ACL_GROUP_OBJ as i32)?;
+            xacl_set_tag_type(entry, ACL_GROUP_OBJ_I32)?;
         }
         Qualifier::Other => {
-            xacl_set_tag_type(entry, ACL_OTHER as i32)?;
+            xacl_set_tag_type(entry, ACL_OTHER_I32)?;
         }
         Qualifier::Mask => {
-            xacl_set_tag_type(entry, ACL_MASK as i32)?;
+            xacl_set_tag_type(entry, ACL_MASK_I32)?;
         }
         Qualifier::Unknown(tag) => {
             return Err(custom_error(&format!("unknown tag: {}", tag)));
@@ -1055,12 +1055,12 @@ mod util_tests_mac {
 
     #[test]
     fn test_acl_init() {
-        let acl = xacl_init(ACL_MAX_ENTRIES as usize).ok().unwrap();
+        let acl = xacl_init(ACL_MAX_ENTRIES).ok().unwrap();
         assert!(!acl.is_null());
         xacl_free(acl);
 
         // Memory error if we try to allocate MAX_ENTRIES + 1.
-        let err = xacl_init((ACL_MAX_ENTRIES + 1) as usize).err().unwrap();
+        let err = xacl_init(ACL_MAX_ENTRIES + 1).err().unwrap();
         assert_eq!(err.raw_os_error(), Some(ENOMEM_I32));
     }
 
@@ -1118,6 +1118,11 @@ mod util_tests_linux {
 
     #[test]
     fn test_acl_api_misuse() {
+        // Passing negative capacity to acl_init fails.
+        let err = xacl_init(-1).err().unwrap();
+        assert_eq!(err.raw_os_error(), Some(EINVAL_I32));
+
+        // Create empty list and add an entry.
         let mut acl = xacl_init(1).unwrap();
         let entry = xacl_create_entry(&mut acl).unwrap();
 
@@ -1132,7 +1137,7 @@ mod util_tests_linux {
         assert_eq!(xacl_to_text(acl), "");
 
         let entry2 = xacl_create_entry(&mut acl).unwrap();
-        xacl_set_tag_type(entry2, ACL_USER_OBJ as i32).unwrap();
+        xacl_set_tag_type(entry2, ACL_USER_OBJ_I32).unwrap();
 
         assert_eq!(xacl_to_text(acl), "\nuser::---\n");
 

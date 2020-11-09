@@ -1,7 +1,7 @@
 //! API Tests for exacl module.
 
 use ctor::ctor;
-use exacl::{Acl, AclEntry, AclEntryKind, Flag, Perm};
+use exacl::{Acl, AclEntry, AclEntryKind, AclOption, Flag, Perm};
 use log::debug;
 use std::io;
 
@@ -29,7 +29,7 @@ fn log_acl(acl: &[AclEntry]) {
 #[test]
 fn test_read_acl() -> io::Result<()> {
     let file = tempfile::NamedTempFile::new()?;
-    let acl = Acl::read(&file.path(), Default::default())?;
+    let acl = Acl::read(&file.path(), AclOption::default())?;
     let entries = acl.entries()?;
 
     #[cfg(target_os = "macos")]
@@ -62,7 +62,7 @@ fn test_write_acl_macos() -> io::Result<()> {
 
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
-    acl.write(&file.path(), Default::default())?;
+    acl.write(&file.path(), AclOption::default())?;
 
     // Even though the last entry is a group, the `acl_to_text` representation
     // displays it as `user`.
@@ -77,7 +77,7 @@ user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:
 "#
     );
 
-    let acl2 = Acl::read(&file.path(), Default::default())?;
+    let acl2 = Acl::read(&file.path(), AclOption::default())?;
     let entries2 = acl2.entries()?;
 
     assert_eq!(entries2, entries);
@@ -106,7 +106,7 @@ fn test_write_acl_linux() -> io::Result<()> {
 
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
-    acl.write(&file.path(), Default::default())?;
+    acl.write(&file.path(), AclOption::default())?;
 
     assert_eq!(
         acl.to_platform_text(),
@@ -121,7 +121,7 @@ other::rwx
 "#
     );
 
-    let acl2 = Acl::read(&file.path(), Default::default())?;
+    let acl2 = Acl::read(&file.path(), AclOption::default())?;
     let mut entries2 = acl2.entries()?;
 
     entries.sort();
@@ -144,9 +144,9 @@ fn test_write_acl_big() -> io::Result<()> {
 
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
-    acl.write(&file.path(), Default::default())?;
+    acl.write(&file.path(), AclOption::default())?;
 
-    let acl2 = Acl::read(&file.path(), Default::default())?;
+    let acl2 = Acl::read(&file.path(), AclOption::default())?;
     let entries2 = acl2.entries()?;
 
     assert_eq!(entries2, entries);
