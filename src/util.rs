@@ -1044,7 +1044,7 @@ pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
 
 #[cfg(test)]
 #[cfg(target_os = "macos")]
-mod util_tests {
+mod util_tests_mac {
     use super::*;
     use ctor::ctor;
 
@@ -1104,6 +1104,37 @@ mod util_tests {
             xacl_to_text(acl),
             "!#acl 1\nuser:00000000-0000-0000-0000-000000000000:::allow\n"
         );
+
+        // There are still two entries... one is corrupt.
+        assert_eq!(xacl_entry_count(acl), 2);
+        xacl_free(acl);
+    }
+}
+
+#[cfg(test)]
+#[cfg(target_os = "linux")]
+mod util_tests_linux {
+    use super::*;
+
+    #[test]
+    fn test_acl_api_misuse() {
+        let mut acl = xacl_init(1).unwrap();
+        let entry = xacl_create_entry(&mut acl).unwrap();
+
+        // Setting tag other than 1 or 2 results in EINVAL error.
+        let err = xacl_set_tag_type(entry, 0).err().unwrap();
+        assert_eq!(err.raw_os_error(), Some(EINVAL_I32));
+
+        // Setting qualifier without first setting tag to a valid value results in EINVAL.
+        let err = xacl_set_qualifier(entry, 500).err().unwrap();
+        assert_eq!(err.raw_os_error(), Some(EINVAL_I32));
+
+        assert_eq!(xacl_to_text(acl), "");
+
+        let entry2 = xacl_create_entry(&mut acl).unwrap();
+        xacl_set_tag_type(entry2, ACL_USER_OBJ as i32).unwrap();
+
+        assert_eq!(xacl_to_text(acl), "\nuser::---\n");
 
         // There are still two entries... one is corrupt.
         assert_eq!(xacl_entry_count(acl), 2);

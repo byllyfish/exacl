@@ -18,14 +18,22 @@ unit_tests() {
     find ../target/debug/deps -type f -executable -print | grep -vE '\w+\.\w+$'
 }
 
+exit_status=0
+
 if [ "$arg1" = "memcheck" ]; then
-    export MEMCHECK="valgrind -q"
+    # Enable memory check command and re-run unit tests under memcheck.
+    export MEMCHECK="valgrind -q --error-exitcode=9 --leak-check=full"
+
     for test in `unit_tests`; do
         $MEMCHECK $test
+        status=$?
+
+        # Track if any memcheck returns a non-zero exit status.
+        if [ $status -ne 0 ]; then
+            exit_status=$status
+        fi
     done
 fi
-
-exit_status=0
 
 for test in testsuite*_all.sh testsuite*_${OS}.sh; do
     # Before running test, print name of file underlined with = signs.
@@ -39,5 +47,10 @@ for test in testsuite*_all.sh testsuite*_${OS}.sh; do
         exit_status=$status
     fi
 done
+
+# Log non-zero exit status.
+if [ $exit_status -ne 0 ]; then
+    echo "Exit Status: $exit_status"
+fi
 
 exit $exit_status
