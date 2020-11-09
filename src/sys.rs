@@ -31,6 +31,10 @@ pub const ACL_NEXT_ENTRY_I32: i32 = acl_entry_id_t_ACL_NEXT_ENTRY;
 #[cfg(target_os = "linux")]
 pub type acl_flag_t = u32;
 
+// Linux doesn't have ACL_MAX_ENTRIES, so define it as i32::MAX.
+#[cfg(target_os = "linux")]
+pub const ACL_MAX_ENTRIES: u32 = 0x7fffffff;
+
 // MacOS uses acl_get_perm_np().
 #[cfg(target_os = "macos")]
 pub unsafe fn acl_get_perm(permset_d: acl_permset_t, perm: acl_perm_t) -> ::std::os::raw::c_int {
@@ -139,6 +143,9 @@ pub const ACL_FIRST_ENTRY_I32: i32 = ACL_FIRST_ENTRY as i32;
 #[cfg(target_os = "linux")]
 #[allow(clippy::cast_possible_wrap)]
 pub const ACL_NEXT_ENTRY_I32: i32 = ACL_NEXT_ENTRY as i32;
+
+#[allow(clippy::cast_possible_wrap)]
+pub const ACL_MAX_ENTRIES_I32: i32 = ACL_MAX_ENTRIES as i32;
 
 // Verify that constants don't wrap when converted to i32.
 #[cfg(test)]

@@ -167,7 +167,7 @@ fn test_write_acl_too_big() {
     }
 
     let err = Acl::from_entries(&entries).err().unwrap();
-    assert!(err.to_string().contains("Cannot allocate memory"));
+    assert_eq!(err.to_string(), "Too many ACL entries");
 }
 
 #[test]

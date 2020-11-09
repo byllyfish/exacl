@@ -659,8 +659,14 @@ pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
 /// Create a new empty ACL with the given capacity.
 ///
 /// Client must call xacl_free when done.
-pub(crate) fn xacl_init(capacity: i32) -> io::Result<acl_t> {
-    let acl = unsafe { acl_init(capacity) }; // FIXME
+pub(crate) fn xacl_init(capacity: usize) -> io::Result<acl_t> {
+    use std::convert::TryFrom;
+    let size = match i32::try_from(capacity) {
+        Ok(size) if size <= ACL_MAX_ENTRIES_I32 => size,
+        _ => return Err(custom_error("Too many ACL entries")),
+    };
+
+    let acl = unsafe { acl_init(size) };
     if acl.is_null() {
         let err = errno();
         debug!("acl_init({}) returned null, err={}", capacity, err);
@@ -1055,13 +1061,16 @@ mod util_tests_mac {
 
     #[test]
     fn test_acl_init() {
-        let acl = xacl_init(ACL_MAX_ENTRIES).ok().unwrap();
+        use std::convert::TryInto;
+        let max_entries: usize = ACL_MAX_ENTRIES.try_into().unwrap();
+
+        let acl = xacl_init(max_entries).ok().unwrap();
         assert!(!acl.is_null());
         xacl_free(acl);
 
-        // Memory error if we try to allocate MAX_ENTRIES + 1.
-        let err = xacl_init(ACL_MAX_ENTRIES + 1).err().unwrap();
-        assert_eq!(err.raw_os_error(), Some(ENOMEM_I32));
+        // Custom error if we try to allocate MAX_ENTRIES + 1.
+        let err = xacl_init(max_entries + 1).err().unwrap();
+        assert_eq!(err.to_string(), "Too many ACL entries");
     }
 
     #[test]

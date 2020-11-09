@@ -71,9 +71,7 @@ impl Acl {
 
     /// Construct ACL from AclEntry's.
     pub fn from_entries(entries: &[AclEntry]) -> io::Result<Acl> {
-        use std::convert::TryFrom;
-        let initial_size = i32::try_from(entries.len() & 0xffff).unwrap();
-        let new_acl = xacl_init(initial_size)?;
+        let new_acl = xacl_init(entries.len())?;
 
         // Use the smart pointer form of scopeguard; acl_p can change value.
         let mut acl_p = scopeguard::guard(new_acl, |a| {
