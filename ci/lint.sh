@@ -14,6 +14,6 @@ done
 
 rustup component add clippy
 cargo clean
-cargo clippy -- -D clippy::all -W clippy::pedantic $allow
+cargo clippy --all-targets --all-features -- -D clippy::all -W clippy::pedantic -W clippy::cargo $allow
 
 exit 0

@@ -5,6 +5,8 @@
 #![allow(clippy::redundant_static_lifetimes)]
 #![allow(clippy::unseparated_literal_suffix)]
 #![allow(clippy::unreadable_literal)]
+#![allow(clippy::used_underscore_binding)]
+#![allow(clippy::too_many_lines)]
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
@@ -106,16 +108,16 @@ pub const ENOMEM_I32: i32 = ENOMEM as i32;
 #[allow(clippy::cast_possible_wrap)]
 pub const O_SYMLINK_I32: i32 = O_SYMLINK as i32;
 
-// Verify that all constants will not wrap when converted to i32.
+// Verify that no constants will wrap when converted to i32.
 #[cfg(test)]
 fn test_constants_u32_to_i32() {
-    const I32_MAX: u32 = i32::MAX as u32;
+    #![allow(clippy::cast_possible_wrap)]
 
-    assert!(ENOENT <= I32_MAX);
-    assert!(ENOTSUP <= I32_MAX);
-    assert!(EINVAL <= I32_MAX);
-    assert!(ENOMEM <= I32_MAX);
+    assert!(ENOENT as i32 > 0);
+    assert!(ENOTSUP as i32 > 0);
+    assert!(EINVAL as i32 > 0);
+    assert!(ENOMEM as i32 > 0);
 
     #[cfg(target_os = "macos")]
-    assert!(O_SYMLINK <= I32_MAX);
+    assert!(O_SYMLINK as i32 > 0);
 }

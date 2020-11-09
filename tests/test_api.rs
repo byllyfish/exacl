@@ -1,11 +1,9 @@
 //! API Tests for exacl module.
 
 use ctor::ctor;
-use env_logger;
 use exacl::{Acl, AclEntry, AclEntryKind, Flag, Perm};
 use log::debug;
 use std::io;
-use tempfile;
 
 #[ctor]
 fn init() {

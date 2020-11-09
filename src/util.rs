@@ -1047,7 +1047,6 @@ pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
 mod util_tests {
     use super::*;
     use ctor::ctor;
-    use env_logger;
 
     #[ctor]
     fn init() {

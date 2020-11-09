@@ -31,6 +31,8 @@ impl<T: BitIterable> Iterator for BitIter<T> {
 
 #[cfg(test)]
 mod bititer_tests {
+    #![allow(clippy::unreadable_literal)]
+
     use super::*;
     use bitflags::bitflags;
 
