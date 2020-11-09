@@ -1138,6 +1138,6 @@ mod util_tests_linux {
 
         // There are still two entries... one is corrupt.
         assert_eq!(xacl_entry_count(acl), 2);
-        //xacl_free(acl);
+        xacl_free(acl);
     }
 }
