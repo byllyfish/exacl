@@ -25,7 +25,7 @@ jobs:
       run: brew install shunit2
       if: runner.os == 'macOS'
     - name: Install dependencies (Linux)
-      run: sudo apt-get -y install libacl1-dev shunit2
+      run: sudo apt-get -y install libacl1-dev shunit2 valgrind
       if: runner.os == 'Linux'
     - name: Build
       run: cargo build --verbose
@@ -33,6 +33,9 @@ jobs:
       run: cargo test --verbose
     - name: Run integration tests
       run: ./tests/run_tests.sh
+    - name: Run memory tests (Linux)
+      run: ./tests/run_tests.sh memcheck
+      if: runner.os == 'Linux'
     - name: Code coverage
       run: ./ci/code_coverage.sh codecov
     - name: Build docs (Linux)

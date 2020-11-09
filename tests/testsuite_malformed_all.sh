@@ -6,6 +6,12 @@ set -u -o pipefail
 
 EXACL='../target/debug/exacl'
 
+# Add memcheck command if defined.
+if [ -n "${MEMCHECK+x}" ]; then
+    echo "# MEMCHECK=$MEMCHECK"
+    EXACL="$MEMCHECK $EXACL"
+fi
+
 # Retrieve name of OS: "Darwin" or "Linux"
 CURRENT_OS=`uname -s`
 

@@ -6,6 +6,12 @@ set -u -o pipefail
 
 EXACL='../target/debug/exacl'
 
+# Add memcheck command if defined.
+if [ -n "${MEMCHECK+x}" ]; then
+    echo "# MEMCHECK=$MEMCHECK"
+    EXACL="$MEMCHECK $EXACL"
+fi
+
 ME=`id -un`
 ME_NUM=`id -u`
 MY_GROUP=`id -gn`
