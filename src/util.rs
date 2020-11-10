@@ -10,6 +10,7 @@ use crate::sys::*;
 use log::debug;
 use nix::unistd::{self, Gid, Uid};
 use scopeguard::defer;
+use std::convert::TryInto;
 use std::ffi::{c_void, CStr, CString};
 use std::io;
 use std::path::Path;
@@ -1035,7 +1036,7 @@ pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
         return Ok(());
     }
 
-    let msg = match ret as u32 {
+    let msg = match ret.try_into().unwrap() {
         ACL_MULTI_ERROR => "multiple ACL entries with a tag that may occur at most once",
         ACL_DUPLICATE_ERROR => "multiple ACL entries with the same user/group ID",
         ACL_MISS_ERROR => "required ACL entry is missing",
@@ -1061,7 +1062,6 @@ mod util_tests_mac {
 
     #[test]
     fn test_acl_init() {
-        use std::convert::TryInto;
         let max_entries: usize = ACL_MAX_ENTRIES.try_into().unwrap();
 
         let acl = xacl_init(max_entries).ok().unwrap();
@@ -1127,10 +1127,6 @@ mod util_tests_linux {
 
     #[test]
     fn test_acl_api_misuse() {
-        // Passing negative capacity to acl_init fails.
-        let err = xacl_init(-1).err().unwrap();
-        assert_eq!(err.raw_os_error(), Some(EINVAL_I32));
-
         // Create empty list and add an entry.
         let mut acl = xacl_init(1).unwrap();
         let entry = xacl_create_entry(&mut acl).unwrap();
