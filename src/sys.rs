@@ -31,9 +31,9 @@ pub const ACL_NEXT_ENTRY_I32: i32 = acl_entry_id_t_ACL_NEXT_ENTRY;
 #[cfg(target_os = "linux")]
 pub type acl_flag_t = u32;
 
-// Linux doesn't have ACL_MAX_ENTRIES, so define it as i32::MAX.
+// Linux doesn't have ACL_MAX_ENTRIES, so define it as 2 billion.
 #[cfg(target_os = "linux")]
-pub const ACL_MAX_ENTRIES: u32 = 0x7fffffff;
+pub const ACL_MAX_ENTRIES: u32 = 2_000_000_000;
 
 // MacOS uses acl_get_perm_np().
 #[cfg(target_os = "macos")]
