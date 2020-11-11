@@ -134,7 +134,7 @@ pub mod sg {
         assert!(super::ACL_MAX_ENTRIES as i32 > 0);
 
         #[cfg(target_os = "linux")]
-        assert!(super::ACL_FIRST_ENTRY as i32 > 0);
+        assert!(super::ACL_FIRST_ENTRY as i32 >= 0);
 
         #[cfg(target_os = "linux")]
         assert!(super::ACL_NEXT_ENTRY as i32 > 0);
