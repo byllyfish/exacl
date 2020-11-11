@@ -183,4 +183,6 @@ fn test_constants_u32_to_i32() {
 
     #[cfg(target_os = "linux")]
     assert!(ACL_NEXT_ENTRY as i32 > 0);
+
+    assert!(ACL_MAX_ENTRIES as i32 > 0);
 }
