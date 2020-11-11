@@ -5,10 +5,8 @@
 //! ```no_run
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! use exacl::{Acl, AclOption};
-//! use std::path::Path;
 //!
-//! let path = Path::new("./foo/bar.txt");
-//! let acl = Acl::read(&path, AclOption::default())?;
+//! let acl = Acl::read("./foo/bar.txt", AclOption::default())?;
 //!
 //! for entry in &acl.entries()? {
 //!     println!("{:?}", entry);
@@ -50,19 +48,19 @@ pub struct Acl(acl_t);
 
 impl Acl {
     /// Read ACL for specified file.
-    pub fn read(path: &Path, options: AclOption) -> io::Result<Acl> {
+    pub fn read<P: AsRef<Path>>(path: P, options: AclOption) -> io::Result<Acl> {
         let symlink_only = options.contains(AclOption::SYMLINK_ONLY);
-        let acl_p = xacl_get_file(path, symlink_only)?;
+        let acl_p = xacl_get_file(path.as_ref(), symlink_only)?;
 
         Ok(Acl(acl_p))
     }
 
     /// Write ACL for specified file.
-    pub fn write(&self, path: &Path, options: AclOption) -> io::Result<()> {
+    pub fn write<P: AsRef<Path>>(&self, path: P, options: AclOption) -> io::Result<()> {
         let symlink_only = options.contains(AclOption::SYMLINK_ONLY);
 
         xacl_check(self.0)?;
-        xacl_set_file(path, self.0, symlink_only)
+        xacl_set_file(path.as_ref(), self.0, symlink_only)
     }
 
     /// Construct ACL from AclEntry's.
