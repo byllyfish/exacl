@@ -10,7 +10,6 @@ use crate::sys::*;
 use log::debug;
 use nix::unistd::{self, Gid, Uid};
 use scopeguard::defer;
-use std::convert::TryInto;
 use std::ffi::{c_void, CStr, CString};
 use std::io;
 use std::path::Path;
@@ -1036,6 +1035,7 @@ pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
         return Ok(());
     }
 
+    use std::convert::TryInto;
     let msg = match ret.try_into().unwrap() {
         ACL_MULTI_ERROR => "multiple ACL entries with a tag that may occur at most once",
         ACL_DUPLICATE_ERROR => "multiple ACL entries with the same user/group ID",
@@ -1062,6 +1062,7 @@ mod util_tests_mac {
 
     #[test]
     fn test_acl_init() {
+        use std::convert::TryInto;
         let max_entries: usize = ACL_MAX_ENTRIES.try_into().unwrap();
 
         let acl = xacl_init(max_entries).ok().unwrap();

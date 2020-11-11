@@ -3,9 +3,7 @@
 //! Supports `macOS` and `Linux`.
 //!
 //! ```no_run
-//! # use std::error::Error;
-//! #
-//! # fn main() -> Result<(), Box<dyn Error>> {
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! use exacl::{Acl, AclOption};
 //! use std::path::Path;
 //!
@@ -15,9 +13,7 @@
 //! for entry in &acl.entries()? {
 //!     println!("{:?}", entry);
 //! }
-//! #
-//! #     Ok(())
-//! # }
+//! # Ok(()) }
 //! ```
 //!
 
