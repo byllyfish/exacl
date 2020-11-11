@@ -49,7 +49,7 @@ impl Qualifier {
         let (id_c, idtype) = match xguid_to_id(guid) {
             Ok(info) => info,
             Err(err) => {
-                if let Some(ENOENT_I32) = err.raw_os_error() {
+                if let Some(sg::ENOENT) = err.raw_os_error() {
                     return Ok(Qualifier::Guid(guid));
                 } else {
                     return Err(err);
@@ -383,7 +383,7 @@ mod qualifier_tests {
         );
 
         let err = xguid_to_id(Uuid::nil()).err().unwrap();
-        assert_eq!(err.raw_os_error().unwrap(), ENOENT_I32);
+        assert_eq!(err.raw_os_error().unwrap(), sg::ENOENT);
     }
 
     #[test]
@@ -505,7 +505,7 @@ pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t
 
         // acl_get_file et al. can return NULL (ENOENT) if the file exists, but
         // there is no ACL. If the path exists, return an *empty* ACL.
-        if let Some(ENOENT_I32) = err.raw_os_error() {
+        if let Some(sg::ENOENT) = err.raw_os_error() {
             if path_exists(&path, symlink_only) {
                 debug!(" file exists! returning empty acl");
                 return xacl_init(1);
@@ -541,7 +541,7 @@ pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t
 /// Set the acl for a symlink using `acl_set_fd`.
 #[cfg(target_os = "macos")]
 fn xacl_set_file_symlink(c_path: &CString, acl: acl_t) -> io::Result<()> {
-    let fd = unsafe { open(c_path.as_ptr(), O_SYMLINK_I32) };
+    let fd = unsafe { open(c_path.as_ptr(), sg::O_SYMLINK) };
     if fd < 0 {
         let err = errno();
         debug!("symlink open({:?}) returned {}, err={}", c_path, fd, err);
@@ -579,7 +579,7 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::
 
         // acl_set_link_np() returns ENOTSUP for symlinks. Work-around this
         // by using acl_set_fd().
-        if let Some(ENOTSUP_I32) = err.raw_os_error() {
+        if let Some(sg::ENOTSUP) = err.raw_os_error() {
             if symlink_only {
                 return xacl_set_file_symlink(&c_path, acl);
             }
@@ -641,7 +641,7 @@ pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
     mut func: F,
 ) -> io::Result<()> {
     let mut entry: acl_entry_t = ptr::null_mut();
-    let mut entry_id = ACL_FIRST_ENTRY_I32;
+    let mut entry_id = sg::ACL_FIRST_ENTRY;
 
     assert!(!acl.is_null());
     loop {
@@ -650,7 +650,7 @@ pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
         }
         assert!(!entry.is_null());
         func(entry)?;
-        entry_id = ACL_NEXT_ENTRY_I32;
+        entry_id = sg::ACL_NEXT_ENTRY;
     }
 
     Ok(())
@@ -662,7 +662,7 @@ pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
 pub(crate) fn xacl_init(capacity: usize) -> io::Result<acl_t> {
     use std::convert::TryFrom;
     let size = match i32::try_from(capacity) {
-        Ok(size) if size <= ACL_MAX_ENTRIES_I32 => size,
+        Ok(size) if size <= sg::ACL_MAX_ENTRIES => size,
         _ => return Err(custom_error("Too many ACL entries")),
     };
 
@@ -741,7 +741,7 @@ pub(crate) fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qu
 fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     let tag = xacl_get_tag_type(entry)?;
 
-    let id = if tag == ACL_USER_I32 || tag == ACL_GROUP_I32 {
+    let id = if tag == sg::ACL_USER || tag == sg::ACL_GROUP {
         let id_ptr = unsafe { acl_get_qualifier(entry) as *mut uid_t };
         if id_ptr.is_null() {
             let err = errno();
@@ -902,24 +902,24 @@ pub(crate) fn xacl_set_tag_qualifier(
 
     match qualifier {
         Qualifier::User(uid) => {
-            xacl_set_tag_type(entry, ACL_USER_I32)?;
+            xacl_set_tag_type(entry, sg::ACL_USER)?;
             xacl_set_qualifier(entry, uid.as_raw())?;
         }
         Qualifier::Group(gid) => {
-            xacl_set_tag_type(entry, ACL_GROUP_I32)?;
+            xacl_set_tag_type(entry, sg::ACL_GROUP)?;
             xacl_set_qualifier(entry, gid.as_raw())?;
         }
         Qualifier::UserObj => {
-            xacl_set_tag_type(entry, ACL_USER_OBJ_I32)?;
+            xacl_set_tag_type(entry, sg::ACL_USER_OBJ)?;
         }
         Qualifier::GroupObj => {
-            xacl_set_tag_type(entry, ACL_GROUP_OBJ_I32)?;
+            xacl_set_tag_type(entry, sg::ACL_GROUP_OBJ)?;
         }
         Qualifier::Other => {
-            xacl_set_tag_type(entry, ACL_OTHER_I32)?;
+            xacl_set_tag_type(entry, sg::ACL_OTHER)?;
         }
         Qualifier::Mask => {
-            xacl_set_tag_type(entry, ACL_MASK_I32)?;
+            xacl_set_tag_type(entry, sg::ACL_MASK)?;
         }
         Qualifier::Unknown(tag) => {
             return Err(custom_error(&format!("unknown tag: {}", tag)));
@@ -1085,7 +1085,7 @@ mod util_tests_mac {
 
         // Memory error if we try to allocate MAX_ENTRIES + 1.
         let err = xacl_create_entry(&mut acl).err().unwrap();
-        assert_eq!(err.raw_os_error(), Some(ENOMEM_I32));
+        assert_eq!(err.raw_os_error(), Some(sg::ENOMEM));
 
         xacl_free(acl);
     }
@@ -1097,13 +1097,13 @@ mod util_tests_mac {
 
         // Setting tag other than 1 or 2 results in EINVAL error.
         let err = xacl_set_tag_type(entry, 0).err().unwrap();
-        assert_eq!(err.raw_os_error(), Some(EINVAL_I32));
+        assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
         // Setting qualifier without first setting tag to a valid value results in EINVAL.
         let err = xacl_set_qualifier(entry, &Qualifier::Guid(Uuid::nil()))
             .err()
             .unwrap();
-        assert_eq!(err.raw_os_error(), Some(EINVAL_I32));
+        assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
         assert_eq!(xacl_to_text(acl), "!#acl 1\n");
 
@@ -1134,16 +1134,16 @@ mod util_tests_linux {
 
         // Setting tag other than 1 or 2 results in EINVAL error.
         let err = xacl_set_tag_type(entry, 0).err().unwrap();
-        assert_eq!(err.raw_os_error(), Some(EINVAL_I32));
+        assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
         // Setting qualifier without first setting tag to a valid value results in EINVAL.
         let err = xacl_set_qualifier(entry, 500).err().unwrap();
-        assert_eq!(err.raw_os_error(), Some(EINVAL_I32));
+        assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
         assert_eq!(xacl_to_text(acl), "");
 
         let entry2 = xacl_create_entry(&mut acl).unwrap();
-        xacl_set_tag_type(entry2, ACL_USER_OBJ_I32).unwrap();
+        xacl_set_tag_type(entry2, sg::ACL_USER_OBJ).unwrap();
 
         assert_eq!(xacl_to_text(acl), "\nuser::---\n");
 

@@ -21,12 +21,6 @@ pub const ACL_WRITE: acl_perm_t = acl_perm_t_ACL_WRITE_DATA;
 #[cfg(target_os = "macos")]
 pub const ACL_EXECUTE: acl_perm_t = acl_perm_t_ACL_EXECUTE;
 
-#[cfg(target_os = "macos")]
-pub const ACL_FIRST_ENTRY_I32: i32 = acl_entry_id_t_ACL_FIRST_ENTRY;
-
-#[cfg(target_os = "macos")]
-pub const ACL_NEXT_ENTRY_I32: i32 = acl_entry_id_t_ACL_NEXT_ENTRY;
-
 // Linux doesn't have ACL flags; adding acl_flag_t makes the code more orthogonal.
 #[cfg(target_os = "linux")]
 pub type acl_flag_t = u32;
@@ -93,96 +87,72 @@ pub mod np {
     pub const ACL_ENTRY_ONLY_INHERIT: acl_flag_t = 0;
 }
 
-// Convenience constants where the API expects an i32 type, but bindgen
+// Convenience constants where the API expects a signed i32 type, but bindgen
 // provides u32.
 
-#[allow(clippy::cast_possible_wrap)]
-pub const ENOENT_I32: i32 = ENOENT as i32;
-
-#[allow(clippy::cast_possible_wrap)]
-pub const ENOTSUP_I32: i32 = ENOTSUP as i32;
-
-#[allow(clippy::cast_possible_wrap)]
-pub const EINVAL_I32: i32 = EINVAL as i32;
-
-#[allow(clippy::cast_possible_wrap)]
-pub const ENOMEM_I32: i32 = ENOMEM as i32;
-
-#[cfg(target_os = "macos")]
-#[allow(clippy::cast_possible_wrap)]
-pub const O_SYMLINK_I32: i32 = O_SYMLINK as i32;
-
-#[cfg(target_os = "linux")]
-#[allow(clippy::cast_possible_wrap)]
-pub const ACL_USER_OBJ_I32: i32 = ACL_USER_OBJ as i32;
-
-#[cfg(target_os = "linux")]
-#[allow(clippy::cast_possible_wrap)]
-pub const ACL_USER_I32: i32 = ACL_USER as i32;
-
-#[cfg(target_os = "linux")]
-#[allow(clippy::cast_possible_wrap)]
-pub const ACL_GROUP_OBJ_I32: i32 = ACL_GROUP_OBJ as i32;
-
-#[cfg(target_os = "linux")]
-#[allow(clippy::cast_possible_wrap)]
-pub const ACL_GROUP_I32: i32 = ACL_GROUP as i32;
-
-#[cfg(target_os = "linux")]
-#[allow(clippy::cast_possible_wrap)]
-pub const ACL_MASK_I32: i32 = ACL_MASK as i32;
-
-#[cfg(target_os = "linux")]
-#[allow(clippy::cast_possible_wrap)]
-pub const ACL_OTHER_I32: i32 = ACL_OTHER as i32;
-
-#[cfg(target_os = "linux")]
-#[allow(clippy::cast_possible_wrap)]
-pub const ACL_FIRST_ENTRY_I32: i32 = ACL_FIRST_ENTRY as i32;
-
-#[cfg(target_os = "linux")]
-#[allow(clippy::cast_possible_wrap)]
-pub const ACL_NEXT_ENTRY_I32: i32 = ACL_NEXT_ENTRY as i32;
-
-#[allow(clippy::cast_possible_wrap)]
-pub const ACL_MAX_ENTRIES_I32: i32 = ACL_MAX_ENTRIES as i32;
-
-// Verify that constants don't wrap when converted to i32.
-#[cfg(test)]
-fn test_constants_u32_to_i32() {
+pub mod sg {
     #![allow(clippy::cast_possible_wrap)]
 
-    assert!(ENOENT as i32 > 0);
-    assert!(ENOTSUP as i32 > 0);
-    assert!(EINVAL as i32 > 0);
-    assert!(ENOMEM as i32 > 0);
+    pub const ENOENT: i32 = super::ENOENT as i32;
+    pub const ENOTSUP: i32 = super::ENOTSUP as i32;
+    pub const EINVAL: i32 = super::EINVAL as i32;
+    pub const ENOMEM: i32 = super::ENOMEM as i32;
+    pub const ACL_MAX_ENTRIES: i32 = super::ACL_MAX_ENTRIES as i32;
 
     #[cfg(target_os = "macos")]
-    assert!(O_SYMLINK as i32 > 0);
+    pub const ACL_FIRST_ENTRY: i32 = super::acl_entry_id_t_ACL_FIRST_ENTRY;
+    #[cfg(target_os = "linux")]
+    pub const ACL_FIRST_ENTRY: i32 = super::ACL_FIRST_ENTRY as i32;
+
+    #[cfg(target_os = "macos")]
+    pub const ACL_NEXT_ENTRY: i32 = super::acl_entry_id_t_ACL_NEXT_ENTRY;
+    #[cfg(target_os = "linux")]
+    pub const ACL_NEXT_ENTRY: i32 = super::ACL_NEXT_ENTRY as i32;
+
+    #[cfg(target_os = "macos")]
+    pub const O_SYMLINK: i32 = super::O_SYMLINK as i32;
 
     #[cfg(target_os = "linux")]
-    assert!(ACL_USER_OBJ as i32 > 0);
-
+    pub const ACL_USER_OBJ: i32 = super::ACL_USER_OBJ as i32;
     #[cfg(target_os = "linux")]
-    assert!(ACL_USER as i32 > 0);
-
+    pub const ACL_USER: i32 = super::ACL_USER as i32;
     #[cfg(target_os = "linux")]
-    assert!(ACL_GROUP_OBJ as i32 > 0);
-
+    pub const ACL_GROUP_OBJ: i32 = super::ACL_GROUP_OBJ as i32;
     #[cfg(target_os = "linux")]
-    assert!(ACL_GROUP as i32 > 0);
-
+    pub const ACL_GROUP: i32 = super::ACL_GROUP as i32;
     #[cfg(target_os = "linux")]
-    assert!(ACL_MASK as i32 > 0);
-
+    pub const ACL_MASK: i32 = super::ACL_MASK as i32;
     #[cfg(target_os = "linux")]
-    assert!(ACL_OTHER as i32 > 0);
+    pub const ACL_OTHER: i32 = super::ACL_OTHER as i32;
 
-    #[cfg(target_os = "linux")]
-    assert!(ACL_FIRST_ENTRY as i32 > 0);
+    #[test]
+    fn test_signed() {
+        assert!(ENOENT > 0);
+        assert!(ENOTSUP > 0);
+        assert!(EINVAL > 0);
+        assert!(ENOMEM > 0);
+        assert!(ACL_MAX_ENTRIES > 0);
 
-    #[cfg(target_os = "linux")]
-    assert!(ACL_NEXT_ENTRY as i32 > 0);
+        #[cfg(target_os = "linux")]
+        assert!(ACL_FIRST_ENTRY > 0);
 
-    assert!(ACL_MAX_ENTRIES as i32 > 0);
+        #[cfg(target_os = "linux")]
+        assert!(ACL_NEXT_ENTRY > 0);
+
+        #[cfg(target_os = "macos")]
+        assert!(O_SYMLINK > 0);
+
+        #[cfg(target_os = "linux")]
+        assert!(ACL_USER_OBJ > 0);
+        #[cfg(target_os = "linux")]
+        assert!(ACL_USER > 0);
+        #[cfg(target_os = "linux")]
+        assert!(ACL_GROUP_OBJ > 0);
+        #[cfg(target_os = "linux")]
+        assert!(ACL_GROUP > 0);
+        #[cfg(target_os = "linux")]
+        assert!(ACL_MASK > 0);
+        #[cfg(target_os = "linux")]
+        assert!(ACL_OTHER > 0);
+    }
 }
