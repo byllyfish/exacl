@@ -127,32 +127,32 @@ pub mod sg {
 
     #[test]
     fn test_signed() {
-        assert!(ENOENT > 0);
-        assert!(ENOTSUP > 0);
-        assert!(EINVAL > 0);
-        assert!(ENOMEM > 0);
-        assert!(ACL_MAX_ENTRIES > 0);
+        assert!(super::ENOENT as i32 > 0);
+        assert!(super::ENOTSUP as i32 > 0);
+        assert!(super::EINVAL as i32 > 0);
+        assert!(super::ENOMEM as i32 > 0);
+        assert!(super::ACL_MAX_ENTRIES as i32 > 0);
 
         #[cfg(target_os = "linux")]
-        assert!(ACL_FIRST_ENTRY > 0);
+        assert!(super::ACL_FIRST_ENTRY as i32 > 0);
 
         #[cfg(target_os = "linux")]
-        assert!(ACL_NEXT_ENTRY > 0);
+        assert!(super::ACL_NEXT_ENTRY as i32 > 0);
 
         #[cfg(target_os = "macos")]
-        assert!(O_SYMLINK > 0);
+        assert!(super::O_SYMLINK as i32 > 0);
 
         #[cfg(target_os = "linux")]
-        assert!(ACL_USER_OBJ > 0);
+        assert!(super::ACL_USER_OBJ as i32 > 0);
         #[cfg(target_os = "linux")]
-        assert!(ACL_USER > 0);
+        assert!(super::ACL_USER as i32 > 0);
         #[cfg(target_os = "linux")]
-        assert!(ACL_GROUP_OBJ > 0);
+        assert!(super::ACL_GROUP_OBJ as i32 > 0);
         #[cfg(target_os = "linux")]
-        assert!(ACL_GROUP > 0);
+        assert!(super::ACL_GROUP as i32 > 0);
         #[cfg(target_os = "linux")]
-        assert!(ACL_MASK > 0);
+        assert!(super::ACL_MASK as i32 > 0);
         #[cfg(target_os = "linux")]
-        assert!(ACL_OTHER > 0);
+        assert!(super::ACL_OTHER as i32 > 0);
     }
 }
