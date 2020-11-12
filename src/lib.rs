@@ -44,23 +44,34 @@ bitflags! {
 }
 
 /// Access Control List native object wrapper.
-pub struct Acl(acl_t);
+pub struct Acl {
+    acl: acl_t,
+}
 
 impl Acl {
+    /// Specify the file owner (Linux).
+    pub const OWNER: &'static str = OWNER_NAME;
+
+    /// Specify other than file owner or group owner (Linux).
+    pub const OTHER: &'static str = OTHER_NAME;
+
+    /// Specify mask for user/group permissions (Linux).
+    pub const MASK: &'static str = MASK_NAME;
+
     /// Read ACL for specified file.
     pub fn read<P: AsRef<Path>>(path: P, options: AclOption) -> io::Result<Acl> {
         let symlink_only = options.contains(AclOption::SYMLINK_ONLY);
         let acl_p = xacl_get_file(path.as_ref(), symlink_only)?;
 
-        Ok(Acl(acl_p))
+        Ok(Acl { acl: acl_p })
     }
 
     /// Write ACL for specified file.
     pub fn write<P: AsRef<Path>>(&self, path: P, options: AclOption) -> io::Result<()> {
         let symlink_only = options.contains(AclOption::SYMLINK_ONLY);
 
-        xacl_check(self.0)?;
-        xacl_set_file(path.as_ref(), self.0, symlink_only)
+        xacl_check(self.acl)?;
+        xacl_set_file(path.as_ref(), self.acl, symlink_only)
     }
 
     /// Construct ACL from AclEntry's.
@@ -79,14 +90,16 @@ impl Acl {
             }
         }
 
-        Ok(Acl(ScopeGuard::into_inner(acl_p)))
+        Ok(Acl {
+            acl: ScopeGuard::into_inner(acl_p),
+        })
     }
 
     /// Return ACL as a list of AclEntry's.
     pub fn entries(&self) -> io::Result<Vec<AclEntry>> {
-        let mut entries = Vec::<AclEntry>::with_capacity(xacl_entry_count(self.0));
+        let mut entries = Vec::<AclEntry>::with_capacity(xacl_entry_count(self.acl));
 
-        xacl_foreach(self.0, |entry_p| {
+        xacl_foreach(self.acl, |entry_p| {
             let entry = AclEntry::from_raw(entry_p)?;
             entries.push(entry);
             Ok(())
@@ -98,17 +111,17 @@ impl Acl {
     /// Construct ACL from platform-dependent textual description.
     pub fn from_platform_text(text: &str) -> io::Result<Acl> {
         let acl_p = xacl_from_text(text)?;
-        Ok(Acl(acl_p))
+        Ok(Acl { acl: acl_p })
     }
 
     /// Return platform-dependent textual description.
     pub fn to_platform_text(&self) -> String {
-        xacl_to_text(self.0)
+        xacl_to_text(self.acl)
     }
 }
 
 impl Drop for Acl {
     fn drop(&mut self) {
-        xacl_free(self.0);
+        xacl_free(self.acl);
     }
 }

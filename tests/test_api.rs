@@ -97,10 +97,10 @@ fn test_write_acl_linux() -> io::Result<()> {
     entries.push(AclEntry::allow(User, "11501", rwx));
     entries.push(AclEntry::allow(User, "11502", rwx));
     entries.push(AclEntry::allow(User, "11503", rwx));
-    entries.push(AclEntry::allow(User, "@owner", rwx));
-    entries.push(AclEntry::allow(Group, "@owner", rwx));
-    entries.push(AclEntry::allow(User, "@other", rwx));
-    entries.push(AclEntry::allow(Group, "@mask", rwx));
+    entries.push(AclEntry::allow(User, Acl::OWNER, rwx));
+    entries.push(AclEntry::allow(Group, Acl::OWNER, rwx));
+    entries.push(AclEntry::allow(User, Acl::OTHER, rwx));
+    entries.push(AclEntry::allow(Group, Acl::MASK, rwx));
 
     log_acl(&entries);
 

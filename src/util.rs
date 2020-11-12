@@ -20,6 +20,10 @@ use uuid::Uuid;
 // Re-export acl_entry_t and acl_t from crate::sys.
 pub use crate::sys::{acl_entry_t, acl_t};
 
+pub const OWNER_NAME: &str = "@OWNER";
+pub const OTHER_NAME: &str = "@OTHER";
+pub const MASK_NAME: &str = "@MASK";
+
 /// A Qualifier specifies the principal that is allowed/denied access to a
 /// resource.
 #[derive(Debug, PartialEq)]
@@ -89,9 +93,9 @@ impl Qualifier {
     #[cfg(target_os = "linux")]
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
         match name {
-            "@owner" => Ok(Qualifier::UserObj),
-            "@other" => Ok(Qualifier::Other),
-            "@mask" => Ok(Qualifier::Mask),
+            OWNER_NAME => Ok(Qualifier::UserObj),
+            OTHER_NAME => Ok(Qualifier::Other),
+            MASK_NAME => Ok(Qualifier::Mask),
             s => match str_to_uid(s) {
                 Ok(uid) => Ok(Qualifier::User(uid)),
                 Err(err) => Err(err),
@@ -118,9 +122,9 @@ impl Qualifier {
     #[cfg(target_os = "linux")]
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
         match name {
-            "@owner" => Ok(Qualifier::GroupObj),
-            "@other" => Ok(Qualifier::Other),
-            "@mask" => Ok(Qualifier::Mask),
+            OWNER_NAME => Ok(Qualifier::GroupObj),
+            OTHER_NAME => Ok(Qualifier::Other),
+            MASK_NAME => Ok(Qualifier::Mask),
             s => match str_to_gid(s) {
                 Ok(gid) => Ok(Qualifier::Group(gid)),
                 Err(err) => Err(err),
@@ -147,11 +151,11 @@ impl Qualifier {
             #[cfg(target_os = "macos")]
             Qualifier::Guid(guid) => guid.to_string(),
             #[cfg(target_os = "linux")]
-            Qualifier::UserObj | Qualifier::GroupObj => "@owner".to_string(),
+            Qualifier::UserObj | Qualifier::GroupObj => OWNER_NAME.to_string(),
             #[cfg(target_os = "linux")]
-            Qualifier::Other => "@other".to_string(),
+            Qualifier::Other => OTHER_NAME.to_string(),
             #[cfg(target_os = "linux")]
-            Qualifier::Mask => "@mask".to_string(),
+            Qualifier::Mask => MASK_NAME.to_string(),
 
             Qualifier::Unknown(s) => s.clone(),
         }
