@@ -258,195 +258,6 @@ fn xguid_to_id(guid: Uuid) -> io::Result<(uid_t, u32)> {
     Ok((id_c, idtype as u32))
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-#[cfg(test)]
-mod qualifier_tests {
-    use super::*;
-
-    #[test]
-    fn test_str_to_uid() {
-        let msg = str_to_uid("").unwrap_err().to_string();
-        assert_eq!(msg, "unknown user name: \"\"");
-
-        let msg = str_to_uid("non_existant").unwrap_err().to_string();
-        assert_eq!(msg, "unknown user name: \"non_existant\"");
-
-        assert_eq!(str_to_uid("500").ok(), Some(Uid::from_raw(500)));
-
-        #[cfg(target_os = "macos")]
-        assert_eq!(str_to_uid("_spotlight").ok(), Some(Uid::from_raw(89)));
-
-        #[cfg(target_os = "linux")]
-        assert_eq!(str_to_uid("bin").ok(), Some(Uid::from_raw(2)));
-    }
-
-    #[test]
-    fn test_str_to_gid() {
-        let msg = str_to_gid("").unwrap_err().to_string();
-        assert_eq!(msg, "unknown group name: \"\"");
-
-        let msg = str_to_gid("non_existant").unwrap_err().to_string();
-        assert_eq!(msg, "unknown group name: \"non_existant\"");
-
-        assert_eq!(str_to_gid("500").ok(), Some(Gid::from_raw(500)));
-
-        #[cfg(target_os = "macos")]
-        assert_eq!(str_to_gid("_spotlight").ok(), Some(Gid::from_raw(89)));
-
-        #[cfg(target_os = "linux")]
-        assert_eq!(str_to_gid("bin").ok(), Some(Gid::from_raw(2)));
-    }
-
-    #[test]
-    fn test_uid_to_str() {
-        assert_eq!(uid_to_str(Uid::from_raw(1500)), "1500");
-
-        #[cfg(target_os = "macos")]
-        assert_eq!(uid_to_str(Uid::from_raw(89)), "_spotlight");
-
-        #[cfg(target_os = "linux")]
-        assert_eq!(uid_to_str(Uid::from_raw(2)), "bin");
-    }
-
-    #[test]
-    fn test_gid_to_str() {
-        assert_eq!(gid_to_str(Gid::from_raw(1500)), "1500");
-
-        #[cfg(target_os = "macos")]
-        assert_eq!(gid_to_str(Gid::from_raw(89)), "_spotlight");
-
-        #[cfg(target_os = "linux")]
-        assert_eq!(gid_to_str(Gid::from_raw(2)), "bin");
-    }
-
-    #[test]
-    #[cfg(target_os = "macos")]
-    fn test_uid_to_guid() {
-        assert_eq!(
-            xuid_to_guid(Uid::from_raw(89)).ok(),
-            Some(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap())
-        );
-
-        assert_eq!(
-            xuid_to_guid(Uid::from_raw(1500)).ok(),
-            Some(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap())
-        );
-    }
-
-    #[test]
-    #[cfg(target_os = "macos")]
-    fn test_gid_to_guid() {
-        assert_eq!(
-            xgid_to_guid(Gid::from_raw(89)).ok(),
-            Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap())
-        );
-
-        assert_eq!(
-            xgid_to_guid(Gid::from_raw(1500)).ok(),
-            Some(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap())
-        );
-
-        assert_eq!(
-            xgid_to_guid(Gid::from_raw(20)).ok(),
-            Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap())
-        );
-    }
-
-    #[test]
-    #[cfg(target_os = "macos")]
-    fn test_guid_to_id() {
-        assert_eq!(
-            xguid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap()).ok(),
-            Some((89, ID_TYPE_UID))
-        );
-
-        assert_eq!(
-            xguid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap()).ok(),
-            Some((1500, ID_TYPE_UID))
-        );
-
-        assert_eq!(
-            xguid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap()).ok(),
-            Some((89, ID_TYPE_GID))
-        );
-
-        assert_eq!(
-            xguid_to_id(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap()).ok(),
-            Some((1500, ID_TYPE_GID))
-        );
-
-        assert_eq!(
-            xguid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap()).ok(),
-            Some((20, ID_TYPE_GID))
-        );
-
-        let err = xguid_to_id(Uuid::nil()).err().unwrap();
-        assert_eq!(err.raw_os_error().unwrap(), sg::ENOENT);
-    }
-
-    #[test]
-    #[cfg(target_os = "macos")]
-    fn test_from_guid() {
-        let user =
-            Qualifier::from_guid(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap())
-                .ok();
-        assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
-
-        let group =
-            Qualifier::from_guid(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap())
-                .ok();
-        assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
-
-        let user = Qualifier::from_guid(Uuid::nil()).ok();
-        assert_eq!(user, Some(Qualifier::Guid(Uuid::nil())));
-    }
-
-    #[test]
-    fn test_user_named() {
-        let user = Qualifier::user_named("89").ok();
-        assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
-
-        #[cfg(target_os = "macos")]
-        {
-            let user = Qualifier::user_named("_spotlight").ok();
-            assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
-
-            let user = Qualifier::user_named("ffffeeee-dddd-cccc-bbbb-aaaa00000059").ok();
-            assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
-        }
-
-        #[cfg(target_os = "linux")]
-        {
-            let user = Qualifier::user_named("bin").ok();
-            assert_eq!(user, Some(Qualifier::User(Uid::from_raw(2))));
-        }
-    }
-
-    #[test]
-    fn test_group_named() {
-        let group = Qualifier::group_named("89").ok();
-        assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
-
-        #[cfg(target_os = "macos")]
-        {
-            let group = Qualifier::group_named("_spotlight").ok();
-            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
-
-            let group = Qualifier::group_named("abcdefab-cdef-abcd-efab-cdef00000059").ok();
-            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
-        }
-
-        #[cfg(target_os = "linux")]
-        {
-            let group = Qualifier::group_named("bin").ok();
-            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(2))));
-        }
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 /// Free memory allocated by native acl_* routines.
 pub(crate) fn xacl_free<T>(ptr: *mut T) {
     assert!(!ptr.is_null());
@@ -1026,6 +837,191 @@ pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#[cfg(test)]
+mod qualifier_tests {
+    use super::*;
+
+    #[test]
+    fn test_str_to_uid() {
+        let msg = str_to_uid("").unwrap_err().to_string();
+        assert_eq!(msg, "unknown user name: \"\"");
+
+        let msg = str_to_uid("non_existant").unwrap_err().to_string();
+        assert_eq!(msg, "unknown user name: \"non_existant\"");
+
+        assert_eq!(str_to_uid("500").ok(), Some(Uid::from_raw(500)));
+
+        #[cfg(target_os = "macos")]
+        assert_eq!(str_to_uid("_spotlight").ok(), Some(Uid::from_raw(89)));
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(str_to_uid("bin").ok(), Some(Uid::from_raw(2)));
+    }
+
+    #[test]
+    fn test_str_to_gid() {
+        let msg = str_to_gid("").unwrap_err().to_string();
+        assert_eq!(msg, "unknown group name: \"\"");
+
+        let msg = str_to_gid("non_existant").unwrap_err().to_string();
+        assert_eq!(msg, "unknown group name: \"non_existant\"");
+
+        assert_eq!(str_to_gid("500").ok(), Some(Gid::from_raw(500)));
+
+        #[cfg(target_os = "macos")]
+        assert_eq!(str_to_gid("_spotlight").ok(), Some(Gid::from_raw(89)));
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(str_to_gid("bin").ok(), Some(Gid::from_raw(2)));
+    }
+
+    #[test]
+    fn test_uid_to_str() {
+        assert_eq!(uid_to_str(Uid::from_raw(1500)), "1500");
+
+        #[cfg(target_os = "macos")]
+        assert_eq!(uid_to_str(Uid::from_raw(89)), "_spotlight");
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(uid_to_str(Uid::from_raw(2)), "bin");
+    }
+
+    #[test]
+    fn test_gid_to_str() {
+        assert_eq!(gid_to_str(Gid::from_raw(1500)), "1500");
+
+        #[cfg(target_os = "macos")]
+        assert_eq!(gid_to_str(Gid::from_raw(89)), "_spotlight");
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(gid_to_str(Gid::from_raw(2)), "bin");
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_uid_to_guid() {
+        assert_eq!(
+            xuid_to_guid(Uid::from_raw(89)).ok(),
+            Some(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap())
+        );
+
+        assert_eq!(
+            xuid_to_guid(Uid::from_raw(1500)).ok(),
+            Some(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap())
+        );
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_gid_to_guid() {
+        assert_eq!(
+            xgid_to_guid(Gid::from_raw(89)).ok(),
+            Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap())
+        );
+
+        assert_eq!(
+            xgid_to_guid(Gid::from_raw(1500)).ok(),
+            Some(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap())
+        );
+
+        assert_eq!(
+            xgid_to_guid(Gid::from_raw(20)).ok(),
+            Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap())
+        );
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_guid_to_id() {
+        assert_eq!(
+            xguid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap()).ok(),
+            Some((89, ID_TYPE_UID))
+        );
+
+        assert_eq!(
+            xguid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap()).ok(),
+            Some((1500, ID_TYPE_UID))
+        );
+
+        assert_eq!(
+            xguid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap()).ok(),
+            Some((89, ID_TYPE_GID))
+        );
+
+        assert_eq!(
+            xguid_to_id(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap()).ok(),
+            Some((1500, ID_TYPE_GID))
+        );
+
+        assert_eq!(
+            xguid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap()).ok(),
+            Some((20, ID_TYPE_GID))
+        );
+
+        let err = xguid_to_id(Uuid::nil()).err().unwrap();
+        assert_eq!(err.raw_os_error().unwrap(), sg::ENOENT);
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_from_guid() {
+        let user =
+            Qualifier::from_guid(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap())
+                .ok();
+        assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
+
+        let group =
+            Qualifier::from_guid(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap())
+                .ok();
+        assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+
+        let user = Qualifier::from_guid(Uuid::nil()).ok();
+        assert_eq!(user, Some(Qualifier::Guid(Uuid::nil())));
+    }
+
+    #[test]
+    fn test_user_named() {
+        let user = Qualifier::user_named("89").ok();
+        assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
+
+        #[cfg(target_os = "macos")]
+        {
+            let user = Qualifier::user_named("_spotlight").ok();
+            assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
+
+            let user = Qualifier::user_named("ffffeeee-dddd-cccc-bbbb-aaaa00000059").ok();
+            assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            let user = Qualifier::user_named("bin").ok();
+            assert_eq!(user, Some(Qualifier::User(Uid::from_raw(2))));
+        }
+    }
+
+    #[test]
+    fn test_group_named() {
+        let group = Qualifier::group_named("89").ok();
+        assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+
+        #[cfg(target_os = "macos")]
+        {
+            let group = Qualifier::group_named("_spotlight").ok();
+            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+
+            let group = Qualifier::group_named("abcdefab-cdef-abcd-efab-cdef00000059").ok();
+            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            let group = Qualifier::group_named("bin").ok();
+            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(2))));
+        }
+    }
+}
 
 #[cfg(test)]
 #[cfg(target_os = "macos")]
