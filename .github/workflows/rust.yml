@@ -43,3 +43,5 @@ jobs:
       if: runner.os == 'Linux'
     - name: Lint Check
       run: ./ci/lint.sh
+    - name: Format Check
+      run: cargo fmt -- --check
