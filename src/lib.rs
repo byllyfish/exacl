@@ -86,7 +86,7 @@ impl Acl {
         for (i, entry) in entries.iter().enumerate() {
             let entry_p = xacl_create_entry(&mut acl_p)?;
             if let Err(err) = entry.to_raw(entry_p) {
-                return Err(custom_error(&format!("entry {}: {}", i, err)));
+                return fail_custom(&format!("entry {}: {}", i, err));
             }
         }
 

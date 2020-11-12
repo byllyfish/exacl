@@ -11,6 +11,7 @@ use log::debug;
 use nix::unistd::{self, Gid, Uid};
 use scopeguard::defer;
 use std::ffi::{c_void, CStr, CString};
+use std::fmt;
 use std::io;
 use std::path::Path;
 use std::ptr;
@@ -139,7 +140,7 @@ impl Qualifier {
             Qualifier::User(uid) => xuid_to_guid(*uid),
             Qualifier::Group(gid) => xgid_to_guid(*gid),
             Qualifier::Guid(guid) => Ok(*guid),
-            Qualifier::Unknown(tag) => Err(custom_error(&format!("unknown tag: {:?}", tag))),
+            Qualifier::Unknown(tag) => fail_custom(&format!("unknown tag: {:?}", tag)),
         }
     }
 
@@ -176,7 +177,7 @@ fn str_to_uid(name: &str) -> io::Result<Uid> {
         return Ok(Uid::from_raw(num));
     }
 
-    Err(custom_error(&format!("unknown user name: {:?}", name)))
+    fail_custom(&format!("unknown user name: {:?}", name))
 }
 
 /// Convert group name to gid.
@@ -191,7 +192,7 @@ fn str_to_gid(name: &str) -> io::Result<Gid> {
         return Ok(Gid::from_raw(num));
     }
 
-    Err(custom_error(&format!("unknown group name: {:?}", name)))
+    fail_custom(&format!("unknown group name: {:?}", name))
 }
 
 /// Convert uid to user name.
@@ -217,12 +218,10 @@ fn gid_to_str(gid: Gid) -> String {
 fn xuid_to_guid(uid: Uid) -> io::Result<Uuid> {
     let guid = Uuid::nil();
 
+    // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
     let ret = unsafe { mbr_uid_to_uuid(uid.as_raw(), guid.as_bytes().as_ptr() as *mut u8) };
     if ret != 0 {
-        // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
-        let err = io::Error::from_raw_os_error(ret);
-        debug!("mbr_uid_to_uuid({}) returned err={}", uid, err);
-        return Err(err);
+        return fail_from_err(ret, "mbr_uid_to_uuid", uid);
     }
 
     Ok(guid)
@@ -233,12 +232,10 @@ fn xuid_to_guid(uid: Uid) -> io::Result<Uuid> {
 fn xgid_to_guid(gid: Gid) -> io::Result<Uuid> {
     let guid = Uuid::nil();
 
+    // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
     let ret = unsafe { mbr_gid_to_uuid(gid.as_raw(), guid.as_bytes().as_ptr() as *mut u8) };
     if ret != 0 {
-        // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
-        let err = io::Error::from_raw_os_error(ret);
-        debug!("mbr_gid_to_uuid({}) returned err={}", gid, err);
-        return Err(err);
+        return fail_from_err(ret, "mbr_gid_to_uuid", gid);
     }
 
     Ok(guid)
@@ -251,12 +248,10 @@ fn xguid_to_id(guid: Uuid) -> io::Result<(uid_t, u32)> {
     let mut idtype: i32 = 0;
     let guid_ptr = guid.as_bytes().as_ptr() as *mut u8;
 
+    // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
     let ret = unsafe { mbr_uuid_to_id(guid_ptr, &mut id_c, &mut idtype) };
     if ret != 0 {
-        // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
-        let err = io::Error::from_raw_os_error(ret);
-        debug!("mbr_uuid_to_id({}) returned err={}", guid, err);
-        return Err(err);
+        return fail_from_err(ret, "mbr_uuid_to_id", guid);
     }
     assert!(idtype >= 0);
 
@@ -469,14 +464,38 @@ fn path_exists(path: &Path, symlink_only: bool) -> bool {
     }
 }
 
-// Convenience function to return errno.
-fn errno() -> io::Error {
-    io::Error::last_os_error()
+fn log_err<R, T>(ret: R, func: &str, arg: T) -> io::Error
+where
+    R: fmt::Display,
+    T: fmt::Debug,
+{
+    let err = io::Error::last_os_error();
+    debug!("{}({:?}) returned {}, err={}", func, arg, ret, err);
+    err
 }
 
-/// Return a custom io::Error with context.
-pub(crate) fn custom_error(msg: &str) -> io::Error {
-    io::Error::new(io::ErrorKind::Other, msg)
+/// Return an error result and log a message.
+fn fail_err<R, T, U>(ret: R, func: &str, arg: T) -> io::Result<U>
+where
+    R: fmt::Display,
+    T: fmt::Debug,
+{
+    Err(log_err(ret, func, arg))
+}
+
+fn fail_from_err<T, U>(ret: i32, func: &str, arg: T) -> io::Result<U>
+where
+    T: fmt::Debug,
+{
+    assert!(ret > 0);
+    let err = io::Error::from_raw_os_error(ret);
+    debug!("{}({:?}) returned {}, err={}", func, arg, ret, err);
+    Err(err)
+}
+
+/// Return a custom error result.
+pub(crate) fn fail_custom<U>(msg: &str) -> io::Result<U> {
+    Err(io::Error::new(io::ErrorKind::Other, msg))
 }
 
 /// Get the native ACL for a specific file or directory.
@@ -495,23 +514,17 @@ pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t
     };
 
     if acl.is_null() {
-        let err = errno();
-        debug!(
-            "{}({:?}) returned null, err={}",
-            if symlink_only {
-                "acl_get_link_np"
-            } else {
-                "acl_get_file"
-            },
-            c_path,
-            err
-        );
+        let func = if symlink_only {
+            "acl_get_link_np"
+        } else {
+            "acl_get_file"
+        };
+        let err = log_err("null", func, &c_path);
 
         // acl_get_file et al. can return NULL (ENOENT) if the file exists, but
         // there is no ACL. If the path exists, return an *empty* ACL.
         if let Some(sg::ENOENT) = err.raw_os_error() {
             if path_exists(&path, symlink_only) {
-                debug!(" file exists! returning empty acl");
                 return xacl_init(1);
             }
         }
@@ -527,16 +540,14 @@ pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t
     use std::os::unix::ffi::OsStrExt;
 
     if symlink_only {
-        return Err(custom_error("Linux does not support symlinks with ACL's."));
+        return fail_custom("Linux does not support symlinks with ACL's.");
     }
 
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let acl = unsafe { acl_get_file(c_path.as_ptr(), ACL_TYPE_ACCESS) };
 
     if acl.is_null() {
-        let err = errno();
-        debug!("acl_get_file({:?}) returned null, err={}", c_path, err);
-        return Err(err);
+        return fail_err("null", "acl_get_file", &c_path);
     }
 
     Ok(acl)
@@ -547,17 +558,13 @@ pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t
 fn xacl_set_file_symlink(c_path: &CString, acl: acl_t) -> io::Result<()> {
     let fd = unsafe { open(c_path.as_ptr(), sg::O_SYMLINK) };
     if fd < 0 {
-        let err = errno();
-        debug!("symlink open({:?}) returned {}, err={}", c_path, fd, err);
-        return Err(err);
+        return fail_err(fd, "open", &c_path);
     }
     defer! { unsafe{ close(fd) }; }
 
     let ret = unsafe { acl_set_fd(fd, acl) };
     if ret != 0 {
-        let err = errno();
-        debug!("acl_set_fd({:?}) returned {}, err={}", c_path, ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_set_fd", fd);
     }
 
     Ok(())
@@ -575,11 +582,7 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::
     };
 
     if ret != 0 {
-        let err = errno();
-        debug!(
-            "acl_set_link_np({:?}) returned {}, err={}",
-            c_path, ret, err
-        );
+        let err = log_err(ret, "acl_set_link_np", &c_path);
 
         // acl_set_link_np() returns ENOTSUP for symlinks. Work-around this
         // by using acl_set_fd().
@@ -588,6 +591,7 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::
                 return xacl_set_file_symlink(&c_path, acl);
             }
         }
+
         return Err(err);
     }
 
@@ -599,15 +603,13 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::
     use std::os::unix::ffi::OsStrExt;
 
     if symlink_only {
-        return Err(custom_error("Linux does not support symlinks with ACL's"));
+        return fail_custom("Linux does not support symlinks with ACL's");
     }
 
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let ret = unsafe { acl_set_file(c_path.as_ptr(), ACL_TYPE_ACCESS, acl) };
     if ret != 0 {
-        let err = errno();
-        debug!("acl_set_file({:?}) returned {}, err={}", c_path, ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_set_file", &c_path);
     }
 
     Ok(())
@@ -667,14 +669,12 @@ pub(crate) fn xacl_init(capacity: usize) -> io::Result<acl_t> {
     use std::convert::TryFrom;
     let size = match i32::try_from(capacity) {
         Ok(size) if size <= sg::ACL_MAX_ENTRIES => size,
-        _ => return Err(custom_error("Too many ACL entries")),
+        _ => return fail_custom("Too many ACL entries"),
     };
 
     let acl = unsafe { acl_init(size) };
     if acl.is_null() {
-        let err = errno();
-        debug!("acl_init({}) returned null, err={}", capacity, err);
-        return Err(err);
+        return fail_err("null", "acl_init", capacity);
     }
     Ok(acl)
 }
@@ -687,9 +687,7 @@ pub(crate) fn xacl_create_entry(acl: &mut acl_t) -> io::Result<acl_entry_t> {
 
     let ret = unsafe { acl_create_entry(&mut *acl, &mut entry) };
     if ret != 0 {
-        let err = errno();
-        debug!("acl_create_entry() returned {}, err={}", ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_create_entry", ());
     }
 
     Ok(entry)
@@ -700,9 +698,7 @@ fn xacl_get_tag_type(entry: acl_entry_t) -> io::Result<acl_tag_t> {
 
     let ret = unsafe { acl_get_tag_type(entry, &mut tag) };
     if ret != 0 {
-        let err = errno();
-        debug!("acl_get_tag_type() returned {}, err={}", ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_get_tag_type", ());
     }
 
     Ok(tag)
@@ -716,9 +712,7 @@ fn xacl_get_tag_type(entry: acl_entry_t) -> io::Result<acl_tag_t> {
 fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     let uuid_ptr = unsafe { acl_get_qualifier(entry) as *mut Uuid };
     if uuid_ptr.is_null() {
-        let err = errno();
-        debug!("acl_get_qualifier returned NULL, err={}", err);
-        return Err(err);
+        return fail_err("null", "acl_get_qualifier", ());
     }
     defer! { xacl_free(uuid_ptr) }
 
@@ -748,9 +742,7 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     let id = if tag == sg::ACL_USER || tag == sg::ACL_GROUP {
         let id_ptr = unsafe { acl_get_qualifier(entry) as *mut uid_t };
         if id_ptr.is_null() {
-            let err = errno();
-            debug!("acl_get_qualifier returned NULL, err={}", err);
-            return Err(err);
+            return fail_err("null", "acl_get_qualifier", ());
         }
         defer! { xacl_free(id_ptr) };
         Some(unsafe { *id_ptr })
@@ -780,11 +772,10 @@ pub(crate) fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qu
 // Get permissions from the entry.
 pub(crate) fn xacl_get_perm(entry: acl_entry_t) -> io::Result<Perm> {
     let mut permset: acl_permset_t = std::ptr::null_mut();
+
     let ret = unsafe { acl_get_permset(entry, &mut permset) };
     if ret != 0 {
-        let err = errno();
-        debug!("acl_get_permset() returned {}, err={}", ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_get_permset", ());
     }
 
     assert!(!permset.is_null());
@@ -805,11 +796,10 @@ pub(crate) fn xacl_get_perm(entry: acl_entry_t) -> io::Result<Perm> {
 #[cfg(target_os = "macos")]
 pub(crate) fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
     let mut flagset: acl_flagset_t = std::ptr::null_mut();
+
     let ret = unsafe { acl_get_flagset_np(entry as *mut c_void, &mut flagset) };
     if ret != 0 {
-        let err = errno();
-        debug!("acl_get_flagset_np() returned {}, err={}", ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_get_flagset_np", ());
     }
 
     assert!(!flagset.is_null());
@@ -835,9 +825,7 @@ pub(crate) fn xacl_get_flags(_entry: acl_entry_t) -> io::Result<Flag> {
 fn xacl_set_tag_type(entry: acl_entry_t, tag: acl_tag_t) -> io::Result<()> {
     let ret = unsafe { acl_set_tag_type(entry, tag) };
     if ret != 0 {
-        let err = errno();
-        debug!("acl_set_tag_type() returned {}, err={}", ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_set_tag_type", ());
     }
 
     Ok(())
@@ -851,9 +839,7 @@ fn xacl_set_qualifier(entry: acl_entry_t, qualifier: &Qualifier) -> io::Result<(
 
     let ret = unsafe { acl_set_qualifier(entry, guid.as_bytes().as_ptr() as *mut c_void) };
     if ret != 0 {
-        let err = errno();
-        debug!("acl_set_qualifier() returned {}, err={}", ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_set_qualifier", ());
     }
 
     Ok(())
@@ -884,11 +870,10 @@ pub(crate) fn xacl_set_tag_qualifier(
 #[cfg(target_os = "linux")]
 fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
     let id_ptr = &mut id as *mut uid_t;
+
     let ret = unsafe { acl_set_qualifier(entry, id_ptr as *mut c_void) };
     if ret != 0 {
-        let err = errno();
-        debug!("acl_set_qualifier() returned {}, err={}", ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_set_qualifier", ());
     }
 
     Ok(())
@@ -901,7 +886,7 @@ pub(crate) fn xacl_set_tag_qualifier(
     qualifier: &Qualifier,
 ) -> io::Result<()> {
     if !allow {
-        return Err(custom_error("allow=false is not supported on Linux"));
+        return fail_custom("allow=false is not supported on Linux");
     }
 
     match qualifier {
@@ -926,7 +911,7 @@ pub(crate) fn xacl_set_tag_qualifier(
             xacl_set_tag_type(entry, sg::ACL_MASK)?;
         }
         Qualifier::Unknown(tag) => {
-            return Err(custom_error(&format!("unknown tag: {}", tag)));
+            return fail_custom(&format!("unknown tag: {}", tag));
         }
     }
 
@@ -936,20 +921,17 @@ pub(crate) fn xacl_set_tag_qualifier(
 /// Set permissions for the entry.
 pub(crate) fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
     let mut permset: acl_permset_t = std::ptr::null_mut();
+
     let ret = unsafe { acl_get_permset(entry, &mut permset) };
     if ret != 0 {
-        let err = errno();
-        debug!("acl_get_permset() returned {}, err={}", ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_get_permset", ());
     }
 
     assert!(!permset.is_null());
 
     let ret = unsafe { acl_clear_perms(permset) };
     if ret != 0 {
-        let err = errno();
-        debug!("acl_clear_perms() returned {}, err={}", ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_clear_perms", ());
     }
 
     for perm in BitIter(perms) {
@@ -963,20 +945,17 @@ pub(crate) fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
 #[cfg(target_os = "macos")]
 pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
     let mut flagset: acl_flagset_t = std::ptr::null_mut();
+
     let ret = unsafe { acl_get_flagset_np(entry as *mut c_void, &mut flagset) };
     if ret != 0 {
-        let err = errno();
-        debug!("acl_get_flagset_np() returned {}, err={}", ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_get_flagset_np", ());
     }
 
     assert!(!flagset.is_null());
 
     let ret = unsafe { acl_clear_flags_np(flagset) };
     if ret != 0 {
-        let err = errno();
-        debug!("acl_clear_flags_np() returned {}, err={}", ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_clear_flags_np", ());
     }
 
     for flag in BitIter(flags) {
@@ -997,9 +976,7 @@ pub(crate) fn xacl_from_text(text: &str) -> io::Result<acl_t> {
 
     let acl = unsafe { acl_from_text(cstr.as_ptr()) };
     if acl.is_null() {
-        let err = errno();
-        debug!("acl_from_text({:?}) returned null, err={}", cstr, err);
-        return Err(err);
+        return fail_err("null", "acl_from_text", cstr);
     }
 
     Ok(acl)
@@ -1009,8 +986,7 @@ pub(crate) fn xacl_to_text(acl: acl_t) -> String {
     let mut size: ssize_t = 0;
     let ptr = unsafe { acl_to_text(acl, &mut size) };
     if ptr.is_null() {
-        let err = errno();
-        return format!("<error: {}>", err);
+        return format!("<error: {}>", io::Error::last_os_error());
     }
 
     let result = unsafe { CStr::from_ptr(ptr).to_string_lossy().into_owned() };
@@ -1030,9 +1006,7 @@ pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
 
     let ret = unsafe { acl_check(acl, &mut last) };
     if ret < 0 {
-        let err = errno();
-        debug!("acl_check() returned {}, err={}", ret, err);
-        return Err(err);
+        return fail_err(ret, "acl_check", ());
     }
 
     if ret == 0 {
@@ -1048,7 +1022,7 @@ pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
         _ => "unknown acl_check error message",
     };
 
-    Err(custom_error(msg))
+    fail_custom(msg)
 }
 
 ////////////////////////////////////////////////////////////////////////////////

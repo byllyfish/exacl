@@ -123,7 +123,7 @@ impl AclEntry {
             AclEntryKind::User => Qualifier::user_named(&self.name)?,
             AclEntryKind::Group => Qualifier::group_named(&self.name)?,
             AclEntryKind::Unknown => {
-                return Err(custom_error("unsupported kind: \"unknown\""));
+                return fail_custom("unsupported kind: \"unknown\"");
             }
         };
 
