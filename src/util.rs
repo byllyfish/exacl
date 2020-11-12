@@ -20,9 +20,9 @@ use uuid::Uuid;
 // Re-export acl_entry_t and acl_t from crate::sys.
 pub use crate::sys::{acl_entry_t, acl_t};
 
-pub const OWNER_NAME: &str = "@OWNER";
-pub const OTHER_NAME: &str = "@OTHER";
-pub const MASK_NAME: &str = "@MASK";
+pub const OWNER_NAME: &str = "@owner";
+pub const OTHER_NAME: &str = "@other";
+pub const MASK_NAME: &str = "@mask";
 
 /// A Qualifier specifies the principal that is allowed/denied access to a
 /// resource.
