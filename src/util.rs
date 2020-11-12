@@ -280,8 +280,16 @@ fn path_exists(path: &Path, symlink_only: bool) -> bool {
 /// If the file is a symlink, the `symlink_only` argument determines whether to
 /// get the ACL from the symlink itself (true) or the file it points to (false).
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t> {
+pub(crate) fn xacl_get_file(
+    path: &Path,
+    symlink_only: bool,
+    default_acl: bool,
+) -> io::Result<acl_t> {
     use std::os::unix::ffi::OsStrExt;
+
+    if default_acl {
+        return fail_custom("macOS does not support default ACL");
+    }
 
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let acl = if symlink_only {
@@ -313,15 +321,25 @@ pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t> {
+pub(crate) fn xacl_get_file(
+    path: &Path,
+    symlink_only: bool,
+    default_acl: bool,
+) -> io::Result<acl_t> {
     use std::os::unix::ffi::OsStrExt;
 
     if symlink_only {
         return fail_custom("Linux does not support symlinks with ACL's.");
     }
 
+    let acl_type = if default_acl {
+        ACL_TYPE_DEFAULT
+    } else {
+        ACL_TYPE_ACCESS
+    };
+
     let c_path = CString::new(path.as_os_str().as_bytes())?;
-    let acl = unsafe { acl_get_file(c_path.as_ptr(), ACL_TYPE_ACCESS) };
+    let acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
 
     if acl.is_null() {
         return fail_err("null", "acl_get_file", &c_path);
@@ -348,8 +366,17 @@ fn xacl_set_file_symlink(c_path: &CString, acl: acl_t) -> io::Result<()> {
 }
 
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::Result<()> {
+pub(crate) fn xacl_set_file(
+    path: &Path,
+    acl: acl_t,
+    symlink_only: bool,
+    default_acl: bool,
+) -> io::Result<()> {
     use std::os::unix::ffi::OsStrExt;
+
+    if default_acl {
+        return fail_custom("macOS does not support default ACL");
+    }
 
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let ret = if symlink_only {
@@ -376,15 +403,26 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::Result<()> {
+pub(crate) fn xacl_set_file(
+    path: &Path,
+    acl: acl_t,
+    symlink_only: bool,
+    default_acl: bool,
+) -> io::Result<()> {
     use std::os::unix::ffi::OsStrExt;
 
     if symlink_only {
         return fail_custom("Linux does not support symlinks with ACL's");
     }
 
+    let acl_type = if default_acl {
+        ACL_TYPE_DEFAULT
+    } else {
+        ACL_TYPE_ACCESS
+    };
+
     let c_path = CString::new(path.as_os_str().as_bytes())?;
-    let ret = unsafe { acl_set_file(c_path.as_ptr(), ACL_TYPE_ACCESS, acl) };
+    let ret = unsafe { acl_set_file(c_path.as_ptr(), acl_type, acl) };
     if ret != 0 {
         return fail_err(ret, "acl_set_file", &c_path);
     }

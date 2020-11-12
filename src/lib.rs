@@ -42,6 +42,9 @@ bitflags! {
     pub struct AclOption : u32 {
         /// Get/set the ACL of the symlink itself.
         const SYMLINK_ONLY = 0x01;
+
+        /// Get/set the default ACL (Linux only).
+        const DEFAULT_ACL = 0x02;
     }
 }
 
@@ -63,7 +66,9 @@ impl Acl {
     /// Read ACL for specified file.
     pub fn read<P: AsRef<Path>>(path: P, options: AclOption) -> io::Result<Acl> {
         let symlink_only = options.contains(AclOption::SYMLINK_ONLY);
-        let acl_p = xacl_get_file(path.as_ref(), symlink_only)?;
+        let default_acl = options.contains(AclOption::DEFAULT_ACL);
+
+        let acl_p = xacl_get_file(path.as_ref(), symlink_only, default_acl)?;
 
         Ok(Acl { acl: acl_p })
     }
@@ -71,9 +76,10 @@ impl Acl {
     /// Write ACL for specified file.
     pub fn write<P: AsRef<Path>>(&self, path: P, options: AclOption) -> io::Result<()> {
         let symlink_only = options.contains(AclOption::SYMLINK_ONLY);
+        let default_acl = options.contains(AclOption::DEFAULT_ACL);
 
         xacl_check(self.acl)?;
-        xacl_set_file(path.as_ref(), self.acl, symlink_only)
+        xacl_set_file(path.as_ref(), self.acl, symlink_only, default_acl)
     }
 
     /// Construct ACL from AclEntry's.
