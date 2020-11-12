@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # Run all test suites.
+#
+# If run with `memcheck` argument, run all tests under valgrind.
 
 OS=`uname -s | tr A-Z a-z`
 

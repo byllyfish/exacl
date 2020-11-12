@@ -28,18 +28,18 @@ jobs:
       run: sudo apt-get -y install libacl1-dev shunit2 valgrind
       if: runner.os == 'Linux'
     - name: Build
-      run: cargo build --verbose
+      run: cargo build
     - name: Run unit tests
-      run: cargo test --verbose
+      run: cargo test
     - name: Run integration tests
       run: ./tests/run_tests.sh
     - name: Run memory tests (Linux)
       run: ./tests/run_tests.sh memcheck
       if: runner.os == 'Linux'
     - name: Code coverage
-      run: ./ci/code_coverage.sh codecov
+      run: ./ci/coverage.sh codecov
     - name: Build docs (Linux)
-      run: ./ci/build_docs.sh
+      run: ./ci/docs.sh
       if: runner.os == 'Linux'
     - name: Lint Check
       run: ./ci/lint.sh
