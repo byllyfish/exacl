@@ -1,5 +1,6 @@
 //! Provides AclEntry implementation.
 
+use crate::fail::fail_custom;
 use crate::flag::Flag;
 use crate::perm::Perm;
 use crate::util::*;

@@ -19,6 +19,7 @@
 
 mod aclentry;
 mod bititer;
+mod fail;
 mod flag;
 mod perm;
 mod sys;
@@ -30,6 +31,7 @@ pub use flag::Flag;
 pub use perm::Perm;
 
 use bitflags::bitflags;
+use fail::fail_custom;
 use scopeguard::{self, ScopeGuard};
 use std::io;
 use std::path::Path;

@@ -3,6 +3,7 @@
 //! This module wraps all unsafe code from the native API.
 
 use crate::bititer::BitIter;
+use crate::fail::*;
 use crate::flag::Flag;
 use crate::perm::Perm;
 use crate::sys::*;
@@ -11,7 +12,6 @@ use log::debug;
 use nix::unistd::{self, Gid, Uid};
 use scopeguard::defer;
 use std::ffi::{c_void, CStr, CString};
-use std::fmt;
 use std::io;
 use std::path::Path;
 use std::ptr;
@@ -273,40 +273,6 @@ fn path_exists(path: &Path, symlink_only: bool) -> bool {
     } else {
         path.exists()
     }
-}
-
-fn log_err<R, T>(ret: R, func: &str, arg: T) -> io::Error
-where
-    R: fmt::Display,
-    T: fmt::Debug,
-{
-    let err = io::Error::last_os_error();
-    debug!("{}({:?}) returned {}, err={}", func, arg, ret, err);
-    err
-}
-
-/// Return an error result and log a message.
-fn fail_err<R, T, U>(ret: R, func: &str, arg: T) -> io::Result<U>
-where
-    R: fmt::Display,
-    T: fmt::Debug,
-{
-    Err(log_err(ret, func, arg))
-}
-
-fn fail_from_err<T, U>(ret: i32, func: &str, arg: T) -> io::Result<U>
-where
-    T: fmt::Debug,
-{
-    assert!(ret > 0);
-    let err = io::Error::from_raw_os_error(ret);
-    debug!("{}({:?}) returned {}, err={}", func, arg, ret, err);
-    Err(err)
-}
-
-/// Return a custom error result.
-pub(crate) fn fail_custom<U>(msg: &str) -> io::Result<U> {
-    Err(io::Error::new(io::ErrorKind::Other, msg))
 }
 
 /// Get the native ACL for a specific file or directory.
