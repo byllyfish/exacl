@@ -308,7 +308,7 @@ testWriteAclNumericUID() {
 }
 
 testWriteAclNumericGID() {
-    # Set ACL for current group to "deny read".
+    # Set ACL for current group to "read".
     input=`quotifyJson "[{kind:group,name:$MY_GROUP_NUM,perms:[read],flags:[],allow:true},$REQUIRED_ENTRIES,{kind:group,name:@mask,perms:[read],flags:[],allow:true}]"`
     msg=`echo "$input" | $EXACL --set $FILE1 2>&1`
     assertEquals 0 $?
@@ -320,6 +320,46 @@ testWriteAclNumericGID() {
     assertEquals \
         "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"}"
+}
+
+testReadDefaultAcl() {
+    # Reading default acl for a file should fail.
+    msg=`$EXACL --default $FILE1 2>&1`
+    assertEquals 1 $?
+    assertEquals \
+        "File \"$FILE1\": Permission denied (os error 13)" \
+        "$msg"
+
+    # Reading default acl for a directory.
+    msg=`$EXACL --default $DIR1 2>&1`
+    assertEquals 0 $?
+    assertEquals "[]" "$msg"
+}
+
+testWriteDefaultAcl() {
+    input=`quotifyJson "[{kind:group,name:$MY_GROUP_NUM,perms:[read],flags:[],allow:true},$REQUIRED_ENTRIES,{kind:group,name:@mask,perms:[read],flags:[],allow:true}]"`
+    msg=`echo "$input" | $EXACL --set --default $DIR1 2>&1`
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Check ACL again.
+    msg=`$EXACL --default $DIR1`
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[],flags:[default],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[default],allow:true},{kind:group,name:@mask,perms:[read],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]" \
+        "${msg//\"}"
+
+    # Create subfile in DIR1.
+    subfile="$DIR1/subfile"
+    touch "$subfile"
+
+    msg=`$EXACL $subfile 2>&1`
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "${msg//\"}"
+
+    rm -f "$subfile"
 }
 
 . shunit2
