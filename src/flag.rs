@@ -47,7 +47,7 @@ bitflags! {
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const ONLY_INHERIT = np::ACL_ENTRY_ONLY_INHERIT;
 
-        /// Linux ACL's don't use flags.
+        /// Entry from a default ACL.
         #[cfg(any(docsrs, target_os = "linux"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
         const DEFAULT = 1;
