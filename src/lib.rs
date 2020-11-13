@@ -78,7 +78,11 @@ impl Acl {
         let symlink_only = options.contains(AclOption::SYMLINK_ONLY);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
 
-        xacl_check(self.acl)?;
+        // Don't check ACL if it's an empty, default ACL.
+        if !default_acl || !self.empty() {
+            xacl_check(self.acl)?;
+        }
+
         xacl_set_file(path.as_ref(), self.acl, symlink_only, default_acl)
     }
 
@@ -125,6 +129,11 @@ impl Acl {
     /// Return platform-dependent textual description.
     pub fn to_platform_text(&self) -> String {
         xacl_to_text(self.acl)
+    }
+
+    /// Return true if ACL is empty.
+    pub fn empty(&self) -> bool {
+        xacl_entry_count(self.acl) == 0
     }
 }
 

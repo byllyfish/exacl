@@ -62,6 +62,7 @@ fn test_write_acl_macos() -> io::Result<()> {
 
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
+    assert!(!acl.empty());
     acl.write(&file, AclOption::default())?;
 
     // Even though the last entry is a group, the `acl_to_text` representation
@@ -220,4 +221,53 @@ other::rwx
 
     let acl = Acl::from_platform_text(text).unwrap();
     assert_eq!(acl.to_platform_text(), text);
+}
+
+#[test]
+#[cfg(target_os = "linux")]
+fn test_read_default_acl() -> io::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let default_acl = Acl::read(&dir, AclOption::DEFAULT_ACL)?;
+    assert!(default_acl.empty());
+
+    Ok(())
+}
+
+#[test]
+#[cfg(target_os = "linux")]
+fn test_write_default_acl() -> io::Result<()> {
+    use AclEntryKind::*;
+
+    let mut entries = Vec::<AclEntry>::new();
+    let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
+
+    entries.push(AclEntry::allow(User, Acl::OWNER, rwx));
+    entries.push(AclEntry::allow(Group, Acl::OWNER, rwx));
+    entries.push(AclEntry::allow(User, Acl::OTHER, rwx));
+    entries.push(AclEntry::allow(Group, "bin", rwx));
+    entries.push(AclEntry::allow(Group, Acl::MASK, rwx));
+
+    let dir = tempfile::tempdir()?;
+    let acl = Acl::from_entries(&entries)?;
+    acl.write(&dir, AclOption::DEFAULT_ACL)?;
+
+    let acl2 = Acl::read(&dir, AclOption::default())?;
+    assert_ne!(acl.to_platform_text(), acl2.to_platform_text());
+
+    let default_acl = Acl::read(&dir, AclOption::DEFAULT_ACL)?;
+    assert_eq!(default_acl.to_platform_text(), acl.to_platform_text());
+
+    // Test deleting a default ACL by passing an empty acl.
+    let empty_acl = Acl::from_entries(&[])?;
+    empty_acl.write(&dir, AclOption::DEFAULT_ACL)?;
+    assert!(Acl::read(&dir, AclOption::DEFAULT_ACL)?.empty());
+
+    Ok(())
+}
+
+#[test]
+fn test_empty_acl() -> io::Result<()> {
+    let acl = Acl::from_entries(&[])?;
+    assert!(acl.empty());
+    Ok(())
 }

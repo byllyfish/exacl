@@ -50,7 +50,7 @@ bitflags! {
         /// Linux ACL's don't use flags.
         #[cfg(any(docsrs, target_os = "linux"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
-        const DEFAULT = 0;
+        const DEFAULT = 1;
     }
 }
 
