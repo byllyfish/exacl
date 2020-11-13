@@ -50,7 +50,13 @@ bitflags! {
 
 /// Access Control List native object wrapper.
 pub struct Acl {
+    /// Native acl.
     acl: acl_t,
+
+    /// Set to true if `acl` was set from the default ACL for a directory
+    /// using DEFAULT_ACL option. Used to return entries with the `DEFAULT`
+    /// flag set.
+    default_acl: bool,
 }
 
 impl Acl {
@@ -70,7 +76,10 @@ impl Acl {
 
         let acl_p = xacl_get_file(path.as_ref(), symlink_only, default_acl)?;
 
-        Ok(Acl { acl: acl_p })
+        Ok(Acl {
+            acl: acl_p,
+            default_acl,
+        })
     }
 
     /// Write ACL for specified file.
@@ -104,6 +113,7 @@ impl Acl {
 
         Ok(Acl {
             acl: ScopeGuard::into_inner(acl_p),
+            default_acl: false,
         })
     }
 
@@ -117,13 +127,24 @@ impl Acl {
             Ok(())
         })?;
 
+        #[cfg(target_os = "linux")]
+        if self.default_acl {
+            // Set DEFAULT flag on each entry.
+            for i in 0..entries.len() {
+                entries[i].flags |= Flag::DEFAULT;
+            }
+        }
+
         Ok(entries)
     }
 
     /// Construct ACL from platform-dependent textual description.
     pub fn from_platform_text(text: &str) -> io::Result<Acl> {
         let acl_p = xacl_from_text(text)?;
-        Ok(Acl { acl: acl_p })
+        Ok(Acl {
+            acl: acl_p,
+            default_acl: false,
+        })
     }
 
     /// Return platform-dependent textual description.

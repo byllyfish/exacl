@@ -257,6 +257,11 @@ fn test_write_default_acl() -> io::Result<()> {
     let default_acl = Acl::read(&dir, AclOption::DEFAULT_ACL)?;
     assert_eq!(default_acl.to_platform_text(), acl.to_platform_text());
 
+    let default_entries = default_acl.entries()?;
+    for i in 0..default_entries.len() {
+        assert_eq!(default_entries[i].flags, Flag::DEFAULT);
+    }
+
     // Test deleting a default ACL by passing an empty acl.
     let empty_acl = Acl::from_entries(&[])?;
     empty_acl.write(&dir, AclOption::DEFAULT_ACL)?;
