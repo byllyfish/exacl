@@ -55,8 +55,8 @@ pub struct Acl {
 
     /// Set to true if `acl` was set from the default ACL for a directory
     /// using DEFAULT_ACL option. Used to return entries with the `DEFAULT`
-    /// flag set. Value is not used on `macOS`; it's always false.
-    #[allow(dead_code)]
+    /// flag set.
+    #[cfg(target_os = "linux")]
     default_acl: bool,
 }
 
@@ -79,6 +79,7 @@ impl Acl {
 
         Ok(Acl {
             acl: acl_p,
+            #[cfg(target_os = "linux")]
             default_acl,
         })
     }
@@ -114,6 +115,7 @@ impl Acl {
 
         Ok(Acl {
             acl: ScopeGuard::into_inner(acl_p),
+            #[cfg(target_os = "linux")]
             default_acl: false,
         })
     }
@@ -131,8 +133,8 @@ impl Acl {
         #[cfg(target_os = "linux")]
         if self.default_acl {
             // Set DEFAULT flag on each entry.
-            for i in 0..entries.len() {
-                entries[i].flags |= Flag::DEFAULT;
+            for entry in &mut entries {
+                entry.flags |= Flag::DEFAULT;
             }
         }
 
@@ -144,6 +146,7 @@ impl Acl {
         let acl_p = xacl_from_text(text)?;
         Ok(Acl {
             acl: acl_p,
+            #[cfg(target_os = "linux")]
             default_acl: false,
         })
     }
