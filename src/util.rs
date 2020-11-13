@@ -64,7 +64,7 @@ impl Qualifier {
         let qualifier = match idtype {
             ID_TYPE_UID => Qualifier::User(Uid::from_raw(id_c)),
             ID_TYPE_GID => Qualifier::Group(Gid::from_raw(id_c)),
-            other => Qualifier::Unknown(guid.to_string()),
+            _ => Qualifier::Unknown(guid.to_string()),
         };
 
         Ok(qualifier)

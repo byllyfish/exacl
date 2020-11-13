@@ -55,7 +55,8 @@ pub struct Acl {
 
     /// Set to true if `acl` was set from the default ACL for a directory
     /// using DEFAULT_ACL option. Used to return entries with the `DEFAULT`
-    /// flag set.
+    /// flag set. Value is not used on `macOS`; it's always false.
+    #[allow(dead_code)]
     default_acl: bool,
 }
 
