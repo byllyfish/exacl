@@ -46,7 +46,7 @@ fn main() {
         options |= AclOption::DEFAULT_ACL;
     }
     if opt.symlink {
-        options |= AclOption::SYMLINK_ONLY;
+        options |= AclOption::SYMLINK_ACL;
     }
 
     let exit_code = if opt.set {

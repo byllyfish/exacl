@@ -6,7 +6,7 @@
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! use exacl::{Acl, AclOption};
 //!
-//! let acl = Acl::read("./foo/bar.txt", AclOption::default())?;
+//! let acl = Acl::read("./foo/bar.txt", AclOption::empty())?;
 //!
 //! for entry in &acl.entries()? {
 //!     println!("{:?}", entry);
@@ -41,7 +41,7 @@ bitflags! {
     #[derive(Default)]
     pub struct AclOption : u32 {
         /// Get/set the ACL of the symlink itself.
-        const SYMLINK_ONLY = 0x01;
+        const SYMLINK_ACL = 0x01;
 
         /// Get/set the default ACL (Linux only).
         const DEFAULT_ACL = 0x02;
@@ -72,10 +72,10 @@ impl Acl {
 
     /// Read ACL for specified file.
     pub fn read<P: AsRef<Path>>(path: P, options: AclOption) -> io::Result<Acl> {
-        let symlink_only = options.contains(AclOption::SYMLINK_ONLY);
+        let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
 
-        let acl_p = xacl_get_file(path.as_ref(), symlink_only, default_acl)?;
+        let acl_p = xacl_get_file(path.as_ref(), symlink_acl, default_acl)?;
 
         Ok(Acl {
             acl: acl_p,
@@ -86,15 +86,15 @@ impl Acl {
 
     /// Write ACL for specified file.
     pub fn write<P: AsRef<Path>>(&self, path: P, options: AclOption) -> io::Result<()> {
-        let symlink_only = options.contains(AclOption::SYMLINK_ONLY);
+        let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
 
         // Don't check ACL if it's an empty, default ACL.
-        if !default_acl || !self.empty() {
+        if !default_acl || !self.is_empty() {
             xacl_check(self.acl)?;
         }
 
-        xacl_set_file(path.as_ref(), self.acl, symlink_only, default_acl)
+        xacl_set_file(path.as_ref(), self.acl, symlink_acl, default_acl)
     }
 
     /// Construct ACL from AclEntry's.
@@ -157,7 +157,7 @@ impl Acl {
     }
 
     /// Return true if ACL is empty.
-    pub fn empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         xacl_entry_count(self.acl) == 0
     }
 }
