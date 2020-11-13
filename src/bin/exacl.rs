@@ -22,6 +22,9 @@ struct Opt {
     #[structopt(long)]
     set: bool,
 
+    #[structopt(short = "d", long)]
+    default: bool,
+
     #[structopt(short = "h", long)]
     symlink: bool,
 
@@ -38,11 +41,13 @@ fn main() {
 
     let opt = Opt::from_args();
 
-    let options = if opt.symlink {
-        AclOption::SYMLINK_ONLY
-    } else {
-        AclOption::default()
-    };
+    let mut options = AclOption::empty();
+    if opt.default {
+        options |= AclOption::DEFAULT_ACL;
+    }
+    if opt.symlink {
+        options |= AclOption::SYMLINK_ONLY;
+    }
 
     let exit_code = if opt.set {
         set_acl(&opt.files, options)
