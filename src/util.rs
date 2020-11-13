@@ -8,7 +8,6 @@ use crate::flag::Flag;
 use crate::perm::Perm;
 use crate::sys::*;
 
-use log::debug;
 use nix::unistd::{self, Gid, Uid};
 use scopeguard::defer;
 use std::ffi::{c_void, CStr, CString};
@@ -65,10 +64,7 @@ impl Qualifier {
         let qualifier = match idtype {
             ID_TYPE_UID => Qualifier::User(Uid::from_raw(id_c)),
             ID_TYPE_GID => Qualifier::Group(Gid::from_raw(id_c)),
-            other => {
-                debug!("Unknown idtype {}", other);
-                Qualifier::Unknown(guid.to_string())
-            }
+            other => Qualifier::Unknown(guid.to_string()),
         };
 
         Ok(qualifier)

@@ -1,5 +1,7 @@
 //! Error handling convenience functions.
 
+#![allow(dead_code)]
+
 use log::debug;
 use std::fmt;
 use std::io;
