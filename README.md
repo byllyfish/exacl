@@ -7,7 +7,7 @@ Rust library to manipulate access control lists on macOS and Linux.
 ```rust
 use exacl::{Acl, AclOption};
 
-let acl = Acl::read("./foo/bar.txt", AclOption::default())?;
+let acl = Acl::read("./foo/bar.txt", AclOption::empty())?;
 
 for entry in &acl.entries()? {
     println!("{:?}", entry);

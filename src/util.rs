@@ -8,7 +8,6 @@ use crate::flag::Flag;
 use crate::perm::Perm;
 use crate::sys::*;
 
-use log::debug;
 use nix::unistd::{self, Gid, Uid};
 use scopeguard::defer;
 use std::ffi::{c_void, CStr, CString};
@@ -65,10 +64,7 @@ impl Qualifier {
         let qualifier = match idtype {
             ID_TYPE_UID => Qualifier::User(Uid::from_raw(id_c)),
             ID_TYPE_GID => Qualifier::Group(Gid::from_raw(id_c)),
-            other => {
-                debug!("Unknown idtype {}", other);
-                Qualifier::Unknown(guid.to_string())
-            }
+            _ => Qualifier::Unknown(guid.to_string()),
         };
 
         Ok(qualifier)
@@ -277,21 +273,29 @@ fn path_exists(path: &Path, symlink_only: bool) -> bool {
 
 /// Get the native ACL for a specific file or directory.
 ///
-/// If the file is a symlink, the `symlink_only` argument determines whether to
+/// If the file is a symlink, the `symlink_acl` argument determines whether to
 /// get the ACL from the symlink itself (true) or the file it points to (false).
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t> {
+pub(crate) fn xacl_get_file(
+    path: &Path,
+    symlink_acl: bool,
+    default_acl: bool,
+) -> io::Result<acl_t> {
     use std::os::unix::ffi::OsStrExt;
 
+    if default_acl {
+        return fail_custom("macOS does not support default ACL");
+    }
+
     let c_path = CString::new(path.as_os_str().as_bytes())?;
-    let acl = if symlink_only {
+    let acl = if symlink_acl {
         unsafe { acl_get_link_np(c_path.as_ptr(), acl_type_t_ACL_TYPE_EXTENDED) }
     } else {
         unsafe { acl_get_file(c_path.as_ptr(), acl_type_t_ACL_TYPE_EXTENDED) }
     };
 
     if acl.is_null() {
-        let func = if symlink_only {
+        let func = if symlink_acl {
             "acl_get_link_np"
         } else {
             "acl_get_file"
@@ -301,7 +305,7 @@ pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t
         // acl_get_file et al. can return NULL (ENOENT) if the file exists, but
         // there is no ACL. If the path exists, return an *empty* ACL.
         if let Some(sg::ENOENT) = err.raw_os_error() {
-            if path_exists(&path, symlink_only) {
+            if path_exists(&path, symlink_acl) {
                 return xacl_init(1);
             }
         }
@@ -313,15 +317,25 @@ pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn xacl_get_file(path: &Path, symlink_only: bool) -> io::Result<acl_t> {
+pub(crate) fn xacl_get_file(
+    path: &Path,
+    symlink_acl: bool,
+    default_acl: bool,
+) -> io::Result<acl_t> {
     use std::os::unix::ffi::OsStrExt;
 
-    if symlink_only {
+    if symlink_acl {
         return fail_custom("Linux does not support symlinks with ACL's.");
     }
 
+    let acl_type = if default_acl {
+        ACL_TYPE_DEFAULT
+    } else {
+        ACL_TYPE_ACCESS
+    };
+
     let c_path = CString::new(path.as_os_str().as_bytes())?;
-    let acl = unsafe { acl_get_file(c_path.as_ptr(), ACL_TYPE_ACCESS) };
+    let acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
 
     if acl.is_null() {
         return fail_err("null", "acl_get_file", &c_path);
@@ -348,11 +362,20 @@ fn xacl_set_file_symlink(c_path: &CString, acl: acl_t) -> io::Result<()> {
 }
 
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::Result<()> {
+pub(crate) fn xacl_set_file(
+    path: &Path,
+    acl: acl_t,
+    symlink_acl: bool,
+    default_acl: bool,
+) -> io::Result<()> {
     use std::os::unix::ffi::OsStrExt;
 
+    if default_acl {
+        return fail_custom("macOS does not support default ACL");
+    }
+
     let c_path = CString::new(path.as_os_str().as_bytes())?;
-    let ret = if symlink_only {
+    let ret = if symlink_acl {
         unsafe { acl_set_link_np(c_path.as_ptr(), acl_type_t_ACL_TYPE_EXTENDED, acl) }
     } else {
         unsafe { acl_set_file(c_path.as_ptr(), acl_type_t_ACL_TYPE_EXTENDED, acl) }
@@ -364,7 +387,7 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::
         // acl_set_link_np() returns ENOTSUP for symlinks. Work-around this
         // by using acl_set_fd().
         if let Some(sg::ENOTSUP) = err.raw_os_error() {
-            if symlink_only {
+            if symlink_acl {
                 return xacl_set_file_symlink(&c_path, acl);
             }
         }
@@ -376,15 +399,26 @@ pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn xacl_set_file(path: &Path, acl: acl_t, symlink_only: bool) -> io::Result<()> {
+pub(crate) fn xacl_set_file(
+    path: &Path,
+    acl: acl_t,
+    symlink_acl: bool,
+    default_acl: bool,
+) -> io::Result<()> {
     use std::os::unix::ffi::OsStrExt;
 
-    if symlink_only {
+    if symlink_acl {
         return fail_custom("Linux does not support symlinks with ACL's");
     }
 
+    let acl_type = if default_acl {
+        ACL_TYPE_DEFAULT
+    } else {
+        ACL_TYPE_ACCESS
+    };
+
     let c_path = CString::new(path.as_os_str().as_bytes())?;
-    let ret = unsafe { acl_set_file(c_path.as_ptr(), ACL_TYPE_ACCESS, acl) };
+    let ret = unsafe { acl_set_file(c_path.as_ptr(), acl_type, acl) };
     if ret != 0 {
         return fail_err(ret, "acl_set_file", &c_path);
     }

@@ -474,4 +474,19 @@ testWriteAclGUID_nil() {
         "${msg//\"}"
 }
 
+testDefaultAclFails() {
+    # Test that exacl returns an error; default acl not supported on macOS.
+    msg=`$EXACL --default $DIR1 2>&1`
+    assertEquals 1 $?
+    assertEquals \
+        "File \"$DIR1\": macOS does not support default ACL" \
+        "$msg"
+
+    msg=`echo "[]" | $EXACL --set --default $DIR1 2>&1`
+    assertEquals 1 $?
+    assertEquals \
+        "File \"$DIR1\": macOS does not support default ACL" \
+        "$msg"
+}
+
 . shunit2

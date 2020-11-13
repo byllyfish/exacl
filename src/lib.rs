@@ -6,7 +6,7 @@
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! use exacl::{Acl, AclOption};
 //!
-//! let acl = Acl::read("./foo/bar.txt", AclOption::default())?;
+//! let acl = Acl::read("./foo/bar.txt", AclOption::empty())?;
 //!
 //! for entry in &acl.entries()? {
 //!     println!("{:?}", entry);
@@ -41,13 +41,23 @@ bitflags! {
     #[derive(Default)]
     pub struct AclOption : u32 {
         /// Get/set the ACL of the symlink itself.
-        const SYMLINK_ONLY = 0x01;
+        const SYMLINK_ACL = 0x01;
+
+        /// Get/set the default ACL (Linux only).
+        const DEFAULT_ACL = 0x02;
     }
 }
 
 /// Access Control List native object wrapper.
 pub struct Acl {
+    /// Native acl.
     acl: acl_t,
+
+    /// Set to true if `acl` was set from the default ACL for a directory
+    /// using DEFAULT_ACL option. Used to return entries with the `DEFAULT`
+    /// flag set.
+    #[cfg(target_os = "linux")]
+    default_acl: bool,
 }
 
 impl Acl {
@@ -62,18 +72,29 @@ impl Acl {
 
     /// Read ACL for specified file.
     pub fn read<P: AsRef<Path>>(path: P, options: AclOption) -> io::Result<Acl> {
-        let symlink_only = options.contains(AclOption::SYMLINK_ONLY);
-        let acl_p = xacl_get_file(path.as_ref(), symlink_only)?;
+        let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
+        let default_acl = options.contains(AclOption::DEFAULT_ACL);
 
-        Ok(Acl { acl: acl_p })
+        let acl_p = xacl_get_file(path.as_ref(), symlink_acl, default_acl)?;
+
+        Ok(Acl {
+            acl: acl_p,
+            #[cfg(target_os = "linux")]
+            default_acl,
+        })
     }
 
     /// Write ACL for specified file.
     pub fn write<P: AsRef<Path>>(&self, path: P, options: AclOption) -> io::Result<()> {
-        let symlink_only = options.contains(AclOption::SYMLINK_ONLY);
+        let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
+        let default_acl = options.contains(AclOption::DEFAULT_ACL);
 
-        xacl_check(self.acl)?;
-        xacl_set_file(path.as_ref(), self.acl, symlink_only)
+        // Don't check ACL if it's an empty, default ACL.
+        if !default_acl || !self.is_empty() {
+            xacl_check(self.acl)?;
+        }
+
+        xacl_set_file(path.as_ref(), self.acl, symlink_acl, default_acl)
     }
 
     /// Construct ACL from AclEntry's.
@@ -94,6 +115,8 @@ impl Acl {
 
         Ok(Acl {
             acl: ScopeGuard::into_inner(acl_p),
+            #[cfg(target_os = "linux")]
+            default_acl: false,
         })
     }
 
@@ -107,18 +130,35 @@ impl Acl {
             Ok(())
         })?;
 
+        #[cfg(target_os = "linux")]
+        if self.default_acl {
+            // Set DEFAULT flag on each entry.
+            for entry in &mut entries {
+                entry.flags |= Flag::DEFAULT;
+            }
+        }
+
         Ok(entries)
     }
 
     /// Construct ACL from platform-dependent textual description.
     pub fn from_platform_text(text: &str) -> io::Result<Acl> {
         let acl_p = xacl_from_text(text)?;
-        Ok(Acl { acl: acl_p })
+        Ok(Acl {
+            acl: acl_p,
+            #[cfg(target_os = "linux")]
+            default_acl: false,
+        })
     }
 
     /// Return platform-dependent textual description.
     pub fn to_platform_text(&self) -> String {
         xacl_to_text(self.acl)
+    }
+
+    /// Return true if ACL is empty.
+    pub fn is_empty(&self) -> bool {
+        xacl_entry_count(self.acl) == 0
     }
 }
 
