@@ -280,8 +280,8 @@ pub fn getfacl<P: AsRef<Path>>(_path: P, _options: AclOption) -> io::Result<Vec<
 /// use exacl::{setfacl, AclEntry, AclOption, Flag, Perm};
 ///
 /// let entries = vec![
-///     AclEntry::allow_user("some_user", Perm::READ | Perm::WRITE, Flag::empty()),
-///     AclEntry::deny_group("some_group", Perm::WRITE, Flag::empty())
+///     AclEntry::allow_user("some_user", Perm::READ | Perm::WRITE, None),
+///     AclEntry::deny_group("some_group", Perm::WRITE, None)
 /// ];
 ///
 /// setfacl("./tmp/foo", &entries, AclOption::empty())?;
@@ -312,11 +312,11 @@ pub fn getfacl<P: AsRef<Path>>(_path: P, _options: AclOption) -> io::Result<Vec<
 /// use exacl::{setfacl, Acl, AclEntry, AclOption, Flag, Perm};
 ///
 /// let entries = vec![
-///     AclEntry::allow_user(Acl::OWNER, Perm::READ | Perm::WRITE, Flag::empty()),
-///     AclEntry::allow_group(Acl::OWNER, Perm::READ, Flag::empty()),
-///     AclEntry::allow_group(Acl::OTHER, Perm::empty(), Flag::empty()),
-///     AclEntry::allow_user("some_user", Perm::READ | Perm::WRITE, Flag::empty()),
-///     AclEntry::allow_group(Acl::MASK, Perm::READ | Perm::WRITE, Flag::empty()),
+///     AclEntry::allow_user(Acl::OWNER, Perm::READ | Perm::WRITE, None),
+///     AclEntry::allow_group(Acl::OWNER, Perm::READ, None),
+///     AclEntry::allow_group(Acl::OTHER, Perm::empty(), None),
+///     AclEntry::allow_user("some_user", Perm::READ | Perm::WRITE, None),
+///     AclEntry::allow_group(Acl::MASK, Perm::READ | Perm::WRITE, None),
 /// ];
 ///
 /// setfacl("./tmp/foo", &entries, AclOption::empty())?;

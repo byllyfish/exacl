@@ -1,7 +1,7 @@
 //! API Tests for exacl module.
 
 use ctor::ctor;
-use exacl::{Acl, AclEntry, AclEntryKind, AclOption, Flag, Perm};
+use exacl::{Acl, AclEntry, AclOption, Flag, Perm};
 use log::debug;
 use std::io;
 
@@ -46,17 +46,18 @@ fn test_read_acl() -> io::Result<()> {
 #[test]
 #[cfg(target_os = "macos")]
 fn test_write_acl_macos() -> io::Result<()> {
-    use AclEntryKind::{Group, User};
-
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
-    entries.push(AclEntry::allow(Group, "_spotlight", rwx));
-    entries.push(AclEntry::allow(User, "11501", rwx));
-    entries.push(AclEntry::allow(User, "11502", rwx));
-    entries.push(AclEntry::allow(User, "11503", rwx));
-    entries.push(AclEntry::deny(Group, "11504", rwx));
-    entries[4].flags = Flag::FILE_INHERIT | Flag::DIRECTORY_INHERIT;
+    entries.push(AclEntry::allow_group("_spotlight", rwx, None));
+    entries.push(AclEntry::allow_user("11501", rwx, None));
+    entries.push(AclEntry::allow_user("11502", rwx, None));
+    entries.push(AclEntry::allow_user("11503", rwx, None));
+    entries.push(AclEntry::deny_group(
+        "11504",
+        rwx,
+        Flag::FILE_INHERIT | Flag::DIRECTORY_INHERIT,
+    ));
 
     log_acl(&entries);
 
@@ -89,19 +90,17 @@ user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:
 #[test]
 #[cfg(target_os = "linux")]
 fn test_write_acl_linux() -> io::Result<()> {
-    use AclEntryKind::{Group, User};
-
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
-    entries.push(AclEntry::allow(Group, "bin", rwx));
-    entries.push(AclEntry::allow(User, "11501", rwx));
-    entries.push(AclEntry::allow(User, "11502", rwx));
-    entries.push(AclEntry::allow(User, "11503", rwx));
-    entries.push(AclEntry::allow(User, Acl::OWNER, rwx));
-    entries.push(AclEntry::allow(Group, Acl::OWNER, rwx));
-    entries.push(AclEntry::allow(User, Acl::OTHER, rwx));
-    entries.push(AclEntry::allow(Group, Acl::MASK, rwx));
+    entries.push(AclEntry::allow_group("bin", rwx, None));
+    entries.push(AclEntry::allow_user("11501", rwx, None));
+    entries.push(AclEntry::allow_user("11502", rwx, None));
+    entries.push(AclEntry::allow_user("11503", rwx, None));
+    entries.push(AclEntry::allow_user(Acl::OWNER, rwx, None));
+    entries.push(AclEntry::allow_group(Acl::OWNER, rwx, None));
+    entries.push(AclEntry::allow_user(Acl::OTHER, rwx, None));
+    entries.push(AclEntry::allow_group(Acl::MASK, rwx, None));
 
     log_acl(&entries);
 
@@ -134,13 +133,11 @@ other::rwx
 #[test]
 #[cfg(target_os = "macos")]
 fn test_write_acl_big() -> io::Result<()> {
-    use AclEntryKind::User;
-
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
     for _ in 0..128 {
-        entries.push(AclEntry::allow(User, "11501", rwx));
+        entries.push(AclEntry::allow_user("11501", rwx, None));
     }
 
     let file = tempfile::NamedTempFile::new()?;
@@ -158,13 +155,11 @@ fn test_write_acl_big() -> io::Result<()> {
 #[test]
 #[cfg(target_os = "macos")]
 fn test_write_acl_too_big() {
-    use AclEntryKind::User;
-
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
     for _ in 0..129 {
-        entries.push(AclEntry::allow(User, "11501", rwx));
+        entries.push(AclEntry::allow_user("11501", rwx, None));
     }
 
     let err = Acl::from_entries(&entries).err().unwrap();
@@ -236,16 +231,14 @@ fn test_read_default_acl() -> io::Result<()> {
 #[test]
 #[cfg(target_os = "linux")]
 fn test_write_default_acl() -> io::Result<()> {
-    use AclEntryKind::{Group, User};
-
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
-    entries.push(AclEntry::allow(User, Acl::OWNER, rwx));
-    entries.push(AclEntry::allow(Group, Acl::OWNER, rwx));
-    entries.push(AclEntry::allow(User, Acl::OTHER, rwx));
-    entries.push(AclEntry::allow(Group, "bin", rwx));
-    entries.push(AclEntry::allow(Group, Acl::MASK, rwx));
+    entries.push(AclEntry::allow_user(Acl::OWNER, rwx, None));
+    entries.push(AclEntry::allow_group(Acl::OWNER, rwx, None));
+    entries.push(AclEntry::allow_user(Acl::OTHER, rwx, None));
+    entries.push(AclEntry::allow_group("bin", rwx, None));
+    entries.push(AclEntry::allow_group(Acl::MASK, rwx, None));
 
     let dir = tempfile::tempdir()?;
     let acl = Acl::from_entries(&entries)?;
