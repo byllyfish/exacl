@@ -89,7 +89,7 @@ user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:
 #[test]
 #[cfg(target_os = "linux")]
 fn test_write_acl_linux() -> io::Result<()> {
-    use AclEntryKind::*;
+    use AclEntryKind::{Group, User};
 
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
@@ -236,7 +236,7 @@ fn test_read_default_acl() -> io::Result<()> {
 #[test]
 #[cfg(target_os = "linux")]
 fn test_write_default_acl() -> io::Result<()> {
-    use AclEntryKind::*;
+    use AclEntryKind::{Group, User};
 
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;

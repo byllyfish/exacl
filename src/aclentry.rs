@@ -1,6 +1,6 @@
 //! Provides `AclEntry` implementation.
 
-use crate::fail::fail_custom;
+use crate::failx::fail_custom;
 use crate::flag::Flag;
 use crate::perm::Perm;
 use crate::util::*;
@@ -201,7 +201,7 @@ mod aclentry_tests {
 
     #[test]
     fn test_ordering() {
-        use AclEntryKind::*;
+        use AclEntryKind::{Group, User};
 
         let mut acl = vec![
             AclEntry::deny(User, "c", Perm::READ),

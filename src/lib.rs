@@ -37,7 +37,7 @@
 
 mod aclentry;
 mod bititer;
-mod fail;
+mod failx;
 mod flag;
 mod perm;
 mod sys;
@@ -49,7 +49,7 @@ pub use flag::Flag;
 pub use perm::Perm;
 
 use bitflags::bitflags;
-use fail::fail_custom;
+use failx::fail_custom;
 use scopeguard::{self, ScopeGuard};
 use std::io;
 use std::path::Path;
@@ -91,7 +91,7 @@ impl Acl {
 
     /// Read ACL for specified file.
     ///
-    /// # Error
+    /// # Errors
     ///
     /// Returns an `io::Error` on failure.
     pub fn read<P: AsRef<Path>>(path: P, options: AclOption) -> io::Result<Acl> {
@@ -109,7 +109,7 @@ impl Acl {
 
     /// Write ACL for specified file.
     ///
-    /// # Error
+    /// # Errors
     ///
     /// Returns an `io::Error` on failure.  
     pub fn write<P: AsRef<Path>>(&self, path: P, options: AclOption) -> io::Result<()> {
@@ -124,9 +124,9 @@ impl Acl {
         xacl_set_file(path.as_ref(), self.acl, symlink_acl, default_acl)
     }
 
-    /// Construct ACL from AclEntry's.
+    /// Construct ACL from slice of `AclEntry`.
     ///
-    /// # Error
+    /// # Errors
     ///
     /// Returns an `io::Error` on failure.
     pub fn from_entries(entries: &[AclEntry]) -> io::Result<Acl> {
@@ -153,7 +153,7 @@ impl Acl {
 
     /// Return ACL as a vector of `AclEntry`.
     ///
-    /// # Error
+    /// # Errors
     ///
     /// Returns an `io::Error` on failure.
     pub fn entries(&self) -> io::Result<Vec<AclEntry>> {
@@ -178,7 +178,7 @@ impl Acl {
 
     /// Construct ACL from platform-dependent textual description.
     ///
-    /// # Error
+    /// # Errors
     ///
     /// Returns an `io::Error` on failure.
     pub fn from_platform_text(text: &str) -> io::Result<Acl> {
@@ -235,7 +235,7 @@ impl Drop for Acl {
 /// the default ACL entries indicated by a `DEFAULT` flag.
 ///
 /// If `path` points to a symlink, `getfacl` returns the ACL of the file pointed
-/// to by the symlink. The SYMLINK_ACL option is not supported on Linux.
+/// to by the symlink. The `SYMLINK_ACL` option is not supported on Linux.
 ///
 /// The `DEFAULT_ACL` option causes `getfacl` to only include entries for the
 /// default ACL, if present for a directory path. When called with the
@@ -251,7 +251,7 @@ impl Drop for Acl {
 /// # Ok(()) }
 /// ```
 ///
-/// # Error
+/// # Errors
 ///
 /// Returns an `io::Error` on failure.
 
@@ -321,7 +321,7 @@ pub fn getfacl<P: AsRef<Path>>(_path: P, _options: AclOption) -> io::Result<Vec<
 /// # Ok(()) }
 /// ```
 ///
-/// # Error
+/// # Errors
 ///
 /// Returns an `io::Error` on failure.
 

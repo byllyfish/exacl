@@ -3,7 +3,7 @@
 //! This module wraps all unsafe code from the native API.
 
 use crate::bititer::BitIter;
-use crate::fail::*;
+use crate::failx::*;
 use crate::flag::Flag;
 use crate::perm::Perm;
 use crate::sys::*;
