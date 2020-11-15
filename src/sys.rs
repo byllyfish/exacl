@@ -35,7 +35,7 @@ pub unsafe fn acl_get_perm(permset_d: acl_permset_t, perm: acl_perm_t) -> ::std:
     acl_get_perm_np(permset_d, perm)
 }
 
-/// Non-portable ACL Permissions & Flags (MacOS only)
+/// Non-portable ACL Permissions & Flags (`macOS` only)
 #[cfg(all(target_os = "macos", not(docsrs)))]
 pub mod np {
     use super::*;

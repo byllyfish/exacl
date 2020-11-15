@@ -191,11 +191,13 @@ impl Acl {
     }
 
     /// Return platform-dependent textual description.
+    #[must_use]
     pub fn to_platform_text(&self) -> String {
         xacl_to_text(self.acl)
     }
 
     /// Return true if ACL is empty.
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         xacl_entry_count(self.acl) == 0
     }

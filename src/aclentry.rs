@@ -19,6 +19,10 @@ pub enum AclEntryKind {
 }
 
 /// ACL entry with allow/deny semantics.
+///
+/// ACL entries are ordered so sorting will automatically put the ACL in
+/// canonical order.
+///
 #[derive(Debug, PartialEq, Serialize, Deserialize, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct AclEntry {
@@ -53,70 +57,52 @@ impl PartialOrd for AclEntry {
 }
 
 impl AclEntry {
-    /// Construct an ALLOW access control entry for a user.
-    pub fn allow_user(name: &str, perms: Perm, flags: Flag) -> AclEntry {
+    /// Construct a new access control entry.
+    #[must_use]
+    pub fn new(kind: AclEntryKind, name: &str, perms: Perm, flags: Flag, allow: bool) -> AclEntry {
         AclEntry {
-            kind: AclEntryKind::User,
+            kind,
             name: String::from(name),
             perms,
             flags,
-            allow: true,
+            allow,
         }
+    }
+
+    /// Construct an ALLOW access control entry for a user.
+    #[must_use]
+    pub fn allow_user(name: &str, perms: Perm, flags: Flag) -> AclEntry {
+        AclEntry::new(AclEntryKind::User, name, perms, flags, true)
     }
 
     /// Construct an ALLOW access control entry for a group.
+    #[must_use]
     pub fn allow_group(name: &str, perms: Perm, flags: Flag) -> AclEntry {
-        AclEntry {
-            kind: AclEntryKind::Group,
-            name: String::from(name),
-            perms,
-            flags,
-            allow: true,
-        }
+        AclEntry::new(AclEntryKind::Group, name, perms, flags, true)
     }
 
     /// Construct a DENY access control entry for a user.
+    #[must_use]
     pub fn deny_user(name: &str, perms: Perm, flags: Flag) -> AclEntry {
-        AclEntry {
-            kind: AclEntryKind::User,
-            name: String::from(name),
-            perms,
-            flags,
-            allow: false,
-        }
+        AclEntry::new(AclEntryKind::User, name, perms, flags, false)
     }
 
     /// Construct a DENY access control entry for a group.
+    #[must_use]
     pub fn deny_group(name: &str, perms: Perm, flags: Flag) -> AclEntry {
-        AclEntry {
-            kind: AclEntryKind::Group,
-            name: String::from(name),
-            perms,
-            flags,
-            allow: false,
-        }
+        AclEntry::new(AclEntryKind::Group, name, perms, flags, false)
     }
 
-    /// Construct an ALLOW access control entry.
+    /// Construct an ALLOW access control entry for a user/group.
+    #[must_use]
     pub fn allow(kind: AclEntryKind, name: &str, perms: Perm) -> AclEntry {
-        AclEntry {
-            kind,
-            name: String::from(name),
-            perms,
-            flags: Flag::empty(),
-            allow: true,
-        }
+        AclEntry::new(kind, name, perms, Flag::empty(), true)
     }
 
-    /// Construct a DENY access control entry.
+    /// Construct a DENY access control entry for a user/group.
+    #[must_use]
     pub fn deny(kind: AclEntryKind, name: &str, perms: Perm) -> AclEntry {
-        AclEntry {
-            kind,
-            name: String::from(name),
-            perms,
-            flags: Flag::empty(),
-            allow: false,
-        }
+        AclEntry::new(kind, name, perms, Flag::empty(), false)
     }
 
     pub(crate) fn from_raw(entry: acl_entry_t) -> io::Result<AclEntry> {

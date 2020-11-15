@@ -46,7 +46,7 @@ fn test_read_acl() -> io::Result<()> {
 #[test]
 #[cfg(target_os = "macos")]
 fn test_write_acl_macos() -> io::Result<()> {
-    use AclEntryKind::*;
+    use AclEntryKind::{Group, User};
 
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
@@ -134,7 +134,7 @@ other::rwx
 #[test]
 #[cfg(target_os = "macos")]
 fn test_write_acl_big() -> io::Result<()> {
-    use AclEntryKind::*;
+    use AclEntryKind::User;
 
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
@@ -158,7 +158,7 @@ fn test_write_acl_big() -> io::Result<()> {
 #[test]
 #[cfg(target_os = "macos")]
 fn test_write_acl_too_big() {
-    use AclEntryKind::*;
+    use AclEntryKind::User;
 
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
