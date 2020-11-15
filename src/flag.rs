@@ -9,7 +9,7 @@ use serde::{de, ser, Deserialize, Serialize};
 use std::fmt;
 
 bitflags! {
-    /// Represents ACL inheritance flags.
+    /// Represents ACL entry inheritance flags.
     #[derive(Default)]
     pub struct Flag : acl_flag_t {
         /// ACL Flag.

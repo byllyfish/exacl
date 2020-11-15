@@ -1,4 +1,4 @@
-//! Provides AclEntry implementation.
+//! Provides `AclEntry` implementation.
 
 use crate::fail::fail_custom;
 use crate::flag::Flag;
@@ -53,6 +53,50 @@ impl PartialOrd for AclEntry {
 }
 
 impl AclEntry {
+    /// Construct an ALLOW access control entry for a user.
+    pub fn allow_user(name: &str, perms: Perm, flags: Flag) -> AclEntry {
+        AclEntry {
+            kind: AclEntryKind::User,
+            name: String::from(name),
+            perms,
+            flags,
+            allow: true,
+        }
+    }
+
+    /// Construct an ALLOW access control entry for a group.
+    pub fn allow_group(name: &str, perms: Perm, flags: Flag) -> AclEntry {
+        AclEntry {
+            kind: AclEntryKind::Group,
+            name: String::from(name),
+            perms,
+            flags,
+            allow: true,
+        }
+    }
+
+    /// Construct a DENY access control entry for a user.
+    pub fn deny_user(name: &str, perms: Perm, flags: Flag) -> AclEntry {
+        AclEntry {
+            kind: AclEntryKind::User,
+            name: String::from(name),
+            perms,
+            flags,
+            allow: false,
+        }
+    }
+
+    /// Construct a DENY access control entry for a group.
+    pub fn deny_group(name: &str, perms: Perm, flags: Flag) -> AclEntry {
+        AclEntry {
+            kind: AclEntryKind::Group,
+            name: String::from(name),
+            perms,
+            flags,
+            allow: false,
+        }
+    }
+
     /// Construct an ALLOW access control entry.
     pub fn allow(kind: AclEntryKind, name: &str, perms: Perm) -> AclEntry {
         AclEntry {

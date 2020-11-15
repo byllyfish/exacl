@@ -475,7 +475,7 @@ pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
 
 /// Create a new empty ACL with the given capacity.
 ///
-/// Client must call xacl_free when done.
+/// Client must call `xacl_free` when done with result.
 pub(crate) fn xacl_init(capacity: usize) -> io::Result<acl_t> {
     use std::convert::TryFrom;
     let size = match i32::try_from(capacity) {
@@ -487,6 +487,7 @@ pub(crate) fn xacl_init(capacity: usize) -> io::Result<acl_t> {
     if acl.is_null() {
         return fail_err("null", "acl_init", capacity);
     }
+
     Ok(acl)
 }
 
