@@ -2,15 +2,29 @@
 //!
 //! Rust library to manipulate access control lists on `macOS` and `Linux`.
 //!
+//! ## Example
+//!
 //! ```no_run
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use exacl::{getfacl, AclOption};
+//! use exacl::{getfacl, setfacl, AclEntry, Perm};
 //!
-//! let acl = getfacl("./tmp/foo", AclOption::empty())?;
+//! // Get the ACL from "./tmp/foo".
+//! let mut acl = getfacl("./tmp/foo", None)?;
 //!
-//! for entry in acl {
+//! // Print the contents of the ACL.
+//! for entry in &acl {
 //!     println!("{:?}", entry);
 //! }
+//!
+//! // Add an ACL entry to the end.
+//! acl.push(AclEntry::allow_user("some_user", Perm::READ, None));
+//!
+//! // Sort the ACL in canonical order.
+//! acl.sort();
+//!
+//! // Set the ACL for "./tmp/foo".
+//! setfacl("./tmp/foo", &acl, None)?;
+//!
 //! # Ok(()) }
 //! ```
 //!
@@ -23,6 +37,17 @@
 //!
 //! Use setfacl to set the ACL for a file or directory, including the default
 //! ACL on Linux.
+//!
+//! Both getfacl and setfacl work with a vector of `AclEntry` structures. Each
+//! `AclEntry` structure contains five fields:
+//!
+//! - kind (AclEntryKind) - the kind of entry (User, Group, Unknown).
+//! - name (String) - name (or id) of the principal being given access. You can
+//!     use a user/group name, decimal uid/gid, or UUID (on macOS).
+//! - perms (Perm) - permission bits for the entry.
+//! - flags (Flag) - flags indicating whether an entry is inherited, etc.
+//! - allow (bool) - true if entry is allowed; false means deny. Linux only
+//!     supports allow=true.
 //!
 //! ## Low Level API
 //!
@@ -247,9 +272,9 @@ impl Drop for Acl {
 ///
 /// ```no_run
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use exacl::{getfacl, AclOption};
+/// use exacl::getfacl;
 ///
-/// let entries = getfacl("./tmp/foo", AclOption::empty())?;
+/// let entries = getfacl("./tmp/foo", None)?;
 /// # Ok(()) }
 /// ```
 ///
@@ -257,7 +282,11 @@ impl Drop for Acl {
 ///
 /// Returns an `io::Error` on failure.
 
-pub fn getfacl<P: AsRef<Path>>(_path: P, _options: AclOption) -> io::Result<Vec<AclEntry>> {
+pub fn getfacl<P, O>(_path: P, _options: O) -> io::Result<Vec<AclEntry>>
+where
+    P: AsRef<Path>,
+    O: Into<Option<AclOption>>,
+{
     Err(io::Error::from_raw_os_error(1))
 }
 
@@ -277,14 +306,14 @@ pub fn getfacl<P: AsRef<Path>>(_path: P, _options: AclOption) -> io::Result<Vec<
 ///
 /// ```no_run
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use exacl::{setfacl, AclEntry, AclOption, Flag, Perm};
+/// use exacl::{setfacl, AclEntry, Flag, Perm};
 ///
 /// let entries = vec![
 ///     AclEntry::allow_user("some_user", Perm::READ | Perm::WRITE, None),
 ///     AclEntry::deny_group("some_group", Perm::WRITE, None)
 /// ];
 ///
-/// setfacl("./tmp/foo", &entries, AclOption::empty())?;
+/// setfacl("./tmp/foo", &entries, None)?;
 /// # Ok(()) }
 /// ```
 ///
@@ -309,7 +338,7 @@ pub fn getfacl<P: AsRef<Path>>(_path: P, _options: AclOption) -> io::Result<Vec<
 ///
 /// ```no_run
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use exacl::{setfacl, Acl, AclEntry, AclOption, Flag, Perm};
+/// use exacl::{setfacl, Acl, AclEntry, Flag, Perm};
 ///
 /// let entries = vec![
 ///     AclEntry::allow_user(Acl::OWNER, Perm::READ | Perm::WRITE, None),
@@ -319,7 +348,7 @@ pub fn getfacl<P: AsRef<Path>>(_path: P, _options: AclOption) -> io::Result<Vec<
 ///     AclEntry::allow_group(Acl::MASK, Perm::READ | Perm::WRITE, None),
 /// ];
 ///
-/// setfacl("./tmp/foo", &entries, AclOption::empty())?;
+/// setfacl("./tmp/foo", &entries, None)?;
 /// # Ok(()) }
 /// ```
 ///
@@ -327,10 +356,10 @@ pub fn getfacl<P: AsRef<Path>>(_path: P, _options: AclOption) -> io::Result<Vec<
 ///
 /// Returns an `io::Error` on failure.
 
-pub fn setfacl<P: AsRef<Path>>(
-    _path: P,
-    _entries: &[AclEntry],
-    _options: AclOption,
-) -> io::Result<()> {
+pub fn setfacl<P, O>(_path: P, _entries: &[AclEntry], _options: O) -> io::Result<()>
+where
+    P: AsRef<Path>,
+    O: Into<Option<AclOption>>,
+{
     Err(io::Error::from_raw_os_error(1))
 }
