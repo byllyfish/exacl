@@ -35,7 +35,7 @@ pub unsafe fn acl_get_perm(permset_d: acl_permset_t, perm: acl_perm_t) -> ::std:
     acl_get_perm_np(permset_d, perm)
 }
 
-/// Non-portable ACL Permissions & Flags (MacOS only)
+/// Non-portable ACL Permissions & Flags (`macOS` only)
 #[cfg(all(target_os = "macos", not(docsrs)))]
 pub mod np {
     use super::*;
@@ -61,30 +61,31 @@ pub mod np {
     pub const ACL_ENTRY_ONLY_INHERIT: acl_flag_t = acl_flag_t_ACL_ENTRY_ONLY_INHERIT;
 }
 
-/// Non-portable ACL Permissions (Docs only)
-#[cfg(all(not(target_os = "macos"), docsrs))]
+/// Non-portable ACL Permissions (Docs only). These are fabricated constants to
+/// make it possible for docs to be built on macOS and Linux.
+#[cfg(docsrs)]
 pub mod np {
     use super::*;
 
-    pub const ACL_DELETE: acl_perm_t = 0;
-    pub const ACL_APPEND_DATA: acl_perm_t = 0;
-    pub const ACL_DELETE_CHILD: acl_perm_t = 0;
-    pub const ACL_READ_ATTRIBUTES: acl_perm_t = 0;
-    pub const ACL_WRITE_ATTRIBUTES: acl_perm_t = 0;
-    pub const ACL_READ_EXTATTRIBUTES: acl_perm_t = 0;
-    pub const ACL_WRITE_EXTATTRIBUTES: acl_perm_t = 0;
-    pub const ACL_READ_SECURITY: acl_perm_t = 0;
-    pub const ACL_WRITE_SECURITY: acl_perm_t = 0;
-    pub const ACL_CHANGE_OWNER: acl_perm_t = 0;
-    pub const ACL_SYNCHRONIZE: acl_perm_t = 0;
+    pub const ACL_DELETE: acl_perm_t = 1 << 10;
+    pub const ACL_APPEND_DATA: acl_perm_t = 1 << 11;
+    pub const ACL_DELETE_CHILD: acl_perm_t = 1 << 12;
+    pub const ACL_READ_ATTRIBUTES: acl_perm_t = 1 << 13;
+    pub const ACL_WRITE_ATTRIBUTES: acl_perm_t = 1 << 14;
+    pub const ACL_READ_EXTATTRIBUTES: acl_perm_t = 1 << 15;
+    pub const ACL_WRITE_EXTATTRIBUTES: acl_perm_t = 1 << 16;
+    pub const ACL_READ_SECURITY: acl_perm_t = 1 << 17;
+    pub const ACL_WRITE_SECURITY: acl_perm_t = 1 << 18;
+    pub const ACL_CHANGE_OWNER: acl_perm_t = 1 << 19;
+    pub const ACL_SYNCHRONIZE: acl_perm_t = 1 << 20;
 
-    pub const ACL_FLAG_DEFER_INHERIT: acl_flag_t = 0;
-    pub const ACL_FLAG_NO_INHERIT: acl_flag_t = 0;
-    pub const ACL_ENTRY_INHERITED: acl_flag_t = 0;
-    pub const ACL_ENTRY_FILE_INHERIT: acl_flag_t = 0;
-    pub const ACL_ENTRY_DIRECTORY_INHERIT: acl_flag_t = 0;
-    pub const ACL_ENTRY_LIMIT_INHERIT: acl_flag_t = 0;
-    pub const ACL_ENTRY_ONLY_INHERIT: acl_flag_t = 0;
+    pub const ACL_FLAG_DEFER_INHERIT: acl_flag_t = 1 << 21;
+    pub const ACL_FLAG_NO_INHERIT: acl_flag_t = 1 << 22;
+    pub const ACL_ENTRY_INHERITED: acl_flag_t = 1 << 23;
+    pub const ACL_ENTRY_FILE_INHERIT: acl_flag_t = 1 << 24;
+    pub const ACL_ENTRY_DIRECTORY_INHERIT: acl_flag_t = 1 << 25;
+    pub const ACL_ENTRY_LIMIT_INHERIT: acl_flag_t = 1 << 26;
+    pub const ACL_ENTRY_ONLY_INHERIT: acl_flag_t = 1 << 27;
 }
 
 // Convenience constants where the API expects a signed i32 type, but bindgen

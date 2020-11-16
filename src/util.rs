@@ -3,7 +3,7 @@
 //! This module wraps all unsafe code from the native API.
 
 use crate::bititer::BitIter;
-use crate::fail::*;
+use crate::failx::*;
 use crate::flag::Flag;
 use crate::perm::Perm;
 use crate::sys::*;
@@ -475,7 +475,7 @@ pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
 
 /// Create a new empty ACL with the given capacity.
 ///
-/// Client must call xacl_free when done.
+/// Client must call `xacl_free` when done with result.
 pub(crate) fn xacl_init(capacity: usize) -> io::Result<acl_t> {
     use std::convert::TryFrom;
     let size = match i32::try_from(capacity) {
@@ -487,6 +487,7 @@ pub(crate) fn xacl_init(capacity: usize) -> io::Result<acl_t> {
     if acl.is_null() {
         return fail_err("null", "acl_init", capacity);
     }
+
     Ok(acl)
 }
 
@@ -517,8 +518,7 @@ fn xacl_get_tag_type(entry: acl_entry_t) -> io::Result<acl_tag_t> {
 
 /// Get the GUID qualifier and resolve it to a User/Group if possible.
 ///
-/// Only call this function for ACL_EXTENDED_ALLOW or ACL_EXTENDED_DENY.
-// TODO(bfish): use generic function for both linux/macos.
+/// Only call this function for `ACL_EXTENDED_ALLOW` or `ACL_EXTENDED_DENY`.
 #[cfg(target_os = "macos")]
 fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     let uuid_ptr = unsafe { acl_get_qualifier(entry) as *mut Uuid };
@@ -813,8 +813,9 @@ pub(crate) fn xacl_check(_acl: acl_t) -> io::Result<()> {
 
 #[cfg(target_os = "linux")]
 pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
-    let mut last: i32 = 0;
+    use std::convert::TryInto;
 
+    let mut last: i32 = 0;
     let ret = unsafe { acl_check(acl, &mut last) };
     if ret < 0 {
         return fail_err(ret, "acl_check", ());
@@ -824,7 +825,6 @@ pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
         return Ok(());
     }
 
-    use std::convert::TryInto;
     let msg = match ret.try_into().unwrap() {
         ACL_MULTI_ERROR => "multiple ACL entries with a tag that may occur at most once",
         ACL_DUPLICATE_ERROR => "multiple ACL entries with the same user/group ID",

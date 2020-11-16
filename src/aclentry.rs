@@ -1,6 +1,6 @@
-//! Provides AclEntry implementation.
+//! Provides `AclEntry` implementation.
 
-use crate::fail::fail_custom;
+use crate::failx::fail_custom;
 use crate::flag::Flag;
 use crate::perm::Perm;
 use crate::util::*;
@@ -19,6 +19,10 @@ pub enum AclEntryKind {
 }
 
 /// ACL entry with allow/deny semantics.
+///
+/// ACL entries are ordered so sorting will automatically put the ACL in
+/// canonical order.
+///
 #[derive(Debug, PartialEq, Serialize, Deserialize, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct AclEntry {
@@ -53,28 +57,61 @@ impl PartialOrd for AclEntry {
 }
 
 impl AclEntry {
-    /// Construct an ALLOW access control entry.
-    pub fn allow(kind: AclEntryKind, name: &str, perms: Perm) -> AclEntry {
+    /// Construct a new access control entry.
+    #[must_use]
+    pub fn new(
+        kind: AclEntryKind,
+        name: &str,
+        perms: Perm,
+        flags: Option<Flag>,
+        allow: bool,
+    ) -> AclEntry {
         AclEntry {
             kind,
             name: String::from(name),
             perms,
-            flags: Flag::empty(),
-            allow: true,
+            flags: flags.unwrap_or_default(),
+            allow,
         }
     }
 
-    /// Construct a DENY access control entry.
-    pub fn deny(kind: AclEntryKind, name: &str, perms: Perm) -> AclEntry {
-        AclEntry {
-            kind,
-            name: String::from(name),
-            perms,
-            flags: Flag::empty(),
-            allow: false,
-        }
+    /// Construct an ALLOW access control entry for a user.
+    #[must_use]
+    pub fn allow_user<F>(name: &str, perms: Perm, flags: F) -> AclEntry
+    where
+        F: Into<Option<Flag>>,
+    {
+        AclEntry::new(AclEntryKind::User, name, perms, flags.into(), true)
     }
 
+    /// Construct an ALLOW access control entry for a group.
+    #[must_use]
+    pub fn allow_group<F>(name: &str, perms: Perm, flags: F) -> AclEntry
+    where
+        F: Into<Option<Flag>>,
+    {
+        AclEntry::new(AclEntryKind::Group, name, perms, flags.into(), true)
+    }
+
+    /// Construct a DENY access control entry for a user.
+    #[must_use]
+    pub fn deny_user<F>(name: &str, perms: Perm, flags: F) -> AclEntry
+    where
+        F: Into<Option<Flag>>,
+    {
+        AclEntry::new(AclEntryKind::User, name, perms, flags.into(), false)
+    }
+
+    /// Construct a DENY access control entry for a group.
+    #[must_use]
+    pub fn deny_group<F>(name: &str, perms: Perm, flags: F) -> AclEntry
+    where
+        F: Into<Option<Flag>>,
+    {
+        AclEntry::new(AclEntryKind::Group, name, perms, flags.into(), false)
+    }
+
+    /// Return an `AclEntry` constructed from a native `acl_entry_t`.
     pub(crate) fn from_raw(entry: acl_entry_t) -> io::Result<AclEntry> {
         let (allow, qualifier) = xacl_get_tag_qualifier(entry)?;
         let perms = xacl_get_perm(entry)?;
@@ -157,28 +194,26 @@ mod aclentry_tests {
 
     #[test]
     fn test_ordering() {
-        use AclEntryKind::*;
-
         let mut acl = vec![
-            AclEntry::deny(User, "c", Perm::READ),
-            AclEntry::allow(User, "f", Perm::WRITE),
-            AclEntry::allow(Group, "b", Perm::EXECUTE),
-            AclEntry::allow(Group, "d", Perm::EXECUTE),
-            AclEntry::allow(User, "@z", Perm::READ),
-            AclEntry::allow(Group, "@z", Perm::READ),
-            AclEntry::deny(User, "a", Perm::READ),
+            AclEntry::deny_user("c", Perm::READ, None),
+            AclEntry::allow_user("f", Perm::WRITE, None),
+            AclEntry::allow_group("b", Perm::EXECUTE, None),
+            AclEntry::allow_group("d", Perm::EXECUTE, None),
+            AclEntry::allow_user("@z", Perm::READ, None),
+            AclEntry::allow_group("@z", Perm::READ, None),
+            AclEntry::deny_user("a", Perm::READ, None),
         ];
 
         acl.sort();
 
         let acl_sorted = vec![
-            AclEntry::deny(User, "a", Perm::READ),
-            AclEntry::deny(User, "c", Perm::READ),
-            AclEntry::allow(User, "@z", Perm::READ),
-            AclEntry::allow(User, "f", Perm::WRITE),
-            AclEntry::allow(Group, "@z", Perm::READ),
-            AclEntry::allow(Group, "b", Perm::EXECUTE),
-            AclEntry::allow(Group, "d", Perm::EXECUTE),
+            AclEntry::deny_user("a", Perm::READ, None),
+            AclEntry::deny_user("c", Perm::READ, None),
+            AclEntry::allow_user("@z", Perm::READ, None),
+            AclEntry::allow_user("f", Perm::WRITE, None),
+            AclEntry::allow_group("@z", Perm::READ, None),
+            AclEntry::allow_group("b", Perm::EXECUTE, None),
+            AclEntry::allow_group("d", Perm::EXECUTE, None),
         ];
 
         assert_eq!(acl, acl_sorted);

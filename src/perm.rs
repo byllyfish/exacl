@@ -9,19 +9,19 @@ use serde::{de, ser, Deserialize, Serialize};
 use std::fmt;
 
 bitflags! {
-    /// Represents ACL entry file access permissions.
+    /// Represents file access permissions.
     #[derive(Default)]
     pub struct Perm : acl_perm_t {
         /// READ_DATA permission for a file.
-        /// LIST_DIRECTORY permission for a directory.
+        /// Same as LIST_DIRECTORY permission for a directory.
         const READ = ACL_READ;
 
         /// WRITE_DATA permission for a file.
-        /// ADD_FILE permission for a directory.
+        /// Same as ADD_FILE permission for a directory.
         const WRITE = ACL_WRITE;
 
         /// EXECUTE permission for a file.
-        /// SEARCH permission for a directory.
+        /// Same as SEARCH permission for a directory.
         const EXECUTE = ACL_EXECUTE;
 
         /// DELETE permission for a file.
@@ -30,7 +30,7 @@ bitflags! {
         const DELETE = np::ACL_DELETE;
 
         /// APPEND_DATA permission for a file.
-        /// ADD_SUBDIRECTORY permission for a directory.
+        /// Same as ADD_SUBDIRECTORY permission for a directory.
         #[cfg(any(docsrs, target_os = "macos"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const APPEND = np::ACL_APPEND_DATA;

@@ -38,9 +38,8 @@ jobs:
       if: runner.os == 'Linux'
     - name: Code coverage
       run: ./ci/coverage.sh codecov
-    - name: Build docs (Linux)
+    - name: Build docs
       run: ./ci/docs.sh
-      if: runner.os == 'Linux'
     - name: Lint Check
       run: ./ci/lint.sh
     - name: Format Check
