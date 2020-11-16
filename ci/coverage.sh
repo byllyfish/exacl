@@ -7,7 +7,7 @@
 set -e
 
 arg1="$1"
-os=$(uname -s | tr A-Z a-z)
+os=$(uname -s | tr '[:upper:]' '[:lower:]')
 
 # Install Rust nightly and grcov.
 rustup install nightly
@@ -27,11 +27,11 @@ cargo +nightly test
 cargo +nightly build
 ./tests/run_tests.sh
 
-if [ $arg1 = "open" ]; then
+if [ "$arg1" = "open" ]; then
     echo "Producing HTML Report locally"
     grcov ./target/debug/ -s . -t html --llvm --branch --ignore-not-existing --ignore "/*" --excl-br-line "$excl_br_line" -o ./target/debug/coverage/
     open target/debug/coverage/index.html
-elif [ $arg1 = "codecov" ]; then
+elif [ "$arg1" = "codecov" ]; then
     echo "Producing lcov report and uploading it to codecov.io"
     # shellcheck disable=SC2046
     zip -0 ccov.zip $(find . \( -name "exacl*.gc*" \) -print)

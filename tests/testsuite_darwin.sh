@@ -493,4 +493,5 @@ testDefaultAclFails() {
         "$msg"
 }
 
+# shellcheck disable=SC1091
 . shunit2

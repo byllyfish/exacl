@@ -4,7 +4,7 @@
 #
 # If run with `memcheck` argument, run all tests under valgrind.
 
-OS=$(uname -s | tr A-Z a-z)
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 
 arg1="$1"
 script_dir=$(dirname "$0")
@@ -31,7 +31,7 @@ if [ "$arg1" = "memcheck" ]; then
     echo
 
     for test in $(unit_tests); do
-        $MEMCHECK $test
+        $MEMCHECK "$test"
         status=$?
 
         # Track if any memcheck returns a non-zero exit status.
@@ -46,7 +46,7 @@ for test in testsuite*_all.sh testsuite*_"$OS".sh; do
     # shellcheck disable=SC2046
     printf "\n%s\n%s\n" "$test" $(printf '=%.0s' $(seq 1 ${#test}))
     # Run the test.
-    ./$test
+    ./"$test"
     status=$?
 
     # Track if any test returns a non-zero exit status.

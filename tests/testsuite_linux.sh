@@ -362,4 +362,5 @@ testWriteDefaultAcl() {
     rm -f "$subfile"
 }
 
+# shellcheck disable=SC1091
 . shunit2

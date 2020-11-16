@@ -91,8 +91,8 @@ testMissingFlags() {
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        'JSON parser error: missing field `flags` at line 1 column 62' \
-        "$msg"
+        'JSON parser error: missing field flags at line 1 column 62' \
+        "${msg//\`/}"
 }
 
 testInvalidFlag() {
@@ -116,8 +116,8 @@ testExtraAttribute() {
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        'JSON parser error: unknown field `ignore`, expected one of `kind`, `name`, `perms`, `flags`, `allow` at line 1 column 82' \
-        "$msg"
+        'JSON parser error: unknown field ignore, expected one of kind, name, perms, flags, allow at line 1 column 82' \
+        "${msg//\`/}"
 }
 
 testDuplicateAttribute() {
@@ -125,8 +125,8 @@ testDuplicateAttribute() {
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        'JSON parser error: duplicate field `allow` at line 1 column 81' \
-        "$msg"
+        'JSON parser error: duplicate field allow at line 1 column 81' \
+        "${msg//\`/}"
 }
 
 testMisspelledAttribute() {
@@ -134,8 +134,8 @@ testMisspelledAttribute() {
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        'JSON parser error: unknown field `kin`, expected one of `kind`, `name`, `perms`, `flags`, `allow` at line 1 column 8' \
-        "$msg"
+        'JSON parser error: unknown field kin, expected one of kind, name, perms, flags, allow at line 1 column 8' \
+        "${msg//\`/}"
 }
 
 testPermsInvalidType() {
@@ -156,4 +156,5 @@ testFlagsInvalidType() {
         "$msg"
 }
 
+# shellcheck disable=SC1091
 . shunit2

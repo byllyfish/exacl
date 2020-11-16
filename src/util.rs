@@ -733,16 +733,16 @@ pub(crate) fn xacl_set_tag_qualifier(
 pub(crate) fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
     let mut permset: acl_permset_t = std::ptr::null_mut();
 
-    let ret = unsafe { acl_get_permset(entry, &mut permset) };
-    if ret != 0 {
-        return fail_err(ret, "acl_get_permset", ());
+    let ret_get = unsafe { acl_get_permset(entry, &mut permset) };
+    if ret_get != 0 {
+        return fail_err(ret_get, "acl_get_permset", ());
     }
 
     assert!(!permset.is_null());
 
-    let ret = unsafe { acl_clear_perms(permset) };
-    if ret != 0 {
-        return fail_err(ret, "acl_clear_perms", ());
+    let ret_clear = unsafe { acl_clear_perms(permset) };
+    if ret_clear != 0 {
+        return fail_err(ret_clear, "acl_clear_perms", ());
     }
 
     for perm in BitIter(perms) {
@@ -757,16 +757,16 @@ pub(crate) fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
 pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
     let mut flagset: acl_flagset_t = std::ptr::null_mut();
 
-    let ret = unsafe { acl_get_flagset_np(entry as *mut c_void, &mut flagset) };
-    if ret != 0 {
-        return fail_err(ret, "acl_get_flagset_np", ());
+    let ret_get = unsafe { acl_get_flagset_np(entry as *mut c_void, &mut flagset) };
+    if ret_get != 0 {
+        return fail_err(ret_get, "acl_get_flagset_np", ());
     }
 
     assert!(!flagset.is_null());
 
-    let ret = unsafe { acl_clear_flags_np(flagset) };
-    if ret != 0 {
-        return fail_err(ret, "acl_clear_flags_np", ());
+    let ret_clear = unsafe { acl_clear_flags_np(flagset) };
+    if ret_clear != 0 {
+        return fail_err(ret_clear, "acl_clear_flags_np", ());
     }
 
     for flag in BitIter(flags) {
