@@ -4,11 +4,11 @@
 #
 # If run with `memcheck` argument, run all tests under valgrind.
 
-OS=`uname -s | tr A-Z a-z`
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 
 arg1="$1"
-script_dir=`dirname "$0"`
-cd "$script_dir"
+script_dir=$(dirname "$0")
+cd "$script_dir" || exit 1
 
 if [ ! -f ../target/debug/exacl ]; then
     echo "exacl executable not found!"
@@ -26,12 +26,12 @@ if [ "$arg1" = "memcheck" ]; then
     # Enable memory check command and re-run unit tests under memcheck.
     export MEMCHECK="valgrind -q --error-exitcode=9 --leak-check=full --errors-for-leak-kinds=definite"
 
-    vers=`valgrind --version`
+    vers=$(valgrind --version)
     echo "Running tests with memcheck ($vers)"
     echo
 
-    for test in `unit_tests`; do
-        $MEMCHECK $test
+    for test in $(unit_tests); do
+        $MEMCHECK "$test"
         status=$?
 
         # Track if any memcheck returns a non-zero exit status.
@@ -41,12 +41,13 @@ if [ "$arg1" = "memcheck" ]; then
     done
 fi
 
-for test in testsuite*_all.sh testsuite*_${OS}.sh; do
+for test in testsuite*_all.sh testsuite*_"$OS".sh; do
     # Before running test, print name of file underlined with = signs.
-    printf "\n%s\n%s\n" "$test" `printf '=%.0s' $(seq 1 ${#test})`
+    # shellcheck disable=SC2046
+    printf "\n%s\n%s\n" "$test" $(printf '=%.0s' $(seq 1 ${#test}))
     # Run the test.
-    ./$test
-    status=$?;
+    ./"$test"
+    status=$?
 
     # Track if any test returns a non-zero exit status.
     if [ $status -ne 0 ]; then

@@ -5,9 +5,9 @@ Rust library to manipulate access control lists on macOS and Linux.
 ## Example
 
 ```rust
-use exacl::{getfacl, AclOption};
+use exacl::getfacl;
 
-let acl = getfacl("./tmp/foo", AclOption::empty())?;
+let acl = getfacl("./tmp/foo", None)?;
 
 for entry in acl {
     println!("{:?}", entry);
@@ -19,5 +19,5 @@ for entry in acl {
 Linux
 
 ```sh
-apt install clang llvm-dev acl libacl1-dev shunit2 valgrind
+apt install clang llvm-dev acl libacl1-dev shunit2 shellcheck valgrind
 ```

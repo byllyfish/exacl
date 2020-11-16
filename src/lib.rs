@@ -30,32 +30,37 @@
 //!
 //! ## High Level API
 //!
-//! This module provides two high level functions, `getfacl` and `setfacl`.
+//! This module provides two high level functions, [getfacl] and [setfacl].
 //!
-//! Use getfacl to retrieve the ACL for a file or directory. On Linux, the
-//! result includes the entries from the default ACL if there is one.
+//! - [getfacl] retrieves the ACL for a file or directory. On Linux, the
+//!     result includes the entries from the default ACL if there is one.
+//! - [setfacl] sets the ACL for a file or directory, including the default
+//!     ACL on Linux.
 //!
-//! Use setfacl to set the ACL for a file or directory, including the default
-//! ACL on Linux.
+//! Both [getfacl] and [setfacl] work with a vector of [`AclEntry`] structures.
+//! The structure contains five fields:
 //!
-//! Both getfacl and setfacl work with a vector of `AclEntry` structures. Each
-//! `AclEntry` structure contains five fields:
-//!
-//! - kind (AclEntryKind) - the kind of entry (User, Group, Unknown).
-//! - name (String) - name (or id) of the principal being given access. You can
-//!     use a user/group name, decimal uid/gid, or UUID (on macOS).
-//! - perms (Perm) - permission bits for the entry.
-//! - flags (Flag) - flags indicating whether an entry is inherited, etc.
-//! - allow (bool) - true if entry is allowed; false means deny. Linux only
+//! - kind : [`AclEntryKind`] - the kind of entry (User, Group, Unknown).
+//! - name : [`String`] - name of the principal being given access. You can
+//!     use a user/group name, decimal uid/gid, or UUID (on macOS). On Linux,
+//!     use the special constants OWNER, OTHER, and MASK.
+//! - perms : [`Perm`] - permission bits for the entry.
+//! - flags : [`Flag`] - flags indicating whether an entry is inherited, etc.
+//! - allow : [`bool`] - true if entry is allowed; false means deny. Linux only
 //!     supports allow=true.
+//!
+//! [`AclEntry`] supports an ordering that corresponds to ACL canonical order. An
+//! ACL in canonical order has deny entries first, and inherited entries last.
+//! On Linux, entries for file-owner sort before named users. You can sort a
+//! vector of `AclEntry` to put the ACL in canonical order.
 //!
 //! ## Low Level API
 //!
 //! The low level API is appropriate if you need finer grained control over
 //! the ACL.
 //!
-//! - Manipulate access and default ACL's separately.
-//! - Manipulate the ACL flags on macOS.
+//! - Manipulate the access ACL and default ACL independently on Linux.
+//! - Manipulate the ACL's own flags on macOS.
 //! - Use the platform specific text formats.
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
@@ -118,7 +123,7 @@ impl Acl {
     ///
     /// # Errors
     ///
-    /// Returns an `io::Error` on failure.
+    /// Returns an [`io::Error`] on failure.
     pub fn read<P: AsRef<Path>>(path: P, options: AclOption) -> io::Result<Acl> {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
@@ -136,7 +141,7 @@ impl Acl {
     ///
     /// # Errors
     ///
-    /// Returns an `io::Error` on failure.  
+    /// Returns an [`io::Error`] on failure.  
     pub fn write<P: AsRef<Path>>(&self, path: P, options: AclOption) -> io::Result<()> {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
@@ -149,11 +154,11 @@ impl Acl {
         xacl_set_file(path.as_ref(), self.acl, symlink_acl, default_acl)
     }
 
-    /// Construct ACL from slice of `AclEntry`.
+    /// Construct ACL from slice of [`AclEntry`].
     ///
     /// # Errors
     ///
-    /// Returns an `io::Error` on failure.
+    /// Returns an [`io::Error`] on failure.
     pub fn from_entries(entries: &[AclEntry]) -> io::Result<Acl> {
         let new_acl = xacl_init(entries.len())?;
 
@@ -176,11 +181,11 @@ impl Acl {
         })
     }
 
-    /// Return ACL as a vector of `AclEntry`.
+    /// Return ACL as a vector of [`AclEntry`].
     ///
     /// # Errors
     ///
-    /// Returns an `io::Error` on failure.
+    /// Returns an [`io::Error`] on failure.
     pub fn entries(&self) -> io::Result<Vec<AclEntry>> {
         let mut entries = Vec::<AclEntry>::with_capacity(xacl_entry_count(self.acl));
 
@@ -205,7 +210,7 @@ impl Acl {
     ///
     /// # Errors
     ///
-    /// Returns an `io::Error` on failure.
+    /// Returns an [`io::Error`] on failure.
     pub fn from_platform_text(text: &str) -> io::Result<Acl> {
         let acl_p = xacl_from_text(text)?;
         Ok(Acl {
@@ -236,7 +241,7 @@ impl Drop for Acl {
 
 /// Get access control list (ACL) for a file or directory.
 ///
-/// On success, returns a vector of `AclEntry` with all access control entries
+/// On success, returns a vector of [`AclEntry`] with all access control entries
 /// for the specified path. The semantics and permissions of the access control
 /// list depend on the underlying platform.
 ///
@@ -248,10 +253,10 @@ impl Drop for Acl {
 /// file, this function may return zero entries.
 ///
 /// If `path` points to a symlink, `getfacl` returns the ACL of the file pointed
-/// to by the symlink. Use the `SYMLINK_ACL` option to obtain the ACL of a symlink
+/// to by the symlink. Use [`AclOption::SYMLINK_ACL`] to obtain the ACL of a symlink
 /// itself.
 ///
-/// The `DEFAULT_ACL` option is not supported on macOS.
+/// [`AclOption::DEFAULT_ACL`] option is not supported on macOS.
 ///
 /// # Linux
 ///
@@ -259,14 +264,14 @@ impl Drop for Acl {
 /// are marked with names such as "@owner", "@other", and "@mask".
 ///
 /// Both the access ACL and the default ACL are returned in one list, with
-/// the default ACL entries indicated by a `DEFAULT` flag.
+/// the default ACL entries indicated by a [`Flag::DEFAULT`] flag.
 ///
 /// If `path` points to a symlink, `getfacl` returns the ACL of the file pointed
-/// to by the symlink. The `SYMLINK_ACL` option is not supported on Linux.
+/// to by the symlink. [`AclOption::SYMLINK_ACL`] is not supported on Linux.
 ///
-/// The `DEFAULT_ACL` option causes `getfacl` to only include entries for the
-/// default ACL, if present for a directory path. When called with the
-/// `DEFAULT_ACL` option, `getfacl` may return zero entries.
+/// [`AclOption::DEFAULT_ACL`] causes `getfacl` to only include entries for the
+/// default ACL, if present for a directory path. When called with
+/// [`AclOption::DEFAULT_ACL`], `getfacl` may return zero entries.
 ///
 /// # Example
 ///
@@ -280,7 +285,7 @@ impl Drop for Acl {
 ///
 /// # Errors
 ///
-/// Returns an `io::Error` on failure.
+/// Returns an [`io::Error`] on failure.
 
 pub fn getfacl<P, O>(_path: P, _options: O) -> io::Result<Vec<AclEntry>>
 where
@@ -300,7 +305,7 @@ where
 ///
 /// The ACL contains extended entries beyond the usual mode permission bits.
 /// An entry may allow or deny access to a specific user or group.
-/// To specify inherited entries, use the provided `Flag` values.
+/// To specify inherited entries, use the provided [Flag] values.
 ///
 /// ### macOS Example
 ///
@@ -331,8 +336,8 @@ where
 /// appended.
 ///
 /// The access control entries may include entries for the default ACL, if one
-/// is desired. When `setfacl` is called with no default entries, it deletes the
-/// default ACL.
+/// is desired. When `setfacl` is called with no [`Flag::DEFAULT`] entries, it
+/// deletes the default ACL.
 ///
 /// ### Linux Example
 ///
@@ -354,7 +359,7 @@ where
 ///
 /// # Errors
 ///
-/// Returns an `io::Error` on failure.
+/// Returns an [`io::Error`] on failure.
 
 pub fn setfacl<P, O>(_path: P, _entries: &[AclEntry], _options: O) -> io::Result<()>
 where

@@ -6,7 +6,7 @@ use log::debug;
 use std::fmt;
 use std::io;
 
-/// Log a message and return an `io::Error` with the value of errno.
+/// Log a message and return an [`io::Error`] with the value of errno.
 pub fn log_err<R, T>(ret: R, func: &str, arg: T) -> io::Error
 where
     R: fmt::Display,
@@ -17,7 +17,7 @@ where
     err
 }
 
-/// Log a message and return an `io::Error` for a given error code.
+/// Log a message and return an [`io::Error`] for a given error code.
 pub fn log_from_err<T>(ret: i32, func: &str, arg: T) -> io::Error
 where
     T: fmt::Debug,
@@ -28,7 +28,7 @@ where
     err
 }
 
-/// Log a message and return an `io::Result` with the value of errno.
+/// Log a message and return an [`io::Result`] with the value of errno.
 pub fn fail_err<R, T, U>(ret: R, func: &str, arg: T) -> io::Result<U>
 where
     R: fmt::Display,
@@ -37,7 +37,7 @@ where
     Err(log_err(ret, func, arg))
 }
 
-/// Log a message and return an `io::Result` for a given error code.
+/// Log a message and return an [`io::Result`] for a given error code.
 pub fn fail_from_err<T, U>(ret: i32, func: &str, arg: T) -> io::Result<U>
 where
     T: fmt::Debug,
@@ -45,7 +45,7 @@ where
     Err(log_from_err(ret, func, arg))
 }
 
-/// Return a custom `io::Result` with the given message.
+/// Return a custom [`io::Result`] with the given message.
 pub(crate) fn fail_custom<U>(msg: &str) -> io::Result<U> {
     Err(io::Error::new(io::ErrorKind::Other, msg))
 }

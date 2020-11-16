@@ -6,38 +6,43 @@ set -u -o pipefail
 
 EXACL='../target/debug/exacl'
 
-ME=`id -un`
-ME_NUM=`id -u`
-MY_GROUP=`id -gn`
-MY_GROUP_NUM=`id -g`
+ME=$(id -un)
+ME_NUM=$(id -u)
+MY_GROUP=$(id -gn)
+MY_GROUP_NUM=$(id -g)
 
 # Return true if file is readable.
 isReadable() {
-    cat "$1" > /dev/null 2>&1 
+    cat "$1" >/dev/null 2>&1
     return $?
 }
 
 # Return true if file is writable (tries to overwrite file).
 isWritable() {
-    echo "x" 2> /dev/null > "$1" 
+    echo "x" 2>/dev/null >"$1"
     return $?
 }
 
 # Return true if directory is readable.
 isReadableDir() {
-    ls "$1" > /dev/null 2>&1
+    ls "$1" >/dev/null 2>&1
     return $?
 }
 
 # Return true if link is readable.
 isReadableLink() {
-    readlink "$1" > /dev/null 2>&1
+    readlink "$1" >/dev/null 2>&1
     return $?
 }
 
 # Put quotes back on JSON text.
-quotifyJson() { 
+quotifyJson() {
     echo "$1" | sed -E -e 's/([A-Za-z0-9_-]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
+}
+
+getAcl() {
+    # shellcheck disable=SC2010
+    ls -le "$1" 2>/dev/null | grep -E '^ \d+: '
 }
 
 # Called by shunit2 before all tests run.
@@ -58,7 +63,7 @@ oneTimeSetUp() {
 }
 
 testReadAclFromMissingFile() {
-    msg=`$EXACL $DIR/non_existant 2>&1`
+    msg=$($EXACL $DIR/non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
         "File \"$DIR/non_existant\": No such file or directory (os error 2)" \
@@ -66,21 +71,21 @@ testReadAclFromMissingFile() {
 }
 
 testReadAclForFile1() {
-    msg=`$EXACL $FILE1`
+    msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals "[]" "$msg"
 
     isReadable "$FILE1" && isWritable "$FILE1"
     assertEquals 0 $?
-    
+
     # Add ACL entry for current user to "deny read".
     chmod +a "$ME deny read" "$FILE1"
 
-    msg=`$EXACL $FILE1`
+    msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 
     ! isReadable "$FILE1" && isWritable "$FILE1"
     assertEquals 0 $?
@@ -93,11 +98,11 @@ testReadAclForFile1() {
     # Add ACL entry for current group to "allow write".
     chmod +a "$MY_GROUP allow write" "$FILE1"
 
-    msg=`$EXACL $FILE1`
+    msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[],allow:false},{kind:group,name:$MY_GROUP,perms:[write],flags:[],allow:true}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 
     ! isReadable "$FILE1" && isWritable "$FILE1"
     assertEquals 0 $?
@@ -108,18 +113,18 @@ testReadAclForFile1() {
 }
 
 testReadAclForDir1() {
-    msg=`$EXACL $DIR1`
+    msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals "[]" "$msg"
 
     # Add ACL entry for current user to "deny read" with inheritance flags.
     chmod +a "$ME deny read,file_inherit,directory_inherit,only_inherit" "$DIR1"
 
-    msg=`$EXACL $DIR1`
+    msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[file_inherit,directory_inherit,only_inherit],allow:false}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 
     isReadableDir "$DIR1"
     assertEquals 0 $?
@@ -131,21 +136,21 @@ testReadAclForDir1() {
     ! isReadable "$subfile" && isWritable "$subfile"
     assertEquals 0 $?
 
-    msg=`$EXACL $subfile`
+    msg=$($EXACL $subfile)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[inherited],allow:false}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 
     # Create subdirectory in DIR1.
     subdir="$DIR1/subdir"
     mkdir "$subdir"
 
-    msg=`$EXACL $subdir`
+    msg=$($EXACL $subdir)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[inherited,file_inherit,directory_inherit],allow:false}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 
     # Clear directory ACL's so we can delete them.
     chmod -a# 0 "$subdir"
@@ -157,12 +162,12 @@ testReadAclForDir1() {
 
 testReadAclForLink1() {
     # Test symlink that goes nowhere.
-    msg=`$EXACL $LINK1 2>&1`
+    msg=$($EXACL $LINK1 2>&1)
     assertEquals 1 $?
     assertEquals "File \"$LINK1\": No such file or directory (os error 2)" "$msg"
 
     # Test symlink with no ACL.
-    msg=`$EXACL -h $LINK1`
+    msg=$($EXACL -h $LINK1)
     assertEquals 0 $?
     assertEquals "[]" "$msg"
 
@@ -173,15 +178,15 @@ testReadAclForLink1() {
     ! isReadableLink "$LINK1"
     assertEquals 0 $?
 
-    msg=`$EXACL -h $LINK1`
+    msg=$($EXACL -h $LINK1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 
     # It appears that you can't further modify the ACL of a symbolic link if
     # you don't have 'read' access to the link anymore.
-    msg=`chmod -h -a# 0 "$LINK1" 2>&1`
+    msg=$(chmod -h -a# 0 "$LINK1" 2>&1)
     assertEquals 1 $?
     assertEquals \
         "chmod: No ACL present '$LINK1'
@@ -194,23 +199,23 @@ chmod: Failed to set ACL on file '$LINK1': Permission denied" \
 
 testReadAclForLink2() {
     # Test symlink to file1.
-    msg=`$EXACL $LINK2`
+    msg=$($EXACL $LINK2)
     assertEquals 0 $?
     assertEquals "[]" "$msg"
 
     # Add ACL entry for current user to "deny read".
     chmod +a "$ME deny read" "$LINK2"
 
-    msg=`$EXACL $LINK2`
+    msg=$($EXACL $LINK2)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 }
 
 testWriteAclToMissingFile() {
     input="[]"
-    msg=`echo "$input" | $EXACL --set $DIR/non_existant 2>&1`
+    msg=$(echo "$input" | $EXACL --set $DIR/non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
         "File \"$DIR/non_existant\": No such file or directory (os error 2)" \
@@ -220,12 +225,12 @@ testWriteAclToMissingFile() {
 testWriteAclToFile1() {
     # Set ACL to empty.
     input="[]"
-    msg=`echo "$input" | $EXACL --set $FILE1 2>&1`
+    msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
 
     # Verify it's empty.
-    msg=`$EXACL $FILE1`
+    msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals "[]" "$msg"
 
@@ -233,8 +238,8 @@ testWriteAclToFile1() {
     assertEquals 0 $?
 
     # Set ACL for current user to "deny read".
-    input=`quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]"`
-    msg=`echo "$input" | $EXACL --set $FILE1 2>&1`
+    input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]")
+    msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
 
@@ -242,28 +247,28 @@ testWriteAclToFile1() {
     assertEquals 0 $?
 
     # Check ACL using ls.
-    msg=`ls -le $FILE1 | grep -E '^ \d+: '`
+    msg=$(getAcl $FILE1)
     assertEquals \
         " 0: user:$ME deny read" \
         "$msg"
 
     # Check ACL again.
-    msg=`$EXACL $FILE1`
+    msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 }
 
 testWriteAclToDir1() {
     # Set ACL to empty.
     input="[]"
-    msg=`echo "$input" | $EXACL --set $DIR1 2>&1`
+    msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
 
     # Verify it's empty.
-    msg=`$EXACL $DIR1`
+    msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals "[]" "$msg"
 
@@ -271,8 +276,8 @@ testWriteAclToDir1() {
     assertEquals 0 $?
 
     # Set ACL for current user to "deny read".
-    input=`quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]"`
-    msg=`echo "$input" | $EXACL --set $DIR1 2>&1`
+    input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]")
+    msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
 
@@ -280,7 +285,7 @@ testWriteAclToDir1() {
     assertEquals 0 $?
 
     # Read ACL back.
-    msg=`$EXACL $DIR1`
+    msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals "$input" "$msg"
 }
@@ -288,7 +293,7 @@ testWriteAclToDir1() {
 testWriteAclToLink1() {
     # Set ACL to empty.
     input="[]"
-    msg=`echo "$input" | $EXACL -h --set $LINK1 2>&1`
+    msg=$(echo "$input" | $EXACL -h --set $LINK1 2>&1)
     assertEquals 0 $?
     assertEquals \
         "" \
@@ -298,8 +303,8 @@ testWriteAclToLink1() {
     assertEquals 0 $?
 
     # Set ACL for current user to "deny read".
-    input=`quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]"`
-    msg=`echo "$input" | $EXACL -h --set $LINK1 2>&1`
+    input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]")
+    msg=$(echo "$input" | $EXACL -h --set $LINK1 2>&1)
     assertEquals 0 $?
     assertEquals \
         "" \
@@ -309,22 +314,22 @@ testWriteAclToLink1() {
     assertEquals 0 $?
 
     # Check ACL using ls.
-    msg=`ls -le $LINK1 2> /dev/null | grep -E '^ \d+: '`
+    msg=$(getAcl $LINK1)
     assertEquals \
         " 0: user:$ME deny read" \
         "$msg"
 
     # Check ACL again.
-    msg=`$EXACL -h $LINK1`
+    msg=$($EXACL -h $LINK1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 
     # Set ACL back to empty. We've removed READ permission for the link, so
     # this will fail.
     input="[]"
-    msg=`echo "$input" | $EXACL -h --set $LINK1 2>&1`
+    msg=$(echo "$input" | $EXACL -h --set $LINK1 2>&1)
     assertEquals 1 $?
     assertEquals \
         "File \"$LINK1\": Permission denied (os error 13)" \
@@ -333,20 +338,20 @@ testWriteAclToLink1() {
 
 testWriteAllFilePerms() {
     all="read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync"
-    input=`quotifyJson "[{kind:user,name:$ME,perms:[$all],flags:[],allow:true}]"`
-    msg=`echo "$input" | $EXACL --set $FILE1`
+    input=$(quotifyJson "[{kind:user,name:$ME,perms:[$all],flags:[],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $FILE1)
     assertEquals 0 $?
     assertEquals "" "$msg"
 
-    msg=`$EXACL $FILE1`
+    msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[$all],flags:[],allow:true}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 
     # ls output omits delete_child and sync.
     ls_perms="read,write,execute,delete,append,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown"
-    msg=`ls -le $FILE1 | grep -E '^ \d+: '`
+    msg=$(getAcl $FILE1)
     assertEquals \
         " 0: user:$ME allow $ls_perms" \
         "$msg"
@@ -355,21 +360,21 @@ testWriteAllFilePerms() {
 testWriteAllFileFlags() {
     entry_flags="inherited,file_inherit,directory_inherit,limit_inherit,only_inherit"
     all="defer_inherit,no_inherit,$entry_flags"
-    input=`quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[$all],allow:true}]"`
-    msg=`echo "$input" | $EXACL --set $FILE1`
+    input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[$all],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $FILE1)
     assertEquals 0 $?
     assertEquals "" "$msg"
 
     # N.B. "defer_inherit" flag is not returned.
-    msg=`$EXACL $FILE1`
+    msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[$entry_flags,no_inherit],allow:true}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 
     # ls output only shows inherited and limit_inherit.
     ls_perms="read,limit_inherit"
-    msg=`ls -le $FILE1 | grep -E '^ \d+: '`
+    msg=$(getAcl $FILE1)
     assertEquals \
         " 0: user:$ME inherited allow $ls_perms" \
         "$msg"
@@ -377,39 +382,38 @@ testWriteAllFileFlags() {
 
 testWriteAllDirPerms() {
     all="read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync"
-    input=`quotifyJson "[{kind:user,name:$ME,perms:[$all],flags:[],allow:true}]"`
-    msg=`echo "$input" | $EXACL --set $DIR1`
+    input=$(quotifyJson "[{kind:user,name:$ME,perms:[$all],flags:[],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $DIR1)
     assertEquals 0 $?
     assertEquals "" "$msg"
 
-    msg=`$EXACL $DIR1`
+    msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[$all],flags:[],allow:true}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 }
 
 testWriteAllDirFlags() {
     entry_flags="inherited,file_inherit,directory_inherit,limit_inherit,only_inherit"
     all="defer_inherit,no_inherit,$entry_flags"
-    input=`quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[$all],allow:true}]"`
-    msg=`echo "$input" | $EXACL --set $DIR1`
+    input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[$all],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $DIR1)
     assertEquals 0 $?
     assertEquals "" "$msg"
 
     # N.B. "defer_inherit" flag is not returned.
-    msg=`$EXACL $DIR1`
+    msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[$entry_flags,no_inherit],allow:true}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 }
-
 
 testWriteAclNumericUID() {
     # Set ACL for current user to "deny read".
-    input=`quotifyJson "[{kind:user,name:$ME_NUM,perms:[read],flags:[],allow:false}]"`
-    msg=`echo "$input" | $EXACL --set $FILE1 2>&1`
+    input=$(quotifyJson "[{kind:user,name:$ME_NUM,perms:[read],flags:[],allow:false}]")
+    msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
 
@@ -417,17 +421,17 @@ testWriteAclNumericUID() {
     assertEquals 0 $?
 
     # Check ACL again.
-    msg=`$EXACL $FILE1`
+    msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 }
 
 testWriteAclNumericGID() {
     # Set ACL for current group to "deny read".
-    input=`quotifyJson "[{kind:group,name:$MY_GROUP_NUM,perms:[read],flags:[],allow:false}]"`
-    msg=`echo "$input" | $EXACL --set $FILE1 2>&1`
+    input=$(quotifyJson "[{kind:group,name:$MY_GROUP_NUM,perms:[read],flags:[],allow:false}]")
+    msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
 
@@ -435,58 +439,59 @@ testWriteAclNumericGID() {
     assertEquals 0 $?
 
     # Check ACL again.
-    msg=`$EXACL $FILE1`
+    msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:false}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 }
 
 testWriteAclGUID() {
     # Set ACL for _spotlight group to "deny read" using GUID.
     spotlight_group="ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000059"
-    input=`quotifyJson "[{kind:group,name:$spotlight_group,perms:[read],flags:[],allow:false}]"`
-    msg=`echo "$input" | $EXACL --set $FILE1 2>&1`
+    input=$(quotifyJson "[{kind:group,name:$spotlight_group,perms:[read],flags:[],allow:false}]")
+    msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
 
     # Check ACL again.
-    msg=`$EXACL $FILE1`
+    msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:group,name:_spotlight,perms:[read],flags:[],allow:false}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 }
 
 testWriteAclGUID_nil() {
     # Set ACL for _spotlight group to "deny read" using GUID.
     nil_uuid="00000000-0000-0000-0000-000000000000"
-    input=`quotifyJson "[{kind:group,name:$nil_uuid,perms:[read],flags:[],allow:false}]"`
-    msg=`echo "$input" | $EXACL --set $FILE1 2>&1`
+    input=$(quotifyJson "[{kind:group,name:$nil_uuid,perms:[read],flags:[],allow:false}]")
+    msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
 
     # Check ACL again. Note: change in kind.
-    msg=`$EXACL $FILE1`
+    msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$nil_uuid,perms:[read],flags:[],allow:false}]" \
-        "${msg//\"}"
+        "${msg//\"/}"
 }
 
 testDefaultAclFails() {
     # Test that exacl returns an error; default acl not supported on macOS.
-    msg=`$EXACL --default $DIR1 2>&1`
+    msg=$($EXACL --default $DIR1 2>&1)
     assertEquals 1 $?
     assertEquals \
         "File \"$DIR1\": macOS does not support default ACL" \
         "$msg"
 
-    msg=`echo "[]" | $EXACL --set --default $DIR1 2>&1`
+    msg=$(echo "[]" | $EXACL --set --default $DIR1 2>&1)
     assertEquals 1 $?
     assertEquals \
         "File \"$DIR1\": macOS does not support default ACL" \
         "$msg"
 }
 
+# shellcheck disable=SC1091
 . shunit2
