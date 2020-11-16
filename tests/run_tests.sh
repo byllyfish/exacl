@@ -4,10 +4,10 @@
 #
 # If run with `memcheck` argument, run all tests under valgrind.
 
-OS=`uname -s | tr A-Z a-z`
+OS=$(uname -s | tr A-Z a-z)
 
 arg1="$1"
-script_dir=`dirname "$0"`
+script_dir=$(dirname "$0")
 cd "$script_dir" || exit 1
 
 if [ ! -f ../target/debug/exacl ]; then
@@ -26,11 +26,11 @@ if [ "$arg1" = "memcheck" ]; then
     # Enable memory check command and re-run unit tests under memcheck.
     export MEMCHECK="valgrind -q --error-exitcode=9 --leak-check=full --errors-for-leak-kinds=definite"
 
-    vers=`valgrind --version`
+    vers=$(valgrind --version)
     echo "Running tests with memcheck ($vers)"
     echo
 
-    for test in `unit_tests`; do
+    for test in $(unit_tests); do
         $MEMCHECK $test
         status=$?
 
@@ -47,7 +47,7 @@ for test in testsuite*_all.sh testsuite*_"$OS".sh; do
     printf "\n%s\n%s\n" "$test" $(printf '=%.0s' $(seq 1 ${#test}))
     # Run the test.
     ./$test
-    status=$?;
+    status=$?
 
     # Track if any test returns a non-zero exit status.
     if [ $status -ne 0 ]; then

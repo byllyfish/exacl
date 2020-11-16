@@ -8,7 +8,7 @@ set -eu
 IGNORE="similar-names wildcard_imports"
 
 allow=""
-for name in $IGNORE; do 
+for name in $IGNORE; do
     allow="$allow -A clippy::$name"
 done
 
