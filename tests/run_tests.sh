@@ -41,7 +41,7 @@ if [ "$arg1" = "memcheck" ]; then
     done
 fi
 
-for test in testsuite*_all.sh testsuite*_${OS}.sh; do
+for test in testsuite*_all.sh testsuite*_"$OS".sh; do
     # Before running test, print name of file underlined with = signs.
     # shellcheck disable=SC2046
     printf "\n%s\n%s\n" "$test" $(printf '=%.0s' $(seq 1 ${#test}))
