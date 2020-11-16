@@ -16,4 +16,6 @@ rustup component add clippy
 cargo clean
 cargo clippy --all-targets --all-features -- -D clippy::all -W clippy::pedantic -W clippy::cargo $allow
 
+shellcheck --severity=warning tests/*.sh
+
 exit 0

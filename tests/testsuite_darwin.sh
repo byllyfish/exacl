@@ -40,6 +40,11 @@ quotifyJson() {
     echo "$1" | sed -E -e 's/([A-Za-z0-9_-]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
 }
 
+getAcl() {
+    # shellcheck disable=SC2010
+    ls -le "$1" 2> /dev/null | grep -E '^ \d+: '
+}
+
 # Called by shunit2 before all tests run.
 oneTimeSetUp() {
     # Use temp directory managed by shunit2.
@@ -242,7 +247,7 @@ testWriteAclToFile1() {
     assertEquals 0 $?
 
     # Check ACL using ls.
-    msg=`ls -le $FILE1 | grep -E '^ \d+: '`
+    msg=`getAcl $FILE1`
     assertEquals \
         " 0: user:$ME deny read" \
         "$msg"
@@ -309,7 +314,7 @@ testWriteAclToLink1() {
     assertEquals 0 $?
 
     # Check ACL using ls.
-    msg=`ls -le $LINK1 2> /dev/null | grep -E '^ \d+: '`
+    msg=`getAcl $LINK1`
     assertEquals \
         " 0: user:$ME deny read" \
         "$msg"
@@ -346,7 +351,7 @@ testWriteAllFilePerms() {
 
     # ls output omits delete_child and sync.
     ls_perms="read,write,execute,delete,append,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown"
-    msg=`ls -le $FILE1 | grep -E '^ \d+: '`
+    msg=`getAcl $FILE1`
     assertEquals \
         " 0: user:$ME allow $ls_perms" \
         "$msg"
@@ -369,7 +374,7 @@ testWriteAllFileFlags() {
 
     # ls output only shows inherited and limit_inherit.
     ls_perms="read,limit_inherit"
-    msg=`ls -le $FILE1 | grep -E '^ \d+: '`
+    msg=`getAcl $FILE1`
     assertEquals \
         " 0: user:$ME inherited allow $ls_perms" \
         "$msg"

@@ -33,6 +33,7 @@ if [ $arg1 = "open" ]; then
     open target/debug/coverage/index.html
 elif [ $arg1 = "codecov" ]; then
     echo "Producing lcov report and uploading it to codecov.io"
+    # shellcheck disable=SC2046
     zip -0 ccov.zip `find . \( -name "exacl*.gc*" \) -print`
     grcov ccov.zip -s . -t lcov --llvm --branch --ignore-not-existing --ignore "/*"  --excl-br-line "$excl_br_line" -o lcov.info
     bash <(curl -s https://codecov.io/bash) -f lcov.info -n "$os"

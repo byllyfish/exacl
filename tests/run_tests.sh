@@ -8,7 +8,7 @@ OS=`uname -s | tr A-Z a-z`
 
 arg1="$1"
 script_dir=`dirname "$0"`
-cd "$script_dir"
+cd "$script_dir" || exit 1
 
 if [ ! -f ../target/debug/exacl ]; then
     echo "exacl executable not found!"
@@ -43,7 +43,8 @@ fi
 
 for test in testsuite*_all.sh testsuite*_${OS}.sh; do
     # Before running test, print name of file underlined with = signs.
-    printf "\n%s\n%s\n" "$test" `printf '=%.0s' $(seq 1 ${#test})`
+    # shellcheck disable=SC2046
+    printf "\n%s\n%s\n" "$test" $(printf '=%.0s' $(seq 1 ${#test}))
     # Run the test.
     ./$test
     status=$?;

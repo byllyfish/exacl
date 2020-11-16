@@ -82,7 +82,7 @@ testReadAclForFile1() {
         "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"}"
 
-    assertEquals "-rw-------" `fileperms "$FILE1"`
+    assertEquals "-rw-------" "$(fileperms $FILE1)"
     isReadable "$FILE1" && isWritable "$FILE1"
     assertEquals 0 $?
     
@@ -95,14 +95,14 @@ testReadAclForFile1() {
         "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:@mask,perms:[write],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"}"
 
-    assertEquals "-rw--w----" `fileperms "$FILE1"`
+    assertEquals "-rw--w----" "$(fileperms $FILE1)"
     isReadable "$FILE1" && isWritable "$FILE1"
     assertEquals 0 $?
 
     # Remove owner read perm.
     chmod u-rw "$FILE1"
 
-    assertEquals "-----w----" `fileperms "$FILE1"`
+    assertEquals "-----w----" "$(fileperms $FILE1)"
     ! isReadable "$FILE1" && ! isWritable "$FILE1"
     assertEquals 0 $?
 
@@ -115,7 +115,7 @@ testReadAclForFile1() {
         "[{kind:user,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[write],flags:[],allow:true},{kind:group,name:@mask,perms:[write],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"}"
 
-    assertEquals "-----w----" `fileperms "$FILE1"`
+    assertEquals "-----w----" "$(fileperms $FILE1)"
     ! isReadable "$FILE1" && ! isWritable "$FILE1"
     assertEquals 0 $?
 
@@ -140,7 +140,7 @@ testReadAclForDir1() {
         "[{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:@mask,perms:[write],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"}"
 
-    assertEquals "drwx-w----" `fileperms "$DIR1"`
+    assertEquals "drwx-w----" "$(fileperms $DIR1)"
     isReadableDir "$DIR1"
     assertEquals 0 $?
 
@@ -187,7 +187,7 @@ testWriteAclToFile1() {
         "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"}"
 
-    assertEquals "-rw-------" `fileperms "$FILE1"`
+    assertEquals "-rw-------" "$(fileperms $FILE1)"
     isReadable "$FILE1" && isWritable "$FILE1"
     assertEquals 0 $?
 
@@ -239,7 +239,7 @@ testWriteAclToDir1() {
         "[{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"}"
 
-    assertEquals "drwx------" `fileperms "$DIR1"`
+    assertEquals "drwx------" "$(fileperms $DIR1)"
     isReadableDir "$DIR1"
     assertEquals 0 $?
 
@@ -272,7 +272,7 @@ testWriteAclToDir1() {
         "[{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"}"
 
-    assertEquals "drwxr-----" `fileperms "$DIR1"`
+    assertEquals "drwxr-----" "$(fileperms $DIR1)"
 }
 
 testWriteAclToLink1() {
