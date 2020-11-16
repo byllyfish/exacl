@@ -561,13 +561,13 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
         None
     };
 
-    let result = match tag as u32 {
-        ACL_USER => Qualifier::User(Uid::from_raw(id.unwrap())),
-        ACL_GROUP => Qualifier::Group(Gid::from_raw(id.unwrap())),
-        ACL_USER_OBJ => Qualifier::UserObj,
-        ACL_GROUP_OBJ => Qualifier::GroupObj,
-        ACL_OTHER => Qualifier::Other,
-        ACL_MASK => Qualifier::Mask,
+    let result = match tag {
+        sg::ACL_USER => Qualifier::User(Uid::from_raw(id.unwrap())),
+        sg::ACL_GROUP => Qualifier::Group(Gid::from_raw(id.unwrap())),
+        sg::ACL_USER_OBJ => Qualifier::UserObj,
+        sg::ACL_GROUP_OBJ => Qualifier::GroupObj,
+        sg::ACL_OTHER => Qualifier::Other,
+        sg::ACL_MASK => Qualifier::Mask,
         tag => Qualifier::Unknown(format!("@tag:{}", tag)),
     };
 

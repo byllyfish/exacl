@@ -108,7 +108,7 @@ testInvalidFlag() {
 
     assertEquals \
         "JSON parser error: unknown variant whatever, $expected at line 1 column 68" \
-        "$msg"
+        "${msg//\`/}"
 }
 
 testExtraAttribute() {
