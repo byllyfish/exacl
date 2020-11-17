@@ -1,7 +1,7 @@
 //! API Tests for exacl module.
 
 use ctor::ctor;
-use exacl::{Acl, AclEntry, AclOption, Flag, Perm};
+use exacl::{getfacl, Acl, AclEntry, AclOption, Flag, Perm};
 use log::debug;
 use std::io;
 
@@ -90,6 +90,8 @@ user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:
 #[test]
 #[cfg(target_os = "linux")]
 fn test_write_acl_linux() -> io::Result<()> {
+    use exacl::{MASK, OTHER, OWNER};
+
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
@@ -97,10 +99,10 @@ fn test_write_acl_linux() -> io::Result<()> {
     entries.push(AclEntry::allow_user("11501", rwx, None));
     entries.push(AclEntry::allow_user("11502", rwx, None));
     entries.push(AclEntry::allow_user("11503", rwx, None));
-    entries.push(AclEntry::allow_user(Acl::OWNER, rwx, None));
-    entries.push(AclEntry::allow_group(Acl::OWNER, rwx, None));
-    entries.push(AclEntry::allow_user(Acl::OTHER, rwx, None));
-    entries.push(AclEntry::allow_group(Acl::MASK, rwx, None));
+    entries.push(AclEntry::allow_user(OWNER, rwx, None));
+    entries.push(AclEntry::allow_group(OWNER, rwx, None));
+    entries.push(AclEntry::allow_user(OTHER, rwx, None));
+    entries.push(AclEntry::allow_group(MASK, rwx, None));
 
     log_acl(&entries);
 
@@ -231,14 +233,16 @@ fn test_read_default_acl() -> io::Result<()> {
 #[test]
 #[cfg(target_os = "linux")]
 fn test_write_default_acl() -> io::Result<()> {
+    use exacl::{MASK, OTHER, OWNER};
+
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
-    entries.push(AclEntry::allow_user(Acl::OWNER, rwx, None));
-    entries.push(AclEntry::allow_group(Acl::OWNER, rwx, None));
-    entries.push(AclEntry::allow_user(Acl::OTHER, rwx, None));
+    entries.push(AclEntry::allow_user(OWNER, rwx, None));
+    entries.push(AclEntry::allow_group(OWNER, rwx, None));
+    entries.push(AclEntry::allow_user(OTHER, rwx, None));
     entries.push(AclEntry::allow_group("bin", rwx, None));
-    entries.push(AclEntry::allow_group(Acl::MASK, rwx, None));
+    entries.push(AclEntry::allow_group(MASK, rwx, None));
 
     let dir = tempfile::tempdir()?;
     let acl = Acl::from_entries(&entries)?;
@@ -267,5 +271,41 @@ fn test_write_default_acl() -> io::Result<()> {
 fn test_empty_acl() -> io::Result<()> {
     let acl = Acl::from_entries(&[])?;
     assert!(acl.is_empty());
+    Ok(())
+}
+
+#[test]
+fn test_getfacl_file() -> io::Result<()> {
+    let file = tempfile::NamedTempFile::new()?;
+    let entries = getfacl(&file, None)?;
+
+    #[cfg(target_os = "macos")]
+    assert_eq!(entries.len(), 0);
+
+    #[cfg(target_os = "linux")]
+    assert_eq!(entries.len(), 3);
+
+    log_acl(&entries);
+
+    // Test default ACL on macOS (should fail).
+    #[cfg(target_os = "macos")]
+    {
+        let result = getfacl(&file, AclOption::DEFAULT_ACL);
+        assert_eq!(
+            result.err().unwrap().to_string(),
+            "macOS does not support default ACL"
+        );
+    }
+
+    // Test default ACL (should be error; files don't have default ACL).
+    #[cfg(target_os = "linux")]
+    {
+        let result = getfacl(&file, AclOption::DEFAULT_ACL);
+        assert_eq!(
+            result.err().unwrap().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+    }
+
     Ok(())
 }

@@ -8,8 +8,10 @@
 //!
 //! To get/set the ACL of a symlink itself, instead of the file it points to,
 //! use the -h option.
+//!
+//! To get/set the default ACL (on Linux), use the -d option.
 
-use exacl::{Acl, AclEntry, AclOption};
+use exacl::{getfacl, Acl, AclEntry, AclOption};
 use std::io;
 use std::path::{Path, PathBuf};
 use std::process;
@@ -22,9 +24,11 @@ struct Opt {
     #[structopt(long)]
     set: bool,
 
+    /// Get or set the default ACL.
     #[structopt(short = "d", long)]
     default: bool,
 
+    /// Get or set the ACL of a symlink itself.
     #[structopt(short = "h", long)]
     symlink: bool,
 
@@ -100,8 +104,7 @@ fn set_acl(files: &[PathBuf], options: AclOption) -> i32 {
 }
 
 fn dump_acl(file: &Path, options: AclOption) -> io::Result<()> {
-    let acl = Acl::read(file, options)?;
-    let entries = acl.entries()?;
+    let entries = getfacl(file, options)?;
     serde_json::to_writer(io::stdout(), &entries)?;
     println!(); // add newline
     Ok(())
