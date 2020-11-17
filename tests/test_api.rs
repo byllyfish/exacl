@@ -233,6 +233,8 @@ fn test_read_default_acl() -> io::Result<()> {
 #[test]
 #[cfg(target_os = "linux")]
 fn test_write_default_acl() -> io::Result<()> {
+    use exacl::{MASK, OTHER, OWNER};
+
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
@@ -273,7 +275,7 @@ fn test_empty_acl() -> io::Result<()> {
 }
 
 #[test]
-fn test_getfacl() -> io::Result<()> {
+fn test_getfacl_file() -> io::Result<()> {
     let file = tempfile::NamedTempFile::new()?;
     let entries = getfacl(&file, None)?;
 
@@ -295,11 +297,14 @@ fn test_getfacl() -> io::Result<()> {
         );
     }
 
-    // Test default ACL on linux (should be empty).
+    // Test default ACL (should be error; files don't have default ACL).
     #[cfg(target_os = "linux")]
     {
-        let entries = getfacl(&file, AclOption::DEFAULT_ACL)?;
-        assert_eq!(entries.len(), 0);
+        let result = getfacl(&file, AclOption::DEFAULT_ACL);
+        assert_eq!(
+            result.err().unwrap().kind(),
+            io::ErrorKind::PermissionDenied
+        );
     }
 
     Ok(())

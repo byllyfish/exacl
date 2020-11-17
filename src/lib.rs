@@ -138,19 +138,35 @@ where
 {
     let options = options.into().unwrap_or_default();
 
-    // Return default ACL only.
     if options.contains(AclOption::DEFAULT_ACL) {
+        // Return default ACL only. If `path` is a file, this will return a
+        // PermissionDenied error.
         let acl = Acl::read(path, options)?;
         return Ok(acl.entries()?);
     }
 
     if cfg!(target_os = "macos") {
+        // On macOS, there is only one ACL to read.
         let entries = Acl::read(&path, options)?.entries()?;
         Ok(entries)
     } else {
+        // On Linux read the access ACL first, then try to read the default ACL.
         let mut entries = Acl::read(&path, options)?.entries()?;
-        let mut default_entries = Acl::read(&path, options | AclOption::DEFAULT_ACL)?.entries()?;
-        entries.append(&mut default_entries);
+
+        match Acl::read(&path, options | AclOption::DEFAULT_ACL) {
+            Ok(default_acl) => {
+                let mut default_entries = default_acl.entries()?;
+                entries.append(&mut default_entries);
+            }
+            Err(err) => {
+                // Accessing the default ACL on a file will result in a
+                // PermissionDenied error, which we ignore.
+                if err.kind() != io::ErrorKind::PermissionDenied {
+                    return Err(err);
+                }
+            }
+        }
+
         Ok(entries)
     }
 }
