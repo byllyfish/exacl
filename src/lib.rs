@@ -136,7 +136,7 @@ where
     P: AsRef<Path>,
     O: Into<Option<AclOption>>,
 {
-    let options = options.into().unwrap_or(AclOption::empty());
+    let options = options.into().unwrap_or_default();
 
     // Return default ACL only.
     if options.contains(AclOption::DEFAULT_ACL) {

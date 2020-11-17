@@ -236,11 +236,11 @@ fn test_write_default_acl() -> io::Result<()> {
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
-    entries.push(AclEntry::allow_user(Acl::OWNER, rwx, None));
-    entries.push(AclEntry::allow_group(Acl::OWNER, rwx, None));
-    entries.push(AclEntry::allow_user(Acl::OTHER, rwx, None));
+    entries.push(AclEntry::allow_user(OWNER, rwx, None));
+    entries.push(AclEntry::allow_group(OWNER, rwx, None));
+    entries.push(AclEntry::allow_user(OTHER, rwx, None));
     entries.push(AclEntry::allow_group("bin", rwx, None));
-    entries.push(AclEntry::allow_group(Acl::MASK, rwx, None));
+    entries.push(AclEntry::allow_group(MASK, rwx, None));
 
     let dir = tempfile::tempdir()?;
     let acl = Acl::from_entries(&entries)?;
