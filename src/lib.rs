@@ -131,12 +131,28 @@ use std::path::Path;
 ///
 /// Returns an [`io::Error`] on failure.
 
-pub fn getfacl<P, O>(_path: P, _options: O) -> io::Result<Vec<AclEntry>>
+pub fn getfacl<P, O>(path: P, options: O) -> io::Result<Vec<AclEntry>>
 where
     P: AsRef<Path>,
     O: Into<Option<AclOption>>,
 {
-    Err(io::Error::from_raw_os_error(1))
+    let options = options.into().unwrap_or(AclOption::empty());
+
+    // Return default ACL only.
+    if options.contains(AclOption::DEFAULT_ACL) {
+        let acl = Acl::read(path, options)?;
+        return Ok(acl.entries()?);
+    }
+
+    if cfg!(target_os = "macos") {
+        let entries = Acl::read(&path, options)?.entries()?;
+        Ok(entries)
+    } else {
+        let mut entries = Acl::read(&path, options)?.entries()?;
+        let mut default_entries = Acl::read(&path, options | AclOption::DEFAULT_ACL)?.entries()?;
+        entries.append(&mut default_entries);
+        Ok(entries)
+    }
 }
 
 /// Set access control list (ACL) for a file or directory.

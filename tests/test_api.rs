@@ -1,7 +1,7 @@
 //! API Tests for exacl module.
 
 use ctor::ctor;
-use exacl::{Acl, AclEntry, AclOption, Flag, Perm};
+use exacl::{getfacl, Acl, AclEntry, AclOption, Flag, Perm};
 use log::debug;
 use std::io;
 
@@ -269,5 +269,38 @@ fn test_write_default_acl() -> io::Result<()> {
 fn test_empty_acl() -> io::Result<()> {
     let acl = Acl::from_entries(&[])?;
     assert!(acl.is_empty());
+    Ok(())
+}
+
+#[test]
+fn test_getfacl() -> io::Result<()> {
+    let file = tempfile::NamedTempFile::new()?;
+    let entries = getfacl(&file, None)?;
+
+    #[cfg(target_os = "macos")]
+    assert_eq!(entries.len(), 0);
+
+    #[cfg(target_os = "linux")]
+    assert_eq!(entries.len(), 3);
+
+    log_acl(&entries);
+
+    // Test default ACL on macOS (should fail).
+    #[cfg(target_os = "macos")]
+    {
+        let result = getfacl(&file, AclOption::DEFAULT_ACL);
+        assert_eq!(
+            result.err().unwrap().to_string(),
+            "macOS does not support default ACL"
+        );
+    }
+
+    // Test default ACL on linux (should be empty).
+    #[cfg(target_os = "linux")]
+    {
+        let entries = getfacl(&file, AclOption::DEFAULT_ACL)?;
+        assert_eq!(entries.len(), 0);
+    }
+
     Ok(())
 }

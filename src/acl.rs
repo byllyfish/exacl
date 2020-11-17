@@ -2,6 +2,8 @@
 
 use crate::aclentry::AclEntry;
 use crate::failx::fail_custom;
+#[cfg(target_os = "linux")]
+use crate::flag::Flag;
 use crate::util::*;
 
 use bitflags::bitflags;
