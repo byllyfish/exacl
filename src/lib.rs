@@ -172,11 +172,11 @@ where
 /// supported on Linux.
 ///
 /// The ACL *must* contain entries for the permssion modes of the file. Use
-/// the "@owner" and "@other" name constants to specify the mode's
+/// the [`OWNER`] and [`OTHER`] name constants to specify the mode's
 /// owner, group and other permissions.
 ///
-/// If an ACL contains a named user or group, there should be a "@mask" entry
-/// included. If a "@mask" entry is not provided, one will be computed and
+/// If an ACL contains a named user or group, there should be a [`MASK`] entry
+/// included. If a [`MASK`] entry is not provided, one will be computed and
 /// appended.
 ///
 /// The access control entries may include entries for the default ACL, if one
@@ -187,14 +187,14 @@ where
 ///
 /// ```no_run
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use exacl::{setfacl, Acl, AclEntry, Flag, Perm};
+/// use exacl::{setfacl, AclEntry, Flag, Perm, OWNER, OTHER, MASK};
 ///
 /// let entries = vec![
-///     AclEntry::allow_user(Acl::OWNER, Perm::READ | Perm::WRITE, None),
-///     AclEntry::allow_group(Acl::OWNER, Perm::READ, None),
-///     AclEntry::allow_group(Acl::OTHER, Perm::empty(), None),
+///     AclEntry::allow_user(OWNER, Perm::READ | Perm::WRITE, None),
+///     AclEntry::allow_group(OWNER, Perm::READ, None),
+///     AclEntry::allow_group(OTHER, Perm::empty(), None),
 ///     AclEntry::allow_user("some_user", Perm::READ | Perm::WRITE, None),
-///     AclEntry::allow_group(Acl::MASK, Perm::READ | Perm::WRITE, None),
+///     AclEntry::allow_group(MASK, Perm::READ | Perm::WRITE, None),
 /// ];
 ///
 /// setfacl("./tmp/foo", &entries, None)?;
@@ -212,3 +212,12 @@ where
 {
     Err(io::Error::from_raw_os_error(1))
 }
+
+/// Specify the file owner (Linux).
+pub const OWNER: &str = util::OWNER_NAME;
+
+/// Specify other than file owner or group owner (Linux).
+pub const OTHER: &str = util::OTHER_NAME;
+
+/// Specify mask for user/group permissions (Linux).
+pub const MASK: &str = util::MASK_NAME;

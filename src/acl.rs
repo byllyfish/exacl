@@ -34,15 +34,6 @@ pub struct Acl {
 }
 
 impl Acl {
-    /// Specify the file owner (Linux).
-    pub const OWNER: &'static str = OWNER_NAME;
-
-    /// Specify other than file owner or group owner (Linux).
-    pub const OTHER: &'static str = OTHER_NAME;
-
-    /// Specify mask for user/group permissions (Linux).
-    pub const MASK: &'static str = MASK_NAME;
-
     /// Read ACL for specified file.
     ///
     /// # Errors

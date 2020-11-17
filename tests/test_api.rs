@@ -90,6 +90,8 @@ user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:
 #[test]
 #[cfg(target_os = "linux")]
 fn test_write_acl_linux() -> io::Result<()> {
+    use exacl::{MASK, OTHER, OWNER};
+
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
@@ -97,10 +99,10 @@ fn test_write_acl_linux() -> io::Result<()> {
     entries.push(AclEntry::allow_user("11501", rwx, None));
     entries.push(AclEntry::allow_user("11502", rwx, None));
     entries.push(AclEntry::allow_user("11503", rwx, None));
-    entries.push(AclEntry::allow_user(Acl::OWNER, rwx, None));
-    entries.push(AclEntry::allow_group(Acl::OWNER, rwx, None));
-    entries.push(AclEntry::allow_user(Acl::OTHER, rwx, None));
-    entries.push(AclEntry::allow_group(Acl::MASK, rwx, None));
+    entries.push(AclEntry::allow_user(OWNER, rwx, None));
+    entries.push(AclEntry::allow_group(OWNER, rwx, None));
+    entries.push(AclEntry::allow_user(OTHER, rwx, None));
+    entries.push(AclEntry::allow_group(MASK, rwx, None));
 
     log_acl(&entries);
 
