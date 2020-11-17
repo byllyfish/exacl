@@ -273,6 +273,14 @@ testWriteAclToDir1() {
         "${msg//\"/}"
 
     assertEquals "drwxr-----" "$(fileperms $DIR1)"
+
+    # Reset ACL back to the original.
+    input=$(quotifyJson "[{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
+    assertEquals 0 $?
+    assertEquals \
+        "" \
+        "$msg"
 }
 
 testWriteAclToLink1() {
@@ -349,6 +357,13 @@ testWriteDefaultAcl() {
         "[{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[],flags:[default],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[default],allow:true},{kind:group,name:@mask,perms:[read],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]" \
         "${msg//\"/}"
 
+    # Check ACL without --default.
+    msg=$($EXACL $DIR1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[],flags:[default],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[default],allow:true},{kind:group,name:@mask,perms:[read],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]" \
+        "${msg//\"/}"
+
     # Create subfile in DIR1.
     subfile="$DIR1/subfile"
     touch "$subfile"
@@ -360,6 +375,19 @@ testWriteDefaultAcl() {
         "${msg//\"/}"
 
     rm -f "$subfile"
+
+    # Delete the default ACL.
+    input="[]"
+    msg=$(echo "$input" | $EXACL --set --default $DIR1 2>&1)
+    assertEquals 0 $?
+    assertEquals \
+        "" \
+        "$msg"
+
+    # Default acl should now be empty.
+    msg=$($EXACL --default $DIR1 2>&1)
+    assertEquals 0 $?
+    assertEquals "[]" "$msg"
 }
 
 # shellcheck disable=SC1091
