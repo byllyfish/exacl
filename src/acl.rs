@@ -1,7 +1,7 @@
 //! Provides `Acl` and `AclOption` implementation.
 
 use crate::aclentry::AclEntry;
-use crate::failx::fail_custom;
+use crate::failx::{fail_custom, path_err};
 #[cfg(target_os = "linux")]
 use crate::flag::Flag;
 use crate::util::*;
@@ -45,7 +45,8 @@ impl Acl {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
 
-        let acl_p = xacl_get_file(path.as_ref(), symlink_acl, default_acl)?;
+        let acl_p = xacl_get_file(path.as_ref(), symlink_acl, default_acl)
+            .map_err(|err| path_err(path.as_ref(), &err))?;
 
         Ok(Acl {
             acl: acl_p,
@@ -63,12 +64,15 @@ impl Acl {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
 
-        // Don't check ACL if it's an empty, default ACL.
+        // Don't check ACL if it's an empty, default ACL (FIXME).
         if !default_acl || !self.is_empty() {
             xacl_check(self.acl)?;
         }
 
         xacl_set_file(path.as_ref(), self.acl, symlink_acl, default_acl)
+            .map_err(|err| path_err(path.as_ref(), &err))?;
+
+        Ok(())
     }
 
     /// Construct ACL from slice of [`AclEntry`].

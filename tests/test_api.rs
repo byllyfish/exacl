@@ -291,10 +291,11 @@ fn test_getfacl_file() -> io::Result<()> {
     #[cfg(target_os = "macos")]
     {
         let result = getfacl(&file, AclOption::DEFAULT_ACL);
-        assert_eq!(
-            result.err().unwrap().to_string(),
-            "macOS does not support default ACL"
-        );
+        assert!(result
+            .err()
+            .unwrap()
+            .to_string()
+            .contains("macOS does not support default ACL"));
     }
 
     // Test default ACL (should be error; files don't have default ACL).

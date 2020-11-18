@@ -27,7 +27,7 @@ pub enum AclEntryKind {
 /// ACL entries are ordered so sorting will automatically put the ACL in
 /// canonical order.
 ///
-#[derive(Debug, PartialEq, Serialize, Deserialize, Eq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct AclEntry {
     /// Kind of entry (User, Group, Unknown).
