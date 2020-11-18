@@ -20,6 +20,9 @@ bitflags! {
 
         /// Get/set the default ACL (Linux only).
         const DEFAULT_ACL = 0x02;
+
+        /// Ignore expected error when using DEFAULT_ACL on a file (Linux only).
+        const IGNORE_EXPECTED_FILE_ERR = 0x10;
     }
 }
 
@@ -36,6 +39,17 @@ pub struct Acl {
 }
 
 impl Acl {
+    /// Convenience function to construct an `Acl`.
+    #[allow(unused_variables)]
+    fn new(acl: acl_t, default_acl: bool) -> Acl {
+        assert!(!acl.is_null());
+        Acl {
+            acl,
+            #[cfg(target_os = "linux")]
+            default_acl,
+        }
+    }
+
     /// Read ACL for specified file.
     ///
     /// # Errors
@@ -45,14 +59,24 @@ impl Acl {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
 
-        let acl_p = xacl_get_file(path.as_ref(), symlink_acl, default_acl)
-            .map_err(|err| path_err(path.as_ref(), &err))?;
-
-        Ok(Acl {
-            acl: acl_p,
-            #[cfg(target_os = "linux")]
-            default_acl,
-        })
+        let result = xacl_get_file(path.as_ref(), symlink_acl, default_acl);
+        match result {
+            Ok(acl) => Ok(Acl::new(acl, default_acl)),
+            Err(err) => {
+                // Trying to access the default ACL of a file on Linux will
+                // return an error. We can catch this error and return an empty
+                // ACL instead; only if `IGNORE_EXPECTED_FILE_ERR` is set.
+                if default_acl
+                    && err.kind() == io::ErrorKind::PermissionDenied
+                    && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR)
+                {
+                    // Return an empty acl (FIXME).
+                    Ok(Acl::new(xacl_init(1)?, default_acl))
+                } else {
+                    Err(path_err(path.as_ref(), &err))
+                }
+            }
+        }
     }
 
     /// Write ACL for specified file.
@@ -95,11 +119,33 @@ impl Acl {
             }
         }
 
-        Ok(Acl {
-            acl: ScopeGuard::into_inner(acl_p),
-            #[cfg(target_os = "linux")]
-            default_acl: false,
-        })
+        Ok(Acl::new(ScopeGuard::into_inner(acl_p), false))
+    }
+
+    /// Construct pair of ACL's from slice of [`AclEntry`].
+    ///
+    /// Separate regular access entries from default entries on Linux.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    #[cfg(target_os = "linux")]
+    pub fn from_unified_entries(entries: &[AclEntry]) -> io::Result<(Acl, Acl)> {
+        let access_entries = entries
+            .iter()
+            .filter(|e| !e.flags.contains(Flag::DEFAULT))
+            .cloned()
+            .collect::<Vec<AclEntry>>();
+        let default_entries = entries
+            .iter()
+            .filter(|e| e.flags.contains(Flag::DEFAULT))
+            .cloned()
+            .collect::<Vec<AclEntry>>();
+
+        let access_acl = Acl::from_entries(&access_entries)?;
+        let default_acl = Acl::from_entries(&default_entries)?;
+
+        Ok((access_acl, default_acl))
     }
 
     /// Return ACL as a vector of [`AclEntry`].
@@ -133,12 +179,8 @@ impl Acl {
     ///
     /// Returns an [`io::Error`] on failure.
     pub fn from_platform_text(text: &str) -> io::Result<Acl> {
-        let acl_p = xacl_from_text(text)?;
-        Ok(Acl {
-            acl: acl_p,
-            #[cfg(target_os = "linux")]
-            default_acl: false,
-        })
+        let acl = xacl_from_text(text)?;
+        Ok(Acl::new(acl, false))
     }
 
     /// Return platform-dependent textual description.

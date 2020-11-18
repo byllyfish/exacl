@@ -303,7 +303,7 @@ pub(crate) fn xacl_get_file(
         let err = log_err("null", func, &c_path);
 
         // acl_get_file et al. can return NULL (ENOENT) if the file exists, but
-        // there is no ACL. If the path exists, return an *empty* ACL.
+        // there is no ACL. If the path exists, return an *empty* ACL (FIXME).
         if let Some(sg::ENOENT) = err.raw_os_error() {
             if path_exists(&path, symlink_acl) {
                 return xacl_init(1);

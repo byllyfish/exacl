@@ -53,10 +53,10 @@ pub(crate) fn fail_custom<U>(msg: &str) -> io::Result<U> {
 
 /// Return a custom [`io::Error`] that prefixes the given error.
 pub(crate) fn custom_err(msg: &str, err: &io::Error) -> io::Error {
-    io::Error::new(io::ErrorKind::Other, format!("{}: {}", msg, err))
+    io::Error::new(err.kind(), format!("{}: {}", msg, err))
 }
 
 /// Return a custom [`io::Error`] that prefixes the given error with filename.
 pub(crate) fn path_err(path: &Path, err: &io::Error) -> io::Error {
-    io::Error::new(io::ErrorKind::Other, format!("File {:?}: {}", path, err))
+    io::Error::new(err.kind(), format!("File {:?}: {}", path, err))
 }
