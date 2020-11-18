@@ -302,10 +302,11 @@ fn test_getfacl_file() -> io::Result<()> {
     #[cfg(target_os = "linux")]
     {
         let result = getfacl(&file, AclOption::DEFAULT_ACL);
-        assert_eq!(
-            result.err().unwrap().kind(),
-            io::ErrorKind::PermissionDenied
-        );
+        assert!(result
+            .err()
+            .unwrap()
+            .to_string()
+            .contains("Permission denied"));
     }
 
     Ok(())

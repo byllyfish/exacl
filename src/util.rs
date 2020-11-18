@@ -338,7 +338,12 @@ pub(crate) fn xacl_get_file(
     let acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
 
     if acl.is_null() {
-        return fail_err("null", "acl_get_file", &c_path);
+        let func = if default_acl {
+            "acl_get_file/default"
+        } else {
+            "acl_get_file/access"
+        };
+        return fail_err("null", func, &c_path);
     }
 
     Ok(acl)

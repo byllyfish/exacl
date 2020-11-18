@@ -139,15 +139,7 @@ where
 {
     let options = options.into().unwrap_or_default();
 
-    if options.contains(AclOption::DEFAULT_ACL) {
-        // Return default ACL only. If `path` is a file, this will return a
-        // PermissionDenied error.
-        let acl = Acl::read(path, options)?;
-        return Ok(acl.entries()?);
-    }
-
-    if cfg!(target_os = "macos") {
-        // On macOS, there is only one ACL to read.
+    if cfg!(target_os = "macos") || options.contains(AclOption::DEFAULT_ACL) {
         let entries = Acl::read(&path, options)?.entries()?;
         Ok(entries)
     } else {
@@ -159,12 +151,9 @@ where
                 let mut default_entries = default_acl.entries()?;
                 entries.append(&mut default_entries);
             }
-            Err(err) => {
+            Err(_) => {
                 // Accessing the default ACL on a file will result in a
-                // PermissionDenied error, which we ignore.
-                if err.kind() != io::ErrorKind::PermissionDenied {
-                    return Err(err);
-                }
+                // PermissionDenied error, which we ignore. (FIXME)
             }
         }
 
@@ -245,17 +234,13 @@ where
 {
     let options = options.into().unwrap_or_default();
 
-    #[cfg(target_os = "macos")]
-    {
+    if cfg!(target_os = "macos") || options.contains(AclOption::DEFAULT_ACL) {
         let acl = Acl::from_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
 
         for path in paths {
             acl.write(path, options)?;
         }
-    }
-
-    #[cfg(target_os = "linux")]
-    {
+    } else {
         // On Linux, split into two vectors: access and default.
         let access_entries = entries
             .iter()
@@ -268,14 +253,18 @@ where
             .cloned()
             .collect::<Vec<AclEntry>>();
 
-        let access_acl = Acl::from_entries(&access_entries)?;
-        let default_acl = Acl::from_entries(&default_entries)?;
+        let access_acl =
+            Acl::from_entries(&access_entries).map_err(|err| custom_err("Invalid ACL", &err))?;
+        let default_acl =
+            Acl::from_entries(&default_entries).map_err(|err| custom_err("Invalid ACL", &err))?;
 
         for path in paths {
             access_acl.write(&path, options)?;
 
             // We'll get a PermissionDenied error if called on a file.
-            default_acl.write(&path, options | AclOption::DEFAULT_ACL)?;
+            if let Err(_) = default_acl.write(&path, options | AclOption::DEFAULT_ACL) {
+                // Do nothing (FIXME).
+            }
         }
     }
 

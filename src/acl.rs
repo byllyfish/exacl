@@ -66,7 +66,7 @@ impl Acl {
 
         // Don't check ACL if it's an empty, default ACL (FIXME).
         if !default_acl || !self.is_empty() {
-            xacl_check(self.acl)?;
+            xacl_check(self.acl).map_err(|err| path_err(path.as_ref(), &err))?;
         }
 
         xacl_set_file(path.as_ref(), self.acl, symlink_acl, default_acl)
