@@ -425,7 +425,12 @@ pub(crate) fn xacl_set_file(
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let ret = unsafe { acl_set_file(c_path.as_ptr(), acl_type, acl) };
     if ret != 0 {
-        return fail_err(ret, "acl_set_file", &c_path);
+        let func = if default_acl {
+            "acl_set_file/default"
+        } else {
+            "acl_set_file/access"
+        };
+        return fail_err(ret, func, &c_path);
     }
 
     Ok(())

@@ -89,12 +89,20 @@ impl Acl {
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
 
         // Don't check ACL if it's an empty, default ACL (FIXME).
-        if !default_acl || !self.is_empty() {
+        if !(default_acl && self.is_empty()) {
             xacl_check(self.acl).map_err(|err| path_err(path.as_ref(), &err))?;
         }
 
-        xacl_set_file(path.as_ref(), self.acl, symlink_acl, default_acl)
-            .map_err(|err| path_err(path.as_ref(), &err))?;
+        if let Err(err) = xacl_set_file(path.as_ref(), self.acl, symlink_acl, default_acl) {
+            // Trying to access the default ACL of a file on Linux will
+            // return an error. Ignore if `IGNORE_EXPECTED_FILE_ERR` is set.
+            if !(default_acl
+                && err.kind() == io::ErrorKind::PermissionDenied
+                && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR))
+            {
+                return Err(path_err(path.as_ref(), &err));
+            }
+        }
 
         Ok(())
     }
