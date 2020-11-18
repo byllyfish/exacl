@@ -19,5 +19,5 @@ for entry in acl {
 Linux
 
 ```sh
-apt install clang llvm-dev acl libacl1-dev shunit2 shellcheck shfmt valgrind
+apt install clang llvm-dev acl libacl1-dev shunit2 shellcheck valgrind
 ```
