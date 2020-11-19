@@ -24,7 +24,7 @@ exit_status=0
 
 if [ "$arg1" = "memcheck" ]; then
     # Enable memory check command and re-run unit tests under memcheck.
-    export MEMCHECK="valgrind -q --error-exitcode=9 --leak-check=full --errors-for-leak-kinds=definite"
+    export MEMCHECK="valgrind -q --error-exitcode=9 --leak-check=full --errors-for-leak-kinds=definite --suppressions=valgrind.supp --gen-suppressions=all"
 
     vers=$(valgrind --version)
     echo "Running tests with memcheck ($vers)"
