@@ -390,5 +390,39 @@ testWriteDefaultAcl() {
     assertEquals "[]" "$msg"
 }
 
+testWriteUnifiedAclToFile1() {
+    # Set ACL with required entries.
+    input=$(quotifyJson "[{kind:user,name:@owner,perms:[read,write],flags:[],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
+    assertEquals "set unified acl" 1 $?
+    assertEquals \
+        "File \"$FILE1\": Non-directory does not have default ACL" \
+        "$msg"
+
+    # Check ACL is unchanged.
+    msg=$($EXACL $FILE1)
+    assertEquals "check acl again" 0 $?
+    assertEquals \
+        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "${msg//\"/}"
+}
+
+testWriteUnifiedAclToDir1() {
+    # Set ACL with required entries.
+    input=$(quotifyJson "[{kind:user,name:@owner,perms:[read,write],flags:[],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
+    assertEquals "set unified acl" 0 $?
+    assertEquals \
+        "" \
+        "$msg"
+
+    # Check ACL is unchanged.
+    msg=$($EXACL $DIR1)
+    assertEquals "check acl again" 0 $?
+    assertEquals \
+        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]" \
+        "${msg//\"/}"
+}
+
 # shellcheck disable=SC1091
 . shunit2

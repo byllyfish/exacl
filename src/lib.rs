@@ -255,11 +255,13 @@ where
                 .map_err(|err| custom_err("Invalid ACL", &err))?;
 
             for path in paths {
-                access_acl.write(&path, options)?;
+                // Try to set default acl first; this will fail if path is a file,
+                // and default_acl is not empty.
                 default_acl.write(
                     &path,
                     options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
                 )?;
+                access_acl.write(&path, options)?;
             }
         }
     }

@@ -58,8 +58,9 @@ impl Acl {
     pub fn read<P: AsRef<Path>>(path: P, options: AclOption) -> io::Result<Acl> {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
+        let path = path.as_ref();
 
-        let result = xacl_get_file(path.as_ref(), symlink_acl, default_acl);
+        let result = xacl_get_file(path, symlink_acl, default_acl);
         match result {
             Ok(acl) => Ok(Acl::new(acl, default_acl)),
             Err(err) => {
@@ -73,7 +74,7 @@ impl Acl {
                     // Return an empty acl (FIXME).
                     Ok(Acl::new(xacl_init(1)?, default_acl))
                 } else {
-                    Err(path_err(path.as_ref(), &err))
+                    Err(path_err(path, &err))
                 }
             }
         }
@@ -87,21 +88,29 @@ impl Acl {
     pub fn write<P: AsRef<Path>>(&self, path: P, options: AclOption) -> io::Result<()> {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
+        let path = path.as_ref();
 
         // Don't check ACL if it's an empty, default ACL (FIXME).
         if !(default_acl && self.is_empty()) {
-            xacl_check(self.acl).map_err(|err| path_err(path.as_ref(), &err))?;
+            xacl_check(self.acl).map_err(|err| path_err(path, &err))?;
         }
 
-        if let Err(err) = xacl_set_file(path.as_ref(), self.acl, symlink_acl, default_acl) {
-            // Trying to access the default ACL of a file on Linux will
-            // return an error. Ignore if `IGNORE_EXPECTED_FILE_ERR` is set.
-            if !(default_acl
-                && err.kind() == io::ErrorKind::PermissionDenied
-                && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR))
-            {
-                return Err(path_err(path.as_ref(), &err));
+        // If we're writing a default ACL to a non-directory, and we
+        // specify the `IGNORE_EXPECTED_FILE_ERR` option, this function is a
+        // no-op with no error if the ACL is empty.
+        if default_acl && !path.is_dir() {
+            if self.is_empty() && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR) {
+                return Ok(());
+            } else {
+                return fail_custom(&format!(
+                    "File {:?}: Non-directory does not have default ACL",
+                    path
+                ));
             }
+        }
+
+        if let Err(err) = xacl_set_file(path, self.acl, symlink_acl, default_acl) {
+            return Err(path_err(path, &err));
         }
 
         Ok(())
