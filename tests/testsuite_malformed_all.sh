@@ -157,6 +157,12 @@ testFlagsInvalidType() {
 }
 
 testInterleavedEntryIndex() {
+    # Test that interleaved access/default entries produce the correct ACL index
+    # when there's an unknown user name. Skip this test on MacOS.
+    if [ "$CURRENT_OS" = "Darwin" ]; then
+        return 0
+    fi
+
     input=$(quotifyJson "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[default],allow:true},{kind:user,name:non_existant,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]")
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
