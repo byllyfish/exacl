@@ -403,7 +403,7 @@ testWriteUnifiedAclToFile1() {
     msg=$($EXACL $FILE1)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 }
 
