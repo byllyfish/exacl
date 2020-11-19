@@ -115,7 +115,8 @@ impl Acl {
     pub fn from_entries(entries: &[AclEntry]) -> io::Result<Acl> {
         let new_acl = xacl_init(entries.len())?;
 
-        // Use the smart pointer form of scopeguard; acl_p can change value.
+        // Use the smart pointer form of scopeguard; `acl_p` can change value
+        // when we create entries in it.
         let mut acl_p = scopeguard::guard(new_acl, |a| {
             xacl_free(a);
         });
@@ -139,21 +140,34 @@ impl Acl {
     /// Returns an [`io::Error`] on failure.
     #[cfg(target_os = "linux")]
     pub fn from_unified_entries(entries: &[AclEntry]) -> io::Result<(Acl, Acl)> {
-        let access_entries = entries
-            .iter()
-            .filter(|e| !e.flags.contains(Flag::DEFAULT))
-            .cloned()
-            .collect::<Vec<AclEntry>>();
-        let default_entries = entries
-            .iter()
-            .filter(|e| e.flags.contains(Flag::DEFAULT))
-            .cloned()
-            .collect::<Vec<AclEntry>>();
+        let new_access = xacl_init(entries.len())?;
+        let new_default = xacl_init(entries.len())?;
 
-        let access_acl = Acl::from_entries(&access_entries)?;
-        let default_acl = Acl::from_entries(&default_entries)?;
+        // Use the smart pointer form of scopeguard; acls can change value when
+        // we create entries in them.
+        let mut access_p = scopeguard::guard(new_access, |a| {
+            xacl_free(a);
+        });
 
-        Ok((access_acl, default_acl))
+        let mut default_p = scopeguard::guard(new_default, |a| {
+            xacl_free(a);
+        });
+
+        for (i, entry) in entries.iter().enumerate() {
+            let entry_p = if entry.flags.contains(Flag::DEFAULT) {
+                xacl_create_entry(&mut default_p)?
+            } else {
+                xacl_create_entry(&mut access_p)?
+            };
+            if let Err(err) = entry.to_raw(entry_p) {
+                return fail_custom(&format!("entry {}: {}", i, err));
+            }
+        }
+
+        let access_acl = ScopeGuard::into_inner(access_p);
+        let default_acl = ScopeGuard::into_inner(default_p);
+
+        Ok((Acl::new(access_acl, false), Acl::new(default_acl, true)))
     }
 
     /// Return ACL as a vector of [`AclEntry`].
