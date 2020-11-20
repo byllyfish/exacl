@@ -17,7 +17,7 @@ CURRENT_OS=$(uname -s)
 
 # Put quotes back on JSON text.
 quotifyJson() {
-    echo "$1" | sed -E -e 's/([A-Za-z0-9_-]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
+    echo "$1" | sed -E -e 's/([@A-Za-z0-9_-]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
 }
 
 testInvalidType() {
@@ -153,6 +153,21 @@ testFlagsInvalidType() {
     assertEquals 1 $?
     assertEquals \
         'JSON parser error: invalid type: string "0", expected list of flags at line 1 column 57' \
+        "$msg"
+}
+
+testInterleavedEntryIndex() {
+    # Test that interleaved access/default entries produce the correct ACL index
+    # when there's an unknown user name. Skip this test on MacOS.
+    if [ "$CURRENT_OS" = "Darwin" ]; then
+        return 0
+    fi
+
+    input=$(quotifyJson "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[default],allow:true},{kind:user,name:non_existant,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
+    assertEquals 1 $?
+    assertEquals \
+        'Invalid ACL: entry 4: unknown user name: "non_existant"' \
         "$msg"
 }
 

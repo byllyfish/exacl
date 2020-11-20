@@ -5,6 +5,7 @@
 use log::debug;
 use std::fmt;
 use std::io;
+use std::path::Path;
 
 /// Log a message and return an [`io::Error`] with the value of errno.
 pub fn log_err<R, T>(ret: R, func: &str, arg: T) -> io::Error
@@ -48,4 +49,14 @@ where
 /// Return a custom [`io::Result`] with the given message.
 pub(crate) fn fail_custom<U>(msg: &str) -> io::Result<U> {
     Err(io::Error::new(io::ErrorKind::Other, msg))
+}
+
+/// Return a custom [`io::Error`] that prefixes the given error.
+pub(crate) fn custom_err(msg: &str, err: &io::Error) -> io::Error {
+    io::Error::new(err.kind(), format!("{}: {}", msg, err))
+}
+
+/// Return a custom [`io::Error`] that prefixes the given error with filename.
+pub(crate) fn path_err(path: &Path, err: &io::Error) -> io::Error {
+    io::Error::new(err.kind(), format!("File {:?}: {}", path, err))
 }

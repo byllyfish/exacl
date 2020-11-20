@@ -11,7 +11,7 @@
 //!
 //! To get/set the default ACL (on Linux), use the -d option.
 
-use exacl::{getfacl, Acl, AclEntry, AclOption};
+use exacl::{getfacl, setfacl, AclEntry, AclOption};
 use std::io;
 use std::path::{Path, PathBuf};
 use std::process;
@@ -64,9 +64,8 @@ fn main() {
 
 fn get_acl(files: &[PathBuf], options: AclOption) -> i32 {
     for file in files {
-        let result = dump_acl(file, options);
-        if let Err(err) = result {
-            eprintln!("File {:?}: {}", file, err);
+        if let Err(err) = dump_acl(file, options) {
+            eprintln!("{}", err);
             return EXIT_FAILURE;
         }
     }
@@ -84,20 +83,11 @@ fn set_acl(files: &[PathBuf], options: AclOption) -> i32 {
         }
     };
 
-    let acl = match Acl::from_entries(&entries) {
-        Ok(acl) => acl,
-        Err(err) => {
-            eprintln!("Invalid ACL: {}", err);
-            return EXIT_FAILURE;
-        }
-    };
+    // FIXME(bfish): Preflight the entries here, not inside setfacl?
 
-    for file in files {
-        let result = acl.write(file, options);
-        if let Err(err) = result {
-            eprintln!("File {:?}: {}", file, err);
-            return EXIT_FAILURE;
-        }
+    if let Err(err) = setfacl(files, &entries, options) {
+        eprintln!("{}", err);
+        return EXIT_FAILURE;
     }
 
     EXIT_SUCCESS

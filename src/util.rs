@@ -303,7 +303,7 @@ pub(crate) fn xacl_get_file(
         let err = log_err("null", func, &c_path);
 
         // acl_get_file et al. can return NULL (ENOENT) if the file exists, but
-        // there is no ACL. If the path exists, return an *empty* ACL.
+        // there is no ACL. If the path exists, return an *empty* ACL (FIXME).
         if let Some(sg::ENOENT) = err.raw_os_error() {
             if path_exists(&path, symlink_acl) {
                 return xacl_init(1);
@@ -338,7 +338,12 @@ pub(crate) fn xacl_get_file(
     let acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
 
     if acl.is_null() {
-        return fail_err("null", "acl_get_file", &c_path);
+        let func = if default_acl {
+            "acl_get_file/default"
+        } else {
+            "acl_get_file/access"
+        };
+        return fail_err("null", func, &c_path);
     }
 
     Ok(acl)
@@ -420,7 +425,12 @@ pub(crate) fn xacl_set_file(
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let ret = unsafe { acl_set_file(c_path.as_ptr(), acl_type, acl) };
     if ret != 0 {
-        return fail_err(ret, "acl_set_file", &c_path);
+        let func = if default_acl {
+            "acl_set_file/default"
+        } else {
+            "acl_set_file/access"
+        };
+        return fail_err(ret, func, &c_path);
     }
 
     Ok(())

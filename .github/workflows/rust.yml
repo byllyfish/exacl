@@ -2,7 +2,7 @@ name: Rust
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "*" ]
   pull_request:
     branches: [ main ]
 
@@ -16,16 +16,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-10.15, ubuntu-20.04]
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Install dependencies (macOS)
-      run: brew install shunit2 shellcheck
+      run: brew install shunit2 shellcheck shfmt
       if: runner.os == 'macOS'
     - name: Install dependencies (Linux)
-      run: sudo apt-get -y install libacl1-dev shunit2 valgrind shellcheck
+      run: sudo apt-get -y install libacl1-dev acl shunit2 valgrind shellcheck
       if: runner.os == 'Linux'
     - name: Build
       run: cargo build
@@ -43,4 +43,4 @@ jobs:
     - name: Lint Check
       run: ./ci/lint.sh
     - name: Format Check
-      run: cargo fmt -- --check
+      run: ./ci/format.sh

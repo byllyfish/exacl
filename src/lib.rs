@@ -23,7 +23,7 @@
 //! acl.sort();
 //!
 //! // Set the ACL for "./tmp/foo".
-//! setfacl("./tmp/foo", &acl, None)?;
+//! setfacl(&["./tmp/foo"], &acl, None)?;
 //!
 //! # Ok(()) }
 //! ```
@@ -34,7 +34,7 @@
 //!
 //! - [getfacl] retrieves the ACL for a file or directory. On Linux, the
 //!     result includes the entries from the default ACL if there is one.
-//! - [setfacl] sets the ACL for a file or directory, including the default
+//! - [setfacl] sets the ACL for files or directories, including the default
 //!     ACL on Linux.
 //!
 //! Both [getfacl] and [setfacl] work with a vector of [`AclEntry`] structures.
@@ -80,6 +80,7 @@ pub use aclentry::{AclEntry, AclEntryKind};
 pub use flag::Flag;
 pub use perm::Perm;
 
+use failx::custom_err;
 use std::io;
 use std::path::Path;
 
@@ -138,42 +139,32 @@ where
 {
     let options = options.into().unwrap_or_default();
 
-    if options.contains(AclOption::DEFAULT_ACL) {
-        // Return default ACL only. If `path` is a file, this will return a
-        // PermissionDenied error.
-        let acl = Acl::read(path, options)?;
-        return Ok(acl.entries()?);
+    #[cfg(target_os = "macos")]
+    {
+        Acl::read(&path, options)?.entries()
     }
 
-    if cfg!(target_os = "macos") {
-        // On macOS, there is only one ACL to read.
-        let entries = Acl::read(&path, options)?.entries()?;
-        Ok(entries)
-    } else {
-        // On Linux read the access ACL first, then try to read the default ACL.
-        let mut entries = Acl::read(&path, options)?.entries()?;
+    #[cfg(not(target_os = "macos"))]
+    {
+        if options.contains(AclOption::DEFAULT_ACL) {
+            Acl::read(&path, options)?.entries()
+        } else {
+            let mut entries = Acl::read(&path, options)?.entries()?;
+            let mut default = Acl::read(
+                &path,
+                options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
+            )?
+            .entries()?;
 
-        match Acl::read(&path, options | AclOption::DEFAULT_ACL) {
-            Ok(default_acl) => {
-                let mut default_entries = default_acl.entries()?;
-                entries.append(&mut default_entries);
-            }
-            Err(err) => {
-                // Accessing the default ACL on a file will result in a
-                // PermissionDenied error, which we ignore.
-                if err.kind() != io::ErrorKind::PermissionDenied {
-                    return Err(err);
-                }
-            }
+            entries.append(&mut default);
+            Ok(entries)
         }
-
-        Ok(entries)
     }
 }
 
-/// Set access control list (ACL) for a file or directory.
+/// Set access control list (ACL) for specified files and directories.
 ///
-/// Sets the ACL for the specified path using the given access control entries.
+/// Sets the ACL for the specified paths using the given access control entries.
 /// The semantics and permissions of the access control list depend on the
 /// underlying platform.
 ///
@@ -194,7 +185,7 @@ where
 ///     AclEntry::deny_group("some_group", Perm::WRITE, None)
 /// ];
 ///
-/// setfacl("./tmp/foo", &entries, None)?;
+/// setfacl(&["./tmp/foo"], &entries, None)?;
 /// # Ok(()) }
 /// ```
 ///
@@ -229,7 +220,7 @@ where
 ///     AclEntry::allow_group(MASK, Perm::READ | Perm::WRITE, None),
 /// ];
 ///
-/// setfacl("./tmp/foo", &entries, None)?;
+/// setfacl(&["./tmp/foo"], &entries, None)?;
 /// # Ok(()) }
 /// ```
 ///
@@ -237,12 +228,45 @@ where
 ///
 /// Returns an [`io::Error`] on failure.
 
-pub fn setfacl<P, O>(_path: P, _entries: &[AclEntry], _options: O) -> io::Result<()>
+pub fn setfacl<P, O>(paths: &[P], entries: &[AclEntry], options: O) -> io::Result<()>
 where
     P: AsRef<Path>,
     O: Into<Option<AclOption>>,
 {
-    Err(io::Error::from_raw_os_error(1))
+    let options = options.into().unwrap_or_default();
+
+    #[cfg(target_os = "macos")]
+    {
+        let acl = Acl::from_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
+        for path in paths {
+            acl.write(path, options)?;
+        }
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        if options.contains(AclOption::DEFAULT_ACL) {
+            let acl = Acl::from_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
+            for path in paths {
+                acl.write(path, options)?;
+            }
+        } else {
+            let (access_acl, default_acl) = Acl::from_unified_entries(entries)
+                .map_err(|err| custom_err("Invalid ACL", &err))?;
+
+            for path in paths {
+                // Try to set default acl first; this will fail if path is a file,
+                // and default_acl is not empty.
+                default_acl.write(
+                    &path,
+                    options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
+                )?;
+                access_acl.write(&path, options)?;
+            }
+        }
+    }
+
+    Ok(())
 }
 
 /// Specify the file owner (Linux).

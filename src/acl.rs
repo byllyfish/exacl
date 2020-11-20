@@ -1,7 +1,7 @@
 //! Provides `Acl` and `AclOption` implementation.
 
 use crate::aclentry::AclEntry;
-use crate::failx::fail_custom;
+use crate::failx::{fail_custom, path_err};
 #[cfg(target_os = "linux")]
 use crate::flag::Flag;
 use crate::util::*;
@@ -20,6 +20,9 @@ bitflags! {
 
         /// Get/set the default ACL (Linux only).
         const DEFAULT_ACL = 0x02;
+
+        /// Ignore expected error when using DEFAULT_ACL on a file (Linux only).
+        const IGNORE_EXPECTED_FILE_ERR = 0x10;
     }
 }
 
@@ -36,6 +39,17 @@ pub struct Acl {
 }
 
 impl Acl {
+    /// Convenience function to construct an `Acl`.
+    #[allow(unused_variables)]
+    fn new(acl: acl_t, default_acl: bool) -> Acl {
+        assert!(!acl.is_null());
+        Acl {
+            acl,
+            #[cfg(target_os = "linux")]
+            default_acl,
+        }
+    }
+
     /// Read ACL for specified file.
     ///
     /// # Errors
@@ -44,14 +58,26 @@ impl Acl {
     pub fn read<P: AsRef<Path>>(path: P, options: AclOption) -> io::Result<Acl> {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
+        let path = path.as_ref();
 
-        let acl_p = xacl_get_file(path.as_ref(), symlink_acl, default_acl)?;
-
-        Ok(Acl {
-            acl: acl_p,
-            #[cfg(target_os = "linux")]
-            default_acl,
-        })
+        let result = xacl_get_file(path, symlink_acl, default_acl);
+        match result {
+            Ok(acl) => Ok(Acl::new(acl, default_acl)),
+            Err(err) => {
+                // Trying to access the default ACL of a file on Linux will
+                // return an error. We can catch this error and return an empty
+                // ACL instead; only if `IGNORE_EXPECTED_FILE_ERR` is set.
+                if default_acl
+                    && err.kind() == io::ErrorKind::PermissionDenied
+                    && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR)
+                {
+                    // Return an empty acl (FIXME).
+                    Ok(Acl::new(xacl_init(1)?, default_acl))
+                } else {
+                    Err(path_err(path, &err))
+                }
+            }
+        }
     }
 
     /// Write ACL for specified file.
@@ -62,13 +88,32 @@ impl Acl {
     pub fn write<P: AsRef<Path>>(&self, path: P, options: AclOption) -> io::Result<()> {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
+        let path = path.as_ref();
 
-        // Don't check ACL if it's an empty, default ACL.
-        if !default_acl || !self.is_empty() {
-            xacl_check(self.acl)?;
+        // Don't check ACL if it's an empty, default ACL (FIXME).
+        if !(default_acl && self.is_empty()) {
+            xacl_check(self.acl).map_err(|err| path_err(path, &err))?;
         }
 
-        xacl_set_file(path.as_ref(), self.acl, symlink_acl, default_acl)
+        // If we're writing a default ACL to a non-directory, and we
+        // specify the `IGNORE_EXPECTED_FILE_ERR` option, this function is a
+        // no-op with no error if the ACL is empty.
+        if default_acl && !path.is_dir() {
+            if self.is_empty() && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR) {
+                return Ok(());
+            } else {
+                return fail_custom(&format!(
+                    "File {:?}: Non-directory does not have default ACL",
+                    path
+                ));
+            }
+        }
+
+        if let Err(err) = xacl_set_file(path, self.acl, symlink_acl, default_acl) {
+            return Err(path_err(path, &err));
+        }
+
+        Ok(())
     }
 
     /// Construct ACL from slice of [`AclEntry`].
@@ -79,7 +124,8 @@ impl Acl {
     pub fn from_entries(entries: &[AclEntry]) -> io::Result<Acl> {
         let new_acl = xacl_init(entries.len())?;
 
-        // Use the smart pointer form of scopeguard; acl_p can change value.
+        // Use the smart pointer form of scopeguard; `acl_p` can change value
+        // when we create entries in it.
         let mut acl_p = scopeguard::guard(new_acl, |a| {
             xacl_free(a);
         });
@@ -91,11 +137,46 @@ impl Acl {
             }
         }
 
-        Ok(Acl {
-            acl: ScopeGuard::into_inner(acl_p),
-            #[cfg(target_os = "linux")]
-            default_acl: false,
-        })
+        Ok(Acl::new(ScopeGuard::into_inner(acl_p), false))
+    }
+
+    /// Construct pair of ACL's from slice of [`AclEntry`].
+    ///
+    /// Separate regular access entries from default entries on Linux.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    #[cfg(target_os = "linux")]
+    pub fn from_unified_entries(entries: &[AclEntry]) -> io::Result<(Acl, Acl)> {
+        let new_access = xacl_init(entries.len())?;
+        let new_default = xacl_init(entries.len())?;
+
+        // Use the smart pointer form of scopeguard; acls can change value when
+        // we create entries in them.
+        let mut access_p = scopeguard::guard(new_access, |a| {
+            xacl_free(a);
+        });
+
+        let mut default_p = scopeguard::guard(new_default, |a| {
+            xacl_free(a);
+        });
+
+        for (i, entry) in entries.iter().enumerate() {
+            let entry_p = if entry.flags.contains(Flag::DEFAULT) {
+                xacl_create_entry(&mut default_p)?
+            } else {
+                xacl_create_entry(&mut access_p)?
+            };
+            if let Err(err) = entry.to_raw(entry_p) {
+                return fail_custom(&format!("entry {}: {}", i, err));
+            }
+        }
+
+        let access_acl = ScopeGuard::into_inner(access_p);
+        let default_acl = ScopeGuard::into_inner(default_p);
+
+        Ok((Acl::new(access_acl, false), Acl::new(default_acl, true)))
     }
 
     /// Return ACL as a vector of [`AclEntry`].
@@ -129,12 +210,8 @@ impl Acl {
     ///
     /// Returns an [`io::Error`] on failure.
     pub fn from_platform_text(text: &str) -> io::Result<Acl> {
-        let acl_p = xacl_from_text(text)?;
-        Ok(Acl {
-            acl: acl_p,
-            #[cfg(target_os = "linux")]
-            default_acl: false,
-        })
+        let acl = xacl_from_text(text)?;
+        Ok(Acl::new(acl, false))
     }
 
     /// Return platform-dependent textual description.

@@ -175,26 +175,26 @@ testWriteAclToFile1() {
     # Set ACL to empty.
     input="[]"
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
-    assertEquals 1 $?
+    assertEquals "set acl to empty" 1 $?
     assertEquals \
         "File \"$FILE1\": required ACL entry is missing" \
         "$msg"
 
     # Verify ACL.
     msg=$($EXACL $FILE1)
-    assertEquals 0 $?
+    assertEquals "verify acl" 0 $?
     assertEquals \
         "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "-rw-------" "$(fileperms $FILE1)"
     isReadable "$FILE1" && isWritable "$FILE1"
-    assertEquals 0 $?
+    assertEquals "is readable" 0 $?
 
     # Set ACL for current user to "allow:false". This fails on Linux.
     input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]")
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
-    assertEquals 1 $?
+    assertEquals "check failure" 1 $?
     assertEquals \
         "Invalid ACL: entry 0: allow=false is not supported on Linux" \
         "$msg"
@@ -202,7 +202,7 @@ testWriteAclToFile1() {
     # Set ACL for current user specifically.
     input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
-    assertEquals 1 $?
+    assertEquals "check required entry" 1 $?
     assertEquals \
         "File \"$FILE1\": required ACL entry is missing" \
         "$msg"
@@ -210,14 +210,14 @@ testWriteAclToFile1() {
     # Set ACL for current user specifically, with required entries.
     input=$(quotifyJson "[{kind:user,name:@owner,perms:[read,write],flags:[],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[], allow:true},{kind:group,name:@mask,perms:[read],flags:[], allow:true},{kind:user,name:@other,perms:[],flags:[], allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
-    assertEquals 0 $?
+    assertEquals "check set acl" 0 $?
     assertEquals \
         "" \
         "${msg//\"/}"
 
     # Check ACL again.
     msg=$($EXACL $FILE1)
-    assertEquals 0 $?
+    assertEquals "check acl again" 0 $?
     assertEquals \
         "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
@@ -388,6 +388,40 @@ testWriteDefaultAcl() {
     msg=$($EXACL --default $DIR1 2>&1)
     assertEquals 0 $?
     assertEquals "[]" "$msg"
+}
+
+testWriteUnifiedAclToFile1() {
+    # Set ACL with required entries.
+    input=$(quotifyJson "[{kind:user,name:@owner,perms:[read,write],flags:[],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
+    assertEquals "set unified acl" 1 $?
+    assertEquals \
+        "File \"$FILE1\": Non-directory does not have default ACL" \
+        "$msg"
+
+    # Check ACL is unchanged.
+    msg=$($EXACL $FILE1)
+    assertEquals "check acl again" 0 $?
+    assertEquals \
+        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "${msg//\"/}"
+}
+
+testWriteUnifiedAclToDir1() {
+    # Set ACL with required entries.
+    input=$(quotifyJson "[{kind:user,name:@owner,perms:[read,write],flags:[],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
+    assertEquals "set unified acl" 0 $?
+    assertEquals \
+        "" \
+        "$msg"
+
+    # Check ACL is unchanged.
+    msg=$($EXACL $DIR1)
+    assertEquals "check acl again" 0 $?
+    assertEquals \
+        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]" \
+        "${msg//\"/}"
 }
 
 # shellcheck disable=SC1091
