@@ -44,3 +44,24 @@
    fun:metadata<&std::path::Path>
 }
 
+{
+   statx(file_name) points to unaddressable byte(s)
+   Memcheck:Param
+   statx(file_name)
+   fun:syscall
+   fun:statx
+   fun:_ZN3std3sys4unix2fs9try_statx17h6620bb917eae57bfE
+   fun:_ZN3std3sys4unix2fs5lstat17h462d759d9a745527E
+   fun:symlink_metadata<&std::path::Path>
+}
+
+{
+   statx(buf) points to unaddressable byte(s) 
+   Memcheck:Param
+   statx(buf)
+   fun:syscall
+   fun:statx
+   fun:_ZN3std3sys4unix2fs9try_statx17h6620bb917eae57bfE
+   fun:_ZN3std3sys4unix2fs5lstat17h462d759d9a745527E
+   fun:symlink_metadata<&std::path::Path>
+}
