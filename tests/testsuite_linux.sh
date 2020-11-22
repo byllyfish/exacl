@@ -416,11 +416,43 @@ testWriteUnifiedAclToDir1() {
         "" \
         "$msg"
 
-    # Check ACL is unchanged.
+    # Check ACL is updated.
     msg=$($EXACL $DIR1)
     assertEquals "check acl again" 0 $?
     assertEquals \
         "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]" \
+        "${msg//\"/}"
+}
+
+testSetDefault() {
+    # Set ACL with both access and default entries.
+    input=$(quotifyJson "[{kind:user,name:@owner,perms:[execute],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[execute],flags:[],allow:true},{kind:user,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set --default $DIR1 2>&1)
+    assertEquals "set default acl" 1 $?
+    assertEquals \
+        "File \"$DIR1\": multiple ACL entries with a tag that may occur at most once" \
+        "$msg"
+
+    # Check ACL is updated.
+    msg=$($EXACL $DIR1)
+    assertEquals "check acl again" 0 $?
+    assertEquals \
+        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]" \
+        "${msg//\"/}"
+
+    # Remove the default ACL.
+    input="[]"
+    msg=$(echo "$input" | $EXACL --set --default $DIR1 2>&1)
+    assertEquals "remove default acl" 0 $?
+    assertEquals \
+        "" \
+        "$msg"
+
+    # Check ACL is updated.
+    msg=$($EXACL $DIR1)
+    assertEquals "check acl again" 0 $?
+    assertEquals \
+        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 }
 
