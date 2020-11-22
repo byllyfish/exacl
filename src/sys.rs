@@ -126,34 +126,44 @@ pub mod sg {
     #[cfg(target_os = "linux")]
     pub const ACL_OTHER: i32 = super::ACL_OTHER as i32;
 
+    #[cfg(target_os = "macos")]
+    pub const ID_TYPE_UID: i32 = super::ID_TYPE_UID as i32;
+    #[cfg(target_os = "macos")]
+    pub const ID_TYPE_GID: i32 = super::ID_TYPE_GID as i32;
+
     #[test]
     fn test_signed() {
-        assert!(super::ENOENT as i32 > 0);
-        assert!(super::ENOTSUP as i32 > 0);
-        assert!(super::EINVAL as i32 > 0);
-        assert!(super::ENOMEM as i32 > 0);
-        assert!(super::ACL_MAX_ENTRIES as i32 > 0);
+        assert!(super::ENOENT as i32 >= 0);
+        assert!(super::ENOTSUP as i32 >= 0);
+        assert!(super::EINVAL as i32 >= 0);
+        assert!(super::ENOMEM as i32 >= 0);
+        assert!(super::ACL_MAX_ENTRIES as i32 >= 0);
 
         #[cfg(target_os = "linux")]
         assert!(super::ACL_FIRST_ENTRY as i32 >= 0);
 
         #[cfg(target_os = "linux")]
-        assert!(super::ACL_NEXT_ENTRY as i32 > 0);
+        assert!(super::ACL_NEXT_ENTRY as i32 >= 0);
 
         #[cfg(target_os = "macos")]
-        assert!(super::O_SYMLINK as i32 > 0);
+        assert!(super::O_SYMLINK as i32 >= 0);
 
         #[cfg(target_os = "linux")]
-        assert!(super::ACL_USER_OBJ as i32 > 0);
+        assert!(super::ACL_USER_OBJ as i32 >= 0);
         #[cfg(target_os = "linux")]
-        assert!(super::ACL_USER as i32 > 0);
+        assert!(super::ACL_USER as i32 >= 0);
         #[cfg(target_os = "linux")]
-        assert!(super::ACL_GROUP_OBJ as i32 > 0);
+        assert!(super::ACL_GROUP_OBJ as i32 >= 0);
         #[cfg(target_os = "linux")]
-        assert!(super::ACL_GROUP as i32 > 0);
+        assert!(super::ACL_GROUP as i32 >= 0);
         #[cfg(target_os = "linux")]
-        assert!(super::ACL_MASK as i32 > 0);
+        assert!(super::ACL_MASK as i32 >= 0);
         #[cfg(target_os = "linux")]
-        assert!(super::ACL_OTHER as i32 > 0);
+        assert!(super::ACL_OTHER as i32 >= 0);
+
+        #[cfg(target_os = "macos")]
+        assert!(super::ID_TYPE_UID as i32 >= 0);
+        #[cfg(target_os = "macos")]
+        assert!(super::ID_TYPE_GID as i32 >= 0);
     }
 }
