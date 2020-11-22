@@ -17,7 +17,7 @@ use std::path::{Path, PathBuf};
 use std::process;
 use structopt::StructOpt;
 
-#[derive(Debug, StructOpt)]
+#[derive(StructOpt)]
 #[structopt(name = "exacl", about = "Read or write a file's ACL.")]
 struct Opt {
     /// Set file's ACL.

@@ -19,7 +19,7 @@ cargo +nightly install grcov
 excl_br_line='#\[derive\(|debug!|assert!|assert_eq!|process::exit\('
 
 # Work-around grcov issue where an isolated closing curly brace is counted as missing in code coverage (11/21/2020).
-excl_line='^[ \t]*\}$'
+excl_line='^[ \t]*\}'
 
 export CARGO_INCREMENTAL=0
 export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Cdebug-assertions=no -Zpanic_abort_tests"
