@@ -167,7 +167,7 @@ testReadAclForLink1() {
     assertEquals "File \"$LINK1\": No such file or directory (os error 2)" "$msg"
 
     # Test symlink with no ACL.
-    msg=$($EXACL -h $LINK1)
+    msg=$($EXACL --symlink $LINK1)
     assertEquals 0 $?
     assertEquals "[]" "$msg"
 
@@ -178,7 +178,7 @@ testReadAclForLink1() {
     ! isReadableLink "$LINK1"
     assertEquals 0 $?
 
-    msg=$($EXACL -h $LINK1)
+    msg=$($EXACL --symlink $LINK1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]" \
@@ -293,7 +293,7 @@ testWriteAclToDir1() {
 testWriteAclToLink1() {
     # Set ACL to empty.
     input="[]"
-    msg=$(echo "$input" | $EXACL -h --set $LINK1 2>&1)
+    msg=$(echo "$input" | $EXACL --symlink --set $LINK1 2>&1)
     assertEquals 0 $?
     assertEquals \
         "" \
@@ -304,7 +304,7 @@ testWriteAclToLink1() {
 
     # Set ACL for current user to "deny read".
     input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]")
-    msg=$(echo "$input" | $EXACL -h --set $LINK1 2>&1)
+    msg=$(echo "$input" | $EXACL --symlink --set $LINK1 2>&1)
     assertEquals 0 $?
     assertEquals \
         "" \
@@ -320,7 +320,7 @@ testWriteAclToLink1() {
         "$msg"
 
     # Check ACL again.
-    msg=$($EXACL -h $LINK1)
+    msg=$($EXACL --symlink $LINK1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]" \
@@ -329,7 +329,7 @@ testWriteAclToLink1() {
     # Set ACL back to empty. We've removed READ permission for the link, so
     # this will fail.
     input="[]"
-    msg=$(echo "$input" | $EXACL -h --set $LINK1 2>&1)
+    msg=$(echo "$input" | $EXACL --symlink --set $LINK1 2>&1)
     assertEquals 1 $?
     assertEquals \
         "File \"$LINK1\": Permission denied (os error 13)" \
