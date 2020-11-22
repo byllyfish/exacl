@@ -62,9 +62,9 @@ fn main() {
     process::exit(exit_code);
 }
 
-fn get_acl(files: &[PathBuf], options: AclOption) -> i32 {
-    for file in files {
-        if let Err(err) = dump_acl(file, options) {
+fn get_acl(paths: &[PathBuf], options: AclOption) -> i32 {
+    for path in paths {
+        if let Err(err) = dump_acl(path, options) {
             eprintln!("{}", err);
             return EXIT_FAILURE;
         }
@@ -73,7 +73,7 @@ fn get_acl(files: &[PathBuf], options: AclOption) -> i32 {
     EXIT_SUCCESS
 }
 
-fn set_acl(files: &[PathBuf], options: AclOption) -> i32 {
+fn set_acl(paths: &[PathBuf], options: AclOption) -> i32 {
     let reader = io::BufReader::new(io::stdin());
     let entries: Vec<AclEntry> = match serde_json::from_reader(reader) {
         Ok(entries) => entries,
@@ -84,8 +84,9 @@ fn set_acl(files: &[PathBuf], options: AclOption) -> i32 {
     };
 
     // FIXME(bfish): Preflight the entries here, not inside setfacl?
+    // Should there be a new API: `checkfacl`?
 
-    if let Err(err) = setfacl(files, &entries, options) {
+    if let Err(err) = setfacl(paths, &entries, options) {
         eprintln!("{}", err);
         return EXIT_FAILURE;
     }
@@ -93,8 +94,8 @@ fn set_acl(files: &[PathBuf], options: AclOption) -> i32 {
     EXIT_SUCCESS
 }
 
-fn dump_acl(file: &Path, options: AclOption) -> io::Result<()> {
-    let entries = getfacl(file, options)?;
+fn dump_acl(path: &Path, options: AclOption) -> io::Result<()> {
+    let entries = getfacl(path, options)?;
     serde_json::to_writer(io::stdout(), &entries)?;
     println!(); // add newline
     Ok(())
