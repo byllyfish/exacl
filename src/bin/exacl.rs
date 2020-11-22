@@ -7,7 +7,7 @@
 //!     exacl --set myfile
 //!
 //! To get/set the ACL of a symlink itself, instead of the file it points to,
-//! use the -h option.
+//! use the -s option.
 //!
 //! To get/set the default ACL (on Linux), use the -d option.
 
@@ -29,7 +29,7 @@ struct Opt {
     default: bool,
 
     /// Get or set the ACL of a symlink itself.
-    #[structopt(short = "h", long)]
+    #[structopt(short = "s", long)]
     symlink: bool,
 
     /// Input files
