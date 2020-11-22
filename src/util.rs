@@ -62,8 +62,8 @@ impl Qualifier {
         };
 
         let qualifier = match idtype {
-            ID_TYPE_UID => Qualifier::User(Uid::from_raw(id_c)),
-            ID_TYPE_GID => Qualifier::Group(Gid::from_raw(id_c)),
+            sg::ID_TYPE_UID => Qualifier::User(Uid::from_raw(id_c)),
+            sg::ID_TYPE_GID => Qualifier::Group(Gid::from_raw(id_c)),
             _ => Qualifier::Unknown(guid.to_string()),
         };
 
@@ -239,7 +239,7 @@ fn xgid_to_guid(gid: Gid) -> io::Result<Uuid> {
 
 /// Convert GUID to uid/gid.
 #[cfg(target_os = "macos")]
-fn xguid_to_id(guid: Uuid) -> io::Result<(uid_t, u32)> {
+fn xguid_to_id(guid: Uuid) -> io::Result<(uid_t, i32)> {
     let mut id_c: uid_t = 0;
     let mut idtype: i32 = 0;
     let guid_ptr = guid.as_bytes().as_ptr() as *mut u8;
@@ -249,9 +249,8 @@ fn xguid_to_id(guid: Uuid) -> io::Result<(uid_t, u32)> {
     if ret != 0 {
         return fail_from_err(ret, "mbr_uuid_to_id", guid);
     }
-    assert!(idtype >= 0);
 
-    Ok((id_c, idtype as u32))
+    Ok((id_c, idtype))
 }
 
 /// Free memory allocated by native acl_* routines.
@@ -488,6 +487,7 @@ pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
 /// Client must call `xacl_free` when done with result.
 pub(crate) fn xacl_init(capacity: usize) -> io::Result<acl_t> {
     use std::convert::TryFrom;
+
     let size = match i32::try_from(capacity) {
         Ok(size) if size <= sg::ACL_MAX_ENTRIES => size,
         _ => return fail_custom("Too many ACL entries"),
@@ -946,27 +946,27 @@ mod qualifier_tests {
     fn test_guid_to_id() {
         assert_eq!(
             xguid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap()).ok(),
-            Some((89, ID_TYPE_UID))
+            Some((89, sg::ID_TYPE_UID))
         );
 
         assert_eq!(
             xguid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap()).ok(),
-            Some((1500, ID_TYPE_UID))
+            Some((1500, sg::ID_TYPE_UID))
         );
 
         assert_eq!(
             xguid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap()).ok(),
-            Some((89, ID_TYPE_GID))
+            Some((89, sg::ID_TYPE_GID))
         );
 
         assert_eq!(
             xguid_to_id(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap()).ok(),
-            Some((1500, ID_TYPE_GID))
+            Some((1500, sg::ID_TYPE_GID))
         );
 
         assert_eq!(
             xguid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap()).ok(),
-            Some((20, ID_TYPE_GID))
+            Some((20, sg::ID_TYPE_GID))
         );
 
         let err = xguid_to_id(Uuid::nil()).err().unwrap();
