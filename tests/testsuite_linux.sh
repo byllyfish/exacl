@@ -169,6 +169,13 @@ testWriteAclToMissingFile() {
     assertEquals \
         "File \"$DIR/non_existant\": required ACL entry is missing" \
         "$msg"
+
+    input=$(quotifyJson "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $DIR/non_existant 2>&1)
+    assertEquals 1 $?
+    assertEquals \
+        "File \"$DIR/non_existant\": No such file or directory (os error 2)" \
+        "$msg"
 }
 
 testWriteAclToFile1() {
@@ -221,6 +228,17 @@ testWriteAclToFile1() {
     assertEquals \
         "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
+
+    # Check ACL with getfacl.
+    msg=$(getfacl -cE $FILE1 2>/dev/null)
+    assertEquals "check acl getfacl" 0 $?
+    assertEquals \
+        "user::rw-
+user:bfish:r--
+group::rw-
+mask::r--
+other::---" \
+        "${msg}"
 }
 
 testWriteAclToDir1() {
@@ -274,6 +292,17 @@ testWriteAclToDir1() {
 
     assertEquals "drwxr-----" "$(fileperms $DIR1)"
 
+    # Check ACL with getfacl.
+    msg=$(getfacl -cE $DIR1 2>/dev/null)
+    assertEquals "check acl getfacl" 0 $?
+    assertEquals \
+        "user::rwx
+user:bfish:r--
+group::---
+mask::r--
+other::---" \
+        "${msg}"
+
     # Reset ACL back to the original.
     input=$(quotifyJson "[{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
@@ -313,6 +342,17 @@ testWriteAclNumericUID() {
     assertEquals \
         "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
+
+    # Check ACL with getfacl.
+    msg=$(getfacl -cE $FILE1 2>/dev/null)
+    assertEquals "check acl getfacl" 0 $?
+    assertEquals \
+        "user::rw-
+user:bfish:r--
+group::---
+mask::r--
+other::---" \
+        "${msg}"
 }
 
 testWriteAclNumericGID() {
@@ -363,6 +403,20 @@ testWriteDefaultAcl() {
     assertEquals \
         "[{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[],flags:[default],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[default],allow:true},{kind:group,name:@mask,perms:[read],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]" \
         "${msg//\"/}"
+
+    # Check ACL with getfacl.
+    msg=$(getfacl -cE $DIR1 2>/dev/null)
+    assertEquals "check acl getfacl" 0 $?
+    assertEquals \
+        "user::rwx
+group::---
+other::---
+default:user::rw-
+default:group::---
+default:group:bfish:r--
+default:mask::r--
+default:other::---" \
+        "${msg}"
 
     # Create subfile in DIR1.
     subfile="$DIR1/subfile"
@@ -422,6 +476,18 @@ testWriteUnifiedAclToDir1() {
     assertEquals \
         "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]" \
         "${msg//\"/}"
+
+    # Check ACL with getfacl.
+    msg=$(getfacl -cE $DIR1 2>/dev/null)
+    assertEquals "check acl getfacl" 0 $?
+    assertEquals \
+        "user::rw-
+group::rw-
+other::---
+default:user::rw-
+default:group::rw-
+default:other::---" \
+        "${msg}"
 }
 
 testSetDefault() {
