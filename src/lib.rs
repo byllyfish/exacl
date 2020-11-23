@@ -210,14 +210,14 @@ where
 ///
 /// ```no_run
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use exacl::{setfacl, AclEntry, Flag, Perm, OWNER, OTHER, MASK};
+/// use exacl::{setfacl, AclEntry, Flag, Perm};
 ///
 /// let entries = vec![
-///     AclEntry::allow_user(OWNER, Perm::READ | Perm::WRITE, None),
-///     AclEntry::allow_group(OWNER, Perm::READ, None),
-///     AclEntry::allow_group(OTHER, Perm::empty(), None),
+///     AclEntry::allow_user("", Perm::READ | Perm::WRITE, None),
+///     AclEntry::allow_group("", Perm::READ, None),
+///     AclEntry::allow_other(Perm::empty(), None),
 ///     AclEntry::allow_user("some_user", Perm::READ | Perm::WRITE, None),
-///     AclEntry::allow_group(MASK, Perm::READ | Perm::WRITE, None),
+///     AclEntry::allow_mask(Perm::READ | Perm::WRITE, None),
 /// ];
 ///
 /// setfacl(&["./tmp/foo"], &entries, None)?;
@@ -268,12 +268,3 @@ where
 
     Ok(())
 }
-
-/// Specify the file owner (Linux).
-pub const OWNER: &str = util::OWNER_NAME;
-
-/// Specify other than file owner or group owner (Linux).
-pub const OTHER: &str = util::OTHER_NAME;
-
-/// Specify mask for user/group permissions (Linux).
-pub const MASK: &str = util::MASK_NAME;

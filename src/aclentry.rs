@@ -9,14 +9,24 @@ use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::io;
 
-/// Kind of ACL entry (User, Group, or Unknown).
+/// Kind of ACL entry (User, Group, Mask, Other, or Unknown).
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, PartialOrd, Eq, Ord)]
 #[serde(rename_all = "lowercase")]
 pub enum AclEntryKind {
     /// Entry represents a user.
     User,
+
     /// Entry represents a group.
     Group,
+
+    /// Entry represents a Posix.1e mask entry.
+    #[cfg(target_os = "linux")]
+    Mask,
+
+    /// Entry represents a Posix.1e other entry.
+    #[cfg(target_os = "linux")]
+    Other,
+
     /// Entry represents a possibly corrupt ACL entry. Caused by an unknown tag.
     /// The name contains more information.
     Unknown,
@@ -108,6 +118,26 @@ impl AclEntry {
         AclEntry::new(AclEntryKind::Group, name, perms, flags.into(), true)
     }
 
+    /// Construct an ALLOW access control entry for mask.
+    #[cfg(target_os = "linux")]
+    #[must_use]
+    pub fn allow_mask<F>(perms: Perm, flags: F) -> AclEntry
+    where
+        F: Into<Option<Flag>>,
+    {
+        AclEntry::new(AclEntryKind::Mask, "", perms, flags.into(), true)
+    }
+
+    /// Construct an ALLOW access control entry for other.
+    #[cfg(target_os = "linux")]
+    #[must_use]
+    pub fn allow_other<F>(perms: Perm, flags: F) -> AclEntry
+    where
+        F: Into<Option<Flag>>,
+    {
+        AclEntry::new(AclEntryKind::Other, "", perms, flags.into(), true)
+    }
+
     /// Construct a DENY access control entry for a user.
     #[must_use]
     pub fn deny_user<F>(name: &str, perms: Perm, flags: F) -> AclEntry
@@ -142,14 +172,16 @@ impl AclEntry {
             Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name()),
 
             #[cfg(target_os = "linux")]
-            Qualifier::User(_) | Qualifier::UserObj | Qualifier::Other => {
-                (AclEntryKind::User, qualifier.name())
-            }
+            Qualifier::User(_) | Qualifier::UserObj => (AclEntryKind::User, qualifier.name()),
 
             #[cfg(target_os = "linux")]
-            Qualifier::Group(_) | Qualifier::GroupObj | Qualifier::Mask => {
-                (AclEntryKind::Group, qualifier.name())
-            }
+            Qualifier::Group(_) | Qualifier::GroupObj => (AclEntryKind::Group, qualifier.name()),
+
+            #[cfg(target_os = "linux")]
+            Qualifier::Mask => (AclEntryKind::Mask, qualifier.name()),
+
+            #[cfg(target_os = "linux")]
+            Qualifier::Other => (AclEntryKind::Other, qualifier.name()),
         };
 
         Ok(AclEntry {
@@ -175,6 +207,10 @@ impl AclEntry {
         let qualifier = match self.kind {
             AclEntryKind::User => Qualifier::user_named(&self.name)?,
             AclEntryKind::Group => Qualifier::group_named(&self.name)?,
+            #[cfg(target_os = "linux")]
+            AclEntryKind::Mask => Qualifier::mask_named(&self.name)?,
+            #[cfg(target_os = "linux")]
+            AclEntryKind::Other => Qualifier::other_named(&self.name)?,
             AclEntryKind::Unknown => {
                 return fail_custom("unsupported kind: \"unknown\"");
             }
