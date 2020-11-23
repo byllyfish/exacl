@@ -40,10 +40,10 @@
 //! Both [getfacl] and [setfacl] work with a vector of [`AclEntry`] structures.
 //! The structure contains five fields:
 //!
-//! - kind : [`AclEntryKind`] - the kind of entry (User, Group, Unknown).
+//! - kind : [`AclEntryKind`] - the kind of entry (User, Group, Other, Mask,
+//!     or Unknown).
 //! - name : [`String`] - name of the principal being given access. You can
-//!     use a user/group name, decimal uid/gid, or UUID (on macOS). On Linux,
-//!     use the special constants OWNER, OTHER, and MASK.
+//!     use a user/group name, decimal uid/gid, or UUID (on macOS).
 //! - perms : [`Perm`] - permission bits for the entry.
 //! - flags : [`Flag`] - flags indicating whether an entry is inherited, etc.
 //! - allow : [`bool`] - true if entry is allowed; false means deny. Linux only
@@ -208,7 +208,7 @@ where
 ///
 /// ### Linux Example
 ///
-/// ```no_run
+/// ```ignore
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// use exacl::{setfacl, AclEntry, Flag, Perm};
 ///

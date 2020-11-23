@@ -40,8 +40,15 @@ testInvalidKind() {
     input=$(quotifyJson "[{kind:invalid,name:,perms:[execute],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
+
+    if [ "$CURRENT_OS" = "Darwin" ]; then
+        expected='user, group, unknown'
+    else
+        expected='user, group, mask, other, unknown'
+    fi
+
     assertEquals \
-        "JSON parser error: unknown variant invalid, expected one of user, group, mask, other, unknown at line 1 column 18" \
+        "JSON parser error: unknown variant invalid, expected one of $expected at line 1 column 18" \
         "${msg//\`/}"
 }
 
@@ -181,6 +188,11 @@ testInterleavedEntryIndex() {
 }
 
 testInvalidMask() {
+    # Ignore test on macOS.
+    if [ "$CURRENT_OS" = "Darwin" ]; then
+        return 0
+    fi
+
     input=$(quotifyJson "[{kind:mask,name:invalid,perms:[],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
@@ -190,6 +202,11 @@ testInvalidMask() {
 }
 
 testInvalidOther() {
+    # Ignore test on macOS.
+    if [ "$CURRENT_OS" = "Darwin" ]; then
+        return 0
+    fi
+
     input=$(quotifyJson "[{kind:other,name:invalid,perms:[],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?

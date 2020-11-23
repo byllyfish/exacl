@@ -20,8 +20,11 @@ use uuid::Uuid;
 // Re-export acl_entry_t and acl_t from crate::sys.
 pub use crate::sys::{acl_entry_t, acl_t};
 
+#[cfg(target_os = "linux")]
 pub const OWNER_NAME: &str = "";
+#[cfg(target_os = "linux")]
 pub const OTHER_NAME: &str = "";
+#[cfg(target_os = "linux")]
 pub const MASK_NAME: &str = "";
 
 /// A Qualifier specifies the principal that is allowed/denied access to a

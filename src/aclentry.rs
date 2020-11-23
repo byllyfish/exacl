@@ -40,12 +40,11 @@ pub enum AclEntryKind {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct AclEntry {
-    /// Kind of entry (User, Group, Unknown).
+    /// Kind of entry (User, Group, Other, Mask, or Unknown).
     pub kind: AclEntryKind,
 
-    /// Name of the principal being given access. You can use a user/group name,
-    /// decimal uid/gid, or UUID (on macOS). On Linux, use the special constants
-    /// OWNER, OTHER, and MASK.
+    /// Name of the principal being given access. You can use a user/group name
+    /// or decimal uid/gid. On macOS you can use a UUID.
     pub name: String,
 
     /// Permission bits for the entry.
@@ -119,7 +118,7 @@ impl AclEntry {
     }
 
     /// Construct an ALLOW access control entry for mask.
-    #[cfg(any(target_os = "linux", docsrs))]
+    #[cfg(target_os = "linux")]
     #[must_use]
     pub fn allow_mask<F>(perms: Perm, flags: F) -> AclEntry
     where
@@ -129,7 +128,7 @@ impl AclEntry {
     }
 
     /// Construct an ALLOW access control entry for other.
-    #[cfg(any(target_os = "linux", docsrs))]
+    #[cfg(target_os = "linux")]
     #[must_use]
     pub fn allow_other<F>(perms: Perm, flags: F) -> AclEntry
     where
