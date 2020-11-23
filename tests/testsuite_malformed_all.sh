@@ -17,7 +17,7 @@ CURRENT_OS=$(uname -s)
 
 # Put quotes back on JSON text.
 quotifyJson() {
-    echo "$1" | sed -E -e 's/([@A-Za-z0-9_-]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
+    echo "$1" | sed -E -e 's/([@A-Za-z0-9_-]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g' -e 's/:,/:"",/g'
 }
 
 testInvalidType() {
@@ -34,6 +34,22 @@ testInvalidType() {
     assertEquals \
         "JSON parser error: EOF while parsing a list at line 2 column 0" \
         "$msg"
+}
+
+testInvalidKind() {
+    input=$(quotifyJson "[{kind:invalid,name:,perms:[execute],flags:[],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
+    assertEquals 1 $?
+
+    if [ "$CURRENT_OS" = "Darwin" ]; then
+        expected='user, group, unknown'
+    else
+        expected='user, group, mask, other, unknown'
+    fi
+
+    assertEquals \
+        "JSON parser error: unknown variant invalid, expected one of $expected at line 1 column 18" \
+        "${msg//\`/}"
 }
 
 testInvalidUser() {
@@ -163,11 +179,39 @@ testInterleavedEntryIndex() {
         return 0
     fi
 
-    input=$(quotifyJson "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[default],allow:true},{kind:user,name:non_existant,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]")
+    input=$(quotifyJson "[{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:user,name:,perms:[write,read],flags:[default],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:group,name:,perms:[],flags:[default],allow:true},{kind:user,name:non_existant,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]")
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
         'Invalid ACL: entry 4: unknown user name: "non_existant"' \
+        "$msg"
+}
+
+testInvalidMask() {
+    # Ignore test on macOS.
+    if [ "$CURRENT_OS" = "Darwin" ]; then
+        return 0
+    fi
+
+    input=$(quotifyJson "[{kind:mask,name:invalid,perms:[],flags:[],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
+    assertEquals 1 $?
+    assertEquals \
+        "Invalid ACL: entry 0: unknown mask name: \"invalid\"" \
+        "$msg"
+}
+
+testInvalidOther() {
+    # Ignore test on macOS.
+    if [ "$CURRENT_OS" = "Darwin" ]; then
+        return 0
+    fi
+
+    input=$(quotifyJson "[{kind:other,name:invalid,perms:[],flags:[],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
+    assertEquals 1 $?
+    assertEquals \
+        "Invalid ACL: entry 0: unknown other name: \"invalid\"" \
         "$msg"
 }
 

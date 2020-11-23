@@ -47,7 +47,7 @@ fileperms() {
 
 # Put quotes back on JSON text.
 quotifyJson() {
-    echo "$1" | sed -E -e 's/([@A-Za-z0-9_-]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g'
+    echo "$1" | sed -E -e 's/([@A-Za-z0-9_-]+)/"\1"/g' -e 's/:"false"/:false/g' -e 's/:"true"/:true/g' -e 's/:,/:"",/g'
 }
 
 # Called by shunit2 before all tests run.
@@ -65,7 +65,7 @@ oneTimeSetUp() {
     ln -s link1_to_nowhere "$LINK1"
 }
 
-REQUIRED_ENTRIES="{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}"
+REQUIRED_ENTRIES="{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}"
 
 testReadAclFromMissingFile() {
     msg=$($EXACL $DIR/non_existant 2>&1)
@@ -79,20 +79,20 @@ testReadAclForFile1() {
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "-rw-------" "$(fileperms $FILE1)"
     isReadable "$FILE1" && isWritable "$FILE1"
     assertEquals 0 $?
 
-    # Add ACL entry for current user to "write-only". (Note: @owner still has read access)
+    # Add ACL entry for current user to "write-only". (Note: owner still has read access)
     setfacl -m "u:$ME:w" "$FILE1"
 
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:@mask,perms:[write],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "-rw--w----" "$(fileperms $FILE1)"
@@ -112,7 +112,7 @@ testReadAclForFile1() {
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[write],flags:[],allow:true},{kind:group,name:@mask,perms:[write],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[write],flags:[],allow:true},{kind:mask,name:,perms:[write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "-----w----" "$(fileperms $FILE1)"
@@ -128,16 +128,16 @@ testReadAclForDir1() {
     msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
-    # Add ACL entry for current user to "write-only". (Note: @owner still has read access)
+    # Add ACL entry for current user to "write-only". (Note: owner still has read access)
     setfacl -m "u:$ME:w" "$DIR1"
 
     msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:@mask,perms:[write],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[execute,write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "drwx-w----" "$(fileperms $DIR1)"
@@ -169,6 +169,13 @@ testWriteAclToMissingFile() {
     assertEquals \
         "File \"$DIR/non_existant\": required ACL entry is missing" \
         "$msg"
+
+    input=$(quotifyJson "[{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $DIR/non_existant 2>&1)
+    assertEquals 1 $?
+    assertEquals \
+        "File \"$DIR/non_existant\": No such file or directory (os error 2)" \
+        "$msg"
 }
 
 testWriteAclToFile1() {
@@ -184,7 +191,7 @@ testWriteAclToFile1() {
     msg=$($EXACL $FILE1)
     assertEquals "verify acl" 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "-rw-------" "$(fileperms $FILE1)"
@@ -208,7 +215,7 @@ testWriteAclToFile1() {
         "$msg"
 
     # Set ACL for current user specifically, with required entries.
-    input=$(quotifyJson "[{kind:user,name:@owner,perms:[read,write],flags:[],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[], allow:true},{kind:group,name:@mask,perms:[read],flags:[], allow:true},{kind:user,name:@other,perms:[],flags:[], allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true}]")
+    input=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[], allow:true},{kind:mask,name:,perms:[read],flags:[], allow:true},{kind:other,name:,perms:[],flags:[], allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals "check set acl" 0 $?
     assertEquals \
@@ -219,8 +226,19 @@ testWriteAclToFile1() {
     msg=$($EXACL $FILE1)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:,perms:[write,read],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
+
+    # Check ACL with getfacl.
+    msg=$(getfacl -cE $FILE1 2>/dev/null)
+    assertEquals "check acl getfacl" 0 $?
+    assertEquals \
+        "user::rw-
+user:$ME:r--
+group::rw-
+mask::r--
+other::---" \
+        "${msg}"
 }
 
 testWriteAclToDir1() {
@@ -236,7 +254,7 @@ testWriteAclToDir1() {
     msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "drwx------" "$(fileperms $DIR1)"
@@ -251,14 +269,14 @@ testWriteAclToDir1() {
         "Invalid ACL: entry 0: allow=false is not supported on Linux" \
         "$msg"
 
-    input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]")
+    input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:user,name:,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals 1 $?
     assertEquals \
         "File \"$DIR1\": required ACL entry is missing" \
         "$msg"
 
-    input=$(quotifyJson "[{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]")
+    input=$(quotifyJson "[{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:user,name:,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals 0 $?
     assertEquals \
@@ -269,13 +287,24 @@ testWriteAclToDir1() {
     msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[execute,write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "drwxr-----" "$(fileperms $DIR1)"
 
+    # Check ACL with getfacl.
+    msg=$(getfacl -cE $DIR1 2>/dev/null)
+    assertEquals "check acl getfacl" 0 $?
+    assertEquals \
+        "user::rwx
+user:$ME:r--
+group::---
+mask::r--
+other::---" \
+        "${msg}"
+
     # Reset ACL back to the original.
-    input=$(quotifyJson "[{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]")
+    input=$(quotifyJson "[{kind:user,name:,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals 0 $?
     assertEquals \
@@ -292,7 +321,7 @@ testWriteAclToLink1() {
         "File \"$LINK1\": required ACL entry is missing" \
         "$msg"
 
-    input=$(quotifyJson "[{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]")
+    input=$(quotifyJson "[{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:user,name:,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $LINK1 2>&1)
     assertEquals 1 $?
     assertEquals \
@@ -302,7 +331,7 @@ testWriteAclToLink1() {
 
 testWriteAclNumericUID() {
     # Set ACL for current user to "deny read".
-    input=$(quotifyJson "[{kind:user,name:$ME_NUM,perms:[read],flags:[],allow:true},$REQUIRED_ENTRIES,{kind:group,name:@mask,perms:[read],flags:[],allow:true}]")
+    input=$(quotifyJson "[{kind:user,name:$ME_NUM,perms:[read],flags:[],allow:true},$REQUIRED_ENTRIES,{kind:mask,name:,perms:[read],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
@@ -311,13 +340,24 @@ testWriteAclNumericUID() {
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
+
+    # Check ACL with getfacl.
+    msg=$(getfacl -cE $FILE1 2>/dev/null)
+    assertEquals "check acl getfacl" 0 $?
+    assertEquals \
+        "user::rw-
+user:$ME:r--
+group::---
+mask::r--
+other::---" \
+        "${msg}"
 }
 
 testWriteAclNumericGID() {
     # Set ACL for current group to "read".
-    input=$(quotifyJson "[{kind:group,name:$MY_GROUP_NUM,perms:[read],flags:[],allow:true},$REQUIRED_ENTRIES,{kind:group,name:@mask,perms:[read],flags:[],allow:true}]")
+    input=$(quotifyJson "[{kind:group,name:$MY_GROUP_NUM,perms:[read],flags:[],allow:true},$REQUIRED_ENTRIES,{kind:mask,name:,perms:[read],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
@@ -326,7 +366,7 @@ testWriteAclNumericGID() {
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 }
 
@@ -345,7 +385,7 @@ testReadDefaultAcl() {
 }
 
 testWriteDefaultAcl() {
-    input=$(quotifyJson "[{kind:group,name:$MY_GROUP_NUM,perms:[read],flags:[],allow:true},$REQUIRED_ENTRIES,{kind:group,name:@mask,perms:[read],flags:[],allow:true}]")
+    input=$(quotifyJson "[{kind:group,name:$MY_GROUP_NUM,perms:[read],flags:[],allow:true},$REQUIRED_ENTRIES,{kind:mask,name:,perms:[read],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set --default $DIR1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
@@ -354,15 +394,29 @@ testWriteDefaultAcl() {
     msg=$($EXACL --default $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[],flags:[default],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[default],allow:true},{kind:group,name:@mask,perms:[read],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]" \
+        "[{kind:user,name:,perms:[write,read],flags:[default],allow:true},{kind:group,name:,perms:[],flags:[default],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[default],allow:true},{kind:mask,name:,perms:[read],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]" \
         "${msg//\"/}"
 
     # Check ACL without --default.
     msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[],flags:[default],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[default],allow:true},{kind:group,name:@mask,perms:[read],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]" \
+        "[{kind:user,name:,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[write,read],flags:[default],allow:true},{kind:group,name:,perms:[],flags:[default],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[default],allow:true},{kind:mask,name:,perms:[read],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]" \
         "${msg//\"/}"
+
+    # Check ACL with getfacl.
+    msg=$(getfacl -cE $DIR1 2>/dev/null)
+    assertEquals "check acl getfacl" 0 $?
+    assertEquals \
+        "user::rwx
+group::---
+other::---
+default:user::rw-
+default:group::---
+default:group:$MY_GROUP:r--
+default:mask::r--
+default:other::---" \
+        "${msg}"
 
     # Create subfile in DIR1.
     subfile="$DIR1/subfile"
@@ -371,7 +425,7 @@ testWriteDefaultAcl() {
     msg=$($EXACL $subfile 2>&1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     rm -f "$subfile"
@@ -392,7 +446,7 @@ testWriteDefaultAcl() {
 
 testWriteUnifiedAclToFile1() {
     # Set ACL with required entries.
-    input=$(quotifyJson "[{kind:user,name:@owner,perms:[read,write],flags:[],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]")
+    input=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals "set unified acl" 1 $?
     assertEquals \
@@ -403,13 +457,13 @@ testWriteUnifiedAclToFile1() {
     msg=$($EXACL $FILE1)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:true},{kind:group,name:@mask,perms:[read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 }
 
 testWriteUnifiedAclToDir1() {
     # Set ACL with required entries.
-    input=$(quotifyJson "[{kind:user,name:@owner,perms:[read,write],flags:[],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]")
+    input=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals "set unified acl" 0 $?
     assertEquals \
@@ -420,13 +474,25 @@ testWriteUnifiedAclToDir1() {
     msg=$($EXACL $DIR1)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]" \
+        "[{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:group,name:,perms:[write,read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[write,read],flags:[default],allow:true},{kind:group,name:,perms:[write,read],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]" \
         "${msg//\"/}"
+
+    # Check ACL with getfacl.
+    msg=$(getfacl -cE $DIR1 2>/dev/null)
+    assertEquals "check acl getfacl" 0 $?
+    assertEquals \
+        "user::rw-
+group::rw-
+other::---
+default:user::rw-
+default:group::rw-
+default:other::---" \
+        "${msg}"
 }
 
 testSetDefault() {
     # Set ACL with both access and default entries.
-    input=$(quotifyJson "[{kind:user,name:@owner,perms:[execute],flags:[],allow:true},{kind:group,name:@owner,perms:[],flags:[],allow:true},{kind:user,name:@other,perms:[execute],flags:[],allow:true},{kind:user,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:group,name:@owner,perms:[read,write],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]")
+    input=$(quotifyJson "[{kind:user,name:,perms:[execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[execute],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]")
     msg=$(echo "$input" | $EXACL --set --default $DIR1 2>&1)
     assertEquals "set default acl" 1 $?
     assertEquals \
@@ -437,7 +503,7 @@ testSetDefault() {
     msg=$($EXACL $DIR1)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true},{kind:user,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[default],allow:true},{kind:user,name:@other,perms:[],flags:[default],allow:true}]" \
+        "[{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:group,name:,perms:[write,read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[write,read],flags:[default],allow:true},{kind:group,name:,perms:[write,read],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]" \
         "${msg//\"/}"
 
     # Remove the default ACL.
@@ -452,7 +518,7 @@ testSetDefault() {
     msg=$($EXACL $DIR1)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:user,name:@owner,perms:[write,read],flags:[],allow:true},{kind:group,name:@owner,perms:[write,read],flags:[],allow:true},{kind:user,name:@other,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[write,read],flags:[],allow:true},{kind:group,name:,perms:[write,read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 }
 

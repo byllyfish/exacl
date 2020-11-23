@@ -40,10 +40,10 @@
 //! Both [getfacl] and [setfacl] work with a vector of [`AclEntry`] structures.
 //! The structure contains five fields:
 //!
-//! - kind : [`AclEntryKind`] - the kind of entry (User, Group, Unknown).
+//! - kind : [`AclEntryKind`] - the kind of entry (User, Group, Other, Mask,
+//!     or Unknown).
 //! - name : [`String`] - name of the principal being given access. You can
-//!     use a user/group name, decimal uid/gid, or UUID (on macOS). On Linux,
-//!     use the special constants OWNER, OTHER, and MASK.
+//!     use a user/group name, decimal uid/gid, or UUID (on macOS).
 //! - perms : [`Perm`] - permission bits for the entry.
 //! - flags : [`Flag`] - flags indicating whether an entry is inherited, etc.
 //! - allow : [`bool`] - true if entry is allowed; false means deny. Linux only
@@ -208,16 +208,16 @@ where
 ///
 /// ### Linux Example
 ///
-/// ```no_run
+/// ```ignore
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use exacl::{setfacl, AclEntry, Flag, Perm, OWNER, OTHER, MASK};
+/// use exacl::{setfacl, AclEntry, Flag, Perm};
 ///
 /// let entries = vec![
-///     AclEntry::allow_user(OWNER, Perm::READ | Perm::WRITE, None),
-///     AclEntry::allow_group(OWNER, Perm::READ, None),
-///     AclEntry::allow_group(OTHER, Perm::empty(), None),
+///     AclEntry::allow_user("", Perm::READ | Perm::WRITE, None),
+///     AclEntry::allow_group("", Perm::READ, None),
+///     AclEntry::allow_other(Perm::empty(), None),
 ///     AclEntry::allow_user("some_user", Perm::READ | Perm::WRITE, None),
-///     AclEntry::allow_group(MASK, Perm::READ | Perm::WRITE, None),
+///     AclEntry::allow_mask(Perm::READ | Perm::WRITE, None),
 /// ];
 ///
 /// setfacl(&["./tmp/foo"], &entries, None)?;
@@ -268,12 +268,3 @@ where
 
     Ok(())
 }
-
-/// Specify the file owner (Linux).
-pub const OWNER: &str = util::OWNER_NAME;
-
-/// Specify other than file owner or group owner (Linux).
-pub const OTHER: &str = util::OTHER_NAME;
-
-/// Specify mask for user/group permissions (Linux).
-pub const MASK: &str = util::MASK_NAME;

@@ -20,9 +20,12 @@ use uuid::Uuid;
 // Re-export acl_entry_t and acl_t from crate::sys.
 pub use crate::sys::{acl_entry_t, acl_t};
 
-pub const OWNER_NAME: &str = "@owner";
-pub const OTHER_NAME: &str = "@other";
-pub const MASK_NAME: &str = "@mask";
+#[cfg(target_os = "linux")]
+pub const OWNER_NAME: &str = "";
+#[cfg(target_os = "linux")]
+pub const OTHER_NAME: &str = "";
+#[cfg(target_os = "linux")]
+pub const MASK_NAME: &str = "";
 
 /// A Qualifier specifies the principal that is allowed/denied access to a
 /// resource.
@@ -91,8 +94,6 @@ impl Qualifier {
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
         match name {
             OWNER_NAME => Ok(Qualifier::UserObj),
-            OTHER_NAME => Ok(Qualifier::Other),
-            MASK_NAME => Ok(Qualifier::Mask),
             s => match str_to_uid(s) {
                 Ok(uid) => Ok(Qualifier::User(uid)),
                 Err(err) => Err(err),
@@ -120,12 +121,28 @@ impl Qualifier {
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
         match name {
             OWNER_NAME => Ok(Qualifier::GroupObj),
-            OTHER_NAME => Ok(Qualifier::Other),
-            MASK_NAME => Ok(Qualifier::Mask),
             s => match str_to_gid(s) {
                 Ok(gid) => Ok(Qualifier::Group(gid)),
                 Err(err) => Err(err),
             },
+        }
+    }
+
+    /// Create qualifier from mask.
+    #[cfg(target_os = "linux")]
+    pub fn mask_named(name: &str) -> io::Result<Qualifier> {
+        match name {
+            MASK_NAME => Ok(Qualifier::Mask),
+            s => fail_custom(&format!("unknown mask name: {:?}", s)),
+        }
+    }
+
+    /// Create qualifier from other.
+    #[cfg(target_os = "linux")]
+    pub fn other_named(name: &str) -> io::Result<Qualifier> {
+        match name {
+            OTHER_NAME => Ok(Qualifier::Other),
+            s => fail_custom(&format!("unknown other name: {:?}", s)),
         }
     }
 
