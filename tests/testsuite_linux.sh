@@ -234,7 +234,7 @@ testWriteAclToFile1() {
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
         "user::rw-
-user:bfish:r--
+user:$ME:r--
 group::rw-
 mask::r--
 other::---" \
@@ -297,7 +297,7 @@ testWriteAclToDir1() {
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
         "user::rwx
-user:bfish:r--
+user:$ME:r--
 group::---
 mask::r--
 other::---" \
@@ -348,7 +348,7 @@ testWriteAclNumericUID() {
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
         "user::rw-
-user:bfish:r--
+user:$ME:r--
 group::---
 mask::r--
 other::---" \
@@ -413,7 +413,7 @@ group::---
 other::---
 default:user::rw-
 default:group::---
-default:group:bfish:r--
+default:group:$MY_GROUP:r--
 default:mask::r--
 default:other::---" \
         "${msg}"

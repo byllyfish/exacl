@@ -119,7 +119,7 @@ impl AclEntry {
     }
 
     /// Construct an ALLOW access control entry for mask.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", docsrs))]
     #[must_use]
     pub fn allow_mask<F>(perms: Perm, flags: F) -> AclEntry
     where
@@ -129,7 +129,7 @@ impl AclEntry {
     }
 
     /// Construct an ALLOW access control entry for other.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", docsrs))]
     #[must_use]
     pub fn allow_other<F>(perms: Perm, flags: F) -> AclEntry
     where
