@@ -269,13 +269,22 @@ testWriteAclToDir1() {
         "Invalid ACL: entry 0: allow=false is not supported on Linux" \
         "$msg"
 
+    # Set ACL without mask entry.
     input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:user,name:,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
-    assertEquals 1 $?
+    assertEquals 0 $?
     assertEquals \
-        "File \"$DIR1\": required ACL entry is missing" \
+        "" \
         "$msg"
 
+    # Read ACL back.
+    msg=$($EXACL $DIR1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:,perms:[execute,write,read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "${msg//\"/}"
+
+    # Set ACL with mask entry.
     input=$(quotifyJson "[{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:user,name:,perms:[execute,write,read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals 0 $?

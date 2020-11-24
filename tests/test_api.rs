@@ -100,7 +100,7 @@ fn test_write_acl_linux() -> io::Result<()> {
     entries.push(AclEntry::allow_user("", rwx, None));
     entries.push(AclEntry::allow_group("", rwx, None));
     entries.push(AclEntry::allow_other(rwx, None));
-    entries.push(AclEntry::allow_mask(rwx, None));
+    // We do not add a mask entry. One will be automatically added.
 
     log_acl(&entries);
 
@@ -123,6 +123,9 @@ other::rwx
 
     let acl2 = Acl::read(&file, AclOption::empty())?;
     let mut entries2 = acl2.entries()?;
+
+    // Before doing the comparison, add the mask entry.
+    entries.push(AclEntry::allow_mask(rwx, None));
 
     entries.sort();
     entries2.sort();
@@ -306,4 +309,68 @@ fn test_getfacl_file() -> io::Result<()> {
     }
 
     Ok(())
+}
+
+#[test]
+fn test_from_entries() {
+    // 0 entries should result in empty acl.
+    let acl = Acl::from_entries(&[]).unwrap();
+    assert!(acl.is_empty());
+
+    // Test named user on MacOS.
+    #[cfg(target_os = "macos")]
+    {
+        let entries = vec![AclEntry::allow_user("500", Perm::EXECUTE, None)];
+        let acl = Acl::from_entries(&entries).unwrap();
+        assert_eq!(
+            acl.to_platform_text(),
+            "!#acl 1\nuser:FFFFEEEE-DDDD-CCCC-BBBB-AAAA000001F4:::allow:execute\n"
+        );
+    }
+
+    // Test named user on Linux. It should add correct mask.
+    #[cfg(target_os = "linux")]
+    {
+        let mut entries = vec![AclEntry::allow_user("500", Perm::EXECUTE, None)];
+        let acl = Acl::from_entries(&entries).unwrap();
+        assert_eq!(acl.to_platform_text(), "user:500:--x\nmask::--x\n");
+
+        entries.push(AclEntry::allow_group("", Perm::WRITE, None));
+        let acl = Acl::from_entries(&entries).unwrap();
+        assert_eq!(
+            acl.to_platform_text(),
+            "user:500:--x\ngroup::-w-\nmask::-wx\n"
+        );
+    }
+}
+
+#[test]
+#[cfg(target_os = "linux")]
+fn test_from_unified_entries() {
+    // 0 entries should result in empty acls.
+    let (a, d) = Acl::from_unified_entries(&[]).unwrap();
+    assert!(a.is_empty());
+    assert!(d.is_empty());
+
+    let mut entries = vec![
+        AclEntry::allow_user("500", Perm::EXECUTE, None),
+        AclEntry::allow_user("501", Perm::EXECUTE, Flag::DEFAULT),
+    ];
+
+    let (a, d) = Acl::from_unified_entries(&entries).unwrap();
+    assert_eq!(a.to_platform_text(), "user:500:--x\nmask::--x\n");
+    assert_eq!(d.to_platform_text(), "user:501:--x\nmask::--x\n");
+
+    entries.push(AclEntry::allow_group("", Perm::WRITE, None));
+    entries.push(AclEntry::allow_group("", Perm::WRITE, Flag::DEFAULT));
+
+    let (a, d) = Acl::from_unified_entries(&entries).unwrap();
+    assert_eq!(
+        a.to_platform_text(),
+        "user:500:--x\ngroup::-w-\nmask::-wx\n"
+    );
+    assert_eq!(
+        d.to_platform_text(),
+        "user:501:--x\ngroup::-w-\nmask::-wx\n"
+    );
 }

@@ -1,9 +1,13 @@
 //! Provides `Acl` and `AclOption` implementation.
 
 use crate::aclentry::AclEntry;
+#[cfg(target_os = "linux")]
+use crate::aclentry::AclEntryKind;
 use crate::failx::{fail_custom, path_err};
 #[cfg(target_os = "linux")]
 use crate::flag::Flag;
+#[cfg(target_os = "linux")]
+use crate::perm::Perm;
 use crate::util::*;
 
 use bitflags::bitflags;
@@ -116,7 +120,40 @@ impl Acl {
         Ok(())
     }
 
+    /// Compute mask.
+    #[cfg(target_os = "linux")]
+    fn compute_mask_perms(entries: &[AclEntry], filter: (Flag, Flag)) -> Option<Perm> {
+        let mut perms = Perm::empty();
+        let mut need_mask = false;
+
+        for entry in entries {
+            // Skip over undesired entries in a unified ACL.
+            if (entry.flags & filter.1) != filter.0 {
+                continue;
+            }
+
+            match entry.kind {
+                AclEntryKind::Mask => return None,
+                AclEntryKind::User | AclEntryKind::Group if !entry.name.is_empty() => {
+                    perms |= entry.perms;
+                    need_mask = true;
+                }
+                AclEntryKind::Group => perms |= entry.perms,
+                _ => (),
+            }
+        }
+
+        if !need_mask {
+            return None;
+        }
+
+        Some(perms)
+    }
+
     /// Construct ACL from slice of [`AclEntry`].
+    ///
+    /// On Linux, if there is no mask `AclEntry`, one will be computed and
+    /// added, if needed.
     ///
     /// # Errors
     ///
@@ -131,9 +168,16 @@ impl Acl {
         });
 
         for (i, entry) in entries.iter().enumerate() {
-            let entry_p = xacl_create_entry(&mut acl_p)?;
-            if let Err(err) = entry.to_raw(entry_p) {
+            if let Err(err) = entry.add_to_acl(&mut acl_p) {
                 return fail_custom(&format!("entry {}: {}", i, err));
+            }
+        }
+
+        #[cfg(target_os = "linux")]
+        if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::empty())) {
+            let mask = AclEntry::allow_mask(mask_perms, None);
+            if let Err(err) = mask.add_to_acl(&mut acl_p) {
+                return fail_custom(&format!("entry {}: {}", -1, err));
             }
         }
 
@@ -143,6 +187,9 @@ impl Acl {
     /// Construct pair of ACL's from slice of [`AclEntry`].
     ///
     /// Separate regular access entries from default entries on Linux.
+    ///
+    /// On Linux, if there is no mask `AclEntry` in either ACL, one will be
+    /// computed and added, if needed.
     ///
     /// # Errors
     ///
@@ -163,13 +210,29 @@ impl Acl {
         });
 
         for (i, entry) in entries.iter().enumerate() {
-            let entry_p = if entry.flags.contains(Flag::DEFAULT) {
-                xacl_create_entry(&mut default_p)?
+            let result = if entry.flags.contains(Flag::DEFAULT) {
+                entry.add_to_acl(&mut default_p)
             } else {
-                xacl_create_entry(&mut access_p)?
+                entry.add_to_acl(&mut access_p)
             };
-            if let Err(err) = entry.to_raw(entry_p) {
+            if let Err(err) = result {
                 return fail_custom(&format!("entry {}: {}", i, err));
+            }
+        }
+
+        #[cfg(target_os = "linux")]
+        if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::DEFAULT)) {
+            let mask = AclEntry::allow_mask(mask_perms, None);
+            if let Err(err) = mask.add_to_acl(&mut access_p) {
+                return fail_custom(&format!("mask entry: {}", err));
+            }
+        }
+
+        #[cfg(target_os = "linux")]
+        if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
+            let mask = AclEntry::allow_mask(mask_perms, Flag::DEFAULT);
+            if let Err(err) = mask.add_to_acl(&mut default_p) {
+                return fail_custom(&format!("default mask entry: {}", err));
             }
         }
 
