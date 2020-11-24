@@ -1,9 +1,12 @@
 //! Provides `Acl` and `AclOption` implementation.
 
-use crate::aclentry::{AclEntry, AclEntryKind};
+use crate::aclentry::AclEntry;
+#[cfg(target_os = "linux")]
+use crate::aclentry::AclEntryKind;
 use crate::failx::{fail_custom, path_err};
 #[cfg(target_os = "linux")]
 use crate::flag::Flag;
+#[cfg(target_os = "linux")]
 use crate::perm::Perm;
 use crate::util::*;
 
