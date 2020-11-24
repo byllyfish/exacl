@@ -192,7 +192,7 @@ impl AclEntry {
         })
     }
 
-    pub(crate) fn to_raw(&self, entry: acl_entry_t) -> io::Result<()> {
+    fn to_raw(&self, entry: acl_entry_t) -> io::Result<()> {
         let qualifier = self.qualifier()?;
 
         xacl_set_tag_qualifier(entry, self.allow, &qualifier)?;
@@ -200,6 +200,11 @@ impl AclEntry {
         xacl_set_flags(entry, self.flags)?;
 
         Ok(())
+    }
+
+    pub(crate) fn add_to_acl(&self, acl: &mut acl_t) -> io::Result<()> {
+        let entry_p = xacl_create_entry(acl)?;
+        self.to_raw(entry_p)
     }
 
     fn qualifier(&self) -> io::Result<Qualifier> {

@@ -100,7 +100,7 @@ fn test_write_acl_linux() -> io::Result<()> {
     entries.push(AclEntry::allow_user("", rwx, None));
     entries.push(AclEntry::allow_group("", rwx, None));
     entries.push(AclEntry::allow_other(rwx, None));
-    entries.push(AclEntry::allow_mask(rwx, None));
+    // We do not add a mask entry. One will be automatically added.
 
     log_acl(&entries);
 
@@ -123,6 +123,9 @@ other::rwx
 
     let acl2 = Acl::read(&file, AclOption::empty())?;
     let mut entries2 = acl2.entries()?;
+
+    // Before doing the comparison, add the mask entry.
+    entries.push(AclEntry::allow_mask(rwx, None));
 
     entries.sort();
     entries2.sort();
