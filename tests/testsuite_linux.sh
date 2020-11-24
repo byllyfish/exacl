@@ -531,5 +531,23 @@ testSetDefault() {
         "${msg//\"/}"
 }
 
+testMissingFlags() {
+    input=$(quotifyJson "[{kind:user,name:501,perms:[execute],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
+    assertEquals 1 $?
+    assertEquals \
+        'File "non_existant": required ACL entry is missing' \
+        "${msg//\`/}"
+}
+
+testMissingAllow() {
+    input=$(quotifyJson "[{kind:user,name:501,perms:[execute],flags:[]}]")
+    msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
+    assertEquals 1 $?
+    assertEquals \
+        'File "non_existant": required ACL entry is missing' \
+        "${msg//\`/}"
+}
+
 # shellcheck disable=SC1091
 . shunit2
