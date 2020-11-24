@@ -118,6 +118,7 @@ impl Acl {
     }
 
     /// Compute mask.
+    #[cfg(target_os = "linux")]
     fn compute_mask_perms(entries: &[AclEntry], filter: (Flag, Flag)) -> Option<Perm> {
         let mut perms = Perm::empty();
         let mut need_mask = false;
@@ -169,6 +170,7 @@ impl Acl {
             }
         }
 
+        #[cfg(target_os = "linux")]
         if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::empty())) {
             let mask = AclEntry::allow_mask(mask_perms, None);
             if let Err(err) = mask.add_to_acl(&mut acl_p) {
@@ -215,17 +217,19 @@ impl Acl {
             }
         }
 
+        #[cfg(target_os = "linux")]
         if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::DEFAULT)) {
             let mask = AclEntry::allow_mask(mask_perms, None);
             if let Err(err) = mask.add_to_acl(&mut access_p) {
-                return fail_custom(&format!("entry {}: {}", -1, err));
+                return fail_custom(&format!("mask entry: {}", err));
             }
         }
 
+        #[cfg(target_os = "linux")]
         if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
             let mask = AclEntry::allow_mask(mask_perms, Flag::DEFAULT);
             if let Err(err) = mask.add_to_acl(&mut default_p) {
-                return fail_custom(&format!("entry {}: {}", -1, err));
+                return fail_custom(&format!("default mask entry: {}", err));
             }
         }
 
