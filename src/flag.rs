@@ -55,10 +55,17 @@ bitflags! {
 }
 
 impl BitIterable for Flag {
-    #[inline]
-    fn overflowing_neg(&self) -> (Self, bool) {
-        let (bits, overflow) = <acl_flag_t>::overflowing_neg(self.bits);
-        (Flag { bits }, overflow)
+    fn lsb(&self) -> Self {
+        Flag {
+            bits: 1 << self.bits.trailing_zeros(),
+        }
+    }
+
+    fn msb(&self) -> Self {
+        const MAX_BITS: acl_flag_t = 8 * std::mem::size_of::<Flag>() as acl_flag_t - 1;
+        Flag {
+            bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
+        }
     }
 }
 
