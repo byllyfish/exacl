@@ -102,15 +102,6 @@ testUnknownKind() {
         "$msg"
 }
 
-testMissingFlags() {
-    input=$(quotifyJson "[{kind:user,name:501,perms:[execute],allow:true}]")
-    msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
-    assertEquals 1 $?
-    assertEquals \
-        'JSON parser error: missing field flags at line 1 column 62' \
-        "${msg//\`/}"
-}
-
 testInvalidFlag() {
     input=$(quotifyJson "[{kind:user,name:501,perms:[execute],flags:[whatever],allow:true}]")
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1 | sed -E -e 's/\`//g')

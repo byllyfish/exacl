@@ -51,11 +51,18 @@ pub struct AclEntry {
     pub perms: Perm,
 
     /// Flags indicating whether an entry is inherited, etc.
+    #[serde(default)]
     pub flags: Flag,
 
     /// True if entry is allowed; false means deny. Linux only supports
     /// allow=true.
+    #[serde(default = "default_allow")]
     pub allow: bool,
+}
+
+// Default value of allow; used for serde.
+fn default_allow() -> bool {
+    true
 }
 
 impl Ord for AclEntry {
