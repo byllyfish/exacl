@@ -83,17 +83,23 @@ bitflags! {
 }
 
 impl BitIterable for Perm {
-    fn lsb(&self) -> Self {
-        Perm {
-            bits: 1 << self.bits.trailing_zeros(),
+    fn lsb(self) -> Option<Self> {
+        if self.is_empty() {
+            return None;
         }
+        Some(Perm {
+            bits: 1 << self.bits.trailing_zeros(),
+        })
     }
 
-    fn msb(&self) -> Self {
+    fn msb(self) -> Option<Self> {
         const MAX_BITS: acl_perm_t = 8 * std::mem::size_of::<Perm>() as acl_perm_t - 1;
-        Perm {
-            bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
+        if self.is_empty() {
+            return None;
         }
+        Some(Perm {
+            bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
+        })
     }
 }
 

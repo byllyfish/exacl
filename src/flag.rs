@@ -55,17 +55,23 @@ bitflags! {
 }
 
 impl BitIterable for Flag {
-    fn lsb(&self) -> Self {
-        Flag {
-            bits: 1 << self.bits.trailing_zeros(),
+    fn lsb(self) -> Option<Self> {
+        if self.is_empty() {
+            return None;
         }
+        Some(Flag {
+            bits: 1 << self.bits.trailing_zeros(),
+        })
     }
 
-    fn msb(&self) -> Self {
+    fn msb(self) -> Option<Self> {
         const MAX_BITS: acl_flag_t = 8 * std::mem::size_of::<Flag>() as acl_flag_t - 1;
-        Flag {
-            bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
+        if self.is_empty() {
+            return None;
         }
+        Some(Flag {
+            bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
+        })
     }
 }
 

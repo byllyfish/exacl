@@ -1,14 +1,13 @@
 //! Implements a generic bit iterator.
 //!
-//! Works with built-in integer types or bitflags.
-//! Assumes that T::default() is all zero bits.
+//! Works with built-in integer types or bitflags. You just have to implement
+//! the `BitIterable` trait.
 
-use std::cmp::PartialEq;
 use std::ops::BitXorAssign;
 
-pub trait BitIterable: Sized + Copy + Default + BitXorAssign + PartialEq {
-    fn lsb(&self) -> Self;
-    fn msb(&self) -> Self;
+pub trait BitIterable: Copy + BitXorAssign {
+    fn lsb(self) -> Option<Self>;
+    fn msb(self) -> Option<Self>;
 }
 
 pub struct BitIter<T: BitIterable>(pub T);
@@ -17,24 +16,22 @@ impl<T: BitIterable> Iterator for BitIter<T> {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        if self.0 == Default::default() {
-            None
-        } else {
-            let bit = self.0.lsb();
+        if let Some(bit) = self.0.lsb() {
             self.0 ^= bit;
             Some(bit)
+        } else {
+            None
         }
     }
 }
 
 impl<T: BitIterable> DoubleEndedIterator for BitIter<T> {
     fn next_back(&mut self) -> Option<T> {
-        if self.0 == Default::default() {
-            None
-        } else {
-            let bit = self.0.msb();
+        if let Some(bit) = self.0.msb() {
             self.0 ^= bit;
             Some(bit)
+        } else {
+            None
         }
     }
 }
@@ -49,12 +46,18 @@ mod bititer_tests {
     use bitflags::bitflags;
 
     impl BitIterable for u32 {
-        fn lsb(&self) -> Self {
-            1 << self.trailing_zeros()
+        fn lsb(self) -> Option<Self> {
+            if self == 0 {
+                return None;
+            }
+            Some(1 << self.trailing_zeros())
         }
 
-        fn msb(&self) -> Self {
-            1 << (31 - self.leading_zeros())
+        fn msb(self) -> Option<Self> {
+            if self == 0 {
+                return None;
+            }
+            Some(1 << (31 - self.leading_zeros()))
         }
     }
 
@@ -118,17 +121,23 @@ mod bititer_tests {
     }
 
     impl BitIterable for TestBit {
-        fn lsb(&self) -> Self {
-            TestBit {
-                bits: 1 << self.bits.trailing_zeros(),
+        fn lsb(self) -> Option<Self> {
+            if self.is_empty() {
+                return None;
             }
+            Some(TestBit {
+                bits: 1 << self.bits.trailing_zeros(),
+            })
         }
 
-        fn msb(&self) -> Self {
-            const MAX_BITS: u32 = 8 * std::mem::size_of::<TestBit>() as u32 - 1;
-            TestBit {
-                bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
+        fn msb(self) -> Option<Self> {
+            if self.is_empty() {
+                return None;
             }
+            const MAX_BITS: u32 = 8 * std::mem::size_of::<TestBit>() as u32 - 1;
+            Some(TestBit {
+                bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
+            })
         }
     }
 
