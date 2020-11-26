@@ -83,10 +83,23 @@ bitflags! {
 }
 
 impl BitIterable for Perm {
-    #[inline]
-    fn overflowing_neg(&self) -> (Self, bool) {
-        let (bits, overflow) = <acl_perm_t>::overflowing_neg(self.bits);
-        (Perm { bits }, overflow)
+    fn lsb(self) -> Option<Self> {
+        if self.is_empty() {
+            return None;
+        }
+        Some(Perm {
+            bits: 1 << self.bits.trailing_zeros(),
+        })
+    }
+
+    fn msb(self) -> Option<Self> {
+        const MAX_BITS: acl_perm_t = 8 * std::mem::size_of::<Perm>() as acl_perm_t - 1;
+        if self.is_empty() {
+            return None;
+        }
+        Some(Perm {
+            bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
+        })
     }
 }
 
@@ -153,6 +166,14 @@ impl ser::Serialize for Perm {
         use ser::SerializeSeq;
         let mut seq = serializer.serialize_seq(None)?;
 
+        // Iterate in reverse on Linux.
+        #[cfg(target_os = "linux")]
+        for perm in BitIter(*self).rev() {
+            seq.serialize_element(&PermName::from_perm(perm))?;
+        }
+
+        // Iterate forward on MacOS.
+        #[cfg(target_os = "macos")]
         for perm in BitIter(*self) {
             seq.serialize_element(&PermName::from_perm(perm))?;
         }

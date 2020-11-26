@@ -1,12 +1,13 @@
 //! Implements a generic bit iterator.
+//!
+//! Works with built-in integer types or bitflags. You just have to implement
+//! the `BitIterable` trait.
 
-use std::cmp::PartialEq;
-use std::ops::{BitAnd, BitXorAssign};
+use std::ops::BitXorAssign;
 
-pub trait BitIterable:
-    Sized + Copy + Default + BitXorAssign + BitAnd<Output = Self> + PartialEq
-{
-    fn overflowing_neg(&self) -> (Self, bool);
+pub trait BitIterable: Copy + BitXorAssign {
+    fn lsb(self) -> Option<Self>;
+    fn msb(self) -> Option<Self>;
 }
 
 pub struct BitIter<T: BitIterable>(pub T);
@@ -15,14 +16,23 @@ impl<T: BitIterable> Iterator for BitIter<T> {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        if self.0 == Default::default() {
-            return None;
+        if let Some(bit) = self.0.lsb() {
+            self.0 ^= bit;
+            Some(bit)
+        } else {
+            None
         }
+    }
+}
 
-        // (value & -value) gives you just the lowest bit.
-        let bit = self.0 & self.0.overflowing_neg().0;
-        self.0 ^= bit;
-        Some(bit)
+impl<T: BitIterable> DoubleEndedIterator for BitIter<T> {
+    fn next_back(&mut self) -> Option<T> {
+        if let Some(bit) = self.0.msb() {
+            self.0 ^= bit;
+            Some(bit)
+        } else {
+            None
+        }
     }
 }
 
@@ -36,20 +46,34 @@ mod bititer_tests {
     use bitflags::bitflags;
 
     impl BitIterable for u32 {
-        #[inline]
-        fn overflowing_neg(&self) -> (Self, bool) {
-            <u32>::overflowing_neg(*self)
+        fn lsb(self) -> Option<Self> {
+            if self == 0 {
+                return None;
+            }
+            Some(1 << self.trailing_zeros())
+        }
+
+        fn msb(self) -> Option<Self> {
+            if self == 0 {
+                return None;
+            }
+            Some(1 << (31 - self.leading_zeros()))
         }
     }
+
     #[test]
     fn test_bititer_u32() {
         assert_eq!(BitIter(0).collect::<Vec<u32>>(), vec![]);
+
         let v = BitIter(1).collect::<Vec<u32>>();
         assert_eq!(v, vec![1]);
+
         let v = BitIter(1 << 31).collect::<Vec<u32>>();
         assert_eq!(v, vec![1 << 31]);
+
         let v = BitIter(2 + 4 + 16 + 64).collect::<Vec<u32>>();
         assert_eq!(v, vec![2, 4, 16, 64]);
+
         let v = BitIter(u32::MAX).collect::<Vec<u32>>();
         assert_eq!(v.len(), 32);
         assert_eq!(
@@ -61,6 +85,32 @@ mod bititer_tests {
             ]
         );
     }
+
+    #[test]
+    fn test_bititer_u32_rev() {
+        assert_eq!(BitIter(0).rev().collect::<Vec<u32>>(), vec![]);
+
+        let v = BitIter(1).rev().collect::<Vec<u32>>();
+        assert_eq!(v, vec![1]);
+
+        let v = BitIter(1 << 31).rev().collect::<Vec<u32>>();
+        assert_eq!(v, vec![1 << 31]);
+
+        let v = BitIter(2 + 4 + 16 + 64).rev().collect::<Vec<u32>>();
+        assert_eq!(v, vec![64, 16, 4, 2]);
+
+        let v = BitIter(u32::MAX).rev().collect::<Vec<u32>>();
+        assert_eq!(v.len(), 32);
+        assert_eq!(
+            v,
+            vec![
+                2147483648, 1073741824, 536870912, 268435456, 134217728, 67108864, 33554432,
+                16777216, 8388608, 4194304, 2097152, 1048576, 524288, 262144, 131072, 65536, 32768,
+                16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1
+            ]
+        );
+    }
+
     bitflags! {
         #[derive(Default)]
         struct TestBit: u32 {
@@ -71,16 +121,32 @@ mod bititer_tests {
     }
 
     impl BitIterable for TestBit {
-        #[inline]
-        fn overflowing_neg(&self) -> (Self, bool) {
-            let (bits, overflow) = <u32>::overflowing_neg(self.bits);
-            (TestBit { bits }, overflow)
+        fn lsb(self) -> Option<Self> {
+            if self.is_empty() {
+                return None;
+            }
+            Some(TestBit {
+                bits: 1 << self.bits.trailing_zeros(),
+            })
+        }
+
+        fn msb(self) -> Option<Self> {
+            if self.is_empty() {
+                return None;
+            }
+            const MAX_BITS: u32 = 8 * std::mem::size_of::<TestBit>() as u32 - 1;
+            Some(TestBit {
+                bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
+            })
         }
     }
 
     #[test]
     fn test_bititer_bitflags() {
         let bits = TestBit::BIT1 | TestBit::BIT2 | TestBit::BIT3;
+
+        let v = BitIter(TestBit::empty()).collect::<Vec<TestBit>>();
+        assert_eq!(v, vec![]);
 
         let v = BitIter(bits.bits).collect::<Vec<u32>>();
         assert_eq!(v, vec![1, 2, 32]);
@@ -92,6 +158,27 @@ mod bititer_tests {
                 TestBit { bits: 1 },
                 TestBit { bits: 2 },
                 TestBit { bits: 32 }
+            ]
+        );
+    }
+
+    #[test]
+    fn test_bititer_bitflags_rev() {
+        let bits = TestBit::BIT1 | TestBit::BIT2 | TestBit::BIT3;
+
+        let v = BitIter(TestBit::empty()).rev().collect::<Vec<TestBit>>();
+        assert_eq!(v, vec![]);
+
+        let v = BitIter(bits.bits).rev().collect::<Vec<u32>>();
+        assert_eq!(v, vec![32, 2, 1]);
+
+        let v = BitIter(bits).rev().collect::<Vec<TestBit>>();
+        assert_eq!(
+            v,
+            vec![
+                TestBit { bits: 32 },
+                TestBit { bits: 2 },
+                TestBit { bits: 1 }
             ]
         );
     }
