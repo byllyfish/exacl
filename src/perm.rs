@@ -93,7 +93,9 @@ impl BitIterable for Perm {
     }
 
     fn msb(self) -> Option<Self> {
+        #[allow(clippy::cast_possible_truncation)]
         const MAX_BITS: acl_perm_t = 8 * std::mem::size_of::<Perm>() as acl_perm_t - 1;
+
         if self.is_empty() {
             return None;
         }
