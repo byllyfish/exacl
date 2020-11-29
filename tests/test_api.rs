@@ -1,7 +1,7 @@
 //! API Tests for exacl module.
 
 use ctor::ctor;
-use exacl::{getfacl, Acl, AclEntry, AclOption, Flag, Perm};
+use exacl::{getfacl, setfacl, Acl, AclEntry, AclOption, Flag, Perm};
 use log::debug;
 use std::io;
 
@@ -373,4 +373,36 @@ fn test_from_unified_entries() {
         d.to_platform_text(),
         "user:501:--x\ngroup::-w-\nmask::-wx\n"
     );
+}
+
+#[test]
+#[cfg(target_os = "linux")]
+fn test_too_many_entries() -> io::Result<()> {
+    // This test depends on the type of file system. With ext* systems, we
+    // expect ACL's with 508 entries to fail.
+    let mut entries = vec![
+        AclEntry::allow_user("", Perm::READ, None),
+        AclEntry::allow_group("", Perm::READ, None),
+        AclEntry::allow_other(Perm::empty(), None),
+        AclEntry::allow_mask(Perm::READ, None),
+    ];
+
+    for i in 500..1003 {
+        entries.push(AclEntry::allow_user(&i.to_string(), Perm::READ, None));
+    }
+
+    let files = [tempfile::NamedTempFile::new()?];
+
+    // 507 entries are okay.
+    setfacl(&files, &entries, None)?;
+    debug!("{} entries is okay", entries.len());
+
+    entries.push(AclEntry::allow_user("1500", Perm::READ, None));
+    debug!("{} entries fails", entries.len());
+
+    // 508 entries is one too many.
+    let err = setfacl(&files, &entries, None).err().unwrap();
+    assert!(err.to_string().contains("No space left on device"));
+
+    Ok(())
 }
