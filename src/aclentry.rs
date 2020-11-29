@@ -259,10 +259,10 @@ mod aclentry_tests {
         let mut acl = vec![
             AclEntry::deny_user("c", Perm::READ, None),
             AclEntry::allow_user("f", Perm::WRITE, None),
-            AclEntry::allow_group("b", Perm::EXECUTE, None),
+            AclEntry::allow_group("3", Perm::EXECUTE, None),
             AclEntry::allow_group("d", Perm::EXECUTE, None),
-            AclEntry::allow_user("@z", Perm::READ, None),
-            AclEntry::allow_group("@z", Perm::READ, None),
+            AclEntry::allow_user("z", Perm::READ, None),
+            AclEntry::allow_group("z", Perm::READ, None),
             AclEntry::deny_user("a", Perm::READ, None),
         ];
 
@@ -271,11 +271,43 @@ mod aclentry_tests {
         let acl_sorted = vec![
             AclEntry::deny_user("a", Perm::READ, None),
             AclEntry::deny_user("c", Perm::READ, None),
-            AclEntry::allow_user("@z", Perm::READ, None),
             AclEntry::allow_user("f", Perm::WRITE, None),
-            AclEntry::allow_group("@z", Perm::READ, None),
+            AclEntry::allow_user("z", Perm::READ, None),
+            AclEntry::allow_group("3", Perm::EXECUTE, None),
+            AclEntry::allow_group("d", Perm::EXECUTE, None),
+            AclEntry::allow_group("z", Perm::READ, None),
+        ];
+
+        assert_eq!(acl, acl_sorted);
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn test_ordering_linux() {
+        let mut acl = vec![
+            AclEntry::allow_user("f", Perm::WRITE, None),
+            AclEntry::allow_mask(Perm::READ, None),
             AclEntry::allow_group("b", Perm::EXECUTE, None),
             AclEntry::allow_group("d", Perm::EXECUTE, None),
+            AclEntry::allow_user("z", Perm::READ, None),
+            AclEntry::allow_user("", Perm::READ, None),
+            AclEntry::allow_other(Perm::EXECUTE, None),
+            AclEntry::allow_group("z", Perm::READ, None),
+            AclEntry::allow_group("", Perm::READ, None),
+        ];
+
+        acl.sort();
+
+        let acl_sorted = vec![
+            AclEntry::allow_user("", Perm::READ, None),
+            AclEntry::allow_user("f", Perm::WRITE, None),
+            AclEntry::allow_user("z", Perm::READ, None),
+            AclEntry::allow_group("", Perm::READ, None),
+            AclEntry::allow_group("b", Perm::EXECUTE, None),
+            AclEntry::allow_group("d", Perm::EXECUTE, None),
+            AclEntry::allow_group("z", Perm::READ, None),
+            AclEntry::allow_mask(Perm::READ, None),
+            AclEntry::allow_other(Perm::EXECUTE, None),
         ];
 
         assert_eq!(acl, acl_sorted);

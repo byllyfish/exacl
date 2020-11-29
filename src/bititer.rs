@@ -16,23 +16,19 @@ impl<T: BitIterable> Iterator for BitIter<T> {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        if let Some(bit) = self.0.lsb() {
+        self.0.lsb().map(|bit| {
             self.0 ^= bit;
-            Some(bit)
-        } else {
-            None
-        }
+            bit
+        })
     }
 }
 
 impl<T: BitIterable> DoubleEndedIterator for BitIter<T> {
     fn next_back(&mut self) -> Option<T> {
-        if let Some(bit) = self.0.msb() {
+        self.0.msb().map(|bit| {
             self.0 ^= bit;
-            Some(bit)
-        } else {
-            None
-        }
+            bit
+        })
     }
 }
 
@@ -131,10 +127,11 @@ mod bititer_tests {
         }
 
         fn msb(self) -> Option<Self> {
+            #[allow(clippy::cast_possible_truncation)]
+            const MAX_BITS: u32 = 8 * std::mem::size_of::<TestBit>() as u32 - 1;
             if self.is_empty() {
                 return None;
             }
-            const MAX_BITS: u32 = 8 * std::mem::size_of::<TestBit>() as u32 - 1;
             Some(TestBit {
                 bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
             })
