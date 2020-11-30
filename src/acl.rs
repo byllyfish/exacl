@@ -90,7 +90,7 @@ impl Acl {
     ///
     /// # Errors
     ///
-    /// Returns an [`io::Error`] on failure.  
+    /// Returns an [`io::Error`] on failure.
     pub fn write<P: AsRef<Path>>(&self, path: P, options: AclOption) -> io::Result<()> {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
@@ -118,6 +118,10 @@ impl Acl {
     }
 
     /// Check that ACL meets OS requirements.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
     pub fn check(&self) -> io::Result<()> {
         xacl_check(self.acl)
     }
@@ -222,7 +226,6 @@ impl Acl {
             }
         }
 
-        #[cfg(target_os = "linux")]
         if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::DEFAULT)) {
             let mask = AclEntry::allow_mask(mask_perms, None);
             if let Err(err) = mask.add_to_acl(&mut access_p) {
@@ -230,7 +233,6 @@ impl Acl {
             }
         }
 
-        #[cfg(target_os = "linux")]
         if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
             let mask = AclEntry::allow_mask(mask_perms, Flag::DEFAULT);
             if let Err(err) = mask.add_to_acl(&mut default_p) {
