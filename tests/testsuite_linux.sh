@@ -470,6 +470,16 @@ testWriteUnifiedAclToFile1() {
         "${msg//\"/}"
 }
 
+testWriteUnifiedAclToMissingFile() {
+    # Set ACL with required entries.
+    input=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $DIR/non_existant 2>&1)
+    assertEquals "set unified acl" 1 $?
+    assertEquals \
+        "File \"$DIR/non_existant\": No such file or directory (os error 2)" \
+        "$msg"
+}
+
 testWriteUnifiedAclToDir1() {
     # Set ACL with required entries.
     input=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]")

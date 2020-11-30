@@ -22,10 +22,11 @@ bitflags! {
         /// Get/set the ACL of the symlink itself (macOS only).
         const SYMLINK_ACL = 0x01;
 
-        /// Get/set the default ACL (Linux only).
+        /// Get/set the default ACL only (Linux only).
         const DEFAULT_ACL = 0x02;
 
         /// Ignore expected error when using DEFAULT_ACL on a file (Linux only).
+        #[doc(hidden)]
         const IGNORE_EXPECTED_FILE_ERR = 0x10;
     }
 }
@@ -68,12 +69,13 @@ impl Acl {
         match result {
             Ok(acl) => Ok(Acl::new(acl, default_acl)),
             Err(err) => {
-                // Trying to access the default ACL of a file on Linux will
-                // return an error. We can catch this error and return an empty
-                // ACL instead; only if `IGNORE_EXPECTED_FILE_ERR` is set.
+                // Trying to access the default ACL of a non-directory on Linux
+                // will return an error. We can catch this error and return an
+                // empty ACL instead; only if `IGNORE_EXPECTED_FILE_ERR` is set.
                 if default_acl
                     && err.kind() == io::ErrorKind::PermissionDenied
                     && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR)
+                    && !path.is_dir()
                 {
                     // Return an empty acl (FIXME).
                     Ok(Acl::new(xacl_init(1)?, default_acl))

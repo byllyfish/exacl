@@ -1,6 +1,6 @@
 //! # exacl
 //!
-//! Rust library to manipulate access control lists on `macOS` and `Linux`.
+//! Rust library for access control lists on `macOS` and `Linux`.
 //!
 //! ## Example
 //!
@@ -106,7 +106,7 @@ use std::path::Path;
 /// # Linux
 ///
 /// The ACL includes entries related to the permission mode of the file. These
-/// are marked with names such as "@owner", "@other", and "@mask".
+/// are marked with empty names ("").
 ///
 /// Both the access ACL and the default ACL are returned in one list, with
 /// the default ACL entries indicated by a [`Flag::DEFAULT`] flag.
@@ -195,12 +195,13 @@ where
 /// supported on Linux.
 ///
 /// The ACL *must* contain entries for the permssion modes of the file. Use
-/// the [`OWNER`] and [`OTHER`] name constants to specify the mode's
-/// owner, group and other permissions.
+/// the [`AclEntry::allow_other`] and [`AclEntry::allow_mask`] functions to
+/// specify the mode's other and mask permissions. Use "" as the name for the
+/// file owner and group owner.
 ///
-/// If an ACL contains a named user or group, there should be a [`MASK`] entry
-/// included. If a [`MASK`] entry is not provided, one will be computed and
-/// appended.
+/// If an ACL contains a named user or group, there should be a
+/// [`AclEntryKind::Mask`] entry included. If a one entry is not provided, one
+/// will be computed.
 ///
 /// The access control entries may include entries for the default ACL, if one
 /// is desired. When `setfacl` is called with no [`Flag::DEFAULT`] entries, it
@@ -217,7 +218,6 @@ where
 ///     AclEntry::allow_group("", Perm::READ, None),
 ///     AclEntry::allow_other(Perm::empty(), None),
 ///     AclEntry::allow_user("some_user", Perm::READ | Perm::WRITE, None),
-///     AclEntry::allow_mask(Perm::READ | Perm::WRITE, None),
 /// ];
 ///
 /// setfacl(&["./tmp/foo"], &entries, None)?;
@@ -255,8 +255,10 @@ where
                 .map_err(|err| custom_err("Invalid ACL", &err))?;
 
             for path in paths {
-                // Try to set default acl first; this will fail if path is a file,
-                // and default_acl is not empty.
+                // Try to set default acl first. This will fail if path is not
+                // a directory and default_acl is non-empty. This ordering
+                // avoids leaving the file's ACL in a partially changed state
+                // after an error (simply because it was a non-directory).
                 default_acl.write(
                     &path,
                     options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
