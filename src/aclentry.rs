@@ -276,6 +276,7 @@ mod aclentry_tests {
             AclEntry::allow_group("d", Perm::EXECUTE, None),
             AclEntry::allow_user("z", Perm::READ, None),
             AclEntry::allow_group("z", Perm::READ, None),
+            #[cfg(target_os = "macos")]
             AclEntry::deny_user("a", Perm::READ, Flag::FILE_INHERIT),
             AclEntry::deny_user("c", Perm::READ, None),
         ];
@@ -289,6 +290,7 @@ mod aclentry_tests {
             AclEntry::allow_group("3", Perm::EXECUTE, None),
             AclEntry::allow_group("d", Perm::EXECUTE, None),
             AclEntry::allow_group("z", Perm::READ, None),
+            #[cfg(target_os = "macos")]
             AclEntry::deny_user("a", Perm::READ, Flag::FILE_INHERIT),
         ];
 
@@ -308,7 +310,7 @@ mod aclentry_tests {
             AclEntry::allow_other(Perm::EXECUTE, None),
             AclEntry::allow_group("z", Perm::READ, None),
             AclEntry::allow_group("", Perm::READ, None),
-            AclEntry::allow_group("a", Perm::READ, DEFAULT),
+            AclEntry::allow_group("a", Perm::READ, Flag::DEFAULT),
         ];
 
         acl.sort();
@@ -323,7 +325,7 @@ mod aclentry_tests {
             AclEntry::allow_group("z", Perm::READ, None),
             AclEntry::allow_mask(Perm::READ, None),
             AclEntry::allow_other(Perm::EXECUTE, None),
-            AclEntry::allow_group("a", Perm::READ, DEFAULT),
+            AclEntry::allow_group("a", Perm::READ, Flag::DEFAULT),
         ];
 
         assert_eq!(acl, acl_sorted);
