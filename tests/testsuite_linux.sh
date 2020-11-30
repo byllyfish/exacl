@@ -167,7 +167,7 @@ testWriteAclToMissingFile() {
     msg=$(echo "$input" | $EXACL --set $DIR/non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "File \"$DIR/non_existant\": required ACL entry is missing" \
+        "Invalid ACL: Required ACL entry is missing" \
         "$msg"
 
     input=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
@@ -184,7 +184,7 @@ testWriteAclToFile1() {
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals "set acl to empty" 1 $?
     assertEquals \
-        "File \"$FILE1\": required ACL entry is missing" \
+        "Invalid ACL: Required ACL entry is missing" \
         "$msg"
 
     # Verify ACL.
@@ -211,7 +211,7 @@ testWriteAclToFile1() {
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals "check required entry" 1 $?
     assertEquals \
-        "File \"$FILE1\": required ACL entry is missing" \
+        "Invalid ACL: Required ACL entry is missing" \
         "$msg"
 
     # Set ACL for current user specifically, with required entries.
@@ -247,7 +247,7 @@ testWriteAclToDir1() {
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "File \"$DIR1\": required ACL entry is missing" \
+        "Invalid ACL: Required ACL entry is missing" \
         "$msg"
 
     # Verify directory ACL.
@@ -327,7 +327,7 @@ testWriteAclToLink1() {
     msg=$(echo "$input" | $EXACL --set $LINK1 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "File \"$LINK1\": required ACL entry is missing" \
+        "Invalid ACL: Required ACL entry is missing" \
         "$msg"
 
     input=$(quotifyJson "[{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
@@ -470,6 +470,16 @@ testWriteUnifiedAclToFile1() {
         "${msg//\"/}"
 }
 
+testWriteUnifiedAclToMissingFile() {
+    # Set ACL with required entries.
+    input=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $DIR/non_existant 2>&1)
+    assertEquals "set unified acl" 1 $?
+    assertEquals \
+        "File \"$DIR/non_existant\": No such file or directory (os error 2)" \
+        "$msg"
+}
+
 testWriteUnifiedAclToDir1() {
     # Set ACL with required entries.
     input=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]")
@@ -505,7 +515,7 @@ testSetDefault() {
     msg=$(echo "$input" | $EXACL --set --default $DIR1 2>&1)
     assertEquals "set default acl" 1 $?
     assertEquals \
-        "File \"$DIR1\": multiple ACL entries with a tag that may occur at most once" \
+        "Invalid ACL: Multiple ACL entries with a tag that may occur at most once" \
         "$msg"
 
     # Check ACL is updated.
@@ -536,7 +546,7 @@ testMissingFlags() {
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        'File "non_existant": required ACL entry is missing' \
+        'Invalid ACL: Required ACL entry is missing' \
         "${msg//\`/}"
 }
 
@@ -545,7 +555,7 @@ testMissingAllow() {
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        'File "non_existant": required ACL entry is missing' \
+        'Invalid ACL: Required ACL entry is missing' \
         "${msg//\`/}"
 }
 

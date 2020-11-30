@@ -22,10 +22,11 @@ bitflags! {
         /// Get/set the ACL of the symlink itself (macOS only).
         const SYMLINK_ACL = 0x01;
 
-        /// Get/set the default ACL (Linux only).
+        /// Get/set the default ACL only (Linux only).
         const DEFAULT_ACL = 0x02;
 
         /// Ignore expected error when using DEFAULT_ACL on a file (Linux only).
+        #[doc(hidden)]
         const IGNORE_EXPECTED_FILE_ERR = 0x10;
     }
 }
@@ -68,14 +69,15 @@ impl Acl {
         match result {
             Ok(acl) => Ok(Acl::new(acl, default_acl)),
             Err(err) => {
-                // Trying to access the default ACL of a file on Linux will
-                // return an error. We can catch this error and return an empty
-                // ACL instead; only if `IGNORE_EXPECTED_FILE_ERR` is set.
+                // Trying to access the default ACL of a non-directory on Linux
+                // will return an error. We can catch this error and return an
+                // empty ACL instead; only if `IGNORE_EXPECTED_FILE_ERR` is set.
                 if default_acl
                     && err.kind() == io::ErrorKind::PermissionDenied
                     && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR)
+                    && is_non_directory(&path)
                 {
-                    // Return an empty acl (FIXME).
+                    // Return an empty acl.
                     Ok(Acl::new(xacl_init(1)?, default_acl))
                 } else {
                     Err(path_err(path, &err))
@@ -88,21 +90,16 @@ impl Acl {
     ///
     /// # Errors
     ///
-    /// Returns an [`io::Error`] on failure.  
+    /// Returns an [`io::Error`] on failure.
     pub fn write<P: AsRef<Path>>(&self, path: P, options: AclOption) -> io::Result<()> {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
         let path = path.as_ref();
 
-        // Don't check ACL if it's an empty, default ACL (FIXME).
-        if !(default_acl && self.is_empty()) {
-            xacl_check(self.acl).map_err(|err| path_err(path, &err))?;
-        }
-
         // If we're writing a default ACL to a non-directory, and we
         // specify the `IGNORE_EXPECTED_FILE_ERR` option, this function is a
-        // no-op with no error if the ACL is empty.
-        if default_acl && !path.is_dir() {
+        // no-op if the ACL is empty.
+        if default_acl && is_non_directory(&path) {
             if self.is_empty() && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR) {
                 return Ok(());
             } else {
@@ -118,6 +115,15 @@ impl Acl {
         }
 
         Ok(())
+    }
+
+    /// Check that ACL meets OS requirements.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    pub fn check(&self) -> io::Result<()> {
+        xacl_check(self.acl)
     }
 
     /// Compute mask.
@@ -220,7 +226,6 @@ impl Acl {
             }
         }
 
-        #[cfg(target_os = "linux")]
         if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::DEFAULT)) {
             let mask = AclEntry::allow_mask(mask_perms, None);
             if let Err(err) = mask.add_to_acl(&mut access_p) {
@@ -228,7 +233,6 @@ impl Acl {
             }
         }
 
-        #[cfg(target_os = "linux")]
         if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
             let mask = AclEntry::allow_mask(mask_perms, Flag::DEFAULT);
             if let Err(err) = mask.add_to_acl(&mut default_p) {
@@ -293,5 +297,14 @@ impl Acl {
 impl Drop for Acl {
     fn drop(&mut self) {
         xacl_free(self.acl);
+    }
+}
+
+/// Return true if path exists and it's not a directory.
+fn is_non_directory(path: &Path) -> bool {
+    if let Ok(meta) = path.metadata() {
+        !meta.is_dir()
+    } else {
+        false
     }
 }

@@ -20,11 +20,13 @@ pub enum AclEntryKind {
     Group,
 
     /// Entry represents a Posix.1e mask entry.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(docsrs, target_os = "linux"))]
+    #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
     Mask,
 
     /// Entry represents a Posix.1e other entry.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(docsrs, target_os = "linux"))]
+    #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
     Other,
 
     /// Entry represents a possibly corrupt ACL entry. Caused by an unknown tag.
@@ -67,16 +69,26 @@ fn default_allow() -> bool {
 
 impl Ord for AclEntry {
     fn cmp(&self, other: &Self) -> Ordering {
+        // Entries with flags last.
+        match (self.flags.is_empty(), other.flags.is_empty()) {
+            (true, false) => return Ordering::Less,
+            (false, true) => return Ordering::Greater,
+            _ => (),
+        }
+
+        // Denied entries first.
         let ret = self.allow.cmp(&other.allow);
         if ret != Ordering::Equal {
             return ret;
         }
 
+        // Order by kind.
         let ret = self.kind.cmp(&other.kind);
         if ret != Ordering::Equal {
             return ret;
         }
 
+        // Lastly, order by name.
         self.name.cmp(&other.name)
     }
 }
@@ -90,7 +102,7 @@ impl PartialOrd for AclEntry {
 impl AclEntry {
     /// Construct a new access control entry.
     #[must_use]
-    pub fn new(
+    fn new(
         kind: AclEntryKind,
         name: &str,
         perms: Perm,
@@ -125,7 +137,8 @@ impl AclEntry {
     }
 
     /// Construct an ALLOW access control entry for mask.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(docsrs, target_os = "linux"))]
+    #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
     #[must_use]
     pub fn allow_mask<F>(perms: Perm, flags: F) -> AclEntry
     where
@@ -135,7 +148,8 @@ impl AclEntry {
     }
 
     /// Construct an ALLOW access control entry for other.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(docsrs, target_os = "linux"))]
+    #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
     #[must_use]
     pub fn allow_other<F>(perms: Perm, flags: F) -> AclEntry
     where
@@ -257,25 +271,27 @@ mod aclentry_tests {
     #[test]
     fn test_ordering() {
         let mut acl = vec![
-            AclEntry::deny_user("c", Perm::READ, None),
             AclEntry::allow_user("f", Perm::WRITE, None),
             AclEntry::allow_group("3", Perm::EXECUTE, None),
             AclEntry::allow_group("d", Perm::EXECUTE, None),
             AclEntry::allow_user("z", Perm::READ, None),
             AclEntry::allow_group("z", Perm::READ, None),
-            AclEntry::deny_user("a", Perm::READ, None),
+            #[cfg(target_os = "macos")]
+            AclEntry::deny_user("a", Perm::READ, Flag::FILE_INHERIT),
+            AclEntry::deny_user("c", Perm::READ, None),
         ];
 
         acl.sort();
 
         let acl_sorted = vec![
-            AclEntry::deny_user("a", Perm::READ, None),
             AclEntry::deny_user("c", Perm::READ, None),
             AclEntry::allow_user("f", Perm::WRITE, None),
             AclEntry::allow_user("z", Perm::READ, None),
             AclEntry::allow_group("3", Perm::EXECUTE, None),
             AclEntry::allow_group("d", Perm::EXECUTE, None),
             AclEntry::allow_group("z", Perm::READ, None),
+            #[cfg(target_os = "macos")]
+            AclEntry::deny_user("a", Perm::READ, Flag::FILE_INHERIT),
         ];
 
         assert_eq!(acl, acl_sorted);
@@ -294,6 +310,7 @@ mod aclentry_tests {
             AclEntry::allow_other(Perm::EXECUTE, None),
             AclEntry::allow_group("z", Perm::READ, None),
             AclEntry::allow_group("", Perm::READ, None),
+            AclEntry::allow_group("a", Perm::READ, Flag::DEFAULT),
         ];
 
         acl.sort();
@@ -308,6 +325,7 @@ mod aclentry_tests {
             AclEntry::allow_group("z", Perm::READ, None),
             AclEntry::allow_mask(Perm::READ, None),
             AclEntry::allow_other(Perm::EXECUTE, None),
+            AclEntry::allow_group("a", Perm::READ, Flag::DEFAULT),
         ];
 
         assert_eq!(acl, acl_sorted);

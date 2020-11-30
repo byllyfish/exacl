@@ -1,7 +1,7 @@
 //! API Tests for exacl module.
 
 use ctor::ctor;
-use exacl::{getfacl, setfacl, Acl, AclEntry, AclOption, Flag, Perm};
+use exacl::{getfacl, Acl, AclEntry, AclOption, Flag, Perm};
 use log::debug;
 use std::io;
 
@@ -378,6 +378,8 @@ fn test_from_unified_entries() {
 #[test]
 #[cfg(target_os = "linux")]
 fn test_too_many_entries() -> io::Result<()> {
+    use exacl::setfacl;
+
     // This test depends on the type of file system. With ext* systems, we
     // expect ACL's with 508 entries to fail.
     let mut entries = vec![
@@ -397,10 +399,10 @@ fn test_too_many_entries() -> io::Result<()> {
     setfacl(&files, &entries, None)?;
     debug!("{} entries is okay", entries.len());
 
+    // Add 508th entry.
     entries.push(AclEntry::allow_user("1500", Perm::READ, None));
-    debug!("{} entries fails", entries.len());
 
-    // 508 entries is one too many.
+    // 508th entry is one too many.
     let err = setfacl(&files, &entries, None).err().unwrap();
     assert!(err.to_string().contains("No space left on device"));
 

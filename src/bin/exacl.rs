@@ -83,9 +83,6 @@ fn set_acl(paths: &[PathBuf], options: AclOption) -> i32 {
         }
     };
 
-    // FIXME(bfish): Preflight the entries here, not inside setfacl?
-    // Should there be a new API: `checkfacl`?
-
     if let Err(err) = setfacl(paths, &entries, options) {
         eprintln!("{}", err);
         return EXIT_FAILURE;
