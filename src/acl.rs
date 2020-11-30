@@ -75,9 +75,9 @@ impl Acl {
                 if default_acl
                     && err.kind() == io::ErrorKind::PermissionDenied
                     && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR)
-                    && !path.is_dir()
+                    && is_non_directory(&path)
                 {
-                    // Return an empty acl (FIXME).
+                    // Return an empty acl.
                     Ok(Acl::new(xacl_init(1)?, default_acl))
                 } else {
                     Err(path_err(path, &err))
@@ -96,15 +96,10 @@ impl Acl {
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
         let path = path.as_ref();
 
-        // Don't check ACL if it's an empty, default ACL (FIXME).
-        if !(default_acl && self.is_empty()) {
-            xacl_check(self.acl).map_err(|err| path_err(path, &err))?;
-        }
-
         // If we're writing a default ACL to a non-directory, and we
         // specify the `IGNORE_EXPECTED_FILE_ERR` option, this function is a
-        // no-op with no error if the ACL is empty.
-        if default_acl && !path.is_dir() {
+        // no-op if the ACL is empty.
+        if default_acl && is_non_directory(&path) {
             if self.is_empty() && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR) {
                 return Ok(());
             } else {
@@ -120,6 +115,11 @@ impl Acl {
         }
 
         Ok(())
+    }
+
+    /// Check that ACL meets OS requirements.
+    pub fn check(&self) -> io::Result<()> {
+        xacl_check(self.acl)
     }
 
     /// Compute mask.
@@ -295,5 +295,14 @@ impl Acl {
 impl Drop for Acl {
     fn drop(&mut self) {
         xacl_free(self.acl);
+    }
+}
+
+/// Return true if path exists and it's not a directory.
+fn is_non_directory(path: &Path) -> bool {
+    if let Ok(meta) = path.metadata() {
+        !meta.is_dir()
+    } else {
+        false
     }
 }

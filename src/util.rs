@@ -319,7 +319,7 @@ pub(crate) fn xacl_get_file(
         let err = log_err("null", func, &c_path);
 
         // acl_get_file et al. can return NULL (ENOENT) if the file exists, but
-        // there is no ACL. If the path exists, return an *empty* ACL (FIXME).
+        // there is no ACL. If the path exists, return an *empty* ACL.
         if let Some(sg::ENOENT) = err.raw_os_error() {
             if path_exists(&path, symlink_acl) {
                 return xacl_init(1);
@@ -853,11 +853,11 @@ pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
     }
 
     let msg = match ret.try_into().unwrap() {
-        ACL_MULTI_ERROR => "multiple ACL entries with a tag that may occur at most once",
-        ACL_DUPLICATE_ERROR => "multiple ACL entries with the same user/group ID",
-        ACL_MISS_ERROR => "required ACL entry is missing",
-        ACL_ENTRY_ERROR => "invalid ACL entry tag type",
-        _ => "unknown acl_check error message",
+        ACL_MULTI_ERROR => "Multiple ACL entries with a tag that may occur at most once",
+        ACL_DUPLICATE_ERROR => "Multiple ACL entries with the same user/group ID",
+        ACL_MISS_ERROR => "Required ACL entry is missing",
+        ACL_ENTRY_ERROR => "Invalid ACL entry tag type",
+        _ => "Unknown acl_check error message",
     };
 
     fail_custom(msg)
