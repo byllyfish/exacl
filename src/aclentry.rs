@@ -102,7 +102,7 @@ impl PartialOrd for AclEntry {
 impl AclEntry {
     /// Construct a new access control entry.
     #[must_use]
-    pub fn new(
+    fn new(
         kind: AclEntryKind,
         name: &str,
         perms: Perm,

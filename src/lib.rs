@@ -30,15 +30,15 @@
 //!
 //! ## High Level API
 //!
-//! This module provides two high level functions, [getfacl] and [setfacl].
+//! This module provides two high level functions, [`getfacl`] and [`setfacl`].
 //!
-//! - [getfacl] retrieves the ACL for a file or directory. On Linux, the
+//! - [`getfacl`] retrieves the ACL for a file or directory. On Linux, the
 //!     result includes the entries from the default ACL if there is one.
-//! - [setfacl] sets the ACL for files or directories, including the default
+//! - [`setfacl`] sets the ACL for files or directories, including the default
 //!     ACL on Linux.
 //!
-//! Both [getfacl] and [setfacl] work with a vector of [`AclEntry`] structures.
-//! The structure contains five fields:
+//! Both [`getfacl`] and [`setfacl`] work with a `Vec<AclEntry>`. The
+//! [`AclEntry`] structure contains five fields:
 //!
 //! - kind : [`AclEntryKind`] - the kind of entry (User, Group, Other, Mask,
 //!     or Unknown).
