@@ -14,7 +14,7 @@ unit_tests() {
     bins="$(find ./target/debug/deps -type f -executable -print | grep -vE '\w+\.\w+$')"
     # Prefix each with "--object"
     result=""
-    for bin in $bins; do 
+    for bin in $bins; do
         result="$result --object $bin"
     done
     echo "$result"
@@ -66,7 +66,7 @@ elif [ "$arg1" = "llvm-cov" ]; then
     echo "Producing llvm-cov report in Terminal."
     llvm-profdata merge -sparse /tmp/llvm_profile/profile-*.profraw -o coverage.profdata
     # shellcheck disable=SC2046
-    llvm-cov show -Xdemangler=rustfilt -ignore-filename-regex='/\.cargo/|/out/bindings\.rs|/thread/local\.rs' -instr-profile=coverage.profdata -show-line-counts-or-regions -show-instantiations ./target/debug/exacl $(unit_tests)
+    llvm-cov show -Xdemangler=rustfilt -ignore-filename-regex='/\.cargo/|/out/bindings\.rs|/thread/local\.rs' -instr-profile=coverage.profdata -show-line-counts-or-regions -show-instantiations=0 ./target/debug/exacl $(unit_tests)
 fi
 
 exit 0
