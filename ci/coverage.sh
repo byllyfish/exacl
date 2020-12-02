@@ -20,6 +20,15 @@ unit_tests() {
     echo "$result"
 }
 
+if [ "$os" = "darwin" ]; then
+    llvm-profdata() { 
+        xcrun llvm-profdata "$@" 
+    }
+    llvm-cov() {
+        xcrun llvm-cov "$@"
+    }
+fi
+
 # Install Rust nightly.
 rustup install nightly
 
