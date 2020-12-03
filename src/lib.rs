@@ -62,6 +62,11 @@
 //! - Manipulate the access ACL and default ACL independently on Linux.
 //! - Manipulate the ACL's own flags on macOS.
 //! - Use the platform specific text formats.
+//!
+//! The low level API uses the [`Acl`] class which wraps the native ACL object.
+//! Each [`Acl`] is immutable once constructed. To manipulate its contents, you
+//! can retrieve a mutable vector of [`AclEntry`], modify the vector's contents,
+//! then create a new [`Acl`].
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
 

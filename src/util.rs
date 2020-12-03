@@ -7,6 +7,7 @@ use crate::perm::Perm;
 use crate::qualifier::Qualifier;
 use crate::sys::*;
 
+#[cfg(target_os = "linux")]
 use nix::unistd::{Gid, Uid};
 use scopeguard::defer;
 use std::ffi::{c_void, CStr, CString};
@@ -670,13 +671,13 @@ mod util_tests_mac {
             .unwrap();
         assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
-        assert_eq!(xacl_to_text(acl), "!#acl 1\n");
+        assert_eq!(xacl_to_text(acl).unwrap(), "!#acl 1\n");
 
         let entry2 = xacl_create_entry(&mut acl).unwrap();
         xacl_set_tag_type(entry2, 1).unwrap();
 
         assert_eq!(
-            xacl_to_text(acl),
+            xacl_to_text(acl).unwrap(),
             "!#acl 1\nuser:00000000-0000-0000-0000-000000000000:::allow\n"
         );
 

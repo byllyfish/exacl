@@ -69,7 +69,7 @@ fn test_write_acl_macos() -> io::Result<()> {
     // Even though the last entry is a group, the `acl_to_text` representation
     // displays it as `user`.
     assert_eq!(
-        acl.to_platform_text(),
+        acl.to_platform_text()?,
         r#"!#acl 1
 group:ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000059:_spotlight:89:allow:read,write,execute
 user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CED:::allow:read,write,execute
@@ -180,7 +180,7 @@ user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:
 "#;
 
     let acl = Acl::from_platform_text(text).unwrap();
-    assert_eq!(acl.to_platform_text(), text);
+    assert_eq!(acl.to_platform_text().unwrap(), text);
 
     let input = r#"!#acl 1
 group::_spotlight::allow:read,write,execute
@@ -189,7 +189,7 @@ group::_spotlight::allow:read,write,execute
 group:ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000059:_spotlight:89:allow:read,write,execute
 "#;
     let acl = Acl::from_platform_text(input).unwrap();
-    assert_eq!(acl.to_platform_text(), output);
+    assert_eq!(acl.to_platform_text().unwrap(), output);
 
     // Giving bad input can result in bad output.
     let bad_input = r#"!#acl 1
@@ -199,7 +199,7 @@ group:_spotlight:::allow:read,write,execute
 user:00000000-0000-0000-0000-000000000000:::allow:read,write,execute
 "#;
     let acl = Acl::from_platform_text(bad_input).unwrap();
-    assert_eq!(acl.to_platform_text(), bad_output);
+    assert_eq!(acl.to_platform_text().unwrap(), bad_output);
 
     log_acl(&acl.entries().unwrap());
 }
@@ -323,7 +323,7 @@ fn test_from_entries() {
         let entries = vec![AclEntry::allow_user("500", Perm::EXECUTE, None)];
         let acl = Acl::from_entries(&entries).unwrap();
         assert_eq!(
-            acl.to_platform_text(),
+            acl.to_platform_text().unwrap(),
             "!#acl 1\nuser:FFFFEEEE-DDDD-CCCC-BBBB-AAAA000001F4:::allow:execute\n"
         );
     }
