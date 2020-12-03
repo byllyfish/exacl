@@ -10,11 +10,11 @@ use std::io;
 use uuid::Uuid;
 
 #[cfg(target_os = "linux")]
-pub const OWNER_NAME: &str = "";
+const OWNER_NAME: &str = "";
 #[cfg(target_os = "linux")]
-pub const OTHER_NAME: &str = "";
+const OTHER_NAME: &str = "";
 #[cfg(target_os = "linux")]
-pub const MASK_NAME: &str = "";
+const MASK_NAME: &str = "";
 
 /// A Qualifier specifies the principal that is allowed/denied access to a
 /// resource.

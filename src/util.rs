@@ -705,11 +705,21 @@ mod util_tests_linux {
         let err = xacl_set_qualifier(entry, 500).err().unwrap();
         assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
+        // Try to set entry using unknown qualifier -- this should fail.
+        let err = xacl_set_tag_qualifier(entry, true, &Qualifier::Unknown("x".to_string()))
+            .err()
+            .unwrap();
+        assert!(err.to_string().contains("unknown tag: x"));
+
+        // Even though ACL contains 1 invalid entry, the platform text still
+        // results in empty string.
         assert_eq!(xacl_to_text(acl), "");
 
+        // Add another entry and set it to a valid value.
         let entry2 = xacl_create_entry(&mut acl).unwrap();
         xacl_set_tag_type(entry2, sg::ACL_USER_OBJ).unwrap();
 
+        // ACL only prints the one valid entry; no sign of other entry.
         assert_eq!(xacl_to_text(acl), "\nuser::---\n");
 
         // There are still two entries... one is corrupt.
