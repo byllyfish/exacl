@@ -569,17 +569,17 @@ pub(crate) fn xacl_from_text(text: &str) -> io::Result<acl_t> {
     Ok(acl)
 }
 
-pub(crate) fn xacl_to_text(acl: acl_t) -> String {
+pub(crate) fn xacl_to_text(acl: acl_t) -> io::Result<String> {
     let mut size: ssize_t = 0;
     let ptr = unsafe { acl_to_text(acl, &mut size) };
     if ptr.is_null() {
-        return format!("<error: {}>", io::Error::last_os_error());
+        return fail_err("null", "acl_to_text", ());
     }
 
     let result = unsafe { CStr::from_ptr(ptr).to_string_lossy().into_owned() };
     xacl_free(ptr);
 
-    result
+    Ok(result)
 }
 
 #[cfg(target_os = "macos")]
@@ -713,14 +713,14 @@ mod util_tests_linux {
 
         // Even though ACL contains 1 invalid entry, the platform text still
         // results in empty string.
-        assert_eq!(xacl_to_text(acl), "");
+        assert_eq!(xacl_to_text(acl).unwrap(), "");
 
         // Add another entry and set it to a valid value.
         let entry2 = xacl_create_entry(&mut acl).unwrap();
         xacl_set_tag_type(entry2, sg::ACL_USER_OBJ).unwrap();
 
         // ACL only prints the one valid entry; no sign of other entry.
-        assert_eq!(xacl_to_text(acl), "\nuser::---\n");
+        assert_eq!(xacl_to_text(acl).unwrap(), "\nuser::---\n");
 
         // There are still two entries... one is corrupt.
         assert_eq!(xacl_entry_count(acl), 2);

@@ -109,7 +109,7 @@ fn test_write_acl_linux() -> io::Result<()> {
     acl.write(&file, AclOption::empty())?;
 
     assert_eq!(
-        acl.to_platform_text(),
+        acl.to_platform_text()?,
         r#"user::rwx
 user:11501:rwx
 user:11502:rwx
@@ -218,7 +218,7 @@ other::rwx
 "#;
 
     let acl = Acl::from_platform_text(text).unwrap();
-    assert_eq!(acl.to_platform_text(), text);
+    assert_eq!(acl.to_platform_text().unwrap(), text);
 }
 
 #[test]
@@ -248,10 +248,10 @@ fn test_write_default_acl() -> io::Result<()> {
     acl.write(&dir, AclOption::DEFAULT_ACL)?;
 
     let acl2 = Acl::read(&dir, AclOption::empty())?;
-    assert_ne!(acl.to_platform_text(), acl2.to_platform_text());
+    assert_ne!(acl.to_platform_text()?, acl2.to_platform_text()?);
 
     let default_acl = Acl::read(&dir, AclOption::DEFAULT_ACL)?;
-    assert_eq!(default_acl.to_platform_text(), acl.to_platform_text());
+    assert_eq!(default_acl.to_platform_text()?, acl.to_platform_text()?);
 
     let default_entries = default_acl.entries()?;
     for entry in &default_entries {
@@ -333,12 +333,12 @@ fn test_from_entries() {
     {
         let mut entries = vec![AclEntry::allow_user("500", Perm::EXECUTE, None)];
         let acl = Acl::from_entries(&entries).unwrap();
-        assert_eq!(acl.to_platform_text(), "user:500:--x\nmask::--x\n");
+        assert_eq!(acl.to_platform_text().unwrap(), "user:500:--x\nmask::--x\n");
 
         entries.push(AclEntry::allow_group("", Perm::WRITE, None));
         let acl = Acl::from_entries(&entries).unwrap();
         assert_eq!(
-            acl.to_platform_text(),
+            acl.to_platform_text().unwrap(),
             "user:500:--x\ngroup::-w-\nmask::-wx\n"
         );
     }
@@ -358,19 +358,19 @@ fn test_from_unified_entries() {
     ];
 
     let (a, d) = Acl::from_unified_entries(&entries).unwrap();
-    assert_eq!(a.to_platform_text(), "user:500:--x\nmask::--x\n");
-    assert_eq!(d.to_platform_text(), "user:501:--x\nmask::--x\n");
+    assert_eq!(a.to_platform_text().unwrap(), "user:500:--x\nmask::--x\n");
+    assert_eq!(d.to_platform_text().unwrap(), "user:501:--x\nmask::--x\n");
 
     entries.push(AclEntry::allow_group("", Perm::WRITE, None));
     entries.push(AclEntry::allow_group("", Perm::WRITE, Flag::DEFAULT));
 
     let (a, d) = Acl::from_unified_entries(&entries).unwrap();
     assert_eq!(
-        a.to_platform_text(),
+        a.to_platform_text().unwrap(),
         "user:500:--x\ngroup::-w-\nmask::-wx\n"
     );
     assert_eq!(
-        d.to_platform_text(),
+        d.to_platform_text().unwrap(),
         "user:501:--x\ngroup::-w-\nmask::-wx\n"
     );
 }

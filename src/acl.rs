@@ -282,8 +282,11 @@ impl Acl {
     }
 
     /// Return platform-dependent textual description.
-    #[must_use]
-    pub fn to_platform_text(&self) -> String {
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    pub fn to_platform_text(&self) -> io::Result<String> {
         xacl_to_text(self.acl)
     }
 
