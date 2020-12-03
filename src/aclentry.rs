@@ -3,6 +3,7 @@
 use crate::failx::fail_custom;
 use crate::flag::Flag;
 use crate::perm::Perm;
+use crate::qualifier::Qualifier;
 use crate::util::*;
 
 use serde::{Deserialize, Serialize};

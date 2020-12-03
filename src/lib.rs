@@ -71,6 +71,7 @@ mod bititer;
 mod failx;
 mod flag;
 mod perm;
+mod qualifier;
 mod sys;
 mod util;
 
