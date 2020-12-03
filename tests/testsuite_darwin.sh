@@ -511,5 +511,15 @@ testMissingAllow() {
         "${msg//\`/}"
 }
 
+# Duplicate entry is not an error on macOS.
+testDuplicateEntry() {
+    input=$(quotifyJson "[{kind:user,name:501,perms:[execute],flags:[]},{kind:user,name:501,perms:[execute],flags:[]}]")
+    msg=$(echo "$input" | $EXACL --set $DIR/non_existant 2>&1)
+    assertEquals 1 $?
+    assertEquals \
+        "File \"$DIR/non_existant\": No such file or directory (os error 2)" \
+        "${msg//\`/}"
+}
+
 # shellcheck disable=SC1091
 . shunit2

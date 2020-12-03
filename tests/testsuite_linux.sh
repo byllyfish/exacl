@@ -559,5 +559,15 @@ testMissingAllow() {
         "${msg//\`/}"
 }
 
+# Multiple ACL entries with the same user/group ID.
+testDuplicateEntry() {
+    input=$(quotifyJson "[{kind:user,name:501,perms:[execute]},$REQUIRED_ENTRIES,{kind:user,name:501,perms:[execute]}]")
+    msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
+    assertEquals 1 $?
+    assertEquals \
+        'Invalid ACL: Multiple ACL entries with the same user/group ID' \
+        "${msg//\`/}"
+}
+
 # shellcheck disable=SC1091
 . shunit2

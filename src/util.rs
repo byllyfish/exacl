@@ -714,6 +714,9 @@ mod util_tests_linux {
 
         // There are still two entries... one is corrupt.
         assert_eq!(xacl_entry_count(acl), 2);
+        let err = xacl_check(acl).err().unwrap();
+        assert!(err.to_string().contains("Invalid ACL entry tag type"));
+
         xacl_free(acl);
     }
 }
