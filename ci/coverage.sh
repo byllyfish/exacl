@@ -21,8 +21,8 @@ unit_tests() {
 }
 
 if [ "$os" = "darwin" ]; then
-    llvm-profdata() { 
-        xcrun llvm-profdata "$@" 
+    llvm-profdata() {
+        xcrun llvm-profdata "$@"
     }
     llvm-cov() {
         xcrun llvm-cov "$@"
