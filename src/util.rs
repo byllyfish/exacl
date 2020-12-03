@@ -7,6 +7,7 @@ use crate::perm::Perm;
 use crate::qualifier::Qualifier;
 use crate::sys::*;
 
+use nix::unistd::{Gid, Uid};
 use scopeguard::defer;
 use std::ffi::{c_void, CStr, CString};
 use std::io;
