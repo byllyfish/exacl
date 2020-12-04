@@ -291,8 +291,7 @@ fn test_getfacl_file() -> io::Result<()> {
     {
         let result = getfacl(&file, AclOption::DEFAULT_ACL);
         assert!(result
-            .err()
-            .unwrap()
+            .unwrap_err()
             .to_string()
             .contains("macOS does not support default ACL"));
     }
@@ -302,8 +301,7 @@ fn test_getfacl_file() -> io::Result<()> {
     {
         let result = getfacl(&file, AclOption::DEFAULT_ACL);
         assert!(result
-            .err()
-            .unwrap()
+            .unwrap_err()
             .to_string()
             .contains("Permission denied"));
     }
@@ -403,7 +401,7 @@ fn test_too_many_entries() -> io::Result<()> {
     entries.push(AclEntry::allow_user("1500", Perm::READ, None));
 
     // 508th entry is one too many.
-    let err = setfacl(&files, &entries, None).err().unwrap();
+    let err = setfacl(&files, &entries, None).unwrap_err();
     assert!(err.to_string().contains("No space left on device"));
 
     Ok(())

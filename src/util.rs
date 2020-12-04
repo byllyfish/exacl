@@ -658,7 +658,7 @@ mod util_tests_mac {
         xacl_free(acl);
 
         // Custom error if we try to allocate MAX_ENTRIES + 1.
-        let err = xacl_init(max_entries + 1).err().unwrap();
+        let err = xacl_init(max_entries + 1).unwrap_err();
         assert_eq!(err.to_string(), "Too many ACL entries");
     }
 
@@ -672,7 +672,7 @@ mod util_tests_mac {
         }
 
         // Memory error if we try to allocate MAX_ENTRIES + 1.
-        let err = xacl_create_entry(&mut acl).err().unwrap();
+        let err = xacl_create_entry(&mut acl).unwrap_err();
         assert_eq!(err.raw_os_error(), Some(sg::ENOMEM));
 
         xacl_free(acl);
@@ -684,13 +684,11 @@ mod util_tests_mac {
         let entry = xacl_create_entry(&mut acl).unwrap();
 
         // Setting tag other than 1 or 2 results in EINVAL error.
-        let err = xacl_set_tag_type(entry, 0).err().unwrap();
+        let err = xacl_set_tag_type(entry, 0).unwrap_err();
         assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
         // Setting qualifier without first setting tag to a valid value results in EINVAL.
-        let err = xacl_set_qualifier(entry, &Qualifier::Guid(Uuid::nil()))
-            .err()
-            .unwrap();
+        let err = xacl_set_qualifier(entry, &Qualifier::Guid(Uuid::nil())).unwrap_err();
         assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
         assert_eq!(xacl_to_text(acl).unwrap(), "!#acl 1\n");
@@ -721,17 +719,16 @@ mod util_tests_linux {
         let entry = xacl_create_entry(&mut acl).unwrap();
 
         // Setting tag other than 1 or 2 results in EINVAL error.
-        let err = xacl_set_tag_type(entry, 0).err().unwrap();
+        let err = xacl_set_tag_type(entry, 0).unwrap_err();
         assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
         // Setting qualifier without first setting tag to a valid value results in EINVAL.
-        let err = xacl_set_qualifier(entry, 500).err().unwrap();
+        let err = xacl_set_qualifier(entry, 500).unwrap_err();
         assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
         // Try to set entry using unknown qualifier -- this should fail.
-        let err = xacl_set_tag_qualifier(entry, true, &Qualifier::Unknown("x".to_string()))
-            .err()
-            .unwrap();
+        let err =
+            xacl_set_tag_qualifier(entry, true, &Qualifier::Unknown("x".to_string())).unwrap_err();
         assert!(err.to_string().contains("unknown tag: x"));
 
         // Even though ACL contains 1 invalid entry, the platform text still
@@ -747,7 +744,7 @@ mod util_tests_linux {
 
         // There are still two entries... one is corrupt.
         assert_eq!(xacl_entry_count(acl), 2);
-        let err = xacl_check(acl).err().unwrap();
+        let err = xacl_check(acl).unwrap_err();
         assert!(err.to_string().contains("Invalid ACL entry tag type"));
 
         xacl_free(acl);
