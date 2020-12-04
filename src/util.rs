@@ -382,10 +382,11 @@ pub(crate) fn xacl_get_perm(entry: acl_entry_t) -> io::Result<Perm> {
 
 /// Get flags from the entry.
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
-    let mut flagset: acl_flagset_t = std::ptr::null_mut();
+fn xacl_get_flags_np(obj: *mut c_void) -> io::Result<Flag> {
+    assert!(!obj.is_null());
 
-    let ret = unsafe { acl_get_flagset_np(entry as *mut c_void, &mut flagset) };
+    let mut flagset: acl_flagset_t = std::ptr::null_mut();
+    let ret = unsafe { acl_get_flagset_np(obj, &mut flagset) };
     if ret != 0 {
         return fail_err(ret, "acl_get_flagset_np", ());
     }
@@ -402,6 +403,16 @@ pub(crate) fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
     }
 
     Ok(flags)
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
+    xacl_get_flags_np(entry as *mut c_void)
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn xacl_get_acl_flags(acl: acl_t) -> io::Result<Flag> {
+    xacl_get_flags_np(acl as *mut c_void)
 }
 
 #[cfg(target_os = "linux")]
@@ -531,10 +542,11 @@ pub(crate) fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
 }
 
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
-    let mut flagset: acl_flagset_t = std::ptr::null_mut();
+fn xacl_set_flags_np(obj: *mut c_void, flags: Flag) -> io::Result<()> {
+    assert!(!obj.is_null());
 
-    let ret_get = unsafe { acl_get_flagset_np(entry as *mut c_void, &mut flagset) };
+    let mut flagset: acl_flagset_t = std::ptr::null_mut();
+    let ret_get = unsafe { acl_get_flagset_np(obj, &mut flagset) };
     if ret_get != 0 {
         return fail_err(ret_get, "acl_get_flagset_np", ());
     }
@@ -552,6 +564,16 @@ pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> 
     }
 
     Ok(())
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
+    xacl_set_flags_np(entry as *mut c_void, flags)
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn xacl_set_acl_flags(acl: acl_t, flags: Flag) -> io::Result<()> {
+    xacl_set_flags_np(acl as *mut c_void, flags)
 }
 
 #[cfg(target_os = "linux")]
@@ -585,7 +607,7 @@ pub(crate) fn xacl_to_text(acl: acl_t) -> io::Result<String> {
 
 #[cfg(target_os = "macos")]
 pub(crate) fn xacl_check(_acl: acl_t) -> io::Result<()> {
-    Ok(())
+    Ok(()) // noop
 }
 
 #[cfg(target_os = "linux")]
