@@ -4,7 +4,7 @@
 
 set -u -o pipefail
 
-EXACL='../target/debug/exacl'
+EXACL='../target/debug/examples/exacl'
 
 # Add memcheck command if defined.
 if [ -n "${MEMCHECK+x}" ]; then
