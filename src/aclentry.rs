@@ -20,18 +20,17 @@ pub enum AclEntryKind {
     /// Entry represents a group.
     Group,
 
-    /// Entry represents a Posix.1e mask entry.
+    /// Entry represents a Posix.1e "mask" entry.
     #[cfg(any(docsrs, target_os = "linux"))]
     #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
     Mask,
 
-    /// Entry represents a Posix.1e other entry.
+    /// Entry represents a Posix.1e "other" entry.
     #[cfg(any(docsrs, target_os = "linux"))]
     #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
     Other,
 
-    /// Entry represents a possibly corrupt ACL entry. Caused by an unknown tag.
-    /// The name contains more information.
+    /// Entry represents a possibly corrupt ACL entry, caused by an unknown tag.
     Unknown,
 }
 

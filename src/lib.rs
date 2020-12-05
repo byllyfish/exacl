@@ -1,6 +1,6 @@
 //! # exacl
 //!
-//! Rust library for access control lists on `macOS` and `Linux`.
+//! Manipulate file system access control lists (ACL) on `macOS` and `Linux`.
 //!
 //! ## Example
 //!
