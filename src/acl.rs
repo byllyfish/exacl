@@ -59,10 +59,9 @@ impl Acl {
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
-    pub fn read<P: AsRef<Path>>(path: P, options: AclOption) -> io::Result<Acl> {
+    pub fn read(path: &Path, options: AclOption) -> io::Result<Acl> {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
-        let path = path.as_ref();
 
         let result = xacl_get_file(path, symlink_acl, default_acl);
         match result {
@@ -90,10 +89,9 @@ impl Acl {
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
-    pub fn write<P: AsRef<Path>>(&self, path: P, options: AclOption) -> io::Result<()> {
+    pub fn write(&self, path: &Path, options: AclOption) -> io::Result<()> {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
-        let path = path.as_ref();
 
         // If we're writing a default ACL to a non-directory, and we
         // specify the `IGNORE_EXPECTED_FILE_ERR` option, this function is a

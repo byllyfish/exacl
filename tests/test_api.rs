@@ -29,7 +29,7 @@ fn log_acl(acl: &[AclEntry]) {
 #[test]
 fn test_read_acl() -> io::Result<()> {
     let file = tempfile::NamedTempFile::new()?;
-    let acl = Acl::read(&file, AclOption::empty())?;
+    let acl = Acl::read(file.as_ref(), AclOption::empty())?;
     let entries = acl.entries()?;
 
     #[cfg(target_os = "macos")]
@@ -64,7 +64,7 @@ fn test_write_acl_macos() -> io::Result<()> {
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
     assert!(!acl.is_empty());
-    acl.write(&file, AclOption::empty())?;
+    acl.write(file.as_ref(), AclOption::empty())?;
 
     // Even though the last entry is a group, the `acl_to_text` representation
     // displays it as `user`.
@@ -79,7 +79,7 @@ user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:
 "#
     );
 
-    let acl2 = Acl::read(&file, AclOption::empty())?;
+    let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
     let entries2 = acl2.entries()?;
 
     assert_eq!(entries2, entries);
@@ -145,9 +145,9 @@ fn test_write_acl_big() -> io::Result<()> {
 
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
-    acl.write(&file, AclOption::empty())?;
+    acl.write(file.as_ref(), AclOption::empty())?;
 
-    let acl2 = Acl::read(&file, AclOption::empty())?;
+    let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
     let entries2 = acl2.entries()?;
 
     assert_eq!(entries2, entries);
@@ -420,14 +420,14 @@ fn test_set_acl_flags() -> io::Result<()> {
     assert_eq!(acl.flags()?, Flag::NO_INHERIT);
 
     // Setting the flag in memory has no effect on the file.
-    let acl2 = Acl::read(&file, AclOption::empty())?;
+    let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
     assert_eq!(acl2.flags()?, Flag::empty());
 
     // Writing the ACL will change the file.
-    acl.write(&file, AclOption::empty())?;
+    acl.write(file.as_ref(), AclOption::empty())?;
 
     // The NO_INHERIT flag only seems to persist if the ACL is not empty.
-    let acl3 = Acl::read(&file, AclOption::empty())?;
+    let acl3 = Acl::read(file.as_ref(), AclOption::empty())?;
     assert_eq!(acl3.flags()?, Flag::NO_INHERIT);
 
     Ok(())

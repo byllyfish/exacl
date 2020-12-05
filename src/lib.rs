@@ -144,6 +144,7 @@ where
     O: Into<Option<AclOption>>,
 {
     let options = options.into().unwrap_or_default();
+    let path = path.as_ref();
 
     #[cfg(target_os = "macos")]
     {
@@ -245,7 +246,7 @@ where
     {
         let acl = Acl::from_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
         for path in paths {
-            acl.write(path, options)?;
+            acl.write(path.as_ref(), options)?;
         }
     }
 
@@ -259,7 +260,7 @@ where
             }
 
             for path in paths {
-                acl.write(path, options)?;
+                acl.write(path.as_ref(), options)?;
             }
         } else {
             let (access_acl, default_acl) = Acl::from_unified_entries(entries)
@@ -281,10 +282,10 @@ where
                 // avoids leaving the file's ACL in a partially changed state
                 // after an error (simply because it was a non-directory).
                 default_acl.write(
-                    &path,
+                    path.as_ref(),
                     options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
                 )?;
-                access_acl.write(&path, options)?;
+                access_acl.write(path.as_ref(), options)?;
             }
         }
     }
