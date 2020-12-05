@@ -382,10 +382,11 @@ pub(crate) fn xacl_get_perm(entry: acl_entry_t) -> io::Result<Perm> {
 
 /// Get flags from the entry.
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
-    let mut flagset: acl_flagset_t = std::ptr::null_mut();
+fn xacl_get_flags_np(obj: *mut c_void) -> io::Result<Flag> {
+    assert!(!obj.is_null());
 
-    let ret = unsafe { acl_get_flagset_np(entry as *mut c_void, &mut flagset) };
+    let mut flagset: acl_flagset_t = std::ptr::null_mut();
+    let ret = unsafe { acl_get_flagset_np(obj, &mut flagset) };
     if ret != 0 {
         return fail_err(ret, "acl_get_flagset_np", ());
     }
@@ -402,6 +403,16 @@ pub(crate) fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
     }
 
     Ok(flags)
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
+    xacl_get_flags_np(entry as *mut c_void)
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn xacl_get_acl_flags(acl: acl_t) -> io::Result<Flag> {
+    xacl_get_flags_np(acl as *mut c_void)
 }
 
 #[cfg(target_os = "linux")]
@@ -531,10 +542,11 @@ pub(crate) fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
 }
 
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
-    let mut flagset: acl_flagset_t = std::ptr::null_mut();
+fn xacl_set_flags_np(obj: *mut c_void, flags: Flag) -> io::Result<()> {
+    assert!(!obj.is_null());
 
-    let ret_get = unsafe { acl_get_flagset_np(entry as *mut c_void, &mut flagset) };
+    let mut flagset: acl_flagset_t = std::ptr::null_mut();
+    let ret_get = unsafe { acl_get_flagset_np(obj, &mut flagset) };
     if ret_get != 0 {
         return fail_err(ret_get, "acl_get_flagset_np", ());
     }
@@ -552,6 +564,16 @@ pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> 
     }
 
     Ok(())
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
+    xacl_set_flags_np(entry as *mut c_void, flags)
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn xacl_set_acl_flags(acl: acl_t, flags: Flag) -> io::Result<()> {
+    xacl_set_flags_np(acl as *mut c_void, flags)
 }
 
 #[cfg(target_os = "linux")]
@@ -585,7 +607,7 @@ pub(crate) fn xacl_to_text(acl: acl_t) -> io::Result<String> {
 
 #[cfg(target_os = "macos")]
 pub(crate) fn xacl_check(_acl: acl_t) -> io::Result<()> {
-    Ok(())
+    Ok(()) // noop
 }
 
 #[cfg(target_os = "linux")]
@@ -636,7 +658,7 @@ mod util_tests_mac {
         xacl_free(acl);
 
         // Custom error if we try to allocate MAX_ENTRIES + 1.
-        let err = xacl_init(max_entries + 1).err().unwrap();
+        let err = xacl_init(max_entries + 1).unwrap_err();
         assert_eq!(err.to_string(), "Too many ACL entries");
     }
 
@@ -650,7 +672,7 @@ mod util_tests_mac {
         }
 
         // Memory error if we try to allocate MAX_ENTRIES + 1.
-        let err = xacl_create_entry(&mut acl).err().unwrap();
+        let err = xacl_create_entry(&mut acl).unwrap_err();
         assert_eq!(err.raw_os_error(), Some(sg::ENOMEM));
 
         xacl_free(acl);
@@ -662,13 +684,11 @@ mod util_tests_mac {
         let entry = xacl_create_entry(&mut acl).unwrap();
 
         // Setting tag other than 1 or 2 results in EINVAL error.
-        let err = xacl_set_tag_type(entry, 0).err().unwrap();
+        let err = xacl_set_tag_type(entry, 0).unwrap_err();
         assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
         // Setting qualifier without first setting tag to a valid value results in EINVAL.
-        let err = xacl_set_qualifier(entry, &Qualifier::Guid(Uuid::nil()))
-            .err()
-            .unwrap();
+        let err = xacl_set_qualifier(entry, &Qualifier::Guid(Uuid::nil())).unwrap_err();
         assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
         assert_eq!(xacl_to_text(acl).unwrap(), "!#acl 1\n");
@@ -699,17 +719,16 @@ mod util_tests_linux {
         let entry = xacl_create_entry(&mut acl).unwrap();
 
         // Setting tag other than 1 or 2 results in EINVAL error.
-        let err = xacl_set_tag_type(entry, 0).err().unwrap();
+        let err = xacl_set_tag_type(entry, 0).unwrap_err();
         assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
         // Setting qualifier without first setting tag to a valid value results in EINVAL.
-        let err = xacl_set_qualifier(entry, 500).err().unwrap();
+        let err = xacl_set_qualifier(entry, 500).unwrap_err();
         assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
         // Try to set entry using unknown qualifier -- this should fail.
-        let err = xacl_set_tag_qualifier(entry, true, &Qualifier::Unknown("x".to_string()))
-            .err()
-            .unwrap();
+        let err =
+            xacl_set_tag_qualifier(entry, true, &Qualifier::Unknown("x".to_string())).unwrap_err();
         assert!(err.to_string().contains("unknown tag: x"));
 
         // Even though ACL contains 1 invalid entry, the platform text still
@@ -725,7 +744,7 @@ mod util_tests_linux {
 
         // There are still two entries... one is corrupt.
         assert_eq!(xacl_entry_count(acl), 2);
-        let err = xacl_check(acl).err().unwrap();
+        let err = xacl_check(acl).unwrap_err();
         assert!(err.to_string().contains("Invalid ACL entry tag type"));
 
         xacl_free(acl);

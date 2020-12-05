@@ -291,8 +291,7 @@ fn test_getfacl_file() -> io::Result<()> {
     {
         let result = getfacl(&file, AclOption::DEFAULT_ACL);
         assert!(result
-            .err()
-            .unwrap()
+            .unwrap_err()
             .to_string()
             .contains("macOS does not support default ACL"));
     }
@@ -302,8 +301,7 @@ fn test_getfacl_file() -> io::Result<()> {
     {
         let result = getfacl(&file, AclOption::DEFAULT_ACL);
         assert!(result
-            .err()
-            .unwrap()
+            .unwrap_err()
             .to_string()
             .contains("Permission denied"));
     }
@@ -403,8 +401,34 @@ fn test_too_many_entries() -> io::Result<()> {
     entries.push(AclEntry::allow_user("1500", Perm::READ, None));
 
     // 508th entry is one too many.
-    let err = setfacl(&files, &entries, None).err().unwrap();
+    let err = setfacl(&files, &entries, None).unwrap_err();
     assert!(err.to_string().contains("No space left on device"));
+
+    Ok(())
+}
+
+#[test]
+#[cfg(target_os = "macos")]
+fn test_set_acl_flags() -> io::Result<()> {
+    let file = tempfile::NamedTempFile::new()?;
+    let entries = vec![AclEntry::allow_user("600", Perm::READ, Flag::empty())];
+
+    let mut acl = Acl::from_entries(&entries)?;
+    assert_eq!(acl.get_flags()?, Flag::empty());
+
+    acl.set_flags(Flag::NO_INHERIT)?;
+    assert_eq!(acl.get_flags()?, Flag::NO_INHERIT);
+
+    // Setting the flag in memory has no effect on the file.
+    let acl2 = Acl::read(&file, AclOption::empty())?;
+    assert_eq!(acl2.get_flags()?, Flag::empty());
+
+    // Writing the ACL will change the file.
+    acl.write(&file, AclOption::empty())?;
+
+    // The NO_INHERIT flag only seems to persist if the ACL is not empty.
+    let acl3 = Acl::read(&file, AclOption::empty())?;
+    assert_eq!(acl3.get_flags()?, Flag::NO_INHERIT);
 
     Ok(())
 }

@@ -380,7 +380,7 @@ mod qualifier_tests {
             Some((20, sg::ID_TYPE_GID))
         );
 
-        let err = guid_to_id(Uuid::nil()).err().unwrap();
+        let err = guid_to_id(Uuid::nil()).unwrap_err();
         assert_eq!(err.raw_os_error().unwrap(), sg::ENOENT);
     }
 

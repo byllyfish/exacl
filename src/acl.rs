@@ -4,7 +4,6 @@ use crate::aclentry::AclEntry;
 #[cfg(target_os = "linux")]
 use crate::aclentry::AclEntryKind;
 use crate::failx::{fail_custom, path_err};
-#[cfg(target_os = "linux")]
 use crate::flag::Flag;
 #[cfg(target_os = "linux")]
 use crate::perm::Perm;
@@ -294,6 +293,28 @@ impl Acl {
     #[must_use]
     pub fn is_empty(&self) -> bool {
         xacl_entry_count(self.acl) == 0
+    }
+
+    /// Return ACL flags.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    #[cfg(target_os = "macos")]
+    pub fn get_flags(&self) -> io::Result<Flag> {
+        xacl_get_acl_flags(self.acl)
+    }
+
+    /// Set ACL flags.
+    ///
+    /// This method is marked mutable.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    #[cfg(target_os = "macos")]
+    pub fn set_flags(&mut self, flags: Flag) -> io::Result<()> {
+        xacl_set_acl_flags(self.acl, flags)
     }
 }
 
