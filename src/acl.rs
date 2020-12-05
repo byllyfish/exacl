@@ -301,7 +301,7 @@ impl Acl {
     ///
     /// Returns an [`io::Error`] on failure.
     #[cfg(target_os = "macos")]
-    pub fn get_flags(&self) -> io::Result<Flag> {
+    pub fn flags(&self) -> io::Result<Flag> {
         xacl_get_acl_flags(self.acl)
     }
 

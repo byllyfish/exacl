@@ -414,21 +414,21 @@ fn test_set_acl_flags() -> io::Result<()> {
     let entries = vec![AclEntry::allow_user("600", Perm::READ, Flag::empty())];
 
     let mut acl = Acl::from_entries(&entries)?;
-    assert_eq!(acl.get_flags()?, Flag::empty());
+    assert_eq!(acl.flags()?, Flag::empty());
 
     acl.set_flags(Flag::NO_INHERIT)?;
-    assert_eq!(acl.get_flags()?, Flag::NO_INHERIT);
+    assert_eq!(acl.flags()?, Flag::NO_INHERIT);
 
     // Setting the flag in memory has no effect on the file.
     let acl2 = Acl::read(&file, AclOption::empty())?;
-    assert_eq!(acl2.get_flags()?, Flag::empty());
+    assert_eq!(acl2.flags()?, Flag::empty());
 
     // Writing the ACL will change the file.
     acl.write(&file, AclOption::empty())?;
 
     // The NO_INHERIT flag only seems to persist if the ACL is not empty.
     let acl3 = Acl::read(&file, AclOption::empty())?;
-    assert_eq!(acl3.get_flags()?, Flag::NO_INHERIT);
+    assert_eq!(acl3.flags()?, Flag::NO_INHERIT);
 
     Ok(())
 }
