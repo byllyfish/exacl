@@ -143,29 +143,28 @@ where
     P: AsRef<Path>,
     O: Into<Option<AclOption>>,
 {
-    let options = options.into().unwrap_or_default();
-    let path = path.as_ref();
+    _getfacl(path.as_ref(), options.into().unwrap_or_default())
+}
 
-    #[cfg(target_os = "macos")]
-    {
+#[cfg(target_os = "macos")]
+fn _getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
+    Acl::read(&path, options)?.entries()
+}
+
+#[cfg(not(target_os = "macos"))]
+fn _getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
+    if options.contains(AclOption::DEFAULT_ACL) {
         Acl::read(&path, options)?.entries()
-    }
+    } else {
+        let mut entries = Acl::read(&path, options)?.entries()?;
+        let mut default = Acl::read(
+            &path,
+            options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
+        )?
+        .entries()?;
 
-    #[cfg(not(target_os = "macos"))]
-    {
-        if options.contains(AclOption::DEFAULT_ACL) {
-            Acl::read(&path, options)?.entries()
-        } else {
-            let mut entries = Acl::read(&path, options)?.entries()?;
-            let mut default = Acl::read(
-                &path,
-                options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
-            )?
-            .entries()?;
-
-            entries.append(&mut default);
-            Ok(entries)
-        }
+        entries.append(&mut default);
+        Ok(entries)
     }
 }
 
@@ -240,53 +239,61 @@ where
     P: AsRef<Path>,
     O: Into<Option<AclOption>>,
 {
-    let options = options.into().unwrap_or_default();
+    _setfacl(paths, entries, options.into().unwrap_or_default())
+}
 
-    #[cfg(target_os = "macos")]
-    {
+#[cfg(target_os = "macos")]
+fn _setfacl<P>(paths: &[P], entries: &[AclEntry], options: AclOption) -> io::Result<()>
+where
+    P: AsRef<Path>,
+{
+    let acl = Acl::from_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
+    for path in paths {
+        acl.write(path.as_ref(), options)?;
+    }
+
+    Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn _setfacl<P>(paths: &[P], entries: &[AclEntry], options: AclOption) -> io::Result<()>
+where
+    P: AsRef<Path>,
+{
+    if options.contains(AclOption::DEFAULT_ACL) {
         let acl = Acl::from_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
+
+        if !acl.is_empty() {
+            acl.check().map_err(|err| custom_err("Invalid ACL", &err))?
+        }
+
         for path in paths {
             acl.write(path.as_ref(), options)?;
         }
-    }
+    } else {
+        let (access_acl, default_acl) =
+            Acl::from_unified_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
 
-    #[cfg(not(target_os = "macos"))]
-    {
-        if options.contains(AclOption::DEFAULT_ACL) {
-            let acl = Acl::from_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
+        access_acl
+            .check()
+            .map_err(|err| custom_err("Invalid ACL", &err))?;
 
-            if !acl.is_empty() {
-                acl.check().map_err(|err| custom_err("Invalid ACL", &err))?
-            }
-
-            for path in paths {
-                acl.write(path.as_ref(), options)?;
-            }
-        } else {
-            let (access_acl, default_acl) = Acl::from_unified_entries(entries)
-                .map_err(|err| custom_err("Invalid ACL", &err))?;
-
-            access_acl
+        if !default_acl.is_empty() {
+            default_acl
                 .check()
                 .map_err(|err| custom_err("Invalid ACL", &err))?;
+        }
 
-            if !default_acl.is_empty() {
-                default_acl
-                    .check()
-                    .map_err(|err| custom_err("Invalid ACL", &err))?;
-            }
-
-            for path in paths {
-                // Try to set default acl first. This will fail if path is not
-                // a directory and default_acl is non-empty. This ordering
-                // avoids leaving the file's ACL in a partially changed state
-                // after an error (simply because it was a non-directory).
-                default_acl.write(
-                    path.as_ref(),
-                    options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
-                )?;
-                access_acl.write(path.as_ref(), options)?;
-            }
+        for path in paths {
+            // Try to set default acl first. This will fail if path is not
+            // a directory and default_acl is non-empty. This ordering
+            // avoids leaving the file's ACL in a partially changed state
+            // after an error (simply because it was a non-directory).
+            default_acl.write(
+                path.as_ref(),
+                options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
+            )?;
+            access_acl.write(path.as_ref(), options)?;
         }
     }
 
