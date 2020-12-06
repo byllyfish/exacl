@@ -106,7 +106,7 @@ fn test_write_acl_linux() -> io::Result<()> {
 
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
-    acl.write(&file, AclOption::empty())?;
+    acl.write(file.as_ref(), AclOption::empty())?;
 
     assert_eq!(
         acl.to_platform_text()?,
@@ -121,7 +121,7 @@ other::rwx
 "#
     );
 
-    let acl2 = Acl::read(&file, AclOption::empty())?;
+    let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
     let mut entries2 = acl2.entries()?;
 
     // Before doing the comparison, add the mask entry.
@@ -225,7 +225,7 @@ other::rwx
 #[cfg(target_os = "linux")]
 fn test_read_default_acl() -> io::Result<()> {
     let dir = tempfile::tempdir()?;
-    let default_acl = Acl::read(&dir, AclOption::DEFAULT_ACL)?;
+    let default_acl = Acl::read(dir.as_ref(), AclOption::DEFAULT_ACL)?;
     assert!(default_acl.is_empty());
 
     Ok(())
@@ -245,12 +245,12 @@ fn test_write_default_acl() -> io::Result<()> {
 
     let dir = tempfile::tempdir()?;
     let acl = Acl::from_entries(&entries)?;
-    acl.write(&dir, AclOption::DEFAULT_ACL)?;
+    acl.write(dir.as_ref(), AclOption::DEFAULT_ACL)?;
 
-    let acl2 = Acl::read(&dir, AclOption::empty())?;
+    let acl2 = Acl::read(dir.as_ref(), AclOption::empty())?;
     assert_ne!(acl.to_platform_text()?, acl2.to_platform_text()?);
 
-    let default_acl = Acl::read(&dir, AclOption::DEFAULT_ACL)?;
+    let default_acl = Acl::read(dir.as_ref(), AclOption::DEFAULT_ACL)?;
     assert_eq!(default_acl.to_platform_text()?, acl.to_platform_text()?);
 
     let default_entries = default_acl.entries()?;
@@ -260,8 +260,8 @@ fn test_write_default_acl() -> io::Result<()> {
 
     // Test deleting a default ACL by passing an empty acl.
     let empty_acl = Acl::from_entries(&[])?;
-    empty_acl.write(&dir, AclOption::DEFAULT_ACL)?;
-    assert!(Acl::read(&dir, AclOption::DEFAULT_ACL)?.is_empty());
+    empty_acl.write(dir.as_ref(), AclOption::DEFAULT_ACL)?;
+    assert!(Acl::read(dir.as_ref(), AclOption::DEFAULT_ACL)?.is_empty());
 
     Ok(())
 }
