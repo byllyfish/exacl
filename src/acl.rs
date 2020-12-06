@@ -54,15 +54,14 @@ impl Acl {
         }
     }
 
-    /// Read ACL for specified file.
+    /// Read ACL for the specified file.
     ///
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
-    pub fn read<P: AsRef<Path>>(path: P, options: AclOption) -> io::Result<Acl> {
+    pub fn read(path: &Path, options: AclOption) -> io::Result<Acl> {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
-        let path = path.as_ref();
 
         let result = xacl_get_file(path, symlink_acl, default_acl);
         match result {
@@ -85,15 +84,14 @@ impl Acl {
         }
     }
 
-    /// Write ACL for specified file.
+    /// Write ACL for the specified file.
     ///
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
-    pub fn write<P: AsRef<Path>>(&self, path: P, options: AclOption) -> io::Result<()> {
+    pub fn write(&self, path: &Path, options: AclOption) -> io::Result<()> {
         let symlink_acl = options.contains(AclOption::SYMLINK_ACL);
         let default_acl = options.contains(AclOption::DEFAULT_ACL);
-        let path = path.as_ref();
 
         // If we're writing a default ACL to a non-directory, and we
         // specify the `IGNORE_EXPECTED_FILE_ERR` option, this function is a
@@ -155,7 +153,7 @@ impl Acl {
         Some(perms)
     }
 
-    /// Construct ACL from slice of [`AclEntry`].
+    /// Return an ACL from a slice of [`AclEntry`].
     ///
     /// On Linux, if there is no mask `AclEntry`, one will be computed and
     /// added, if needed.
@@ -189,17 +187,18 @@ impl Acl {
         Ok(Acl::new(ScopeGuard::into_inner(acl_p), false))
     }
 
-    /// Construct pair of ACL's from slice of [`AclEntry`].
+    /// Return pair of ACL's from slice of [`AclEntry`]. This method separates
+    /// regular access entries from default entries and returns two ACL's, an
+    /// access ACL and default ACL. Either may be empty.
     ///
-    /// Separate regular access entries from default entries on Linux.
-    ///
-    /// On Linux, if there is no mask `AclEntry` in either ACL, one will be
+    /// On Linux, if there is no mask `AclEntry` in an ACL, one will be
     /// computed and added, if needed.
     ///
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(docsrs, target_os = "linux"))]
+    #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
     pub fn from_unified_entries(entries: &[AclEntry]) -> io::Result<(Acl, Acl)> {
         let new_access = xacl_init(entries.len())?;
         let new_default = xacl_init(entries.len())?;
@@ -295,24 +294,28 @@ impl Acl {
         xacl_entry_count(self.acl) == 0
     }
 
-    /// Return ACL flags.
+    /// Return flags for the ACL itself.
     ///
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
-    #[cfg(target_os = "macos")]
-    pub fn get_flags(&self) -> io::Result<Flag> {
+    #[cfg(any(docsrs, target_os = "macos"))]
+    #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+    pub fn flags(&self) -> io::Result<Flag> {
         xacl_get_acl_flags(self.acl)
     }
 
-    /// Set ACL flags.
+    /// Set flags for the ACL itself.
     ///
-    /// This method is marked mutable.
+    /// This method is marked mutable, because we are altering the in-memory
+    /// representation of the ACL. The ACL on disk will only be updated when we
+    /// call [`Acl::write`].
     ///
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
-    #[cfg(target_os = "macos")]
+    #[cfg(any(docsrs, target_os = "macos"))]
+    #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
     pub fn set_flags(&mut self, flags: Flag) -> io::Result<()> {
         xacl_set_acl_flags(self.acl, flags)
     }

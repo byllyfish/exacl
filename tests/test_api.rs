@@ -29,7 +29,7 @@ fn log_acl(acl: &[AclEntry]) {
 #[test]
 fn test_read_acl() -> io::Result<()> {
     let file = tempfile::NamedTempFile::new()?;
-    let acl = Acl::read(&file, AclOption::empty())?;
+    let acl = Acl::read(file.as_ref(), AclOption::empty())?;
     let entries = acl.entries()?;
 
     #[cfg(target_os = "macos")]
@@ -64,7 +64,7 @@ fn test_write_acl_macos() -> io::Result<()> {
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
     assert!(!acl.is_empty());
-    acl.write(&file, AclOption::empty())?;
+    acl.write(file.as_ref(), AclOption::empty())?;
 
     // Even though the last entry is a group, the `acl_to_text` representation
     // displays it as `user`.
@@ -79,7 +79,7 @@ user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:
 "#
     );
 
-    let acl2 = Acl::read(&file, AclOption::empty())?;
+    let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
     let entries2 = acl2.entries()?;
 
     assert_eq!(entries2, entries);
@@ -106,7 +106,7 @@ fn test_write_acl_linux() -> io::Result<()> {
 
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
-    acl.write(&file, AclOption::empty())?;
+    acl.write(file.as_ref(), AclOption::empty())?;
 
     assert_eq!(
         acl.to_platform_text()?,
@@ -121,7 +121,7 @@ other::rwx
 "#
     );
 
-    let acl2 = Acl::read(&file, AclOption::empty())?;
+    let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
     let mut entries2 = acl2.entries()?;
 
     // Before doing the comparison, add the mask entry.
@@ -145,9 +145,9 @@ fn test_write_acl_big() -> io::Result<()> {
 
     let file = tempfile::NamedTempFile::new()?;
     let acl = Acl::from_entries(&entries)?;
-    acl.write(&file, AclOption::empty())?;
+    acl.write(file.as_ref(), AclOption::empty())?;
 
-    let acl2 = Acl::read(&file, AclOption::empty())?;
+    let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
     let entries2 = acl2.entries()?;
 
     assert_eq!(entries2, entries);
@@ -225,7 +225,7 @@ other::rwx
 #[cfg(target_os = "linux")]
 fn test_read_default_acl() -> io::Result<()> {
     let dir = tempfile::tempdir()?;
-    let default_acl = Acl::read(&dir, AclOption::DEFAULT_ACL)?;
+    let default_acl = Acl::read(dir.as_ref(), AclOption::DEFAULT_ACL)?;
     assert!(default_acl.is_empty());
 
     Ok(())
@@ -245,12 +245,12 @@ fn test_write_default_acl() -> io::Result<()> {
 
     let dir = tempfile::tempdir()?;
     let acl = Acl::from_entries(&entries)?;
-    acl.write(&dir, AclOption::DEFAULT_ACL)?;
+    acl.write(dir.as_ref(), AclOption::DEFAULT_ACL)?;
 
-    let acl2 = Acl::read(&dir, AclOption::empty())?;
+    let acl2 = Acl::read(dir.as_ref(), AclOption::empty())?;
     assert_ne!(acl.to_platform_text()?, acl2.to_platform_text()?);
 
-    let default_acl = Acl::read(&dir, AclOption::DEFAULT_ACL)?;
+    let default_acl = Acl::read(dir.as_ref(), AclOption::DEFAULT_ACL)?;
     assert_eq!(default_acl.to_platform_text()?, acl.to_platform_text()?);
 
     let default_entries = default_acl.entries()?;
@@ -260,8 +260,8 @@ fn test_write_default_acl() -> io::Result<()> {
 
     // Test deleting a default ACL by passing an empty acl.
     let empty_acl = Acl::from_entries(&[])?;
-    empty_acl.write(&dir, AclOption::DEFAULT_ACL)?;
-    assert!(Acl::read(&dir, AclOption::DEFAULT_ACL)?.is_empty());
+    empty_acl.write(dir.as_ref(), AclOption::DEFAULT_ACL)?;
+    assert!(Acl::read(dir.as_ref(), AclOption::DEFAULT_ACL)?.is_empty());
 
     Ok(())
 }
@@ -414,21 +414,21 @@ fn test_set_acl_flags() -> io::Result<()> {
     let entries = vec![AclEntry::allow_user("600", Perm::READ, Flag::empty())];
 
     let mut acl = Acl::from_entries(&entries)?;
-    assert_eq!(acl.get_flags()?, Flag::empty());
+    assert_eq!(acl.flags()?, Flag::empty());
 
     acl.set_flags(Flag::NO_INHERIT)?;
-    assert_eq!(acl.get_flags()?, Flag::NO_INHERIT);
+    assert_eq!(acl.flags()?, Flag::NO_INHERIT);
 
     // Setting the flag in memory has no effect on the file.
-    let acl2 = Acl::read(&file, AclOption::empty())?;
-    assert_eq!(acl2.get_flags()?, Flag::empty());
+    let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
+    assert_eq!(acl2.flags()?, Flag::empty());
 
     // Writing the ACL will change the file.
-    acl.write(&file, AclOption::empty())?;
+    acl.write(file.as_ref(), AclOption::empty())?;
 
     // The NO_INHERIT flag only seems to persist if the ACL is not empty.
-    let acl3 = Acl::read(&file, AclOption::empty())?;
-    assert_eq!(acl3.get_flags()?, Flag::NO_INHERIT);
+    let acl3 = Acl::read(file.as_ref(), AclOption::empty())?;
+    assert_eq!(acl3.flags()?, Flag::NO_INHERIT);
 
     Ok(())
 }

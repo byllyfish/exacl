@@ -4,7 +4,7 @@
 
 set -u -o pipefail
 
-EXACL='../target/debug/exacl'
+EXACL='../target/debug/examples/exacl'
 
 ME=$(id -un)
 ME_NUM=$(id -u)

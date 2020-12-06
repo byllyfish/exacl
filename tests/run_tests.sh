@@ -10,7 +10,7 @@ arg1="$1"
 script_dir=$(dirname "$0")
 cd "$script_dir" || exit 1
 
-if [ ! -f ../target/debug/exacl ]; then
+if [ ! -f ../target/debug/examples/exacl ]; then
     echo "exacl executable not found!"
     exit 1
 fi
