@@ -20,7 +20,7 @@ else
 
     # Add an index.html file that redirects to our main page.
     if [ ! -f "target/doc/index.html" ]; then
-        echo '<meta http-equiv=refresh content=0;url=exacl/index.html>' > "target/doc/index.html"
+        echo '<meta http-equiv=refresh content=0;url=exacl/index.html>' >"target/doc/index.html"
     fi
 fi
 
