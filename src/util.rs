@@ -21,7 +21,7 @@ use uuid::Uuid;
 pub use crate::sys::{acl_entry_t, acl_t};
 
 /// Free memory allocated by native acl_* routines.
-pub(crate) fn xacl_free<T>(ptr: *mut T) {
+pub fn xacl_free<T>(ptr: *mut T) {
     assert!(!ptr.is_null());
     let ret = unsafe { acl_free(ptr as *mut c_void) };
     assert_eq!(ret, 0);
@@ -42,11 +42,7 @@ fn path_exists(path: &Path, symlink_only: bool) -> bool {
 /// If the file is a symlink, the `symlink_acl` argument determines whether to
 /// get the ACL from the symlink itself (true) or the file it points to (false).
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_get_file(
-    path: &Path,
-    symlink_acl: bool,
-    default_acl: bool,
-) -> io::Result<acl_t> {
+pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::Result<acl_t> {
     use std::os::unix::ffi::OsStrExt;
 
     if default_acl {
@@ -71,7 +67,7 @@ pub(crate) fn xacl_get_file(
         // acl_get_file et al. can return NULL (ENOENT) if the file exists, but
         // there is no ACL. If the path exists, return an *empty* ACL.
         if let Some(sg::ENOENT) = err.raw_os_error() {
-            if path_exists(&path, symlink_acl) {
+            if path_exists(path, symlink_acl) {
                 return xacl_init(1);
             }
         }
@@ -83,11 +79,7 @@ pub(crate) fn xacl_get_file(
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn xacl_get_file(
-    path: &Path,
-    symlink_acl: bool,
-    default_acl: bool,
-) -> io::Result<acl_t> {
+pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::Result<acl_t> {
     use std::os::unix::ffi::OsStrExt;
 
     if symlink_acl {
@@ -133,7 +125,7 @@ fn xacl_set_file_symlink(c_path: &CString, acl: acl_t) -> io::Result<()> {
 }
 
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_set_file(
+pub fn xacl_set_file(
     path: &Path,
     acl: acl_t,
     symlink_acl: bool,
@@ -170,7 +162,7 @@ pub(crate) fn xacl_set_file(
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn xacl_set_file(
+pub fn xacl_set_file(
     path: &Path,
     acl: acl_t,
     symlink_acl: bool,
@@ -203,7 +195,7 @@ pub(crate) fn xacl_set_file(
 }
 
 /// Return number of entries in the ACL.
-pub(crate) fn xacl_entry_count(acl: acl_t) -> usize {
+pub fn xacl_entry_count(acl: acl_t) -> usize {
     let mut count = 0;
 
     xacl_foreach(acl, |_| {
@@ -229,7 +221,7 @@ fn xacl_get_entry(acl: acl_t, entry_id: i32, entry_p: *mut acl_entry_t) -> bool 
 }
 
 /// Iterate over entries in a native ACL.
-pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
+pub fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
     acl: acl_t,
     mut func: F,
 ) -> io::Result<()> {
@@ -252,7 +244,7 @@ pub(crate) fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
 /// Create a new empty ACL with the given capacity.
 ///
 /// Client must call `xacl_free` when done with result.
-pub(crate) fn xacl_init(capacity: usize) -> io::Result<acl_t> {
+pub fn xacl_init(capacity: usize) -> io::Result<acl_t> {
     use std::convert::TryFrom;
 
     let size = match i32::try_from(capacity) {
@@ -271,7 +263,7 @@ pub(crate) fn xacl_init(capacity: usize) -> io::Result<acl_t> {
 /// Create a new entry in the specified ACL.
 ///
 /// N.B. Memory reallocation may cause `acl` ptr to change.
-pub(crate) fn xacl_create_entry(acl: &mut acl_t) -> io::Result<acl_entry_t> {
+pub fn xacl_create_entry(acl: &mut acl_t) -> io::Result<acl_entry_t> {
     let mut entry: acl_entry_t = ptr::null_mut();
 
     let ret = unsafe { acl_create_entry(&mut *acl, &mut entry) };
@@ -310,7 +302,7 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
 
 /// Get tag and qualifier from the entry.
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
+pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
     let tag = xacl_get_tag_type(entry)?;
 
     #[allow(non_upper_case_globals)]
@@ -352,13 +344,13 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
+pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
     let qualifier = xacl_get_qualifier(entry)?;
     Ok((true, qualifier))
 }
 
 // Get permissions from the entry.
-pub(crate) fn xacl_get_perm(entry: acl_entry_t) -> io::Result<Perm> {
+pub fn xacl_get_perm(entry: acl_entry_t) -> io::Result<Perm> {
     let mut permset: acl_permset_t = std::ptr::null_mut();
 
     let ret = unsafe { acl_get_permset(entry, &mut permset) };
@@ -406,17 +398,18 @@ fn xacl_get_flags_np(obj: *mut c_void) -> io::Result<Flag> {
 }
 
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
+pub fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
     xacl_get_flags_np(entry as *mut c_void)
 }
 
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_get_acl_flags(acl: acl_t) -> io::Result<Flag> {
+pub fn xacl_get_acl_flags(acl: acl_t) -> io::Result<Flag> {
     xacl_get_flags_np(acl as *mut c_void)
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn xacl_get_flags(_entry: acl_entry_t) -> io::Result<Flag> {
+#[allow(clippy::clippy::missing_const_for_fn)]
+pub fn xacl_get_flags(_entry: acl_entry_t) -> io::Result<Flag> {
     Ok(Flag::empty()) // noop
 }
 
@@ -446,7 +439,7 @@ fn xacl_set_qualifier(entry: acl_entry_t, qualifier: &Qualifier) -> io::Result<(
 
 /// Set tag and qualifier for ACL entry.
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_set_tag_qualifier(
+pub fn xacl_set_tag_qualifier(
     entry: acl_entry_t,
     allow: bool,
     qualifier: &Qualifier,
@@ -461,7 +454,7 @@ pub(crate) fn xacl_set_tag_qualifier(
     };
 
     xacl_set_tag_type(entry, tag)?;
-    xacl_set_qualifier(entry, &qualifier)?;
+    xacl_set_qualifier(entry, qualifier)?;
 
     Ok(())
 }
@@ -479,7 +472,7 @@ fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn xacl_set_tag_qualifier(
+pub fn xacl_set_tag_qualifier(
     entry: acl_entry_t,
     allow: bool,
     qualifier: &Qualifier,
@@ -518,7 +511,7 @@ pub(crate) fn xacl_set_tag_qualifier(
 }
 
 /// Set permissions for the entry.
-pub(crate) fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
+pub fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
     let mut permset: acl_permset_t = std::ptr::null_mut();
 
     let ret_get = unsafe { acl_get_permset(entry, &mut permset) };
@@ -567,21 +560,22 @@ fn xacl_set_flags_np(obj: *mut c_void, flags: Flag) -> io::Result<()> {
 }
 
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
+pub fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
     xacl_set_flags_np(entry as *mut c_void, flags)
 }
 
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_set_acl_flags(acl: acl_t, flags: Flag) -> io::Result<()> {
+pub fn xacl_set_acl_flags(acl: acl_t, flags: Flag) -> io::Result<()> {
     xacl_set_flags_np(acl as *mut c_void, flags)
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
+#[allow(clippy::clippy::missing_const_for_fn)]
+pub fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
     Ok(()) // noop
 }
 
-pub(crate) fn xacl_from_text(text: &str) -> io::Result<acl_t> {
+pub fn xacl_from_text(text: &str) -> io::Result<acl_t> {
     let cstr = CString::new(text.as_bytes())?;
 
     let acl = unsafe { acl_from_text(cstr.as_ptr()) };
@@ -592,7 +586,7 @@ pub(crate) fn xacl_from_text(text: &str) -> io::Result<acl_t> {
     Ok(acl)
 }
 
-pub(crate) fn xacl_to_text(acl: acl_t) -> io::Result<String> {
+pub fn xacl_to_text(acl: acl_t) -> io::Result<String> {
     let mut size: ssize_t = 0;
     let ptr = unsafe { acl_to_text(acl, &mut size) };
     if ptr.is_null() {
@@ -606,12 +600,13 @@ pub(crate) fn xacl_to_text(acl: acl_t) -> io::Result<String> {
 }
 
 #[cfg(target_os = "macos")]
-pub(crate) fn xacl_check(_acl: acl_t) -> io::Result<()> {
+#[allow(clippy::clippy::missing_const_for_fn)]
+pub fn xacl_check(_acl: acl_t) -> io::Result<()> {
     Ok(()) // noop
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn xacl_check(acl: acl_t) -> io::Result<()> {
+pub fn xacl_check(acl: acl_t) -> io::Result<()> {
     use std::convert::TryInto;
 
     let mut last: i32 = 0;

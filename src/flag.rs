@@ -112,7 +112,7 @@ impl FlagName {
         FlagName::try_from(flag.bits).ok()
     }
 
-    fn to_flag(self) -> Flag {
+    const fn to_flag(self) -> Flag {
         Flag { bits: self as u32 }
     }
 }

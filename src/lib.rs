@@ -148,17 +148,17 @@ where
 
 #[cfg(target_os = "macos")]
 fn _getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
-    Acl::read(&path, options)?.entries()
+    Acl::read(path, options)?.entries()
 }
 
 #[cfg(not(target_os = "macos"))]
 fn _getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
     if options.contains(AclOption::DEFAULT_ACL) {
-        Acl::read(&path, options)?.entries()
+        Acl::read(path, options)?.entries()
     } else {
-        let mut entries = Acl::read(&path, options)?.entries()?;
+        let mut entries = Acl::read(path, options)?.entries()?;
         let mut default = Acl::read(
-            &path,
+            path,
             options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
         )?
         .entries()?;
