@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["exacl"] = [{"text":"impl Unpin for AclOption","synthetic":true,"types":[]},{"text":"impl Unpin for Acl","synthetic":true,"types":[]},{"text":"impl Unpin for AclEntryKind","synthetic":true,"types":[]},{"text":"impl Unpin for AclEntry","synthetic":true,"types":[]},{"text":"impl Unpin for Flag","synthetic":true,"types":[]},{"text":"impl Unpin for Perm","synthetic":true,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

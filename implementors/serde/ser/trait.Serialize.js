@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["exacl"] = [{"text":"impl Serialize for AclEntryKind","synthetic":false,"types":[]},{"text":"impl Serialize for AclEntry","synthetic":false,"types":[]},{"text":"impl Serialize for Flag","synthetic":false,"types":[]},{"text":"impl Serialize for Perm","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

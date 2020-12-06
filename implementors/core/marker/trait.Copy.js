@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["exacl"] = [{"text":"impl Copy for AclOption","synthetic":false,"types":[]},{"text":"impl Copy for AclEntryKind","synthetic":false,"types":[]},{"text":"impl Copy for Flag","synthetic":false,"types":[]},{"text":"impl Copy for Perm","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

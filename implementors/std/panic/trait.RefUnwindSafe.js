@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["exacl"] = [{"text":"impl RefUnwindSafe for AclOption","synthetic":true,"types":[]},{"text":"impl RefUnwindSafe for Acl","synthetic":true,"types":[]},{"text":"impl RefUnwindSafe for AclEntryKind","synthetic":true,"types":[]},{"text":"impl RefUnwindSafe for AclEntry","synthetic":true,"types":[]},{"text":"impl RefUnwindSafe for Flag","synthetic":true,"types":[]},{"text":"impl RefUnwindSafe for Perm","synthetic":true,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

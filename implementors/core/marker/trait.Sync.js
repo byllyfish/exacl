@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["exacl"] = [{"text":"impl Sync for AclOption","synthetic":true,"types":[]},{"text":"impl !Sync for Acl","synthetic":true,"types":[]},{"text":"impl Sync for AclEntryKind","synthetic":true,"types":[]},{"text":"impl Sync for AclEntry","synthetic":true,"types":[]},{"text":"impl Sync for Flag","synthetic":true,"types":[]},{"text":"impl Sync for Perm","synthetic":true,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
