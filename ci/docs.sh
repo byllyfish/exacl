@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # Script to build rust docs.
+#
+# Usage:  ./ci/docs.sh [open]
 
 set -e
 
