@@ -17,6 +17,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+    - name: Install dependencies (Linux)
+      run: sudo apt-get -y install libacl1-dev
     - name: Build Docs
       run: ./ci/docs.sh
     - name: Publish Docs to Github Pages
