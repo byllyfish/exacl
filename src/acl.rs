@@ -73,7 +73,7 @@ impl Acl {
                 if default_acl
                     && err.kind() == io::ErrorKind::PermissionDenied
                     && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR)
-                    && is_non_directory(&path)
+                    && is_non_directory(path)
                 {
                     // Return an empty acl.
                     Ok(Acl::new(xacl_init(1)?, default_acl))
@@ -96,7 +96,7 @@ impl Acl {
         // If we're writing a default ACL to a non-directory, and we
         // specify the `IGNORE_EXPECTED_FILE_ERR` option, this function is a
         // no-op if the ACL is empty.
-        if default_acl && is_non_directory(&path) {
+        if default_acl && is_non_directory(path) {
             if self.is_empty() && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR) {
                 return Ok(());
             } else {

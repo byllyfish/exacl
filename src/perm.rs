@@ -155,7 +155,7 @@ impl PermName {
         PermName::try_from(perm.bits).ok()
     }
 
-    fn to_perm(self) -> Perm {
+    const fn to_perm(self) -> Perm {
         Perm { bits: self as u32 }
     }
 }

@@ -47,16 +47,16 @@ where
 }
 
 /// Return a custom [`io::Result`] with the given message.
-pub(crate) fn fail_custom<U>(msg: &str) -> io::Result<U> {
+pub fn fail_custom<U>(msg: &str) -> io::Result<U> {
     Err(io::Error::new(io::ErrorKind::Other, msg))
 }
 
 /// Return a custom [`io::Error`] that prefixes the given error.
-pub(crate) fn custom_err(msg: &str, err: &io::Error) -> io::Error {
+pub fn custom_err(msg: &str, err: &io::Error) -> io::Error {
     io::Error::new(err.kind(), format!("{}: {}", msg, err))
 }
 
 /// Return a custom [`io::Error`] that prefixes the given error with filename.
-pub(crate) fn path_err(path: &Path, err: &io::Error) -> io::Error {
+pub fn path_err(path: &Path, err: &io::Error) -> io::Error {
     io::Error::new(err.kind(), format!("File {:?}: {}", path, err))
 }

@@ -148,7 +148,7 @@ where
 
 #[cfg(target_os = "macos")]
 fn _getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
-    Acl::read(&path, options)?.entries()
+    Acl::read(path, options)?.entries()
 }
 
 #[cfg(not(target_os = "macos"))]

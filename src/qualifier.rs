@@ -19,7 +19,7 @@ const MASK_NAME: &str = "";
 /// A Qualifier specifies the principal that is allowed/denied access to a
 /// resource.
 #[derive(Debug, PartialEq)]
-pub(crate) enum Qualifier {
+pub enum Qualifier {
     User(Uid),
     Group(Gid),
 
