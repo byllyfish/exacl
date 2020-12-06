@@ -408,6 +408,7 @@ pub fn xacl_get_acl_flags(acl: acl_t) -> io::Result<Flag> {
 }
 
 #[cfg(target_os = "linux")]
+#[allow(clippy::clippy::missing_const_for_fn)]
 pub fn xacl_get_flags(_entry: acl_entry_t) -> io::Result<Flag> {
     Ok(Flag::empty()) // noop
 }
@@ -569,6 +570,7 @@ pub fn xacl_set_acl_flags(acl: acl_t, flags: Flag) -> io::Result<()> {
 }
 
 #[cfg(target_os = "linux")]
+#[allow(clippy::clippy::missing_const_for_fn)]
 pub fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
     Ok(()) // noop
 }
