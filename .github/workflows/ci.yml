@@ -1,4 +1,4 @@
-name: Rust
+name: CI
 
 on:
   push:
@@ -38,9 +38,9 @@ jobs:
       if: runner.os == 'Linux'
     - name: Code coverage
       run: ./ci/coverage.sh codecov
-    - name: Build docs
-      run: ./ci/docs.sh
     - name: Lint Check
       run: ./ci/lint.sh
     - name: Format Check
       run: ./ci/format.sh
+    - name: Docs Check
+      run: ./ci/docs.sh

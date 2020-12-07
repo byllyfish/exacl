@@ -1,4 +1,7 @@
-# Exacl
+# Exacl &emsp; [![CI]][actions]
+
+[CI]: https://github.com/byllyfish/exacl/workflows/CI/badge.svg
+[actions]: https://github.com/byllyfish/exacl/actions?query=branch%3Amain
 
 Manipulate file system access control lists (ACL) on `macOS` and `Linux`.
 
