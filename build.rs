@@ -6,14 +6,6 @@ fn main() {
     let out_path = Path::new(&out_dir).join("bindings.rs");
     let wrapper = "bindgen/wrapper.h";
 
-    if env::var("DOCS_RS").is_ok() {
-        // Use pre-built Linux bindings when building documentation.
-        std::fs::copy("bindgen/bindings_linux.rs", out_path)
-            .expect("Couldn't copy bindings to output directory");
-        println!("cargo:warning=Using built-in bindings, rather than running bindgen.");
-        return; // bye!
-    }
-
     // Tell cargo to tell rustc to link libacl.so, only on Linux.
     #[cfg(target_os = "linux")]
     println!("cargo:rustc-link-lib=acl");
@@ -21,6 +13,15 @@ fn main() {
     // Tell cargo to invalidate the built crate whenever the wrapper changes
     println!("cargo:rerun-if-changed={}", wrapper);
 
+    if env::var("DOCS_RS").is_ok() {
+        // Use pre-built bindings when building documentation.
+        prebuilt_bindings(&out_path);
+    } else {
+        bindgen_bindings(wrapper, &out_path);
+    }
+}
+
+fn bindgen_bindings(wrapper: &str, out_path: &Path) {
     // Build bindings for "wrapper.h". Tell cargo to invalidate the built
     // crate when any included header file changes.
     let mut builder = bindgen::Builder::default()
@@ -28,7 +29,6 @@ fn main() {
         .parse_callbacks(Box::new(bindgen::CargoCallbacks));
 
     // Specify the types, functions, and constants we want to include.
-
     let types = ["acl_.*", "uid_t"];
     let funcs = [
         "acl_.*",
@@ -68,4 +68,21 @@ fn main() {
     bindings
         .write_to_file(out_path)
         .expect("Couldn't write bindings!");
+}
+
+fn prebuilt_bindings(out_path: &Path) {
+    let target = env::var("CARGO_CFG_TARGET_OS").unwrap();
+
+    // Untrusted input check.
+    match target.as_str() {
+        "macos" | "linux" => (),
+        s => panic!("Unsupported target OS: {}", s),
+    };
+
+    let bindings_path = format!("bindgen/bindings_{}.rs", target);
+    if let Err(err) = std::fs::copy(&bindings_path, out_path) {
+        panic!("Can't copy {:?} to {:?}: {}", bindings_path, out_path, err);
+    }
+
+    println!("cargo:warning=Exacl is using built-in bindings, rather than running bindgen.");
 }
