@@ -8,8 +8,9 @@ fn main() {
 
     if env::var("DOCS_RS").is_ok() {
         // Use pre-built Linux bindings when building documentation.
-        std::fs::copy("src/bindings_linux.rs", out_path)
+        std::fs::copy("bindgen/bindings_linux.rs", out_path)
             .expect("Couldn't copy bindings to output directory");
+        println!("cargo:warning=Using built-in bindings, rather than running bindgen.");
         return; // bye!
     }
 
@@ -26,11 +27,27 @@ fn main() {
         .header(wrapper)
         .parse_callbacks(Box::new(bindgen::CargoCallbacks));
 
-    // Speify the types, functions, and constants we want to include.
+    // Specify the types, functions, and constants we want to include.
 
     let types = ["acl_.*", "uid_t"];
-    let funcs = ["acl_.*"];
-    let vars = ["ACL_.*", "ENOENT", "ENOTSUP", "EINVAL", "ENOMEM"];
+    let funcs = [
+        "acl_.*",
+        "mbr_uid_to_uuid",
+        "mbr_gid_to_uuid",
+        "mbr_uuid_to_id",
+        "open",
+        "close",
+    ];
+    let vars = [
+        "ACL_.*",
+        "ENOENT",
+        "ENOTSUP",
+        "EINVAL",
+        "ENOMEM",
+        "O_SYMLINK",
+        "ID_TYPE_UID",
+        "ID_TYPE_GID",
+    ];
 
     for type_ in &types {
         builder = builder.whitelist_type(type_);
