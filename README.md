@@ -1,11 +1,13 @@
-# Exacl &emsp; [![CI]][actions] [![API]][docs]
+# Exacl &emsp; [![CRATE]][crates] [![CI]][actions] [![API]][docs]
 
+[CRATE]: https://img.shields.io/crates/v/exacl
+[crates]: https://crates.io/crates/exacl
 [CI]: https://github.com/byllyfish/exacl/workflows/CI/badge.svg
 [actions]: https://github.com/byllyfish/exacl/actions?query=branch%3Amain
 [API]: https://docs.rs/exacl/badge.svg
 [docs]: https://docs.rs/exacl
 
-Manipulate file system access control lists (ACL) on `macOS` and `Linux`.
+Rust library to manipulate file system access control lists (ACL) on `macOS` and `Linux`.
 
 ## Example
 
