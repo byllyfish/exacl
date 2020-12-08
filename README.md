@@ -1,6 +1,6 @@
 # Exacl &emsp; [![CRATE]][crates] [![CI]][actions] [![API]][docs]
 
-[CRATE]: https://img.shields.io/crates/v/exacl?style=plastic
+[CRATE]: https://img.shields.io/crates/v/exacl
 [crates]: https://crates.io/crates/exacl
 [CI]: https://github.com/byllyfish/exacl/workflows/CI/badge.svg
 [actions]: https://github.com/byllyfish/exacl/actions?query=branch%3Amain
