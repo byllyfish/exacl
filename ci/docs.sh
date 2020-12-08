@@ -12,6 +12,7 @@ arg1="$1"
 rustup install nightly
 
 export RUSTDOCFLAGS='--cfg docsrs'
+export DOCS_RS=1
 
 if [ "$arg1" = "open" ]; then
     cargo +nightly doc --no-deps --open
