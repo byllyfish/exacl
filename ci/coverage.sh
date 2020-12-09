@@ -58,14 +58,14 @@ if [ "$arg1" = "open" ]; then
     echo "Producing HTML Report locally"
     # shellcheck disable=SC2046
     zip -0 ccov$$.zip $(find . \( -name "exacl*.gc*" \) -print)
-    grcov ccov$$.zip -s . -t html --llvm --branch --ignore-not-existing --ignore "/*" --excl-br-line "$excl_br_line" --excl-line "$excl_line" -o ./target/debug/coverage/
+    grcov ccov$$.zip -s . -t html --llvm --branch --ignore-not-existing --ignore "/*" --excl-br-line "$excl_br_line" -o ./target/debug/coverage/
     rm ccov$$.zip
     open target/debug/coverage/index.html
 elif [ "$arg1" = "codecov" ]; then
     echo "Producing lcov report and uploading it to codecov.io"
     # shellcheck disable=SC2046
     zip -0 ccov$$.zip $(find . \( -name "exacl*.gc*" \) -print)
-    grcov ccov$$.zip -s . -t lcov --llvm --branch --ignore-not-existing --ignore "/*" --excl-br-line "$excl_br_line" --excl-line "$excl_line" -o lcov.info
+    grcov ccov$$.zip -s . -t lcov --llvm --branch --ignore-not-existing --ignore "/*" --excl-br-line "$excl_br_line" -o lcov.info
     rm ccov$$.zip
     bash <(curl -s https://codecov.io/bash) -f lcov.info -n "$os"
 elif [ "$arg1" = "llvm-cov" ]; then
