@@ -22,7 +22,7 @@ scopeguard = "1.1.0"
 serde = { version = "1.0", features = ["derive"] }
 
 [build-dependencies]
-bindgen = "0.53.1"
+bindgen = "0.56.0"
 
 [dev-dependencies]
 tempfile = "3.1.0"
