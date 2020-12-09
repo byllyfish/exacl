@@ -37,16 +37,13 @@ rustup install nightly
 
 excl_br_line='#\[derive\(|debug!|assert!|assert_eq!|process::exit\('
 
-# Work-around grcov issue where an isolated closing curly brace is counted as missing in code coverage (11/21/2020).
-excl_line='^[ \t]*\}'
-
 if [ "$arg1" = "llvm-cov" ]; then
     export RUSTFLAGS="-Zinstrument-coverage"
     export LLVM_PROFILE_FILE=/tmp/llvm_profile/profile-%p.profraw
     cargo +nightly install rustfilt
 else
     export CARGO_INCREMENTAL=0
-    export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Cdebug-assertions=no -Zpanic_abort_tests"
+    export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests"
     export RUSTDOCFLAGS="-Cpanic=abort"
     cargo +nightly install grcov
 fi
