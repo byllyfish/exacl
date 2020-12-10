@@ -13,13 +13,11 @@ fn main() {
     // Tell cargo to invalidate the built crate whenever the wrapper changes
     println!("cargo:rerun-if-changed={}", wrapper);
 
-    if !cfg!(feature = "buildtime_bindgen") {
-        // Use pre-built bindings when bindgen is not available (the default).
-        prebuilt_bindings(&out_path);
-    } else {
-        #[cfg(feature = "buildtime_bindgen")]
-        bindgen_bindings(wrapper, &out_path);
-    }
+    #[cfg(feature = "buildtime_bindgen")]
+    bindgen_bindings(wrapper, &out_path);
+
+    #[cfg(not(feature = "buildtime_bindgen"))]
+    prebuilt_bindings(&out_path);
 }
 
 #[cfg(feature = "buildtime_bindgen")]
