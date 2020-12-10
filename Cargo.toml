@@ -12,6 +12,16 @@ categories = ["filesystem"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = []
+
+# Use bindgen to build OS-specific bindings.
+#
+# On Linux, the bindings depend on the <sys/acl.h> system header. This header
+# is only present on systems that have the `libacl1-dev` package installed.
+
+buildtime_bindgen = ["bindgen"]
+
 [dependencies]
 bitflags = "1.2.1"
 log = "0.4.11"
@@ -22,7 +32,7 @@ scopeguard = "1.1.0"
 serde = { version = "1.0", features = ["derive"] }
 
 [build-dependencies]
-bindgen = "0.56.0"
+bindgen = { version = "0.56.0", optional = true }
 
 [dev-dependencies]
 tempfile = "3.1.0"
