@@ -5,6 +5,9 @@ on:
     branches: [ "*" ]
   pull_request:
     branches: [ main ]
+  schedule:
+    # Every Saturday at 4:30 AM UTC.
+    - cron:  '30 4 * * 6'
 
 env:
   CARGO_TERM_COLOR: always
