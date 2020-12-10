@@ -70,6 +70,7 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
         .expect("Couldn't write bindings!");
 }
 
+#[cfg(not(feature = "buildtime_bindgen"))]
 fn prebuilt_bindings(out_path: &Path) {
     let target = env::var("CARGO_CFG_TARGET_OS").unwrap();
 
@@ -83,6 +84,4 @@ fn prebuilt_bindings(out_path: &Path) {
     if let Err(err) = std::fs::copy(&bindings_path, out_path) {
         panic!("Can't copy {:?} to {:?}: {}", bindings_path, out_path, err);
     }
-
-    println!("cargo:warning=Exacl is using built-in bindings, rather than running bindgen.");
 }
