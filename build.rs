@@ -13,14 +13,16 @@ fn main() {
     // Tell cargo to invalidate the built crate whenever the wrapper changes
     println!("cargo:rerun-if-changed={}", wrapper);
 
-    if env::var("DOCS_RS").is_ok() {
-        // Use pre-built bindings when building documentation.
+    if !cfg!(feature = "buildtime_bindgen") {
+        // Use pre-built bindings when bindgen is not available (the default).
         prebuilt_bindings(&out_path);
     } else {
+        #[cfg(feature = "buildtime_bindgen")]
         bindgen_bindings(wrapper, &out_path);
     }
 }
 
+#[cfg(feature = "buildtime_bindgen")]
 fn bindgen_bindings(wrapper: &str, out_path: &Path) {
     // Build bindings for "wrapper.h". Tell cargo to invalidate the built
     // crate when any included header file changes.

@@ -44,3 +44,5 @@ jobs:
       run: ./ci/format.sh
     - name: Docs Check
       run: ./ci/docs.sh
+    - name: Bindgen Check
+      run: ./ci/bindgen.sh
