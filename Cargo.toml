@@ -16,6 +16,10 @@ categories = ["filesystem"]
 default = []
 
 # Use bindgen to build OS-specific bindings.
+#
+# On Linux, the bindings depend on the <sys/acl.h> system header. This header
+# is only present on systems that have the `libacl1-dev` package installed.
+
 buildtime_bindgen = ["bindgen"]
 
 [dependencies]
