@@ -117,6 +117,24 @@ impl FlagName {
     }
 }
 
+impl fmt::Display for Flag {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut iter = BitIter(*self);
+
+        if let Some(flag) = iter.next() {
+            let s = serde_json::to_string(&FlagName::from_flag(flag)).unwrap();
+            write!(f, "{}", &s[1..(s.len() - 1)])?;
+
+            for flag in iter {
+                let s = serde_json::to_string(&FlagName::from_flag(flag)).unwrap();
+                write!(f, ",{}", &s[1..(s.len() - 1)])?;
+            }
+        }
+
+        Ok(())
+    }
+}
+
 impl ser::Serialize for Flag {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -163,5 +181,24 @@ impl<'de> de::Deserialize<'de> for Flag {
         }
 
         deserializer.deserialize_seq(FlagVisitor)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[cfg(test)]
+mod flag_tests {
+    use super::*;
+
+    #[test]
+    fn test_flag_display() {
+        assert_eq!(Flag::empty().to_string(), "");
+
+        let flags = Flag::INHERITED | Flag::FILE_INHERIT;
+        assert_eq!(flags.to_string(), "inherited,file_inherit");
+
+        // FIXME: Need to handle unknown bits (not as null -> "ul").
+        let bad_flag = Flag { bits: 0x800000 };
+        assert_eq!(bad_flag.to_string(), "ul");
     }
 }

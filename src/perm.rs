@@ -160,6 +160,28 @@ impl PermName {
     }
 }
 
+impl fmt::Display for Perm {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Iterate forwards on macOS and backwards elsewhere.
+        #[cfg(target_os = "macos")]
+        let mut iter = BitIter(*self);
+        #[cfg(not(target_os = "macos"))]
+        let mut iter = BitIter(*self).rev();
+
+        if let Some(perm) = iter.next() {
+            let s = serde_json::to_string(&PermName::from_perm(perm)).unwrap();
+            write!(f, "{}", &s[1..(s.len() - 1)])?;
+
+            for perm in iter {
+                let s = serde_json::to_string(&PermName::from_perm(perm)).unwrap();
+                write!(f, ",{}", &s[1..(s.len() - 1)])?;
+            }
+        }
+
+        Ok(())
+    }
+}
+
 impl ser::Serialize for Perm {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -168,15 +190,13 @@ impl ser::Serialize for Perm {
         use ser::SerializeSeq;
         let mut seq = serializer.serialize_seq(None)?;
 
-        // Iterate in reverse on Linux.
-        #[cfg(target_os = "linux")]
-        for perm in BitIter(*self).rev() {
-            seq.serialize_element(&PermName::from_perm(perm))?;
-        }
-
-        // Iterate forward on MacOS.
+        // Iterate forwards on macOS and backwards elsewhere.
         #[cfg(target_os = "macos")]
-        for perm in BitIter(*self) {
+        let iter = BitIter(*self);
+        #[cfg(not(target_os = "macos"))]
+        let iter = BitIter(*self).rev();
+
+        for perm in iter {
             seq.serialize_element(&PermName::from_perm(perm))?;
         }
 
@@ -220,15 +240,27 @@ impl<'de> de::Deserialize<'de> for Perm {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
-#[cfg(target_os = "macos")]
 mod perm_tests {
     use super::*;
 
     #[test]
+    #[cfg(target_os = "macos")]
     fn test_perm_equivalences() {
         assert_eq!(acl_perm_t_ACL_READ_DATA, acl_perm_t_ACL_LIST_DIRECTORY);
         assert_eq!(acl_perm_t_ACL_WRITE_DATA, acl_perm_t_ACL_ADD_FILE);
         assert_eq!(acl_perm_t_ACL_EXECUTE, acl_perm_t_ACL_SEARCH);
         assert_eq!(acl_perm_t_ACL_APPEND_DATA, acl_perm_t_ACL_ADD_SUBDIRECTORY);
+    }
+
+    #[test]
+    fn test_perm_display() {
+        assert_eq!(Perm::empty().to_string(), "");
+
+        let perms = Perm::READ | Perm::EXECUTE;
+        assert_eq!(perms.to_string(), "read,execute");
+
+        // FIXME: Need to handle unknown bits (not as null -> "ul").
+        let bad_perm = Perm { bits: 0x800000 };
+        assert_eq!(bad_perm.to_string(), "ul");
     }
 }

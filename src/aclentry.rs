@@ -7,7 +7,9 @@ use crate::qualifier::Qualifier;
 use crate::util::*;
 
 use serde::{Deserialize, Serialize};
+use serde_json;
 use std::cmp::Ordering;
+use std::fmt;
 use std::io;
 
 /// Kind of ACL entry (User, Group, Mask, Other, or Unknown).
@@ -245,6 +247,27 @@ impl AclEntry {
     }
 }
 
+impl fmt::Display for AclEntryKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = serde_json::to_string(self).unwrap();
+        write!(f, "{}", &s[1..(s.len() - 1)])
+    }
+}
+
+impl fmt::Display for AclEntry {
+    /// Format an AclEntry 5-tuple:
+    ///
+    ///   <allow>:<flags>:<kind>:<name>:<perms>
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let allow = if self.allow { "allow" } else { "deny" };
+        write!(
+            f,
+            "{}:{}:{}:{}:{}",
+            allow, self.flags, self.kind, self.name, self.perms
+        )
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
@@ -329,5 +352,18 @@ mod aclentry_tests {
         ];
 
         assert_eq!(acl, acl_sorted);
+    }
+
+    #[test]
+    fn test_display() {
+        let perms = Perm::READ | Perm::EXECUTE;
+        let flags = Flag::INHERITED | Flag::FILE_INHERIT;
+        let entry = AclEntry::allow_user("x", perms, flags);
+
+        assert_eq!(format!("{}", AclEntryKind::User), "user");
+        assert_eq!(
+            format!("{}", entry),
+            "allow:inherited,file_inherit:user:x:read,execute"
+        );
     }
 }
