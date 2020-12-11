@@ -194,11 +194,20 @@ mod flag_tests {
     fn test_flag_display() {
         assert_eq!(Flag::empty().to_string(), "");
 
-        let flags = Flag::INHERITED | Flag::FILE_INHERIT;
-        assert_eq!(flags.to_string(), "inherited,file_inherit");
+        #[cfg(target_os = "macos")]
+        {
+            let flags = Flag::INHERITED | Flag::FILE_INHERIT;
+            assert_eq!(flags.to_string(), "inherited,file_inherit");
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            let flags = Flag::DEFAULT;
+            assert_eq!(flags.to_string(), "default");
+        }
 
         // FIXME: Need to handle unknown bits (not as null -> "ul").
-        let bad_flag = Flag { bits: 0x800000 };
+        let bad_flag = Flag { bits: 0x0080_0000 };
         assert_eq!(bad_flag.to_string(), "ul");
     }
 }

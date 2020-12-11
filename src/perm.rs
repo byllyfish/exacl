@@ -260,7 +260,7 @@ mod perm_tests {
         assert_eq!(perms.to_string(), "read,execute");
 
         // FIXME: Need to handle unknown bits (not as null -> "ul").
-        let bad_perm = Perm { bits: 0x800000 };
+        let bad_perm = Perm { bits: 0x0080_0000 };
         assert_eq!(bad_perm.to_string(), "ul");
     }
 }

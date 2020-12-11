@@ -7,7 +7,6 @@ use crate::qualifier::Qualifier;
 use crate::util::*;
 
 use serde::{Deserialize, Serialize};
-use serde_json;
 use std::cmp::Ordering;
 use std::fmt;
 use std::io;
@@ -255,8 +254,7 @@ impl fmt::Display for AclEntryKind {
 }
 
 impl fmt::Display for AclEntry {
-    /// Format an AclEntry 5-tuple:
-    ///
+    /// Format an `AclEntry` 5-tuple:
     ///   <allow>:<flags>:<kind>:<name>:<perms>
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let allow = if self.allow { "allow" } else { "deny" };
@@ -355,15 +353,40 @@ mod aclentry_tests {
     }
 
     #[test]
-    fn test_display() {
+    fn test_display_kind() {
+        assert_eq!(format!("{}", AclEntryKind::User), "user");
+        assert_eq!(format!("{}", AclEntryKind::Group), "group");
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_display_entry() {
         let perms = Perm::READ | Perm::EXECUTE;
         let flags = Flag::INHERITED | Flag::FILE_INHERIT;
         let entry = AclEntry::allow_user("x", perms, flags);
 
-        assert_eq!(format!("{}", AclEntryKind::User), "user");
         assert_eq!(
             format!("{}", entry),
             "allow:inherited,file_inherit:user:x:read,execute"
         );
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn test_display_entry() {
+        let perms = Perm::READ | Perm::EXECUTE;
+        let flags = Flag::DEFAULT;
+
+        let entry = AclEntry::allow_user("x", perms, flags);
+        assert_eq!(format!("{}", entry), "allow:default:user:x:read,execute");
+    }
+
+    #[test]
+    fn test_display_entry_name() {
+        let perms = Perm::READ;
+
+        // FIXME: Need to have colons in user names escaped on output!
+        let entry = AclEntry::allow_user("x:y", perms, None);
+        assert_eq!(format!("{}", entry), "allow::user:x:y:read");
     }
 }
