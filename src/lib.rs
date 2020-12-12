@@ -75,6 +75,7 @@ mod aclentry;
 mod bititer;
 mod failx;
 mod flag;
+mod format;
 mod perm;
 mod qualifier;
 mod sys;

@@ -2,6 +2,7 @@
 
 use crate::failx::fail_custom;
 use crate::flag::Flag;
+use crate::format;
 use crate::perm::Perm;
 use crate::qualifier::Qualifier;
 use crate::util::*;
@@ -248,8 +249,7 @@ impl AclEntry {
 
 impl fmt::Display for AclEntryKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let s = serde_json::to_string(self).unwrap();
-        write!(f, "{}", &s[1..(s.len() - 1)])
+        write!(f, "{}", format::to_string(self).unwrap())
     }
 }
 

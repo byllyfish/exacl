@@ -1,6 +1,7 @@
 //! Implements the inheritance flags.
 
 use crate::bititer::{BitIter, BitIterable};
+use crate::format;
 use crate::sys::*;
 
 use bitflags::bitflags;
@@ -117,17 +118,21 @@ impl FlagName {
     }
 }
 
+impl fmt::Display for FlagName {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", format::to_string(self).unwrap())
+    }
+}
+
 impl fmt::Display for Flag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut iter = BitIter(*self);
+        let mut iter = BitIter(*self & Flag::all());
 
         if let Some(flag) = iter.next() {
-            let s = serde_json::to_string(&FlagName::from_flag(flag)).unwrap();
-            write!(f, "{}", &s[1..(s.len() - 1)])?;
+            write!(f, "{}", FlagName::from_flag(flag).unwrap())?;
 
             for flag in iter {
-                let s = serde_json::to_string(&FlagName::from_flag(flag)).unwrap();
-                write!(f, ",{}", &s[1..(s.len() - 1)])?;
+                write!(f, ",{}", FlagName::from_flag(flag).unwrap())?;
             }
         }
 
@@ -198,16 +203,22 @@ mod flag_tests {
         {
             let flags = Flag::INHERITED | Flag::FILE_INHERIT;
             assert_eq!(flags.to_string(), "inherited,file_inherit");
+
+            let bad_flag = Flag { bits: 0x0080_0000 } | Flag::INHERITED;
+            assert_eq!(bad_flag.to_string(), "inherited");
+
+            assert_eq!(Flag::all().to_string(), "defer_inherit,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit,no_inherit");
         }
 
         #[cfg(target_os = "linux")]
         {
             let flags = Flag::DEFAULT;
             assert_eq!(flags.to_string(), "default");
-        }
 
-        // FIXME: Need to handle unknown bits (not as null -> "ul").
-        let bad_flag = Flag { bits: 0x0080_0000 };
-        assert_eq!(bad_flag.to_string(), "ul");
+            let bad_flag = Flag { bits: 0x0080_0000 } | Flag::DEFAULT;
+            assert_eq!(bad_flag.to_string(), "default");
+
+            assert_eq!(Flag::all().to_string(), "default");
+        }
     }
 }

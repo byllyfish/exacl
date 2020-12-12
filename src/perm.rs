@@ -1,6 +1,7 @@
 //! Implements the permissions flags.
 
 use crate::bititer::{BitIter, BitIterable};
+use crate::format;
 use crate::sys::*;
 
 use bitflags::bitflags;
@@ -160,21 +161,26 @@ impl PermName {
     }
 }
 
+impl fmt::Display for PermName {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", format::to_string(self).unwrap())
+    }
+}
+
 impl fmt::Display for Perm {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // Iterate forwards on macOS and backwards elsewhere.
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // Iterate forwards on macOS and backwards elsewhere. Only iterate over
+        // valid bits.
         #[cfg(target_os = "macos")]
-        let mut iter = BitIter(*self);
+        let mut iter = BitIter(*self & Perm::all());
         #[cfg(not(target_os = "macos"))]
-        let mut iter = BitIter(*self).rev();
+        let mut iter = BitIter(*self & Perm::all()).rev();
 
         if let Some(perm) = iter.next() {
-            let s = serde_json::to_string(&PermName::from_perm(perm)).unwrap();
-            write!(f, "{}", &s[1..(s.len() - 1)])?;
+            write!(f, "{}", PermName::from_perm(perm).unwrap())?;
 
             for perm in iter {
-                let s = serde_json::to_string(&PermName::from_perm(perm)).unwrap();
-                write!(f, ",{}", &s[1..(s.len() - 1)])?;
+                write!(f, ",{}", PermName::from_perm(perm).unwrap())?;
             }
         }
 
@@ -259,8 +265,9 @@ mod perm_tests {
         let perms = Perm::READ | Perm::EXECUTE;
         assert_eq!(perms.to_string(), "read,execute");
 
-        // FIXME: Need to handle unknown bits (not as null -> "ul").
-        let bad_perm = Perm { bits: 0x0080_0000 };
-        assert_eq!(bad_perm.to_string(), "ul");
+        let bad_perm = Perm { bits: 0x0080_0000 } | Perm::READ;
+        assert_eq!(bad_perm.to_string(), "read");
+
+        assert_eq!(Perm::all().to_string(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync");
     }
 }
