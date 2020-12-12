@@ -268,6 +268,10 @@ mod perm_tests {
         let bad_perm = Perm { bits: 0x0080_0000 } | Perm::READ;
         assert_eq!(bad_perm.to_string(), "read");
 
+        #[cfg(target_os = "macos")]
         assert_eq!(Perm::all().to_string(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync");
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(Perm::all().to_string(), "read,write,execute");
     }
 }
