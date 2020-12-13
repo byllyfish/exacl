@@ -248,15 +248,15 @@ impl AclEntry {
 }
 
 impl fmt::Display for AclEntryKind {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", format::to_string(self).unwrap())
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", format::to_string(self))
     }
 }
 
 impl fmt::Display for AclEntry {
     /// Format an `AclEntry` 5-tuple:
     ///   <allow>:<flags>:<kind>:<name>:<perms>
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let allow = if self.allow { "allow" } else { "deny" };
         write!(
             f,
