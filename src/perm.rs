@@ -163,7 +163,7 @@ impl PermName {
 
 impl fmt::Display for PermName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", format::to_string(self))
+        format::write(f, self)
     }
 }
 

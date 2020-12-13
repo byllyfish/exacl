@@ -3,16 +3,13 @@
 use serde::{ser, Serialize};
 use std::fmt;
 
-/// Return value of a simple enum as a `serde` serialized string.
-pub fn to_string<T>(value: &T) -> String
-where
-    T: Serialize,
-{
-    let mut serializer = EnumSerializer(String::new());
+/// Write value of a simple enum as a `serde` serialized string.
+pub fn write<'a, 'b, T: Serialize>(f: &'a mut fmt::Formatter<'b>, value: &T) -> fmt::Result {
+    let mut serializer = EnumSerializer(f);
     value
         .serialize(&mut serializer)
-        .expect("to_string can't serialize enum");
-    serializer.0
+        .expect("can't serialize value");
+    Ok(())
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -40,13 +37,13 @@ impl std::error::Error for Error {}
 
 type Result<T> = std::result::Result<T, Error>;
 
-struct EnumSerializer(String);
+struct EnumSerializer<'a, 'b>(&'a mut fmt::Formatter<'b>);
 
 const fn not_implemented<T>() -> Result<T> {
     Err(Error::NotImplemented)
 }
 
-impl ser::Serializer for &mut EnumSerializer {
+impl<'a, 'b> ser::Serializer for &mut EnumSerializer<'a, 'b> {
     type Ok = ();
     type Error = Error;
 
@@ -65,7 +62,7 @@ impl ser::Serializer for &mut EnumSerializer {
         _variant_index: u32,
         variant: &'static str,
     ) -> Result<()> {
-        self.0 += variant;
+        self.0.write_str(variant).expect("can't format enum");
         Ok(())
     }
 
@@ -209,7 +206,7 @@ impl ser::Serializer for &mut EnumSerializer {
     }
 }
 
-impl ser::SerializeSeq for &mut EnumSerializer {
+impl<'a, 'b> ser::SerializeSeq for &mut EnumSerializer<'a, 'b> {
     type Ok = ();
     type Error = Error;
 
@@ -225,7 +222,7 @@ impl ser::SerializeSeq for &mut EnumSerializer {
     }
 }
 
-impl ser::SerializeTuple for &mut EnumSerializer {
+impl<'a, 'b> ser::SerializeTuple for &mut EnumSerializer<'a, 'b> {
     type Ok = ();
     type Error = Error;
 
@@ -241,7 +238,7 @@ impl ser::SerializeTuple for &mut EnumSerializer {
     }
 }
 
-impl ser::SerializeTupleStruct for &mut EnumSerializer {
+impl<'a, 'b> ser::SerializeTupleStruct for &mut EnumSerializer<'a, 'b> {
     type Ok = ();
     type Error = Error;
 
@@ -257,7 +254,7 @@ impl ser::SerializeTupleStruct for &mut EnumSerializer {
     }
 }
 
-impl ser::SerializeTupleVariant for &mut EnumSerializer {
+impl<'a, 'b> ser::SerializeTupleVariant for &mut EnumSerializer<'a, 'b> {
     type Ok = ();
     type Error = Error;
 
@@ -273,7 +270,7 @@ impl ser::SerializeTupleVariant for &mut EnumSerializer {
     }
 }
 
-impl ser::SerializeMap for &mut EnumSerializer {
+impl<'a, 'b> ser::SerializeMap for &mut EnumSerializer<'a, 'b> {
     type Ok = ();
     type Error = Error;
 
@@ -296,7 +293,7 @@ impl ser::SerializeMap for &mut EnumSerializer {
     }
 }
 
-impl ser::SerializeStruct for &mut EnumSerializer {
+impl<'a, 'b> ser::SerializeStruct for &mut EnumSerializer<'a, 'b> {
     type Ok = ();
     type Error = Error;
 
@@ -312,7 +309,7 @@ impl ser::SerializeStruct for &mut EnumSerializer {
     }
 }
 
-impl ser::SerializeStructVariant for &mut EnumSerializer {
+impl<'a, 'b> ser::SerializeStructVariant for &mut EnumSerializer<'a, 'b> {
     type Ok = ();
     type Error = Error;
 
@@ -341,8 +338,14 @@ mod format_tests {
             Unit,
         }
 
+        impl fmt::Display for E {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                write(f, self)
+            }
+        }
+
         let u = E::Unit;
         let expected = "Unit";
-        assert_eq!(to_string(&u), expected);
+        assert_eq!(format!("{}", u), expected);
     }
 }
