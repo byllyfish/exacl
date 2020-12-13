@@ -46,7 +46,7 @@ const fn not_implemented<T>() -> Result<T> {
     Err(Error::NotImplemented)
 }
 
-impl<'a> ser::Serializer for &'a mut EnumSerializer {
+impl ser::Serializer for &mut EnumSerializer {
     type Ok = ();
     type Error = Error;
 
@@ -209,7 +209,7 @@ impl<'a> ser::Serializer for &'a mut EnumSerializer {
     }
 }
 
-impl<'a> ser::SerializeSeq for &'a mut EnumSerializer {
+impl ser::SerializeSeq for &mut EnumSerializer {
     type Ok = ();
     type Error = Error;
 
@@ -225,7 +225,7 @@ impl<'a> ser::SerializeSeq for &'a mut EnumSerializer {
     }
 }
 
-impl<'a> ser::SerializeTuple for &'a mut EnumSerializer {
+impl ser::SerializeTuple for &mut EnumSerializer {
     type Ok = ();
     type Error = Error;
 
@@ -241,7 +241,7 @@ impl<'a> ser::SerializeTuple for &'a mut EnumSerializer {
     }
 }
 
-impl<'a> ser::SerializeTupleStruct for &'a mut EnumSerializer {
+impl ser::SerializeTupleStruct for &mut EnumSerializer {
     type Ok = ();
     type Error = Error;
 
@@ -257,7 +257,7 @@ impl<'a> ser::SerializeTupleStruct for &'a mut EnumSerializer {
     }
 }
 
-impl<'a> ser::SerializeTupleVariant for &'a mut EnumSerializer {
+impl ser::SerializeTupleVariant for &mut EnumSerializer {
     type Ok = ();
     type Error = Error;
 
@@ -273,7 +273,7 @@ impl<'a> ser::SerializeTupleVariant for &'a mut EnumSerializer {
     }
 }
 
-impl<'a> ser::SerializeMap for &'a mut EnumSerializer {
+impl ser::SerializeMap for &mut EnumSerializer {
     type Ok = ();
     type Error = Error;
 
@@ -296,7 +296,7 @@ impl<'a> ser::SerializeMap for &'a mut EnumSerializer {
     }
 }
 
-impl<'a> ser::SerializeStruct for &'a mut EnumSerializer {
+impl ser::SerializeStruct for &mut EnumSerializer {
     type Ok = ();
     type Error = Error;
 
@@ -312,7 +312,7 @@ impl<'a> ser::SerializeStruct for &'a mut EnumSerializer {
     }
 }
 
-impl<'a> ser::SerializeStructVariant for &'a mut EnumSerializer {
+impl ser::SerializeStructVariant for &mut EnumSerializer {
     type Ok = ();
     type Error = Error;
 
