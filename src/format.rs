@@ -1,6 +1,7 @@
 //! Implements helper functions for the built-in `AclEntry` format.
 
-use serde::{ser, Serialize};
+use serde::de::{self, IntoDeserializer, Visitor};
+use serde::{ser, Deserialize, Serialize};
 use std::fmt;
 
 /// Write value of a simple enum as a `serde` serialized string.
@@ -12,9 +13,28 @@ pub fn write<'a, 'b, T: Serialize>(f: &'a mut fmt::Formatter<'b>, value: &T) -> 
     Ok(())
 }
 
+// Read value of a simple enum using a stub `serde` deserializer.
+fn from_str<'a, T>(s: &'a str) -> Result<T>
+where
+    T: Deserialize<'a>,
+{
+    let mut deserializer = EnumDeserializer::from_str(s);
+    let t = T::deserialize(&mut deserializer)?;
+    if deserializer.input.is_empty() {
+        Ok(t)
+    } else {
+        Err(Error::TrailingCharacters)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// This is a simple serializer class for enums.
+
 #[derive(Clone, Debug, PartialEq)]
 enum Error {
     Message(String),
+    TrailingCharacters,
     NotImplemented,
 }
 
@@ -24,10 +44,17 @@ impl ser::Error for Error {
     }
 }
 
+impl de::Error for Error {
+    fn custom<T: fmt::Display>(msg: T) -> Self {
+        Error::Message(msg.to_string())
+    }
+}
+
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Error::Message(msg) => write!(f, "{}", msg),
+            Error::TrailingCharacters => write!(f, "Trailing characters"),
             Error::NotImplemented => write!(f, "Not implemented"),
         }
     }
@@ -36,6 +63,8 @@ impl fmt::Display for Error {
 impl std::error::Error for Error {}
 
 type Result<T> = std::result::Result<T, Error>;
+
+////////////////////////////////////////////////////////////////////////////////
 
 struct EnumSerializer<'a, 'b>(&'a mut fmt::Formatter<'b>);
 
@@ -328,7 +357,7 @@ impl<'a, 'b> ser::SerializeStructVariant for &mut EnumSerializer<'a, 'b> {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
-mod format_tests {
+mod serialize_tests {
     use super::*;
 
     #[test]
@@ -347,5 +376,263 @@ mod format_tests {
         let u = E::Unit;
         let expected = "Unit";
         assert_eq!(format!("{}", u), expected);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+struct EnumDeserializer<'de> {
+    // This string starts with the input data and characters are truncated off
+    // the beginning as data is parsed.
+    input: &'de str,
+}
+
+impl<'de> EnumDeserializer<'de> {
+    pub fn from_str(input: &'de str) -> Self {
+        EnumDeserializer { input }
+    }
+}
+
+impl<'de, 'a> de::Deserializer<'de> for &'a mut EnumDeserializer<'de> {
+    type Error = Error;
+
+    fn deserialize_any<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_bool<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_i8<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_i16<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_i32<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_i64<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_u8<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_u16<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_u32<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_u64<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_f32<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_f64<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_char<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        visitor.visit_borrowed_str(self.input)
+    }
+
+    fn deserialize_string<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        self.deserialize_str(visitor)
+    }
+
+    fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_byte_buf<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_unit<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_unit_struct<V>(self, _name: &'static str, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_newtype_struct<V>(self, _name: &'static str, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_seq<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_tuple<V>(self, _len: usize, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_tuple_struct<V>(
+        self,
+        _name: &'static str,
+        _len: usize,
+        _visitor: V,
+    ) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_map<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_struct<V>(
+        self,
+        _name: &'static str,
+        _fields: &'static [&'static str],
+        _visitor: V,
+    ) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_enum<V>(
+        self,
+        _name: &'static str,
+        _variants: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        let result = visitor.visit_enum(self.input.into_deserializer());
+        self.input = "";
+        result
+    }
+
+    fn deserialize_identifier<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+
+    fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        not_implemented()
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[cfg(test)]
+mod deserialize_tests {
+    use super::*;
+
+    #[test]
+    fn test_enum() {
+        #[derive(Deserialize, PartialEq, Debug)]
+        enum E {
+            Unit,
+        }
+
+        assert_eq!(E::Unit, from_str("Unit").unwrap());
+
+        let res: Result<E> = from_str("Unitx");
+        assert!(res.unwrap_err().to_string().contains("unknown variant"));
     }
 }
