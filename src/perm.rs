@@ -188,6 +188,27 @@ impl fmt::Display for Perm {
     }
 }
 
+impl std::str::FromStr for PermName {
+    type Err = format::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        format::read_enum(s)
+    }
+}
+
+impl std::str::FromStr for Perm {
+    type Err = format::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut result = Perm::empty();
+        for word in s.split(',') {
+            let flag = word.trim().parse::<PermName>()?;
+            result |= flag.to_perm()
+        }
+        Ok(result)
+    }
+}
+
 impl ser::Serialize for Perm {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -273,5 +294,28 @@ mod perm_tests {
 
         #[cfg(target_os = "linux")]
         assert_eq!(Perm::all().to_string(), "read,write,execute");
+    }
+
+    #[test]
+    fn test_perm_fromstr() {
+        let flags = Perm::READ | Perm::EXECUTE;
+        assert_eq!(flags, "read, execute".parse().unwrap());
+
+        #[cfg(target_os = "macos")]
+        {
+            assert_eq!("unknown variant ``, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`", "".parse::<Perm>().unwrap_err().to_string());
+
+            assert_eq!(Perm::all(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync".parse().unwrap());
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            assert_eq!(
+                "unknown variant ``, expected one of `read`, `write`, `execute`",
+                "".parse::<Perm>().unwrap_err().to_string()
+            );
+
+            assert_eq!(Perm::all(), "read,write,execute".parse().unwrap());
+        }
     }
 }
