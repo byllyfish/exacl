@@ -249,7 +249,7 @@ impl AclEntry {
 
 impl fmt::Display for AclEntryKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        format::write(f, self)
+        format::write_enum(f, self)
     }
 }
 

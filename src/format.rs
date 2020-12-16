@@ -5,7 +5,7 @@ use serde::{ser, Deserialize, Serialize};
 use std::fmt;
 
 /// Write value of a simple enum as a `serde` serialized string.
-pub fn write<'a, 'b, T: Serialize>(f: &'a mut fmt::Formatter<'b>, value: &T) -> fmt::Result {
+pub fn write_enum<'a, 'b, T: Serialize>(f: &'a mut fmt::Formatter<'b>, value: &T) -> fmt::Result {
     let mut serializer = EnumSerializer(f);
     value
         .serialize(&mut serializer)
@@ -14,17 +14,12 @@ pub fn write<'a, 'b, T: Serialize>(f: &'a mut fmt::Formatter<'b>, value: &T) -> 
 }
 
 // Read value of a simple enum using a stub `serde` deserializer.
-fn from_str<'a, T>(s: &'a str) -> Result<T>
+pub fn read_enum<'a, T>(s: &'a str) -> Result<T>
 where
     T: Deserialize<'a>,
 {
-    let mut deserializer = EnumDeserializer::from_str(s);
-    let t = T::deserialize(&mut deserializer)?;
-    if deserializer.input.is_empty() {
-        Ok(t)
-    } else {
-        Err(Error::TrailingCharacters)
-    }
+    let mut deserializer = EnumDeserializer(s);
+    T::deserialize(&mut deserializer)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,9 +27,8 @@ where
 // This is a simple serializer class for enums.
 
 #[derive(Clone, Debug, PartialEq)]
-enum Error {
+pub enum Error {
     Message(String),
-    TrailingCharacters,
     NotImplemented,
 }
 
@@ -54,7 +48,6 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Error::Message(msg) => write!(f, "{}", msg),
-            Error::TrailingCharacters => write!(f, "Trailing characters"),
             Error::NotImplemented => write!(f, "Not implemented"),
         }
     }
@@ -369,7 +362,7 @@ mod serialize_tests {
 
         impl fmt::Display for E {
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write(f, self)
+                write_enum(f, self)
             }
         }
 
@@ -381,17 +374,7 @@ mod serialize_tests {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct EnumDeserializer<'de> {
-    // This string starts with the input data and characters are truncated off
-    // the beginning as data is parsed.
-    input: &'de str,
-}
-
-impl<'de> EnumDeserializer<'de> {
-    pub fn from_str(input: &'de str) -> Self {
-        EnumDeserializer { input }
-    }
-}
+struct EnumDeserializer<'de>(&'de str);
 
 impl<'de, 'a> de::Deserializer<'de> for &'a mut EnumDeserializer<'de> {
     type Error = Error;
@@ -487,18 +470,18 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut EnumDeserializer<'de> {
         not_implemented()
     }
 
-    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_str<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_borrowed_str(self.input)
+        not_implemented()
     }
 
-    fn deserialize_string<V>(self, visitor: V) -> Result<V::Value>
+    fn deserialize_string<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        self.deserialize_str(visitor)
+        not_implemented()
     }
 
     fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value>
@@ -597,9 +580,9 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut EnumDeserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        let result = visitor.visit_enum(self.input.into_deserializer());
-        self.input = "";
-        result
+        let value = self.0;
+        self.0 = "";
+        visitor.visit_enum(value.into_deserializer())
     }
 
     fn deserialize_identifier<V>(self, _visitor: V) -> Result<V::Value>
@@ -630,9 +613,12 @@ mod deserialize_tests {
             Unit,
         }
 
-        assert_eq!(E::Unit, from_str("Unit").unwrap());
+        assert_eq!(E::Unit, read_enum("Unit").unwrap());
 
-        let res: Result<E> = from_str("Unitx");
-        assert!(res.unwrap_err().to_string().contains("unknown variant"));
+        let res: Result<E> = read_enum("Unitx");
+        assert_eq!(
+            "unknown variant `Unitx`, expected `Unit`",
+            res.unwrap_err().to_string()
+        );
     }
 }
