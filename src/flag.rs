@@ -153,10 +153,14 @@ impl std::str::FromStr for Flag {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut result = Flag::empty();
-        for word in s.split(',') {
-            let flag = word.trim().parse::<FlagName>()?;
-            result |= flag.to_flag()
+
+        for item in s.split(',') {
+            let word = item.trim();
+            if !word.is_empty() {
+                result |= word.parse::<FlagName>()?.to_flag();
+            }
         }
+
         Ok(result)
     }
 }
@@ -247,22 +251,26 @@ mod flag_tests {
     fn test_flag_fromstr() {
         #[cfg(target_os = "macos")]
         {
-            assert_eq!("unknown variant ``, expected one of `defer_inherit`, `no_inherit`, `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`", "".parse::<Flag>().unwrap_err().to_string());
+            assert_eq!(Flag::empty(), "".parse::<Flag>().unwrap());
 
             let flags = Flag::INHERITED | Flag::FILE_INHERIT;
             assert_eq!(flags, "inherited,file_inherit".parse().unwrap());
 
             assert_eq!(Flag::all(), "defer_inherit,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit,no_inherit".parse().unwrap());
+
+            assert_eq!("unknown variant `bad_flag`, expected one of `defer_inherit`, `no_inherit`, `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`", "bad_flag".parse::<Flag>().unwrap_err().to_string());
         }
 
         #[cfg(target_os = "linux")]
         {
-            assert_eq!(
-                "unknown variant ``, expected `default`",
-                "".parse::<Flag>().unwrap_err().to_string()
-            );
+            assert_eq!(Flag::empty(), "".parse::<Flag>().unwrap());
 
             assert_eq!(Flag::all(), "default".parse().unwrap());
+
+            assert_eq!(
+                "unknown variant `bad_flag`, expected `default`",
+                "bad_flag".parse::<Flag>().unwrap_err().to_string()
+            );
         }
     }
 }

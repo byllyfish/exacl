@@ -253,6 +253,14 @@ impl fmt::Display for AclEntryKind {
     }
 }
 
+impl std::str::FromStr for AclEntryKind {
+    type Err = format::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        format::read_enum(s)
+    }
+}
+
 impl fmt::Display for AclEntry {
     /// Format an `AclEntry` 5-tuple:
     ///   <allow>:<flags>:<kind>:<name>:<perms>
@@ -263,6 +271,66 @@ impl fmt::Display for AclEntry {
             "{}:{}:{}:{}:{}",
             allow, self.flags, self.kind, self.name, self.perms
         )
+    }
+}
+
+fn parse_allow(value: &str) -> Result<bool, format::Error> {
+    let result = match value {
+        "allow" => true,
+        "deny" => false,
+        s => {
+            return Err(format::Error::Message(format!(
+                "Unknown variant `{}`, expected one of `allow`, `deny`",
+                s
+            )))
+        }
+    };
+    Ok(result)
+}
+
+impl std::str::FromStr for AclEntry {
+    type Err = format::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let fields = s.splitn(5, ':').map(str::trim).collect::<Vec<&str>>();
+
+        let entry = match fields.len() {
+            5 => {
+                // <allow>:<flags>:<kind>:<name>:<perms>
+                let allow = parse_allow(fields[0])?;
+                let flags = fields[1].parse::<Flag>()?;
+                let kind = fields[2].parse::<AclEntryKind>()?;
+                let name = fields[3];
+                let perms = fields[4].parse::<Perm>()?;
+                AclEntry::new(kind, name, perms, Some(flags), allow)
+            }
+            4 => {
+                // <flags>:<kind>:<name>:<perms>
+                let allow = true;
+                let flags = fields[0].parse::<Flag>()?;
+                let kind = fields[1].parse::<AclEntryKind>()?;
+                let name = fields[2];
+                let perms = fields[3].parse::<Perm>()?;
+                AclEntry::new(kind, name, perms, Some(flags), allow)
+            }
+            3 => {
+                // <kind>:<name>:<perms>
+                let allow = true;
+                let flags = Flag::empty();
+                let kind = fields[0].parse::<AclEntryKind>()?;
+                let name = fields[1];
+                let perms = fields[2].parse::<Perm>()?;
+                AclEntry::new(kind, name, perms, Some(flags), allow)
+            }
+            _ => {
+                return Err(format::Error::Message(format!(
+                    "Unknown ACL format: `{}`",
+                    s
+                )))
+            }
+        };
+
+        Ok(entry)
     }
 }
 
@@ -388,5 +456,22 @@ mod aclentry_tests {
         // FIXME: Need to have colons in user names escaped on output!
         let entry = AclEntry::allow_user("x:y", perms, None);
         assert_eq!(format!("{}", entry), "allow::user:x:y:read");
+    }
+
+    #[test]
+    fn test_entry_fromstr() {
+        let entry = "allow:inherited:user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow:inherited:user:x:read");
+
+        let entry = "allow::user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow::user:x:read");
+
+        let entry = "user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow::user:x:read");
+
+        let entry = " deny : inherited : user : x : read "
+            .parse::<AclEntry>()
+            .unwrap();
+        assert_eq!(entry.to_string(), "deny:inherited:user:x:read");
     }
 }
