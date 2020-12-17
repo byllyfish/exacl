@@ -459,6 +459,7 @@ mod aclentry_tests {
     }
 
     #[test]
+    #[cfg(target_os = "macos")]
     fn test_entry_fromstr() {
         let entry = "allow:inherited:user:x:read".parse::<AclEntry>().unwrap();
         assert_eq!(entry.to_string(), "allow:inherited:user:x:read");
@@ -473,5 +474,23 @@ mod aclentry_tests {
             .parse::<AclEntry>()
             .unwrap();
         assert_eq!(entry.to_string(), "deny:inherited:user:x:read");
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn test_entry_fromstr() {
+        let entry = "allow:default:user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow:default:user:x:read");
+
+        let entry = "allow::user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow::user:x:read");
+
+        let entry = "user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow::user:x:read");
+
+        let entry = " deny : default : user : x : read "
+            .parse::<AclEntry>()
+            .unwrap();
+        assert_eq!(entry.to_string(), "deny:default:user:x:read");
     }
 }

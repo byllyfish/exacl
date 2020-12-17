@@ -201,10 +201,14 @@ impl std::str::FromStr for Perm {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut result = Perm::empty();
-        for word in s.split(',') {
-            let flag = word.trim().parse::<PermName>()?;
-            result |= flag.to_perm()
+
+        for item in s.split(',') {
+            let word = item.trim();
+            if !word.is_empty() {
+                result |= word.parse::<PermName>()?.to_perm()
+            }
         }
+
         Ok(result)
     }
 }
@@ -301,9 +305,11 @@ mod perm_tests {
         let flags = Perm::READ | Perm::EXECUTE;
         assert_eq!(flags, "read, execute".parse().unwrap());
 
+        assert_eq!(Perm::empty(), "".parse().unwrap());
+
         #[cfg(target_os = "macos")]
         {
-            assert_eq!("unknown variant ``, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`", "".parse::<Perm>().unwrap_err().to_string());
+            assert_eq!("unknown variant `x`, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`", " ,x ".parse::<Perm>().unwrap_err().to_string());
 
             assert_eq!(Perm::all(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync".parse().unwrap());
         }
@@ -311,8 +317,8 @@ mod perm_tests {
         #[cfg(target_os = "linux")]
         {
             assert_eq!(
-                "unknown variant ``, expected one of `read`, `write`, `execute`",
-                "".parse::<Perm>().unwrap_err().to_string()
+                "unknown variant `x`, expected one of `read`, `write`, `execute`",
+                " ,x ".parse::<Perm>().unwrap_err().to_string()
             );
 
             assert_eq!(Perm::all(), "read,write,execute".parse().unwrap());
