@@ -474,6 +474,9 @@ mod aclentry_tests {
             .parse::<AclEntry>()
             .unwrap();
         assert_eq!(entry.to_string(), "deny:inherited:user:x:read");
+
+        let entry = "inherited:user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow:inherited:user:x:read");
     }
 
     #[test]
@@ -492,5 +495,40 @@ mod aclentry_tests {
             .parse::<AclEntry>()
             .unwrap();
         assert_eq!(entry.to_string(), "deny:default:user:x:read");
+
+        let entry = "default::user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow:default:user:x:read");
+    }
+
+    #[test]
+    fn test_entry_fromstr_err() {
+        // Mispelled "allow".
+        let err = "all::user:x:read".parse::<AclEntry>().unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "Unknown variant `all`, expected one of `allow`, `deny`"
+        );
+
+        // Invalid format.
+        let err = "allow:foo".parse::<AclEntry>().unwrap_err();
+        assert_eq!(err.to_string(), "Unknown ACL format: `allow:foo`");
+    }
+
+    #[test]
+    fn test_entry_fromstr_roundtrip() {
+        let values = [
+            ("user:a:read", "allow::user:a:read"),
+            ("group:b:write", "allow::group:b:write"),
+            ("unknown:c:execute", "allow::unknown:c:execute"),
+            #[cfg(target_os = "linux")]
+            ("other:d:execute", "allow::other:d:execute"),
+            #[cfg(target_os = "linux")]
+            ("mask:e:write,read", "allow::mask:e:read,write"),
+        ];
+
+        for (input, expected) in &values {
+            let entry = input.parse::<AclEntry>().unwrap();
+            assert_eq!(*expected, entry.to_string());
+        }
     }
 }
