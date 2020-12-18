@@ -188,6 +188,20 @@ impl fmt::Display for Perm {
     }
 }
 
+/// Parse an abbreviated permission, "rwx", "wx", etc.
+fn parse_abbreviation(s: &str) -> Option<Perm> {
+    let mut perms = Perm::empty();
+    for ch in s.chars() {
+        match ch {
+            'r' if !perms.contains(Perm::READ) => perms |= Perm::READ,
+            'w' if !perms.contains(Perm::WRITE) => perms |= Perm::WRITE,
+            'x' if !perms.contains(Perm::EXECUTE) => perms |= Perm::EXECUTE,
+            _ => return None,
+        }
+    }
+    Some(perms)
+}
+
 impl std::str::FromStr for PermName {
     type Err = format::Error;
 
@@ -205,7 +219,11 @@ impl std::str::FromStr for Perm {
         for item in s.split(',') {
             let word = item.trim();
             if !word.is_empty() {
-                result |= word.parse::<PermName>()?.to_perm()
+                if let Some(perms) = parse_abbreviation(word) {
+                    result |= perms;
+                } else {
+                    result |= word.parse::<PermName>()?.to_perm();
+                }
             }
         }
 
@@ -304,12 +322,15 @@ mod perm_tests {
     fn test_perm_fromstr() {
         let flags = Perm::READ | Perm::EXECUTE;
         assert_eq!(flags, "read, execute".parse().unwrap());
+        assert_eq!(flags, "rx".parse().unwrap());
+        assert_eq!(flags, "xr".parse().unwrap());
+        assert_eq!(Perm::WRITE, "w".parse().unwrap());
 
         assert_eq!(Perm::empty(), "".parse().unwrap());
 
         #[cfg(target_os = "macos")]
         {
-            assert_eq!("unknown variant `x`, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`", " ,x ".parse::<Perm>().unwrap_err().to_string());
+            assert_eq!("unknown variant `q`, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`", " ,q ".parse::<Perm>().unwrap_err().to_string());
 
             assert_eq!(Perm::all(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync".parse().unwrap());
         }
@@ -317,8 +338,8 @@ mod perm_tests {
         #[cfg(target_os = "linux")]
         {
             assert_eq!(
-                "unknown variant `x`, expected one of `read`, `write`, `execute`",
-                " ,x ".parse::<Perm>().unwrap_err().to_string()
+                "unknown variant `qq`, expected one of `read`, `write`, `execute`",
+                " ,qq ".parse::<Perm>().unwrap_err().to_string()
             );
 
             assert_eq!(Perm::all(), "read,write,execute".parse().unwrap());

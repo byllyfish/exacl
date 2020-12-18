@@ -257,7 +257,15 @@ impl std::str::FromStr for AclEntryKind {
     type Err = format::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        format::read_enum(s)
+        match s {
+            "u" => Ok(AclEntryKind::User),
+            "g" => Ok(AclEntryKind::Group),
+            #[cfg(target_os = "linux")]
+            "o" => Ok(AclEntryKind::Other),
+            #[cfg(target_os = "linux")]
+            "m" => Ok(AclEntryKind::Mask),
+            _ => format::read_enum(s),
+        }
     }
 }
 
@@ -524,6 +532,24 @@ mod aclentry_tests {
             ("other:d:execute", "allow::other:d:execute"),
             #[cfg(target_os = "linux")]
             ("mask:e:write,read", "allow::mask:e:read,write"),
+        ];
+
+        for (input, expected) in &values {
+            let entry = input.parse::<AclEntry>().unwrap();
+            assert_eq!(*expected, entry.to_string());
+        }
+    }
+
+    #[test]
+    fn test_entry_fromstr_examples() {
+        let values = [
+            ("u:admin:rwx", "allow::user:admin:read,write,execute"),
+            ("g::rw", "allow::group::read,write"),
+            #[cfg(target_os = "linux")]
+            ("default:user:admin:r", "allow:default:user:admin:read"),
+            #[cfg(target_os = "linux")]
+            ("default:group:admin:w", "allow:default:group:admin:write"),
+            ("deny::u:self:x", "deny::user:self:execute"),
         ];
 
         for (input, expected) in &values {
