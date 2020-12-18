@@ -496,7 +496,7 @@ mod aclentry_tests {
             .unwrap();
         assert_eq!(entry.to_string(), "deny:default:user:x:read");
 
-        let entry = "default::user:x:read".parse::<AclEntry>().unwrap();
+        let entry = "default:user:x:read".parse::<AclEntry>().unwrap();
         assert_eq!(entry.to_string(), "allow:default:user:x:read");
     }
 
