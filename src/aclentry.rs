@@ -548,7 +548,7 @@ mod aclentry_tests {
             #[cfg(target_os = "linux")]
             ("default:user:admin:r", "allow:default:user:admin:read"),
             #[cfg(target_os = "linux")]
-            ("default:group:admin:w", "allow:default:group:admin:write"),
+            ("d:group:admin:w", "allow:default:group:admin:write"),
             ("deny::u:self:x", "deny::user:self:execute"),
         ];
 

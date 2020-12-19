@@ -140,6 +140,15 @@ impl fmt::Display for Flag {
     }
 }
 
+/// Parse an abbreviated flag ("d").
+fn parse_flag_abbreviation(s: &str) -> Option<Flag> {
+    match s {
+        #[cfg(target_os = "linux")]
+        "d" => Some(Flag::DEFAULT),
+        _ => None,
+    }
+}
+
 impl std::str::FromStr for FlagName {
     type Err = format::Error;
 
@@ -157,7 +166,11 @@ impl std::str::FromStr for Flag {
         for item in s.split(',') {
             let word = item.trim();
             if !word.is_empty() {
-                result |= word.parse::<FlagName>()?.to_flag();
+                if let Some(flag) = parse_flag_abbreviation(word) {
+                    result |= flag;
+                } else {
+                    result |= word.parse::<FlagName>()?.to_flag();
+                }
             }
         }
 
@@ -265,6 +278,7 @@ mod flag_tests {
         {
             assert_eq!(Flag::empty(), "".parse::<Flag>().unwrap());
 
+            assert_eq!(Flag::DEFAULT, "d".parse().unwrap());
             assert_eq!(Flag::all(), "default".parse().unwrap());
 
             assert_eq!(

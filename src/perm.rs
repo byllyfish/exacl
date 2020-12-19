@@ -189,7 +189,7 @@ impl fmt::Display for Perm {
 }
 
 /// Parse an abbreviated permission, "rwx", "wx", etc.
-fn parse_abbreviation(s: &str) -> Option<Perm> {
+fn parse_perm_abbreviation(s: &str) -> Option<Perm> {
     let mut perms = Perm::empty();
     for ch in s.chars() {
         match ch {
@@ -219,7 +219,7 @@ impl std::str::FromStr for Perm {
         for item in s.split(',') {
             let word = item.trim();
             if !word.is_empty() {
-                if let Some(perms) = parse_abbreviation(word) {
+                if let Some(perms) = parse_perm_abbreviation(word) {
                     result |= perms;
                 } else {
                     result |= word.parse::<PermName>()?.to_perm();
