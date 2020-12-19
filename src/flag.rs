@@ -141,12 +141,17 @@ impl fmt::Display for Flag {
 }
 
 /// Parse an abbreviated flag ("d").
+#[cfg(target_os = "linux")]
 fn parse_flag_abbreviation(s: &str) -> Option<Flag> {
     match s {
-        #[cfg(target_os = "linux")]
         "d" => Some(Flag::DEFAULT),
         _ => None,
     }
+}
+
+#[cfg(target_os = "macos")]
+const fn parse_flag_abbreviation(_s: &str) -> Option<Flag> {
+    None
 }
 
 impl std::str::FromStr for FlagName {
