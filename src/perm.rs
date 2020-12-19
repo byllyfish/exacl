@@ -1,6 +1,7 @@
 //! Implements the permissions flags.
 
 use crate::bititer::{BitIter, BitIterable};
+use crate::format;
 use crate::sys::*;
 
 use bitflags::bitflags;
@@ -160,6 +161,76 @@ impl PermName {
     }
 }
 
+impl fmt::Display for PermName {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        format::write_enum(f, self)
+    }
+}
+
+impl fmt::Display for Perm {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // Iterate forwards on macOS and backwards elsewhere. Only iterate over
+        // valid bits.
+        #[cfg(target_os = "macos")]
+        let mut iter = BitIter(*self & Perm::all());
+        #[cfg(not(target_os = "macos"))]
+        let mut iter = BitIter(*self & Perm::all()).rev();
+
+        if let Some(perm) = iter.next() {
+            write!(f, "{}", PermName::from_perm(perm).unwrap())?;
+
+            for perm in iter {
+                write!(f, ",{}", PermName::from_perm(perm).unwrap())?;
+            }
+        }
+
+        Ok(())
+    }
+}
+
+/// Parse an abbreviated permission, "rwx", "wx", etc.
+fn parse_perm_abbreviation(s: &str) -> Option<Perm> {
+    let mut perms = Perm::empty();
+    for ch in s.chars() {
+        match ch {
+            'r' if !perms.contains(Perm::READ) => perms |= Perm::READ,
+            'w' if !perms.contains(Perm::WRITE) => perms |= Perm::WRITE,
+            'x' if !perms.contains(Perm::EXECUTE) => perms |= Perm::EXECUTE,
+            _ => return None,
+        }
+    }
+    Some(perms)
+}
+
+impl std::str::FromStr for PermName {
+    type Err = format::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        format::read_enum(s)
+    }
+}
+
+impl std::str::FromStr for Perm {
+    type Err = format::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut result = Perm::empty();
+
+        for item in s.split(',') {
+            let word = item.trim();
+            if !word.is_empty() {
+                if let Some(perms) = parse_perm_abbreviation(word) {
+                    result |= perms;
+                } else {
+                    result |= word.parse::<PermName>()?.to_perm();
+                }
+            }
+        }
+
+        Ok(result)
+    }
+}
+
 impl ser::Serialize for Perm {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -168,15 +239,13 @@ impl ser::Serialize for Perm {
         use ser::SerializeSeq;
         let mut seq = serializer.serialize_seq(None)?;
 
-        // Iterate in reverse on Linux.
-        #[cfg(target_os = "linux")]
-        for perm in BitIter(*self).rev() {
-            seq.serialize_element(&PermName::from_perm(perm))?;
-        }
-
-        // Iterate forward on MacOS.
+        // Iterate forwards on macOS and backwards elsewhere.
         #[cfg(target_os = "macos")]
-        for perm in BitIter(*self) {
+        let iter = BitIter(*self);
+        #[cfg(not(target_os = "macos"))]
+        let iter = BitIter(*self).rev();
+
+        for perm in iter {
             seq.serialize_element(&PermName::from_perm(perm))?;
         }
 
@@ -220,15 +289,60 @@ impl<'de> de::Deserialize<'de> for Perm {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
-#[cfg(target_os = "macos")]
 mod perm_tests {
     use super::*;
 
     #[test]
+    #[cfg(target_os = "macos")]
     fn test_perm_equivalences() {
         assert_eq!(acl_perm_t_ACL_READ_DATA, acl_perm_t_ACL_LIST_DIRECTORY);
         assert_eq!(acl_perm_t_ACL_WRITE_DATA, acl_perm_t_ACL_ADD_FILE);
         assert_eq!(acl_perm_t_ACL_EXECUTE, acl_perm_t_ACL_SEARCH);
         assert_eq!(acl_perm_t_ACL_APPEND_DATA, acl_perm_t_ACL_ADD_SUBDIRECTORY);
+    }
+
+    #[test]
+    fn test_perm_display() {
+        assert_eq!(Perm::empty().to_string(), "");
+
+        let perms = Perm::READ | Perm::EXECUTE;
+        assert_eq!(perms.to_string(), "read,execute");
+
+        let bad_perm = Perm { bits: 0x0080_0000 } | Perm::READ;
+        assert_eq!(bad_perm.to_string(), "read");
+
+        #[cfg(target_os = "macos")]
+        assert_eq!(Perm::all().to_string(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync");
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(Perm::all().to_string(), "read,write,execute");
+    }
+
+    #[test]
+    fn test_perm_fromstr() {
+        let flags = Perm::READ | Perm::EXECUTE;
+        assert_eq!(flags, "read, execute".parse().unwrap());
+        assert_eq!(flags, "rx".parse().unwrap());
+        assert_eq!(flags, "xr".parse().unwrap());
+        assert_eq!(Perm::WRITE, "w".parse().unwrap());
+
+        assert_eq!(Perm::empty(), "".parse().unwrap());
+
+        #[cfg(target_os = "macos")]
+        {
+            assert_eq!("unknown variant `q`, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`", " ,q ".parse::<Perm>().unwrap_err().to_string());
+
+            assert_eq!(Perm::all(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync".parse().unwrap());
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            assert_eq!(
+                "unknown variant `qq`, expected one of `read`, `write`, `execute`",
+                " ,qq ".parse::<Perm>().unwrap_err().to_string()
+            );
+
+            assert_eq!(Perm::all(), "read,write,execute".parse().unwrap());
+        }
     }
 }

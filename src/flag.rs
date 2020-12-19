@@ -1,6 +1,7 @@
 //! Implements the inheritance flags.
 
 use crate::bititer::{BitIter, BitIterable};
+use crate::format;
 use crate::sys::*;
 
 use bitflags::bitflags;
@@ -117,6 +118,71 @@ impl FlagName {
     }
 }
 
+impl fmt::Display for FlagName {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        format::write_enum(f, self)
+    }
+}
+
+impl fmt::Display for Flag {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut iter = BitIter(*self & Flag::all());
+
+        if let Some(flag) = iter.next() {
+            write!(f, "{}", FlagName::from_flag(flag).unwrap())?;
+
+            for flag in iter {
+                write!(f, ",{}", FlagName::from_flag(flag).unwrap())?;
+            }
+        }
+
+        Ok(())
+    }
+}
+
+/// Parse an abbreviated flag ("d").
+#[cfg(target_os = "linux")]
+fn parse_flag_abbreviation(s: &str) -> Option<Flag> {
+    match s {
+        "d" => Some(Flag::DEFAULT),
+        _ => None,
+    }
+}
+
+#[cfg(target_os = "macos")]
+const fn parse_flag_abbreviation(_s: &str) -> Option<Flag> {
+    None
+}
+
+impl std::str::FromStr for FlagName {
+    type Err = format::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        format::read_enum(s)
+    }
+}
+
+impl std::str::FromStr for Flag {
+    type Err = format::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut result = Flag::empty();
+
+        for item in s.split(',') {
+            let word = item.trim();
+            if !word.is_empty() {
+                if let Some(flag) = parse_flag_abbreviation(word) {
+                    result |= flag;
+                } else {
+                    result |= word.parse::<FlagName>()?.to_flag();
+                }
+            }
+        }
+
+        Ok(result)
+    }
+}
+
 impl ser::Serialize for Flag {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -163,5 +229,67 @@ impl<'de> de::Deserialize<'de> for Flag {
         }
 
         deserializer.deserialize_seq(FlagVisitor)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[cfg(test)]
+mod flag_tests {
+    use super::*;
+
+    #[test]
+    fn test_flag_display() {
+        assert_eq!(Flag::empty().to_string(), "");
+
+        #[cfg(target_os = "macos")]
+        {
+            let flags = Flag::INHERITED | Flag::FILE_INHERIT;
+            assert_eq!(flags.to_string(), "inherited,file_inherit");
+
+            let bad_flag = Flag { bits: 0x0080_0000 } | Flag::INHERITED;
+            assert_eq!(bad_flag.to_string(), "inherited");
+
+            assert_eq!(Flag::all().to_string(), "defer_inherit,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit,no_inherit");
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            let flags = Flag::DEFAULT;
+            assert_eq!(flags.to_string(), "default");
+
+            let bad_flag = Flag { bits: 0x0080_0000 } | Flag::DEFAULT;
+            assert_eq!(bad_flag.to_string(), "default");
+
+            assert_eq!(Flag::all().to_string(), "default");
+        }
+    }
+
+    #[test]
+    fn test_flag_fromstr() {
+        #[cfg(target_os = "macos")]
+        {
+            assert_eq!(Flag::empty(), "".parse::<Flag>().unwrap());
+
+            let flags = Flag::INHERITED | Flag::FILE_INHERIT;
+            assert_eq!(flags, "inherited,file_inherit".parse().unwrap());
+
+            assert_eq!(Flag::all(), "defer_inherit,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit,no_inherit".parse().unwrap());
+
+            assert_eq!("unknown variant `bad_flag`, expected one of `defer_inherit`, `no_inherit`, `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`", "bad_flag".parse::<Flag>().unwrap_err().to_string());
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            assert_eq!(Flag::empty(), "".parse::<Flag>().unwrap());
+
+            assert_eq!(Flag::DEFAULT, "d".parse().unwrap());
+            assert_eq!(Flag::all(), "default".parse().unwrap());
+
+            assert_eq!(
+                "unknown variant `bad_flag`, expected `default`",
+                "bad_flag".parse::<Flag>().unwrap_err().to_string()
+            );
+        }
     }
 }

@@ -2,12 +2,14 @@
 
 use crate::failx::fail_custom;
 use crate::flag::Flag;
+use crate::format;
 use crate::perm::Perm;
 use crate::qualifier::Qualifier;
 use crate::util::*;
 
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
+use std::fmt;
 use std::io;
 
 /// Kind of ACL entry (User, Group, Mask, Other, or Unknown).
@@ -245,6 +247,101 @@ impl AclEntry {
     }
 }
 
+impl fmt::Display for AclEntryKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        format::write_enum(f, self)
+    }
+}
+
+impl std::str::FromStr for AclEntryKind {
+    type Err = format::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "u" => Ok(AclEntryKind::User),
+            "g" => Ok(AclEntryKind::Group),
+            #[cfg(target_os = "linux")]
+            "o" => Ok(AclEntryKind::Other),
+            #[cfg(target_os = "linux")]
+            "m" => Ok(AclEntryKind::Mask),
+            _ => format::read_enum(s),
+        }
+    }
+}
+
+impl fmt::Display for AclEntry {
+    /// Format an `AclEntry` 5-tuple:
+    ///   <allow>:<flags>:<kind>:<name>:<perms>
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let allow = if self.allow { "allow" } else { "deny" };
+        write!(
+            f,
+            "{}:{}:{}:{}:{}",
+            allow, self.flags, self.kind, self.name, self.perms
+        )
+    }
+}
+
+fn parse_allow(value: &str) -> Result<bool, format::Error> {
+    let result = match value {
+        "allow" => true,
+        "deny" => false,
+        s => {
+            return Err(format::Error::Message(format!(
+                "Unknown variant `{}`, expected one of `allow`, `deny`",
+                s
+            )))
+        }
+    };
+    Ok(result)
+}
+
+impl std::str::FromStr for AclEntry {
+    type Err = format::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let fields = s.splitn(5, ':').map(str::trim).collect::<Vec<&str>>();
+
+        let entry = match fields.len() {
+            5 => {
+                // <allow>:<flags>:<kind>:<name>:<perms>
+                let allow = parse_allow(fields[0])?;
+                let flags = fields[1].parse::<Flag>()?;
+                let kind = fields[2].parse::<AclEntryKind>()?;
+                let name = fields[3];
+                let perms = fields[4].parse::<Perm>()?;
+                AclEntry::new(kind, name, perms, Some(flags), allow)
+            }
+            4 => {
+                // <flags>:<kind>:<name>:<perms>
+                let allow = true;
+                let flags = fields[0].parse::<Flag>()?;
+                let kind = fields[1].parse::<AclEntryKind>()?;
+                let name = fields[2];
+                let perms = fields[3].parse::<Perm>()?;
+                AclEntry::new(kind, name, perms, Some(flags), allow)
+            }
+            3 => {
+                // <kind>:<name>:<perms>
+                let allow = true;
+                let flags = Flag::empty();
+                let kind = fields[0].parse::<AclEntryKind>()?;
+                let name = fields[1];
+                let perms = fields[2].parse::<Perm>()?;
+                AclEntry::new(kind, name, perms, Some(flags), allow)
+            }
+            _ => {
+                return Err(format::Error::Message(format!(
+                    "Unknown ACL format: `{}`",
+                    s
+                )))
+            }
+        };
+
+        Ok(entry)
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
@@ -329,5 +426,135 @@ mod aclentry_tests {
         ];
 
         assert_eq!(acl, acl_sorted);
+    }
+
+    #[test]
+    fn test_display_kind() {
+        assert_eq!(format!("{}", AclEntryKind::User), "user");
+        assert_eq!(format!("{}", AclEntryKind::Group), "group");
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_display_entry() {
+        let perms = Perm::READ | Perm::EXECUTE;
+        let flags = Flag::INHERITED | Flag::FILE_INHERIT;
+        let entry = AclEntry::allow_user("x", perms, flags);
+
+        assert_eq!(
+            format!("{}", entry),
+            "allow:inherited,file_inherit:user:x:read,execute"
+        );
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn test_display_entry() {
+        let perms = Perm::READ | Perm::EXECUTE;
+        let flags = Flag::DEFAULT;
+
+        let entry = AclEntry::allow_user("x", perms, flags);
+        assert_eq!(format!("{}", entry), "allow:default:user:x:read,execute");
+    }
+
+    #[test]
+    fn test_display_entry_name() {
+        let perms = Perm::READ;
+
+        // FIXME: Need to have colons in user names escaped on output!
+        let entry = AclEntry::allow_user("x:y", perms, None);
+        assert_eq!(format!("{}", entry), "allow::user:x:y:read");
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_entry_fromstr() {
+        let entry = "allow:inherited:user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow:inherited:user:x:read");
+
+        let entry = "allow::user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow::user:x:read");
+
+        let entry = "user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow::user:x:read");
+
+        let entry = " deny : inherited : user : x : read "
+            .parse::<AclEntry>()
+            .unwrap();
+        assert_eq!(entry.to_string(), "deny:inherited:user:x:read");
+
+        let entry = "inherited:user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow:inherited:user:x:read");
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn test_entry_fromstr() {
+        let entry = "allow:default:user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow:default:user:x:read");
+
+        let entry = "allow::user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow::user:x:read");
+
+        let entry = "user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow::user:x:read");
+
+        let entry = " deny : default : user : x : read "
+            .parse::<AclEntry>()
+            .unwrap();
+        assert_eq!(entry.to_string(), "deny:default:user:x:read");
+
+        let entry = "default:user:x:read".parse::<AclEntry>().unwrap();
+        assert_eq!(entry.to_string(), "allow:default:user:x:read");
+    }
+
+    #[test]
+    fn test_entry_fromstr_err() {
+        // Mispelled "allow".
+        let err = "all::user:x:read".parse::<AclEntry>().unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "Unknown variant `all`, expected one of `allow`, `deny`"
+        );
+
+        // Invalid format.
+        let err = "allow:foo".parse::<AclEntry>().unwrap_err();
+        assert_eq!(err.to_string(), "Unknown ACL format: `allow:foo`");
+    }
+
+    #[test]
+    fn test_entry_fromstr_roundtrip() {
+        let values = [
+            ("user:a:read", "allow::user:a:read"),
+            ("group:b:write", "allow::group:b:write"),
+            ("unknown:c:execute", "allow::unknown:c:execute"),
+            #[cfg(target_os = "linux")]
+            ("other:d:execute", "allow::other:d:execute"),
+            #[cfg(target_os = "linux")]
+            ("mask:e:write,read", "allow::mask:e:read,write"),
+        ];
+
+        for (input, expected) in &values {
+            let entry = input.parse::<AclEntry>().unwrap();
+            assert_eq!(*expected, entry.to_string());
+        }
+    }
+
+    #[test]
+    fn test_entry_fromstr_examples() {
+        let values = [
+            ("u:admin:rwx", "allow::user:admin:read,write,execute"),
+            ("g::rw", "allow::group::read,write"),
+            #[cfg(target_os = "linux")]
+            ("default:user:admin:r", "allow:default:user:admin:read"),
+            #[cfg(target_os = "linux")]
+            ("d:group:admin:w", "allow:default:group:admin:write"),
+            ("deny::u:self:x", "deny::user:self:execute"),
+        ];
+
+        for (input, expected) in &values {
+            let entry = input.parse::<AclEntry>().unwrap();
+            assert_eq!(*expected, entry.to_string());
+        }
     }
 }
