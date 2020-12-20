@@ -1,7 +1,7 @@
 //! API Tests for exacl module.
 
 use ctor::ctor;
-use exacl::{getfacl, Acl, AclEntry, AclOption, Flag, Perm};
+use exacl::{from_reader, getfacl, to_writer, Acl, AclEntry, AclOption, Flag, Perm};
 use log::debug;
 use std::io;
 
@@ -429,6 +429,29 @@ fn test_set_acl_flags() -> io::Result<()> {
     // The NO_INHERIT flag only seems to persist if the ACL is not empty.
     let acl3 = Acl::read(file.as_ref(), AclOption::empty())?;
     assert_eq!(acl3.flags()?, Flag::NO_INHERIT);
+
+    Ok(())
+}
+
+#[test]
+fn test_reader_writer() -> io::Result<()> {
+    let input = br#"
+    u:aaa:rwx
+    g:bbb:rwx
+    u:ccc:rx
+    "#;
+
+    let entries = from_reader(&input[..])?;
+
+    let mut buf = Vec::<u8>::new();
+    to_writer(&mut buf, &entries)?;
+    let actual = String::from_utf8(buf).unwrap();
+
+    let expected = r#"allow::user:aaa:read,write,execute
+allow::group:bbb:read,write,execute
+allow::user:ccc:read,execute
+"#;
+    assert_eq!(expected, actual);
 
     Ok(())
 }

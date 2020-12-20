@@ -88,7 +88,7 @@ pub use flag::Flag;
 pub use perm::Perm;
 
 use failx::custom_err;
-use std::io;
+use std::io::{self, BufRead};
 use std::path::Path;
 
 /// Get access control list (ACL) for a file or directory.
@@ -300,4 +300,38 @@ where
     }
 
     Ok(())
+}
+
+/// Write ACL entries to text.
+///
+/// # Errors
+///
+/// Returns an [`io::Error`] on failure.
+pub fn to_writer<W: io::Write>(mut writer: W, entries: &[AclEntry]) -> io::Result<()> {
+    for entry in entries {
+        writeln!(writer, "{}", entry)?;
+    }
+
+    Ok(())
+}
+
+/// Read ACL entries from text.
+///
+/// # Errors
+///
+/// Returns an [`io::Error`] on failure.
+pub fn from_reader<R: io::Read>(reader: R) -> io::Result<Vec<AclEntry>> {
+    let mut result = Vec::<AclEntry>::new();
+    let buf = io::BufReader::new(reader);
+
+    for line_result in buf.lines() {
+        let line = line_result?;
+
+        let line = line.trim();
+        if !line.is_empty() {
+            result.push(line.parse::<AclEntry>()?);
+        }
+    }
+
+    Ok(result)
 }
