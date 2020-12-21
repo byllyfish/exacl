@@ -206,5 +206,14 @@ testInvalidOther() {
         "$msg"
 }
 
+testInvalidStdFormat() {
+    input=$'group:a:read\nuser:x'
+    msg=$(echo "$input" | $EXACL -f std --set non_existant 2>&1)
+    assertEquals 1 $?
+    assertEquals \
+        "Std parser error: Unknown ACL format: user:x" \
+        "${msg//\`/}"    
+}
+
 # shellcheck disable=SC1091
 . shunit2
