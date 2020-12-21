@@ -212,7 +212,7 @@ testInvalidStdFormat() {
     assertEquals 1 $?
     assertEquals \
         "Std parser error: Unknown ACL format: user:x" \
-        "${msg//\`/}"    
+        "${msg//\`/}"
 }
 
 # shellcheck disable=SC1091
