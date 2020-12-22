@@ -354,7 +354,7 @@ mod aclentry_tests {
         let entry_p = xacl_create_entry(&mut acl).unwrap();
 
         let entry = AclEntry::from_raw(entry_p).unwrap();
-        assert_eq!(entry.name, "@tag:0");
+        assert_eq!(entry.name, "@tag 0");
 
         #[cfg(target_os = "macos")]
         assert_eq!(entry.allow, false);

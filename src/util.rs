@@ -309,7 +309,7 @@ pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier
     let result = match tag {
         acl_tag_t_ACL_EXTENDED_ALLOW => (true, xacl_get_qualifier(entry)?),
         acl_tag_t_ACL_EXTENDED_DENY => (false, xacl_get_qualifier(entry)?),
-        _ => (false, Qualifier::Unknown(format!("@tag:{}", tag))),
+        _ => (false, Qualifier::Unknown(format!("@tag {}", tag))),
     };
 
     Ok(result)
@@ -337,7 +337,7 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
         sg::ACL_GROUP_OBJ => Qualifier::GroupObj,
         sg::ACL_OTHER => Qualifier::Other,
         sg::ACL_MASK => Qualifier::Mask,
-        tag => Qualifier::Unknown(format!("@tag:{}", tag)),
+        tag => Qualifier::Unknown(format!("@tag {}", tag)),
     };
 
     Ok(result)
