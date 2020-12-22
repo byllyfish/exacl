@@ -436,7 +436,7 @@ fn test_set_acl_flags() -> io::Result<()> {
 #[test]
 fn test_reader_writer() -> io::Result<()> {
     let input = br#"
-    u:aaa:rwx
+    u:aaa:rwx#comment
     g:bbb:rwx
     u:ccc:rx
     "#;

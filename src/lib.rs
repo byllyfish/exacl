@@ -68,6 +68,8 @@
 //! can retrieve a mutable vector of [`AclEntry`], modify the vector's contents,
 //! then create a new [`Acl`].
 
+#![warn(missing_docs)]
+#![warn(missing_doc_code_examples)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 mod acl;
@@ -327,11 +329,20 @@ pub fn from_reader<R: io::Read>(reader: R) -> io::Result<Vec<AclEntry>> {
     for line_result in buf.lines() {
         let line = line_result?;
 
-        let line = line.trim();
-        if !line.is_empty() {
-            result.push(line.parse::<AclEntry>()?);
+        let src_line = trim_comment(&line).trim();
+        if !src_line.is_empty() {
+            result.push(src_line.parse::<AclEntry>()?);
         }
     }
 
     Ok(result)
+}
+
+/// Return line with end of line comment removed.
+fn trim_comment(line: &str) -> &str {
+    if let Some(pos) = line.find('#') {
+        &line[0..pos]
+    } else {
+        line
+    }
 }
