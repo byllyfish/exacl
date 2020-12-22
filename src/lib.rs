@@ -32,10 +32,10 @@
 //!
 //! This module provides two high level functions, [`getfacl`] and [`setfacl`].
 //!
-//! - [`getfacl`] retrieves the ACL for a file or directory. On Linux, the
-//!     result includes the entries from the default ACL if there is one.
-//! - [`setfacl`] sets the ACL for files or directories, including the default
-//!     ACL on Linux.
+//! - [`getfacl`] retrieves the ACL for a file or directory.
+//! - [`setfacl`] sets the ACL for files or directories.
+//!
+//! On Linux, the ACL contains entries for the default ACL, if present.
 //!
 //! Both [`getfacl`] and [`setfacl`] work with a `Vec<AclEntry>`. The
 //! [`AclEntry`] structure contains five fields:
@@ -68,6 +68,7 @@
 //! can retrieve a mutable vector of [`AclEntry`], modify the vector's contents,
 //! then create a new [`Acl`].
 
+#![warn(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 mod acl;
@@ -88,7 +89,7 @@ pub use flag::Flag;
 pub use perm::Perm;
 
 use failx::custom_err;
-use std::io;
+use std::io::{self, BufRead};
 use std::path::Path;
 
 /// Get access control list (ACL) for a file or directory.
@@ -300,4 +301,94 @@ where
     }
 
     Ok(())
+}
+
+/// Write ACL entries to text.
+///
+/// Each ACL entry is printed on a separate line. The five fields are separated
+/// by colons:
+///
+/// ```text
+///   <allow>:<flags>:<kind>:<name>:<perms>
+///
+///   <allow> - one of "allow" or "deny"
+///   <flags> - comma-separated list of flags
+///   <kind>  - one of "user", "group", "other", "mask", "unknown"
+///   <name>  - user/group name (or decimal id if not known)
+///   <perms> - comma-separated list of permissions
+/// ```
+///
+/// # Sample Output
+///
+/// ```text
+/// allow::group:admin:read,write
+/// ```
+///
+/// # Errors
+///
+/// Returns an [`io::Error`] on failure.
+pub fn to_writer<W: io::Write>(mut writer: W, entries: &[AclEntry]) -> io::Result<()> {
+    for entry in entries {
+        writeln!(writer, "{}", entry)?;
+    }
+
+    Ok(())
+}
+
+/// Read ACL entries from text.
+///
+/// Each ACL entry is presented on a separate line. A comment begins with `#`
+/// and proceeds to the end of the line. Within a field, leading or trailing
+/// white space are ignored.
+///
+/// ```text
+///   Three allowed forms:
+///
+///   <allow>:<flags>:<kind>:<name>:<perms>
+///   <flags>:<kind>:<name>:<perms>
+///   <kind>:<name>:<perms>
+///
+///   <allow> - one of "allow" or "deny"
+///   <flags> - comma-separated list of flags
+///   <kind>  - one of "user", "group", "other", "mask", "unknown"
+///   <name>  - user/group name (decimal id accepted)
+///   <perms> - comma-separated list of permissions
+/// ```
+///
+/// Supported flags and permissions vary by platform.
+///
+/// Supported abbreviations:  d = default, r = read, w = write, x = execute,
+/// u = user, g = group, o = other, m = mask
+///
+/// # Sample Input
+///
+/// ```text
+/// allow::group:admin:read,write
+/// g:admin:rw  # ignored
+/// d:u:chip:rw
+/// deny:file_inherit:user:chet:rwx
+/// ```
+///
+/// # Errors
+///
+/// Returns an [`io::Error`] on failure.
+pub fn from_reader<R: io::Read>(reader: R) -> io::Result<Vec<AclEntry>> {
+    let mut result = Vec::<AclEntry>::new();
+    let buf = io::BufReader::new(reader);
+
+    for line_result in buf.lines() {
+        let line = line_result?;
+
+        let src_line = trim_comment(&line).trim();
+        if !src_line.is_empty() {
+            result.push(src_line.parse::<AclEntry>()?);
+        }
+    }
+
+    Ok(result)
+}
+
+/// Return line with end of line comment removed.
+fn trim_comment(line: &str) -> &str {
+    line.find('#').map_or(line, |n| &line[0..n])
 }

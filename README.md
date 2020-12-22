@@ -36,10 +36,10 @@ setfacl(&["./tmp/foo"], &acl, None)?;
 
 This module provides two high level functions, `getfacl` and `setfacl`.
 
-- `getfacl` retrieves the ACL for a file or directory. On Linux, the
-    result includes the entries from the default ACL if there is one.
-- `setfacl` sets the ACL for files or directories, including the default
-    ACL on Linux.
+- `getfacl` retrieves the ACL for a file or directory.
+- `setfacl` sets the ACL for files or directories.
+
+On Linux, the ACL contains entries for the default ACL, if present.
 
 Both `getfacl` and `setfacl` work with a `Vec<AclEntry>`. The
 `AclEntry` structure contains five fields:

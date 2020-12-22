@@ -3,6 +3,7 @@
 use serde::de::{self, IntoDeserializer, Visitor};
 use serde::{ser, Deserialize, Serialize};
 use std::fmt;
+use std::io;
 
 /// Write value of a simple enum as a `serde` serialized string.
 pub fn write_enum<'a, 'b, T: Serialize>(f: &'a mut fmt::Formatter<'b>, value: &T) -> fmt::Result {
@@ -41,6 +42,12 @@ impl ser::Error for Error {
 impl de::Error for Error {
     fn custom<T: fmt::Display>(msg: T) -> Self {
         Error::Message(msg.to_string())
+    }
+}
+
+impl From<Error> for io::Error {
+    fn from(err: Error) -> Self {
+        io::Error::new(io::ErrorKind::InvalidInput, err)
     }
 }
 
