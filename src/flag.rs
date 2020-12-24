@@ -79,7 +79,7 @@ impl BitIterable for Flag {
 }
 
 #[derive(Deserialize, Serialize, TryFromPrimitive, Copy, Clone, Debug)]
-#[repr(acl_flag_t)]
+#[repr(u32)]
 #[allow(non_camel_case_types)]
 enum FlagName {
     #[cfg(target_os = "macos")]
@@ -104,7 +104,7 @@ enum FlagName {
     only_inherit = Flag::ONLY_INHERIT.bits,
 
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-    default = Flag::DEFAULT.bits,
+    default = Flag::DEFAULT.bits as u32,
 }
 
 impl FlagName {
