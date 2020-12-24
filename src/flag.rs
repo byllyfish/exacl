@@ -49,8 +49,8 @@ bitflags! {
         const ONLY_INHERIT = np::ACL_ENTRY_ONLY_INHERIT;
 
         /// Specifies a default ACL entry on Linux.
-        #[cfg(any(docsrs, target_os = "linux"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
+        #[cfg(any(docsrs, target_os = "linux", target_os = "freebsd"))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
         const DEFAULT = 1;
     }
 }
@@ -79,7 +79,7 @@ impl BitIterable for Flag {
 }
 
 #[derive(Deserialize, Serialize, TryFromPrimitive, Copy, Clone, Debug)]
-#[repr(u32)]
+#[repr(acl_flag_t)]
 #[allow(non_camel_case_types)]
 enum FlagName {
     #[cfg(target_os = "macos")]
@@ -103,7 +103,7 @@ enum FlagName {
     #[cfg(target_os = "macos")]
     only_inherit = Flag::ONLY_INHERIT.bits,
 
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     default = Flag::DEFAULT.bits,
 }
 
@@ -141,7 +141,7 @@ impl fmt::Display for Flag {
 }
 
 /// Parse an abbreviated flag ("d").
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn parse_flag_abbreviation(s: &str) -> Option<Flag> {
     match s {
         "d" => Some(Flag::DEFAULT),
