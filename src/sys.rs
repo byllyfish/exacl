@@ -30,8 +30,8 @@ pub type acl_flag_t = u32;
 #[cfg(target_os = "linux")]
 pub const ACL_MAX_ENTRIES: u32 = 2_000_000_000;
 
-// MacOS uses acl_get_perm_np().
-#[cfg(target_os = "macos")]
+// MacOS and FreeBSD use acl_get_perm_np().
+#[cfg(any(target_os = "macos", target_os = "freebsd"))]
 pub unsafe fn acl_get_perm(permset_d: acl_permset_t, perm: acl_perm_t) -> ::std::os::raw::c_int {
     acl_get_perm_np(permset_d, perm)
 }
