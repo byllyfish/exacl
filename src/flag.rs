@@ -117,7 +117,9 @@ impl FlagName {
     }
 
     const fn to_flag(self) -> Flag {
-        Flag { bits: self as acl_flag_t }
+        Flag {
+            bits: self as acl_flag_t,
+        }
     }
 }
 
