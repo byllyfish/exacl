@@ -211,12 +211,12 @@ pub fn xacl_entry_count(acl: acl_t) -> usize {
 fn xacl_get_entry(acl: acl_t, entry_id: i32, entry_p: *mut acl_entry_t) -> bool {
     let ret = unsafe { acl_get_entry(acl, entry_id, entry_p) };
 
-    // MacOS: Zero means there is more.
+    // MacOS: Zero indicates success.
     #[cfg(target_os = "macos")]
     return ret == 0;
 
-    // Linux: One means there is more.
-    #[cfg(target_os = "linux")]
+    // Linux, FreeBSD: One indicates success.
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     return ret == 1;
 }
 

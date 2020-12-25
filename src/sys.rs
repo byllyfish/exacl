@@ -22,6 +22,7 @@ pub const ACL_WRITE: acl_perm_t = acl_perm_t_ACL_WRITE_DATA;
 pub const ACL_EXECUTE: acl_perm_t = acl_perm_t_ACL_EXECUTE;
 
 // Linux doesn't have ACL flags; adding acl_flag_t makes the code more orthogonal.
+// On FreeBSD, acl_flag_t is a u16.
 #[cfg(target_os = "linux")]
 pub type acl_flag_t = u32;
 
@@ -102,12 +103,12 @@ pub mod sg {
 
     #[cfg(target_os = "macos")]
     pub const ACL_FIRST_ENTRY: i32 = super::acl_entry_id_t_ACL_FIRST_ENTRY;
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub const ACL_FIRST_ENTRY: i32 = super::ACL_FIRST_ENTRY as i32;
 
     #[cfg(target_os = "macos")]
     pub const ACL_NEXT_ENTRY: i32 = super::acl_entry_id_t_ACL_NEXT_ENTRY;
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub const ACL_NEXT_ENTRY: i32 = super::ACL_NEXT_ENTRY as i32;
 
     #[cfg(target_os = "macos")]

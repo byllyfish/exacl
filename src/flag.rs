@@ -55,6 +55,8 @@ bitflags! {
     }
 }
 
+// N.B. On FreeBSD, acl_flag_t is a u16. On Linux and macOS, acl_flag_t is a u32.
+
 impl BitIterable for Flag {
     fn lsb(self) -> Option<Self> {
         if self.is_empty() {
@@ -66,6 +68,7 @@ impl BitIterable for Flag {
     }
 
     fn msb(self) -> Option<Self> {
+        // FIXME: Replace computation with `BITS` once it lands in stable.
         #[allow(clippy::cast_possible_truncation)]
         const MAX_BITS: acl_flag_t = 8 * std::mem::size_of::<Flag>() as acl_flag_t - 1;
 
@@ -73,7 +76,7 @@ impl BitIterable for Flag {
             return None;
         }
         Some(Flag {
-            bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
+            bits: 1 << (MAX_BITS - self.bits.leading_zeros() as acl_flag_t),
         })
     }
 }
@@ -110,11 +113,11 @@ enum FlagName {
 impl FlagName {
     fn from_flag(flag: Flag) -> Option<FlagName> {
         use std::convert::TryFrom;
-        FlagName::try_from(flag.bits).ok()
+        FlagName::try_from(flag.bits as u32).ok()
     }
 
     const fn to_flag(self) -> Flag {
-        Flag { bits: self as u32 }
+        Flag { bits: self as acl_flag_t }
     }
 }
 
