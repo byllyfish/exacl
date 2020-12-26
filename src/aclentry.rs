@@ -23,13 +23,13 @@ pub enum AclEntryKind {
     Group,
 
     /// Entry represents a Posix.1e "mask" entry.
-    #[cfg(any(docsrs, target_os = "linux"))]
-    #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
+    #[cfg(any(docsrs, target_os = "linux", target_os = "freebsd"))]
+    #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
     Mask,
 
     /// Entry represents a Posix.1e "other" entry.
-    #[cfg(any(docsrs, target_os = "linux"))]
-    #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
+    #[cfg(any(docsrs, target_os = "linux", target_os = "freebsd"))]
+    #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
     Other,
 
     /// Entry represents a possibly corrupt ACL entry, caused by an unknown tag.
@@ -139,8 +139,8 @@ impl AclEntry {
     }
 
     /// Construct an ALLOW access control entry for mask.
-    #[cfg(any(docsrs, target_os = "linux"))]
-    #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
+    #[cfg(any(docsrs, target_os = "linux", target_os = "freebsd"))]
+    #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
     #[must_use]
     pub fn allow_mask<F>(perms: Perm, flags: F) -> AclEntry
     where
@@ -150,8 +150,8 @@ impl AclEntry {
     }
 
     /// Construct an ALLOW access control entry for other.
-    #[cfg(any(docsrs, target_os = "linux"))]
-    #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
+    #[cfg(any(docsrs, target_os = "linux", target_os = "freebsd"))]
+    #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
     #[must_use]
     pub fn allow_other<F>(perms: Perm, flags: F) -> AclEntry
     where
@@ -193,16 +193,16 @@ impl AclEntry {
             #[cfg(target_os = "macos")]
             Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name()),
 
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::User(_) | Qualifier::UserObj => (AclEntryKind::User, qualifier.name()),
 
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::Group(_) | Qualifier::GroupObj => (AclEntryKind::Group, qualifier.name()),
 
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::Mask => (AclEntryKind::Mask, qualifier.name()),
 
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::Other => (AclEntryKind::Other, qualifier.name()),
         };
 
@@ -234,9 +234,9 @@ impl AclEntry {
         let qualifier = match self.kind {
             AclEntryKind::User => Qualifier::user_named(&self.name)?,
             AclEntryKind::Group => Qualifier::group_named(&self.name)?,
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             AclEntryKind::Mask => Qualifier::mask_named(&self.name)?,
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             AclEntryKind::Other => Qualifier::other_named(&self.name)?,
             AclEntryKind::Unknown => {
                 return fail_custom("unsupported kind: \"unknown\"");
@@ -260,9 +260,9 @@ impl std::str::FromStr for AclEntryKind {
         match s {
             "u" => Ok(AclEntryKind::User),
             "g" => Ok(AclEntryKind::Group),
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             "o" => Ok(AclEntryKind::Other),
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             "m" => Ok(AclEntryKind::Mask),
             _ => format::read_enum(s),
         }

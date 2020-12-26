@@ -1,11 +1,11 @@
 //! Provides `Acl` and `AclOption` implementation.
 
 use crate::aclentry::AclEntry;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 use crate::aclentry::AclEntryKind;
 use crate::failx::{fail_custom, path_err};
 use crate::flag::Flag;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 use crate::perm::Perm;
 use crate::util::*;
 
@@ -38,7 +38,7 @@ pub struct Acl {
     /// Set to true if `acl` was set from the default ACL for a directory
     /// using DEFAULT_ACL option. Used to return entries with the `DEFAULT`
     /// flag set.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     default_acl: bool,
 }
 
@@ -49,7 +49,7 @@ impl Acl {
         assert!(!acl.is_null());
         Acl {
             acl,
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             default_acl,
         }
     }
@@ -176,7 +176,7 @@ impl Acl {
             }
         }
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::empty())) {
             let mask = AclEntry::allow_mask(mask_perms, None);
             if let Err(err) = mask.add_to_acl(&mut acl_p) {

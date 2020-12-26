@@ -78,7 +78,7 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
     Ok(acl)
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::Result<acl_t> {
     use std::os::unix::ffi::OsStrExt;
 
@@ -161,7 +161,7 @@ pub fn xacl_set_file(
     Ok(())
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 pub fn xacl_set_file(
     path: &Path,
     acl: acl_t,
@@ -315,7 +315,7 @@ pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier
     Ok(result)
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     let tag = xacl_get_tag_type(entry)?;
 
@@ -343,7 +343,7 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     Ok(result)
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
     let qualifier = xacl_get_qualifier(entry)?;
     Ok((true, qualifier))
@@ -407,7 +407,7 @@ pub fn xacl_get_acl_flags(acl: acl_t) -> io::Result<Flag> {
     xacl_get_flags_np(acl as *mut c_void)
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 #[allow(clippy::clippy::missing_const_for_fn)]
 pub fn xacl_get_flags(_entry: acl_entry_t) -> io::Result<Flag> {
     Ok(Flag::empty()) // noop
@@ -459,7 +459,7 @@ pub fn xacl_set_tag_qualifier(
     Ok(())
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
     let id_ptr = &mut id as *mut uid_t;
 
@@ -471,7 +471,7 @@ fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
     Ok(())
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 pub fn xacl_set_tag_qualifier(
     entry: acl_entry_t,
     allow: bool,
@@ -569,7 +569,7 @@ pub fn xacl_set_acl_flags(acl: acl_t, flags: Flag) -> io::Result<()> {
     xacl_set_flags_np(acl as *mut c_void, flags)
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 #[allow(clippy::clippy::missing_const_for_fn)]
 pub fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
     Ok(()) // noop
@@ -599,7 +599,7 @@ pub fn xacl_to_text(acl: acl_t) -> io::Result<String> {
     Ok(result)
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "freebsd"))]
 #[allow(clippy::clippy::missing_const_for_fn)]
 pub fn xacl_check(_acl: acl_t) -> io::Result<()> {
     Ok(()) // noop
