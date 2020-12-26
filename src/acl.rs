@@ -124,7 +124,7 @@ impl Acl {
     }
 
     /// Compute mask.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     fn compute_mask_perms(entries: &[AclEntry], filter: (Flag, Flag)) -> Option<Perm> {
         let mut perms = Perm::empty();
         let mut need_mask = false;
@@ -197,8 +197,8 @@ impl Acl {
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
-    #[cfg(any(docsrs, target_os = "linux"))]
-    #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
+    #[cfg(any(docsrs, target_os = "linux", target_os = "freebsd"))]
+    #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
     pub fn from_unified_entries(entries: &[AclEntry]) -> io::Result<(Acl, Acl)> {
         let new_access = xacl_init(entries.len())?;
         let new_default = xacl_init(entries.len())?;
@@ -258,7 +258,7 @@ impl Acl {
             Ok(())
         })?;
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         if self.default_acl {
             // Set DEFAULT flag on each entry.
             for entry in &mut entries {
