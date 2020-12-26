@@ -78,6 +78,16 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
     Ok(acl)
 }
 
+// acl_type_t is i32 on FreeBSD, u32 on Linux.
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+fn get_acl_type(default_acl: bool) -> acl_type_t {
+    if default_acl {
+        ACL_TYPE_DEFAULT as acl_type_t
+    } else {
+        ACL_TYPE_ACCESS as acl_type_t
+    }
+}
+
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::Result<acl_t> {
     use std::os::unix::ffi::OsStrExt;
@@ -86,12 +96,7 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
         return fail_custom("Linux does not support symlinks with ACL's.");
     }
 
-    let acl_type = if default_acl {
-        ACL_TYPE_DEFAULT
-    } else {
-        ACL_TYPE_ACCESS
-    };
-
+    let acl_type = get_acl_type(default_acl);
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
 
@@ -174,12 +179,7 @@ pub fn xacl_set_file(
         return fail_custom("Linux does not support symlinks with ACL's");
     }
 
-    let acl_type = if default_acl {
-        ACL_TYPE_DEFAULT
-    } else {
-        ACL_TYPE_ACCESS
-    };
-
+    let acl_type = get_acl_type(default_acl);
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let ret = unsafe { acl_set_file(c_path.as_ptr(), acl_type, acl) };
     if ret != 0 {

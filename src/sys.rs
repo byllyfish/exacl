@@ -114,17 +114,17 @@ pub mod sg {
     #[cfg(target_os = "macos")]
     pub const O_SYMLINK: i32 = super::O_SYMLINK as i32;
 
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub const ACL_USER_OBJ: i32 = super::ACL_USER_OBJ as i32;
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub const ACL_USER: i32 = super::ACL_USER as i32;
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub const ACL_GROUP_OBJ: i32 = super::ACL_GROUP_OBJ as i32;
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub const ACL_GROUP: i32 = super::ACL_GROUP as i32;
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub const ACL_MASK: i32 = super::ACL_MASK as i32;
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub const ACL_OTHER: i32 = super::ACL_OTHER as i32;
 
     #[cfg(target_os = "macos")]
