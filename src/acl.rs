@@ -70,8 +70,11 @@ impl Acl {
                 // Trying to access the default ACL of a non-directory on Linux
                 // will return an error. We can catch this error and return an
                 // empty ACL instead; only if `IGNORE_EXPECTED_FILE_ERR` is set.
+                // (Linux returns permission denied. FreeBSD returns invalid
+                // argument.)
                 if default_acl
-                    && err.kind() == io::ErrorKind::PermissionDenied
+                    && (err.kind() == io::ErrorKind::PermissionDenied
+                        || err.kind() == io::ErrorKind::InvalidInput)
                     && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR)
                     && is_non_directory(path)
                 {
