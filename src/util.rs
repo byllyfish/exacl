@@ -702,7 +702,7 @@ mod util_tests_mac {
 }
 
 #[cfg(test)]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 mod util_tests_linux {
     use super::*;
 

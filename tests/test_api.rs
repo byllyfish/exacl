@@ -35,7 +35,7 @@ fn test_read_acl() -> io::Result<()> {
     #[cfg(target_os = "macos")]
     assert_eq!(entries.len(), 0);
 
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     assert_eq!(entries.len(), 3);
 
     log_acl(&entries);
@@ -88,7 +88,7 @@ user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn test_write_acl_linux() -> io::Result<()> {
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
@@ -205,7 +205,7 @@ user:00000000-0000-0000-0000-000000000000:::allow:read,write,execute
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn test_from_platform_text() {
     let text = r#"user::rwx
 user:11501:rwx
@@ -222,7 +222,7 @@ other::rwx
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn test_read_default_acl() -> io::Result<()> {
     let dir = tempfile::tempdir()?;
     let default_acl = Acl::read(dir.as_ref(), AclOption::DEFAULT_ACL)?;
@@ -232,7 +232,7 @@ fn test_read_default_acl() -> io::Result<()> {
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn test_write_default_acl() -> io::Result<()> {
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
@@ -281,7 +281,7 @@ fn test_getfacl_file() -> io::Result<()> {
     #[cfg(target_os = "macos")]
     assert_eq!(entries.len(), 0);
 
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     assert_eq!(entries.len(), 3);
 
     log_acl(&entries);
@@ -306,6 +306,13 @@ fn test_getfacl_file() -> io::Result<()> {
             .contains("Permission denied"));
     }
 
+    // Test default ACL (should be error; files don't have default ACL).
+    #[cfg(target_os = "freebsd")]
+    {
+        let result = getfacl(&file, AclOption::DEFAULT_ACL);
+        assert!(result.unwrap_err().to_string().contains("Invalid argument"));
+    }
+
     Ok(())
 }
 
@@ -327,7 +334,7 @@ fn test_from_entries() {
     }
 
     // Test named user on Linux. It should add correct mask.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     {
         let mut entries = vec![AclEntry::allow_user("500", Perm::EXECUTE, None)];
         let acl = Acl::from_entries(&entries).unwrap();
@@ -343,7 +350,7 @@ fn test_from_entries() {
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn test_from_unified_entries() {
     // 0 entries should result in empty acls.
     let (a, d) = Acl::from_unified_entries(&[]).unwrap();

@@ -314,7 +314,7 @@ mod perm_tests {
         #[cfg(target_os = "macos")]
         assert_eq!(Perm::all().to_string(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync");
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         assert_eq!(Perm::all().to_string(), "read,write,execute");
     }
 
@@ -335,7 +335,7 @@ mod perm_tests {
             assert_eq!(Perm::all(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync".parse().unwrap());
         }
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
             assert_eq!(
                 "unknown variant `qq`, expected one of `read`, `write`, `execute`",

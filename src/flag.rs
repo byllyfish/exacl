@@ -258,7 +258,7 @@ mod flag_tests {
             assert_eq!(Flag::all().to_string(), "defer_inherit,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit,no_inherit");
         }
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
             let flags = Flag::DEFAULT;
             assert_eq!(flags.to_string(), "default");
@@ -284,7 +284,7 @@ mod flag_tests {
             assert_eq!("unknown variant `bad_flag`, expected one of `defer_inherit`, `no_inherit`, `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`", "bad_flag".parse::<Flag>().unwrap_err().to_string());
         }
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
             assert_eq!(Flag::empty(), "".parse::<Flag>().unwrap());
 

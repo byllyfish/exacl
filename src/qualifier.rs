@@ -276,7 +276,7 @@ mod qualifier_tests {
         #[cfg(target_os = "macos")]
         assert_eq!(str_to_uid("_spotlight").ok(), Some(Uid::from_raw(89)));
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         assert_eq!(str_to_uid("bin").ok(), Some(Uid::from_raw(2)));
     }
 
@@ -293,7 +293,7 @@ mod qualifier_tests {
         #[cfg(target_os = "macos")]
         assert_eq!(str_to_gid("_spotlight").ok(), Some(Gid::from_raw(89)));
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         assert_eq!(str_to_gid("bin").ok(), Some(Gid::from_raw(2)));
     }
 

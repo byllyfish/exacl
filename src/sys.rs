@@ -162,19 +162,6 @@ pub mod sg {
         #[cfg(target_os = "macos")]
         assert!(super::O_SYMLINK as i32 >= 0);
 
-        #[cfg(target_os = "linux")]
-        assert!(super::ACL_USER_OBJ as i32 >= 0);
-        #[cfg(target_os = "linux")]
-        assert!(super::ACL_USER as i32 >= 0);
-        #[cfg(target_os = "linux")]
-        assert!(super::ACL_GROUP_OBJ as i32 >= 0);
-        #[cfg(target_os = "linux")]
-        assert!(super::ACL_GROUP as i32 >= 0);
-        #[cfg(target_os = "linux")]
-        assert!(super::ACL_MASK as i32 >= 0);
-        #[cfg(target_os = "linux")]
-        assert!(super::ACL_OTHER as i32 >= 0);
-
         #[cfg(target_os = "macos")]
         assert!(super::ID_TYPE_UID as i32 >= 0);
         #[cfg(target_os = "macos")]
