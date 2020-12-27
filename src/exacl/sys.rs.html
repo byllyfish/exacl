@@ -170,6 +170,7 @@
 <span id="167">167</span>
 <span id="168">168</span>
 <span id="169">169</span>
+<span id="170">170</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Rust bindings to system C API.</span>
 
@@ -195,6 +196,7 @@
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_EXECUTE</span>: <span class="ident">acl_perm_t</span> <span class="op">=</span> <span class="ident">acl_perm_t_ACL_EXECUTE</span>;
 
 <span class="comment">// Linux doesn&#39;t have ACL flags; adding acl_flag_t makes the code more orthogonal.</span>
+<span class="comment">// On FreeBSD, acl_flag_t is a u16.</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">acl_flag_t</span> <span class="op">=</span> <span class="ident">u32</span>;
 
@@ -202,8 +204,8 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_MAX_ENTRIES</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">2_000_000_000</span>;
 
-<span class="comment">// MacOS uses acl_get_perm_np().</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+<span class="comment">// MacOS and FreeBSD use acl_get_perm_np().</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">acl_get_perm</span>(<span class="ident">permset_d</span>: <span class="ident">acl_permset_t</span>, <span class="ident">perm</span>: <span class="ident">acl_perm_t</span>) <span class="op">-</span><span class="op">&gt;</span> ::<span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_int</span> {
     <span class="ident">acl_get_perm_np</span>(<span class="ident">permset_d</span>, <span class="ident">perm</span>)
 }
@@ -267,6 +269,8 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">sg</span> {
     <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">cast_possible_wrap</span>)]</span>
 
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">acl_tag_t</span>, <span class="ident">acl_type_t</span>};
+
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ENOENT</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ENOENT</span> <span class="kw">as</span> <span class="ident">i32</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ENOTSUP</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ENOTSUP</span> <span class="kw">as</span> <span class="ident">i32</span>;
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">EINVAL</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">EINVAL</span> <span class="kw">as</span> <span class="ident">i32</span>;
@@ -274,30 +278,41 @@
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_MAX_ENTRIES</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_MAX_ENTRIES</span> <span class="kw">as</span> <span class="ident">i32</span>;
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_TYPE_EXTENDED</span>: <span class="ident">acl_type_t</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">acl_type_t_ACL_TYPE_EXTENDED</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_TYPE_ACCESS</span>: <span class="ident">acl_type_t</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_TYPE_ACCESS</span> <span class="kw">as</span> <span class="ident">acl_type_t</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_TYPE_DEFAULT</span>: <span class="ident">acl_type_t</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_TYPE_DEFAULT</span> <span class="kw">as</span> <span class="ident">acl_type_t</span>;
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_FIRST_ENTRY</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">acl_entry_id_t_ACL_FIRST_ENTRY</span>;
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_FIRST_ENTRY</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_FIRST_ENTRY</span> <span class="kw">as</span> <span class="ident">i32</span>;
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_NEXT_ENTRY</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">acl_entry_id_t_ACL_NEXT_ENTRY</span>;
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_NEXT_ENTRY</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_NEXT_ENTRY</span> <span class="kw">as</span> <span class="ident">i32</span>;
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">O_SYMLINK</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">O_SYMLINK</span> <span class="kw">as</span> <span class="ident">i32</span>;
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_USER_OBJ</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_USER_OBJ</span> <span class="kw">as</span> <span class="ident">i32</span>;
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_USER</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_USER</span> <span class="kw">as</span> <span class="ident">i32</span>;
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_GROUP_OBJ</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_GROUP_OBJ</span> <span class="kw">as</span> <span class="ident">i32</span>;
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_GROUP</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_GROUP</span> <span class="kw">as</span> <span class="ident">i32</span>;
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_MASK</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_MASK</span> <span class="kw">as</span> <span class="ident">i32</span>;
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_OTHER</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_OTHER</span> <span class="kw">as</span> <span class="ident">i32</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_EXTENDED_ALLOW</span>: <span class="ident">acl_tag_t</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">acl_tag_t_ACL_EXTENDED_ALLOW</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_EXTENDED_DENY</span>: <span class="ident">acl_tag_t</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">acl_tag_t_ACL_EXTENDED_DENY</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_USER_OBJ</span>: <span class="ident">acl_tag_t</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_USER_OBJ</span> <span class="kw">as</span> <span class="ident">acl_tag_t</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_USER</span>: <span class="ident">acl_tag_t</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_USER</span> <span class="kw">as</span> <span class="ident">acl_tag_t</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_GROUP_OBJ</span>: <span class="ident">acl_tag_t</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_GROUP_OBJ</span> <span class="kw">as</span> <span class="ident">acl_tag_t</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_GROUP</span>: <span class="ident">acl_tag_t</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_GROUP</span> <span class="kw">as</span> <span class="ident">acl_tag_t</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_MASK</span>: <span class="ident">acl_tag_t</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_MASK</span> <span class="kw">as</span> <span class="ident">acl_tag_t</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ACL_OTHER</span>: <span class="ident">acl_tag_t</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ACL_OTHER</span> <span class="kw">as</span> <span class="ident">acl_tag_t</span>;
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ID_TYPE_UID</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ID_TYPE_UID</span> <span class="kw">as</span> <span class="ident">i32</span>;
@@ -320,19 +335,6 @@
 
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
         <span class="macro">assert</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">O_SYMLINK</span> <span class="kw">as</span> <span class="ident">i32</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span>);
-
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ACL_USER_OBJ</span> <span class="kw">as</span> <span class="ident">i32</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span>);
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ACL_USER</span> <span class="kw">as</span> <span class="ident">i32</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span>);
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ACL_GROUP_OBJ</span> <span class="kw">as</span> <span class="ident">i32</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span>);
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ACL_GROUP</span> <span class="kw">as</span> <span class="ident">i32</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span>);
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ACL_MASK</span> <span class="kw">as</span> <span class="ident">i32</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span>);
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ACL_OTHER</span> <span class="kw">as</span> <span class="ident">i32</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span>);
 
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
         <span class="macro">assert</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ID_TYPE_UID</span> <span class="kw">as</span> <span class="ident">i32</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span>);

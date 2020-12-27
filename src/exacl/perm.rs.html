@@ -666,7 +666,7 @@
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Perm</span>::<span class="ident">all</span>().<span class="ident">to_string</span>(), <span class="string">&quot;read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync&quot;</span>);
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Perm</span>::<span class="ident">all</span>().<span class="ident">to_string</span>(), <span class="string">&quot;read,write,execute&quot;</span>);
     }
 
@@ -687,7 +687,7 @@
             <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Perm</span>::<span class="ident">all</span>(), <span class="string">&quot;read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
         }
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
         {
             <span class="macro">assert_eq</span><span class="macro">!</span>(
                 <span class="string">&quot;unknown variant `qq`, expected one of `read`, `write`, `execute`&quot;</span>,
