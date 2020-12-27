@@ -1,11 +1,11 @@
 //! Provides `Acl` and `AclOption` implementation.
 
 use crate::aclentry::AclEntry;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 use crate::aclentry::AclEntryKind;
 use crate::failx::{fail_custom, path_err};
 use crate::flag::Flag;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 use crate::perm::Perm;
 use crate::util::*;
 
@@ -38,7 +38,7 @@ pub struct Acl {
     /// Set to true if `acl` was set from the default ACL for a directory
     /// using DEFAULT_ACL option. Used to return entries with the `DEFAULT`
     /// flag set.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     default_acl: bool,
 }
 
@@ -49,7 +49,7 @@ impl Acl {
         assert!(!acl.is_null());
         Acl {
             acl,
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             default_acl,
         }
     }
@@ -70,8 +70,11 @@ impl Acl {
                 // Trying to access the default ACL of a non-directory on Linux
                 // will return an error. We can catch this error and return an
                 // empty ACL instead; only if `IGNORE_EXPECTED_FILE_ERR` is set.
+                // (Linux returns permission denied. FreeBSD returns invalid
+                // argument.)
                 if default_acl
-                    && err.kind() == io::ErrorKind::PermissionDenied
+                    && (err.kind() == io::ErrorKind::PermissionDenied
+                        || err.kind() == io::ErrorKind::InvalidInput)
                     && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR)
                     && is_non_directory(path)
                 {
@@ -124,7 +127,7 @@ impl Acl {
     }
 
     /// Compute mask.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     fn compute_mask_perms(entries: &[AclEntry], filter: (Flag, Flag)) -> Option<Perm> {
         let mut perms = Perm::empty();
         let mut need_mask = false;
@@ -176,7 +179,7 @@ impl Acl {
             }
         }
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::empty())) {
             let mask = AclEntry::allow_mask(mask_perms, None);
             if let Err(err) = mask.add_to_acl(&mut acl_p) {
@@ -197,8 +200,8 @@ impl Acl {
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
-    #[cfg(any(docsrs, target_os = "linux"))]
-    #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
+    #[cfg(any(docsrs, target_os = "linux", target_os = "freebsd"))]
+    #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
     pub fn from_unified_entries(entries: &[AclEntry]) -> io::Result<(Acl, Acl)> {
         let new_access = xacl_init(entries.len())?;
         let new_default = xacl_init(entries.len())?;
@@ -258,7 +261,7 @@ impl Acl {
             Ok(())
         })?;
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         if self.default_acl {
             // Set DEFAULT flag on each entry.
             for entry in &mut entries {

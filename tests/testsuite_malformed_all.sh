@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 
 # Test suite that tests exacl tool with malformed input.
 

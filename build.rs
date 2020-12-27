@@ -87,7 +87,7 @@ fn prebuilt_bindings(out_path: &Path) {
 
     // Untrusted input check.
     match target.as_str() {
-        "macos" | "linux" => (),
+        "macos" | "linux" | "freebsd" => (),
         s => panic!("Unsupported target OS: {}", s),
     };
 

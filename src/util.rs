@@ -7,7 +7,7 @@ use crate::perm::Perm;
 use crate::qualifier::Qualifier;
 use crate::sys::*;
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 use nix::unistd::{Gid, Uid};
 use scopeguard::defer;
 use std::ffi::{c_void, CStr, CString};
@@ -78,7 +78,16 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
     Ok(acl)
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+fn get_acl_type(default_acl: bool) -> acl_type_t {
+    if default_acl {
+        sg::ACL_TYPE_DEFAULT
+    } else {
+        sg::ACL_TYPE_ACCESS
+    }
+}
+
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::Result<acl_t> {
     use std::os::unix::ffi::OsStrExt;
 
@@ -86,12 +95,7 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
         return fail_custom("Linux does not support symlinks with ACL's.");
     }
 
-    let acl_type = if default_acl {
-        ACL_TYPE_DEFAULT
-    } else {
-        ACL_TYPE_ACCESS
-    };
-
+    let acl_type = get_acl_type(default_acl);
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
 
@@ -161,7 +165,7 @@ pub fn xacl_set_file(
     Ok(())
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 pub fn xacl_set_file(
     path: &Path,
     acl: acl_t,
@@ -174,12 +178,7 @@ pub fn xacl_set_file(
         return fail_custom("Linux does not support symlinks with ACL's");
     }
 
-    let acl_type = if default_acl {
-        ACL_TYPE_DEFAULT
-    } else {
-        ACL_TYPE_ACCESS
-    };
-
+    let acl_type = get_acl_type(default_acl);
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let ret = unsafe { acl_set_file(c_path.as_ptr(), acl_type, acl) };
     if ret != 0 {
@@ -211,12 +210,12 @@ pub fn xacl_entry_count(acl: acl_t) -> usize {
 fn xacl_get_entry(acl: acl_t, entry_id: i32, entry_p: *mut acl_entry_t) -> bool {
     let ret = unsafe { acl_get_entry(acl, entry_id, entry_p) };
 
-    // MacOS: Zero means there is more.
+    // MacOS: Zero indicates success.
     #[cfg(target_os = "macos")]
     return ret == 0;
 
-    // Linux: One means there is more.
-    #[cfg(target_os = "linux")]
+    // Linux, FreeBSD: One indicates success.
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     return ret == 1;
 }
 
@@ -307,15 +306,15 @@ pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier
 
     #[allow(non_upper_case_globals)]
     let result = match tag {
-        acl_tag_t_ACL_EXTENDED_ALLOW => (true, xacl_get_qualifier(entry)?),
-        acl_tag_t_ACL_EXTENDED_DENY => (false, xacl_get_qualifier(entry)?),
+        sg::ACL_EXTENDED_ALLOW => (true, xacl_get_qualifier(entry)?),
+        sg::ACL_EXTENDED_DENY => (false, xacl_get_qualifier(entry)?),
         _ => (false, Qualifier::Unknown(format!("@tag {}", tag))),
     };
 
     Ok(result)
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     let tag = xacl_get_tag_type(entry)?;
 
@@ -343,7 +342,7 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     Ok(result)
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
     let qualifier = xacl_get_qualifier(entry)?;
     Ok((true, qualifier))
@@ -407,7 +406,7 @@ pub fn xacl_get_acl_flags(acl: acl_t) -> io::Result<Flag> {
     xacl_get_flags_np(acl as *mut c_void)
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 #[allow(clippy::clippy::missing_const_for_fn)]
 pub fn xacl_get_flags(_entry: acl_entry_t) -> io::Result<Flag> {
     Ok(Flag::empty()) // noop
@@ -446,11 +445,11 @@ pub fn xacl_set_tag_qualifier(
 ) -> io::Result<()> {
     let tag = if let Qualifier::Unknown(_) = qualifier {
         debug_assert!(!allow);
-        acl_tag_t_ACL_EXTENDED_DENY
+        sg::ACL_EXTENDED_DENY
     } else if allow {
-        acl_tag_t_ACL_EXTENDED_ALLOW
+        sg::ACL_EXTENDED_ALLOW
     } else {
-        acl_tag_t_ACL_EXTENDED_DENY
+        sg::ACL_EXTENDED_DENY
     };
 
     xacl_set_tag_type(entry, tag)?;
@@ -459,7 +458,7 @@ pub fn xacl_set_tag_qualifier(
     Ok(())
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
     let id_ptr = &mut id as *mut uid_t;
 
@@ -471,7 +470,7 @@ fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
     Ok(())
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 pub fn xacl_set_tag_qualifier(
     entry: acl_entry_t,
     allow: bool,
@@ -569,7 +568,7 @@ pub fn xacl_set_acl_flags(acl: acl_t, flags: Flag) -> io::Result<()> {
     xacl_set_flags_np(acl as *mut c_void, flags)
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 #[allow(clippy::clippy::missing_const_for_fn)]
 pub fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
     Ok(()) // noop
@@ -599,7 +598,7 @@ pub fn xacl_to_text(acl: acl_t) -> io::Result<String> {
     Ok(result)
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "freebsd"))]
 #[allow(clippy::clippy::missing_const_for_fn)]
 pub fn xacl_check(_acl: acl_t) -> io::Result<()> {
     Ok(()) // noop
@@ -703,7 +702,7 @@ mod util_tests_mac {
 }
 
 #[cfg(test)]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 mod util_tests_linux {
     use super::*;
 
@@ -728,6 +727,7 @@ mod util_tests_linux {
 
         // Even though ACL contains 1 invalid entry, the platform text still
         // results in empty string.
+        #[cfg(target_os = "linux")]
         assert_eq!(xacl_to_text(acl).unwrap(), "");
 
         // Add another entry and set it to a valid value.
@@ -735,6 +735,7 @@ mod util_tests_linux {
         xacl_set_tag_type(entry2, sg::ACL_USER_OBJ).unwrap();
 
         // ACL only prints the one valid entry; no sign of other entry.
+        #[cfg(target_os = "linux")]
         assert_eq!(xacl_to_text(acl).unwrap(), "\nuser::---\n");
 
         // There are still two entries... one is corrupt.

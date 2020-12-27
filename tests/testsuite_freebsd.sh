@@ -42,7 +42,7 @@ isReadableLink() {
 }
 
 fileperms() {
-    stat -c "%A" "$1"
+    stat -f "%Sp" "$1"
 }
 
 # Put quotes back on JSON text.
@@ -230,7 +230,7 @@ testWriteAclToFile1() {
         "${msg//\"/}"
 
     # Check ACL with getfacl.
-    msg=$(getfacl -cE $FILE1 2>/dev/null)
+    msg=$(getfacl -q $FILE1 2>/dev/null)
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
         "user::rw-
@@ -302,7 +302,7 @@ testWriteAclToDir1() {
     assertEquals "drwxr-----" "$(fileperms $DIR1)"
 
     # Check ACL with getfacl.
-    msg=$(getfacl -cE $DIR1 2>/dev/null)
+    msg=$(getfacl -q $DIR1 2>/dev/null)
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
         "user::rwx
@@ -360,7 +360,7 @@ testWriteAclNumericUID() {
         "${msg//\"/}"
 
     # Check ACL with getfacl.
-    msg=$(getfacl -cE $FILE1 2>/dev/null)
+    msg=$(getfacl -q $FILE1 2>/dev/null)
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
         "user::rw-
@@ -421,7 +421,7 @@ testWriteDefaultAcl() {
         "${msg//\"/}"
 
     # Check ACL with getfacl.
-    msg=$(getfacl -cE $DIR1 2>/dev/null)
+    msg=$(getfacl -q $DIR1 2>/dev/null)
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
         "user::rwx
@@ -504,7 +504,7 @@ testWriteUnifiedAclToDir1() {
         "${msg//\"/}"
 
     # Check ACL with getfacl.
-    msg=$(getfacl -cE $DIR1 2>/dev/null)
+    msg=$(getfacl -q $DIR1 2>/dev/null)
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
         "user::rw-

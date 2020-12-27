@@ -49,11 +49,13 @@ bitflags! {
         const ONLY_INHERIT = np::ACL_ENTRY_ONLY_INHERIT;
 
         /// Specifies a default ACL entry on Linux.
-        #[cfg(any(docsrs, target_os = "linux"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "linux")))]
+        #[cfg(any(docsrs, target_os = "linux", target_os = "freebsd"))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
         const DEFAULT = 1;
     }
 }
+
+// N.B. On FreeBSD, acl_flag_t is a u16. On Linux and macOS, acl_flag_t is a u32.
 
 impl BitIterable for Flag {
     fn lsb(self) -> Option<Self> {
@@ -66,6 +68,7 @@ impl BitIterable for Flag {
     }
 
     fn msb(self) -> Option<Self> {
+        // FIXME: Replace computation with `BITS` once it lands in stable.
         #[allow(clippy::cast_possible_truncation)]
         const MAX_BITS: acl_flag_t = 8 * std::mem::size_of::<Flag>() as acl_flag_t - 1;
 
@@ -73,7 +76,7 @@ impl BitIterable for Flag {
             return None;
         }
         Some(Flag {
-            bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
+            bits: 1 << (MAX_BITS - self.bits.leading_zeros() as acl_flag_t),
         })
     }
 }
@@ -103,18 +106,20 @@ enum FlagName {
     #[cfg(target_os = "macos")]
     only_inherit = Flag::ONLY_INHERIT.bits,
 
-    #[cfg(target_os = "linux")]
-    default = Flag::DEFAULT.bits,
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+    default = Flag::DEFAULT.bits as u32,
 }
 
 impl FlagName {
     fn from_flag(flag: Flag) -> Option<FlagName> {
         use std::convert::TryFrom;
-        FlagName::try_from(flag.bits).ok()
+        FlagName::try_from(flag.bits as u32).ok()
     }
 
     const fn to_flag(self) -> Flag {
-        Flag { bits: self as u32 }
+        Flag {
+            bits: self as acl_flag_t,
+        }
     }
 }
 
@@ -141,7 +146,7 @@ impl fmt::Display for Flag {
 }
 
 /// Parse an abbreviated flag ("d").
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn parse_flag_abbreviation(s: &str) -> Option<Flag> {
     match s {
         "d" => Some(Flag::DEFAULT),
@@ -253,12 +258,12 @@ mod flag_tests {
             assert_eq!(Flag::all().to_string(), "defer_inherit,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit,no_inherit");
         }
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
             let flags = Flag::DEFAULT;
             assert_eq!(flags.to_string(), "default");
 
-            let bad_flag = Flag { bits: 0x0080_0000 } | Flag::DEFAULT;
+            let bad_flag = Flag { bits: 0x8000 } | Flag::DEFAULT;
             assert_eq!(bad_flag.to_string(), "default");
 
             assert_eq!(Flag::all().to_string(), "default");
@@ -279,7 +284,7 @@ mod flag_tests {
             assert_eq!("unknown variant `bad_flag`, expected one of `defer_inherit`, `no_inherit`, `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`", "bad_flag".parse::<Flag>().unwrap_err().to_string());
         }
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
             assert_eq!(Flag::empty(), "".parse::<Flag>().unwrap());
 

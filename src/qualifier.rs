@@ -9,11 +9,11 @@ use std::io;
 #[cfg(target_os = "macos")]
 use uuid::Uuid;
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 const OWNER_NAME: &str = "";
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 const OTHER_NAME: &str = "";
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 const MASK_NAME: &str = "";
 
 /// A Qualifier specifies the principal that is allowed/denied access to a
@@ -26,13 +26,13 @@ pub enum Qualifier {
     #[cfg(target_os = "macos")]
     Guid(Uuid),
 
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     UserObj,
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     GroupObj,
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     Other,
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     Mask,
 
     Unknown(String),
@@ -79,7 +79,7 @@ impl Qualifier {
     }
 
     /// Create qualifier object from a user name.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
         match name {
             OWNER_NAME => Ok(Qualifier::UserObj),
@@ -106,7 +106,7 @@ impl Qualifier {
     }
 
     /// Create qualifier object from a group name.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
         match name {
             OWNER_NAME => Ok(Qualifier::GroupObj),
@@ -118,7 +118,7 @@ impl Qualifier {
     }
 
     /// Create qualifier from mask.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub fn mask_named(name: &str) -> io::Result<Qualifier> {
         match name {
             MASK_NAME => Ok(Qualifier::Mask),
@@ -127,7 +127,7 @@ impl Qualifier {
     }
 
     /// Create qualifier from other.
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub fn other_named(name: &str) -> io::Result<Qualifier> {
         match name {
             OTHER_NAME => Ok(Qualifier::Other),
@@ -153,11 +153,11 @@ impl Qualifier {
             Qualifier::Group(gid) => gid_to_str(*gid),
             #[cfg(target_os = "macos")]
             Qualifier::Guid(guid) => guid.to_string(),
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::UserObj | Qualifier::GroupObj => OWNER_NAME.to_string(),
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::Other => OTHER_NAME.to_string(),
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::Mask => MASK_NAME.to_string(),
 
             Qualifier::Unknown(s) => s.clone(),
@@ -276,8 +276,8 @@ mod qualifier_tests {
         #[cfg(target_os = "macos")]
         assert_eq!(str_to_uid("_spotlight").ok(), Some(Uid::from_raw(89)));
 
-        #[cfg(target_os = "linux")]
-        assert_eq!(str_to_uid("bin").ok(), Some(Uid::from_raw(2)));
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        assert_eq!(str_to_uid("daemon").ok(), Some(Uid::from_raw(1)));
     }
 
     #[test]
@@ -293,8 +293,8 @@ mod qualifier_tests {
         #[cfg(target_os = "macos")]
         assert_eq!(str_to_gid("_spotlight").ok(), Some(Gid::from_raw(89)));
 
-        #[cfg(target_os = "linux")]
-        assert_eq!(str_to_gid("bin").ok(), Some(Gid::from_raw(2)));
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        assert_eq!(str_to_gid("daemon").ok(), Some(Gid::from_raw(1)));
     }
 
     #[test]
@@ -304,8 +304,8 @@ mod qualifier_tests {
         #[cfg(target_os = "macos")]
         assert_eq!(uid_to_str(Uid::from_raw(89)), "_spotlight");
 
-        #[cfg(target_os = "linux")]
-        assert_eq!(uid_to_str(Uid::from_raw(2)), "bin");
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        assert_eq!(uid_to_str(Uid::from_raw(1)), "daemon");
     }
 
     #[test]
@@ -315,8 +315,8 @@ mod qualifier_tests {
         #[cfg(target_os = "macos")]
         assert_eq!(gid_to_str(Gid::from_raw(89)), "_spotlight");
 
-        #[cfg(target_os = "linux")]
-        assert_eq!(gid_to_str(Gid::from_raw(2)), "bin");
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        assert_eq!(gid_to_str(Gid::from_raw(1)), "daemon");
     }
 
     #[test]
@@ -415,10 +415,10 @@ mod qualifier_tests {
             assert_eq!(user, Some(Qualifier::User(Uid::from_raw(89))));
         }
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
-            let user = Qualifier::user_named("bin").ok();
-            assert_eq!(user, Some(Qualifier::User(Uid::from_raw(2))));
+            let user = Qualifier::user_named("daemon").ok();
+            assert_eq!(user, Some(Qualifier::User(Uid::from_raw(1))));
         }
     }
 
@@ -436,10 +436,10 @@ mod qualifier_tests {
             assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
         }
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
-            let group = Qualifier::group_named("bin").ok();
-            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(2))));
+            let group = Qualifier::group_named("daemon").ok();
+            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(1))));
         }
     }
 }
