@@ -727,6 +727,7 @@ mod util_tests_linux {
 
         // Even though ACL contains 1 invalid entry, the platform text still
         // results in empty string.
+        #[cfg(target_os = "linux")]
         assert_eq!(xacl_to_text(acl).unwrap(), "");
 
         // Add another entry and set it to a valid value.
@@ -734,6 +735,7 @@ mod util_tests_linux {
         xacl_set_tag_type(entry2, sg::ACL_USER_OBJ).unwrap();
 
         // ACL only prints the one valid entry; no sign of other entry.
+        #[cfg(target_os = "linux")]
         assert_eq!(xacl_to_text(acl).unwrap(), "\nuser::---\n");
 
         // There are still two entries... one is corrupt.

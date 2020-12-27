@@ -263,7 +263,7 @@ mod flag_tests {
             let flags = Flag::DEFAULT;
             assert_eq!(flags.to_string(), "default");
 
-            let bad_flag = Flag { bits: 0x0080_0000 } | Flag::DEFAULT;
+            let bad_flag = Flag { bits: 0x8000 } | Flag::DEFAULT;
             assert_eq!(bad_flag.to_string(), "default");
 
             assert_eq!(Flag::all().to_string(), "default");
