@@ -7,7 +7,7 @@ use crate::perm::Perm;
 use crate::qualifier::Qualifier;
 use crate::sys::*;
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 use nix::unistd::{Gid, Uid};
 use scopeguard::defer;
 use std::ffi::{c_void, CStr, CString};
@@ -78,13 +78,12 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
     Ok(acl)
 }
 
-// acl_type_t is i32 on FreeBSD, u32 on Linux.
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn get_acl_type(default_acl: bool) -> acl_type_t {
     if default_acl {
-        ACL_TYPE_DEFAULT as acl_type_t
+        sg::ACL_TYPE_DEFAULT
     } else {
-        ACL_TYPE_ACCESS as acl_type_t
+        sg::ACL_TYPE_ACCESS
     }
 }
 
@@ -307,8 +306,8 @@ pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier
 
     #[allow(non_upper_case_globals)]
     let result = match tag {
-        acl_tag_t_ACL_EXTENDED_ALLOW => (true, xacl_get_qualifier(entry)?),
-        acl_tag_t_ACL_EXTENDED_DENY => (false, xacl_get_qualifier(entry)?),
+        sg::ACL_EXTENDED_ALLOW => (true, xacl_get_qualifier(entry)?),
+        sg::ACL_EXTENDED_DENY => (false, xacl_get_qualifier(entry)?),
         _ => (false, Qualifier::Unknown(format!("@tag {}", tag))),
     };
 
@@ -446,11 +445,11 @@ pub fn xacl_set_tag_qualifier(
 ) -> io::Result<()> {
     let tag = if let Qualifier::Unknown(_) = qualifier {
         debug_assert!(!allow);
-        acl_tag_t_ACL_EXTENDED_DENY
+        sg::ACL_EXTENDED_DENY
     } else if allow {
-        acl_tag_t_ACL_EXTENDED_ALLOW
+        sg::ACL_EXTENDED_ALLOW
     } else {
-        acl_tag_t_ACL_EXTENDED_DENY
+        sg::ACL_EXTENDED_DENY
     };
 
     xacl_set_tag_type(entry, tag)?;

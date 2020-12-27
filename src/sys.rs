@@ -95,11 +95,20 @@ pub mod np {
 pub mod sg {
     #![allow(clippy::cast_possible_wrap)]
 
+    use super::{acl_tag_t, acl_type_t};
+
     pub const ENOENT: i32 = super::ENOENT as i32;
     pub const ENOTSUP: i32 = super::ENOTSUP as i32;
     pub const EINVAL: i32 = super::EINVAL as i32;
     pub const ENOMEM: i32 = super::ENOMEM as i32;
     pub const ACL_MAX_ENTRIES: i32 = super::ACL_MAX_ENTRIES as i32;
+
+    #[cfg(target_os = "macos")]
+    pub const ACL_TYPE_EXTENDED: acl_type_t = super::acl_type_t_ACL_TYPE_EXTENDED;
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+    pub const ACL_TYPE_ACCESS: acl_type_t = super::ACL_TYPE_ACCESS as acl_type_t;
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+    pub const ACL_TYPE_DEFAULT: acl_type_t = super::ACL_TYPE_DEFAULT as acl_type_t;
 
     #[cfg(target_os = "macos")]
     pub const ACL_FIRST_ENTRY: i32 = super::acl_entry_id_t_ACL_FIRST_ENTRY;
@@ -114,18 +123,22 @@ pub mod sg {
     #[cfg(target_os = "macos")]
     pub const O_SYMLINK: i32 = super::O_SYMLINK as i32;
 
+    #[cfg(target_os = "macos")]
+    pub const ACL_EXTENDED_ALLOW: acl_tag_t = super::acl_tag_t_ACL_EXTENDED_ALLOW;
+    #[cfg(target_os = "macos")]
+    pub const ACL_EXTENDED_DENY: acl_tag_t = super::acl_tag_t_ACL_EXTENDED_DENY;
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-    pub const ACL_USER_OBJ: i32 = super::ACL_USER_OBJ as i32;
+    pub const ACL_USER_OBJ: acl_tag_t = super::ACL_USER_OBJ as acl_tag_t;
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-    pub const ACL_USER: i32 = super::ACL_USER as i32;
+    pub const ACL_USER: acl_tag_t = super::ACL_USER as acl_tag_t;
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-    pub const ACL_GROUP_OBJ: i32 = super::ACL_GROUP_OBJ as i32;
+    pub const ACL_GROUP_OBJ: acl_tag_t = super::ACL_GROUP_OBJ as acl_tag_t;
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-    pub const ACL_GROUP: i32 = super::ACL_GROUP as i32;
+    pub const ACL_GROUP: acl_tag_t = super::ACL_GROUP as acl_tag_t;
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-    pub const ACL_MASK: i32 = super::ACL_MASK as i32;
+    pub const ACL_MASK: acl_tag_t = super::ACL_MASK as acl_tag_t;
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-    pub const ACL_OTHER: i32 = super::ACL_OTHER as i32;
+    pub const ACL_OTHER: acl_tag_t = super::ACL_OTHER as acl_tag_t;
 
     #[cfg(target_os = "macos")]
     pub const ID_TYPE_UID: i32 = super::ID_TYPE_UID as i32;
