@@ -1,4 +1,4 @@
-
+# Config file for cirrus-ci.org
 
 freebsd_instance:
   image_family: freebsd-12-1
@@ -6,7 +6,7 @@ freebsd_instance:
 # Adapted from https://github.com/Stebalien/xattr
 
 task:
-  name: cargo test
+  name: CI / build (freebsd-12-1)
   # Record some info about the test environment
   sysinfo_script:
     - mount

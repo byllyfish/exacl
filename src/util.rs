@@ -740,8 +740,12 @@ mod util_tests_linux {
 
         // There are still two entries... one is corrupt.
         assert_eq!(xacl_entry_count(acl), 2);
-        let err = xacl_check(acl).unwrap_err();
-        assert!(err.to_string().contains("Invalid ACL entry tag type"));
+        // FIXME: xacl_check is not yet supported on FreeBSD.
+        #[cfg(target_os = "linux")]
+        {
+            let err = xacl_check(acl).unwrap_err();
+            assert!(err.to_string().contains("Invalid ACL entry tag type"));
+        }
 
         xacl_free(acl);
     }
