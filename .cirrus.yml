@@ -1,23 +1,30 @@
 # Config file for cirrus-ci.org
 
 freebsd_instance:
-  image_family: freebsd-12-1
+  image_family: freebsd-12-2
 
 # Adapted from https://github.com/Stebalien/xattr
 
 task:
-  name: CI / build (freebsd-12-1)
-  # Record some info about the test environment
+  name: CI / build (freebsd-acls)
+  
   sysinfo_script:
+    # Record info about the test environment.
     - mount
     - df -h
     - sysctl hw.model hw.ncpu hw.physmem
     - freebsd-version
-  # Install Rust
+    # Create a 5 MB memory based FS with acls enabled and
+    # mount it on /tmp.
+    - mdmfs -o acls -s 5m md1 /tmp
+    - mount
+
   setup_script:
+    # Install Rust.
     - pkg install -y curl
     - curl https://sh.rustup.rs -sSf --output rustup.sh
     - sh rustup.sh -y
+
   test_script:
     - . $HOME/.cargo/env
     - cargo test
