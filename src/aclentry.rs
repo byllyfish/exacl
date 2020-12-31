@@ -218,10 +218,14 @@ impl AclEntry {
     pub(crate) fn add_to_acl(&self, acl: &mut acl_t) -> io::Result<()> {
         let qualifier = self.qualifier()?;
 
-        // Check for duplicates already in the list.
+        // Check for duplicates already in the list (Linux & FreeBSD only)
+        #[cfg(not(target_os = "macos"))]
         xacl_foreach(*acl, |entry| {
             let (_, prev) = xacl_get_tag_qualifier(entry)?;
             if prev == qualifier {
+                #[cfg(target_os = "macos")]
+                let default = "";
+                #[cfg(not(target_os = "macos"))]
                 let default = if self.flags.contains(Flag::DEFAULT) {
                     "default "
                 } else {

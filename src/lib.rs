@@ -88,9 +88,12 @@ pub use aclentry::{AclEntry, AclEntryKind};
 pub use flag::Flag;
 pub use perm::Perm;
 
-use failx::{custom_err, fail_custom};
+use failx::custom_err;
 use std::io::{self, BufRead};
 use std::path::Path;
+
+#[cfg(not(target_os = "macos"))]
+use failx::fail_custom;
 
 /// Get access control list (ACL) for a file or directory.
 ///
