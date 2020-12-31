@@ -178,8 +178,20 @@ pub fn xacl_set_file(
         return fail_custom("Linux does not support symlinks with ACL's");
     }
 
-    let acl_type = get_acl_type(default_acl);
     let c_path = CString::new(path.as_os_str().as_bytes())?;
+
+    #[cfg(target_os = "freebsd")]
+    if default_acl && xacl_entry_count(acl) == 0 {
+        // Special case to delete the ACL. The FreeBSD version of
+        // acl_set_file does not handle this case.
+        let ret = unsafe { acl_delete_def_file(c_path.as_ptr()) };
+        if ret != 0 {
+            return fail_err(ret, "acl_delete_def_file", &c_path);
+        }
+        return Ok(());
+    }
+
+    let acl_type = get_acl_type(default_acl);
     let ret = unsafe { acl_set_file(c_path.as_ptr(), acl_type, acl) };
     if ret != 0 {
         let func = if default_acl {
@@ -740,8 +752,12 @@ mod util_tests_linux {
 
         // There are still two entries... one is corrupt.
         assert_eq!(xacl_entry_count(acl), 2);
-        let err = xacl_check(acl).unwrap_err();
-        assert!(err.to_string().contains("Invalid ACL entry tag type"));
+        // FIXME: xacl_check is not yet supported on FreeBSD.
+        #[cfg(target_os = "linux")]
+        {
+            let err = xacl_check(acl).unwrap_err();
+            assert!(err.to_string().contains("Invalid ACL entry tag type"));
+        }
 
         xacl_free(acl);
     }
