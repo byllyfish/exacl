@@ -349,10 +349,12 @@ fn test_from_entries() {
 
         entries.push(AclEntry::allow_user("", Perm::READ, None));
         let acl = Acl::from_entries(&entries).unwrap();
-        assert_eq!(
-            acl.to_platform_text().unwrap(),
-            "user::r--\nuser:500:--x\ngroup::r--\nmask::r-x\nother::r--\n"
-        );
+
+        #[cfg(target_os = "linux")]
+        let expected = "user::r--\nuser:500:--x\ngroup::r--\nmask::r-x\nother::r--\n";
+        #[cfg(target_os = "freebsd")]
+        let expected = "group::r--\nother::r--\nuser:500:--x\nuser::r--\nmask::r-x\n";
+        assert_eq!(acl.to_platform_text().unwrap(), expected);
 
         entries.push(AclEntry::allow_group("", Perm::WRITE, None));
         let err = Acl::from_entries(&entries).err().unwrap();
@@ -390,14 +392,18 @@ fn test_from_unified_entries() {
     entries.push(AclEntry::allow_other(Perm::empty(), Flag::DEFAULT));
 
     let (a, d) = Acl::from_unified_entries(&entries).unwrap();
-    assert_eq!(
-        a.to_platform_text().unwrap(),
-        "user::r--\nuser:500:--x\ngroup::-w-\nmask::-wx\nother::---\n"
-    );
-    assert_eq!(
-        d.to_platform_text().unwrap(),
-        "user::r--\nuser:501:--x\ngroup::-w-\nmask::-wx\nother::---\n"
-    );
+
+    #[cfg(target_os = "linux")]
+    let expected = "user::r--\nuser:500:--x\ngroup::-w-\nmask::-wx\nother::---\n";
+    #[cfg(target_os = "freebsd")]
+    let expected = "user:500:--x\ngroup::-w-\nuser::r--\nother::---\nmask::-wx\n";
+    assert_eq!(a.to_platform_text().unwrap(), expected);
+
+    #[cfg(target_os = "linux")]
+    let expected = "user::r--\nuser:501:--x\ngroup::-w-\nmask::-wx\nother::---\n";
+    #[cfg(target_os = "freebsd")]
+    let expected = "user:501:--x\ngroup::-w-\nuser::r--\nother::---\nmask::-wx\n";
+    assert_eq!(d.to_platform_text().unwrap(), expected);
 
     entries.push(AclEntry::allow_group("", Perm::WRITE, Flag::DEFAULT));
 
