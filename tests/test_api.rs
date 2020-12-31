@@ -244,13 +244,14 @@ fn test_write_default_acl() -> io::Result<()> {
     entries.push(AclEntry::allow_mask(rwx, None));
 
     let dir = tempfile::tempdir()?;
+    let path = dir.as_ref();
     let acl = Acl::from_entries(&entries)?;
-    acl.write(dir.as_ref(), AclOption::DEFAULT_ACL)?;
+    acl.write(path, AclOption::DEFAULT_ACL)?;
 
-    let acl2 = Acl::read(dir.as_ref(), AclOption::empty())?;
+    let acl2 = Acl::read(path, AclOption::empty())?;
     assert_ne!(acl.to_platform_text()?, acl2.to_platform_text()?);
 
-    let default_acl = Acl::read(dir.as_ref(), AclOption::DEFAULT_ACL)?;
+    let default_acl = Acl::read(path, AclOption::DEFAULT_ACL)?;
     assert_eq!(default_acl.to_platform_text()?, acl.to_platform_text()?);
 
     let default_entries = default_acl.entries()?;
@@ -259,9 +260,10 @@ fn test_write_default_acl() -> io::Result<()> {
     }
 
     // Test deleting a default ACL by passing an empty acl.
+    debug!("Test deleting a default ACL");
     let empty_acl = Acl::from_entries(&[])?;
-    empty_acl.write(dir.as_ref(), AclOption::DEFAULT_ACL)?;
-    assert!(Acl::read(dir.as_ref(), AclOption::DEFAULT_ACL)?.is_empty());
+    empty_acl.write(path, AclOption::DEFAULT_ACL)?;
+    assert!(Acl::read(path, AclOption::DEFAULT_ACL)?.is_empty());
 
     Ok(())
 }
