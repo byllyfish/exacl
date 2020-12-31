@@ -338,16 +338,25 @@ fn test_from_entries() {
     // Test named user on Linux. It should add correct mask.
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     {
-        let mut entries = vec![AclEntry::allow_user("500", Perm::EXECUTE, None)];
-        let acl = Acl::from_entries(&entries).unwrap();
-        assert_eq!(acl.to_platform_text().unwrap(), "user:500:--x\nmask::--x\n");
+        let mut entries = vec![
+            AclEntry::allow_group("", Perm::READ, None),
+            AclEntry::allow_other(Perm::READ, None),
+            AclEntry::allow_user("500", Perm::EXECUTE, None),
+        ];
 
-        entries.push(AclEntry::allow_group("", Perm::WRITE, None));
+        let err = Acl::from_entries(&entries).err().unwrap();
+        assert_eq!(err.to_string(), "missing required entry \"user\"");
+
+        entries.push(AclEntry::allow_user("", Perm::READ, None));
         let acl = Acl::from_entries(&entries).unwrap();
         assert_eq!(
             acl.to_platform_text().unwrap(),
-            "user:500:--x\ngroup::-w-\nmask::-wx\n"
+            "user::r--\nuser:500:--x\ngroup::r--\nmask::r-x\nother::r--\n"
         );
+
+        entries.push(AclEntry::allow_group("", Perm::WRITE, None));
+        let err = Acl::from_entries(&entries).err().unwrap();
+        assert_eq!(err.to_string(), "entry 4: duplicate entry for \"group\"");
     }
 }
 
@@ -364,21 +373,38 @@ fn test_from_unified_entries() {
         AclEntry::allow_user("501", Perm::EXECUTE, Flag::DEFAULT),
     ];
 
-    let (a, d) = Acl::from_unified_entries(&entries).unwrap();
-    assert_eq!(a.to_platform_text().unwrap(), "user:500:--x\nmask::--x\n");
-    assert_eq!(d.to_platform_text().unwrap(), "user:501:--x\nmask::--x\n");
+    // Missing required entries.
+    let err = Acl::from_unified_entries(&entries).err().unwrap();
+    assert_eq!(err.to_string(), "missing required entry \"user\"");
 
     entries.push(AclEntry::allow_group("", Perm::WRITE, None));
+    entries.push(AclEntry::allow_user("", Perm::READ, None));
+    entries.push(AclEntry::allow_other(Perm::empty(), None));
+
+    // Missing required default entries.
+    let err = Acl::from_unified_entries(&entries).err().unwrap();
+    assert_eq!(err.to_string(), "missing required default entry \"user\"");
+
     entries.push(AclEntry::allow_group("", Perm::WRITE, Flag::DEFAULT));
+    entries.push(AclEntry::allow_user("", Perm::READ, Flag::DEFAULT));
+    entries.push(AclEntry::allow_other(Perm::empty(), Flag::DEFAULT));
 
     let (a, d) = Acl::from_unified_entries(&entries).unwrap();
     assert_eq!(
         a.to_platform_text().unwrap(),
-        "user:500:--x\ngroup::-w-\nmask::-wx\n"
+        "user::r--\nuser:500:--x\ngroup::-w-\nmask::-wx\nother::---\n"
     );
     assert_eq!(
         d.to_platform_text().unwrap(),
-        "user:501:--x\ngroup::-w-\nmask::-wx\n"
+        "user::r--\nuser:501:--x\ngroup::-w-\nmask::-wx\nother::---\n"
+    );
+
+    entries.push(AclEntry::allow_group("", Perm::WRITE, Flag::DEFAULT));
+
+    let err = Acl::from_unified_entries(&entries).err().unwrap();
+    assert_eq!(
+        err.to_string(),
+        "entry 8: duplicate default entry for \"group\""
     );
 }
 

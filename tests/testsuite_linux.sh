@@ -167,7 +167,7 @@ testWriteAclToMissingFile() {
     msg=$(echo "$input" | $EXACL --set $DIR/non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "Invalid ACL: Required ACL entry is missing" \
+        "Invalid ACL: missing required entries" \
         "$msg"
 
     input=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
@@ -184,7 +184,7 @@ testWriteAclToFile1() {
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals "set acl to empty" 1 $?
     assertEquals \
-        "Invalid ACL: Required ACL entry is missing" \
+        "Invalid ACL: missing required entries" \
         "$msg"
 
     # Verify ACL.
@@ -211,7 +211,7 @@ testWriteAclToFile1() {
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals "check required entry" 1 $?
     assertEquals \
-        "Invalid ACL: Required ACL entry is missing" \
+        'Invalid ACL: missing required entry "user"' \
         "$msg"
 
     # Set ACL for current user specifically, with required entries.
@@ -247,7 +247,7 @@ testWriteAclToDir1() {
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "Invalid ACL: Required ACL entry is missing" \
+        "Invalid ACL: missing required entries" \
         "$msg"
 
     # Verify directory ACL.
@@ -327,7 +327,7 @@ testWriteAclToLink1() {
     msg=$(echo "$input" | $EXACL --set $LINK1 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "Invalid ACL: Required ACL entry is missing" \
+        "Invalid ACL: missing required entries" \
         "$msg"
 
     input=$(quotifyJson "[{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
@@ -522,7 +522,7 @@ testSetDefault() {
     msg=$(echo "$input" | $EXACL --set --default $DIR1 2>&1)
     assertEquals "set default acl" 1 $?
     assertEquals \
-        "Invalid ACL: Multiple ACL entries with a tag that may occur at most once" \
+        'Invalid ACL: entry 3: duplicate default entry for "user"' \
         "$msg"
 
     # Check ACL is updated.
@@ -553,7 +553,7 @@ testMissingFlags() {
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        'Invalid ACL: Required ACL entry is missing' \
+        'Invalid ACL: missing required entry "user"' \
         "${msg//\`/}"
 }
 
@@ -562,7 +562,7 @@ testMissingAllow() {
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        'Invalid ACL: Required ACL entry is missing' \
+        'Invalid ACL: missing required entry "user"' \
         "${msg//\`/}"
 }
 
@@ -572,7 +572,23 @@ testDuplicateEntry() {
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        'Invalid ACL: Multiple ACL entries with the same user/group ID' \
+        'Invalid ACL: entry 4: duplicate entry for "user:501"' \
+        "${msg//\`/}"
+
+    # daemon is uid 1.
+    input=$(quotifyJson "[{kind:user,name:1,perms:[execute]},$REQUIRED_ENTRIES,{kind:user,name:daemon,perms:[read]}]")
+    msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
+    assertEquals 1 $?
+    assertEquals \
+        'Invalid ACL: entry 4: duplicate entry for "user:1"' \
+        "${msg//\`/}"
+
+    # Test duplicate entry in default entries.
+    input=$(quotifyJson "[$REQUIRED_ENTRIES,{kind:user,name:,perms:[execute],flags:[default]},{kind:group,name:,perms:[execute],flags:[default]},{kind:other,name:,perms:[execute],flags:[default]},{kind:other,name:,perms:[execute],flags:[default]}]")
+    msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
+    assertEquals 1 $?
+    assertEquals \
+        'Invalid ACL: entry 6: duplicate default entry for "other"' \
         "${msg//\`/}"
 }
 

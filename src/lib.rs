@@ -88,7 +88,7 @@ pub use aclentry::{AclEntry, AclEntryKind};
 pub use flag::Flag;
 pub use perm::Perm;
 
-use failx::custom_err;
+use failx::{custom_err, fail_custom};
 use std::io::{self, BufRead};
 use std::path::Path;
 
@@ -265,10 +265,6 @@ where
     if options.contains(AclOption::DEFAULT_ACL) {
         let acl = Acl::from_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
 
-        if !acl.is_empty() {
-            acl.check().map_err(|err| custom_err("Invalid ACL", &err))?
-        }
-
         for path in paths {
             acl.write(path.as_ref(), options)?;
         }
@@ -276,14 +272,8 @@ where
         let (access_acl, default_acl) =
             Acl::from_unified_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
 
-        access_acl
-            .check()
-            .map_err(|err| custom_err("Invalid ACL", &err))?;
-
-        if !default_acl.is_empty() {
-            default_acl
-                .check()
-                .map_err(|err| custom_err("Invalid ACL", &err))?;
+        if access_acl.is_empty() {
+            fail_custom("Invalid ACL: missing required entries")?;
         }
 
         for path in paths {

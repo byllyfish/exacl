@@ -610,37 +610,6 @@ pub fn xacl_to_text(acl: acl_t) -> io::Result<String> {
     Ok(result)
 }
 
-#[cfg(any(target_os = "macos", target_os = "freebsd"))]
-#[allow(clippy::clippy::missing_const_for_fn)]
-pub fn xacl_check(_acl: acl_t) -> io::Result<()> {
-    Ok(()) // noop
-}
-
-#[cfg(target_os = "linux")]
-pub fn xacl_check(acl: acl_t) -> io::Result<()> {
-    use std::convert::TryInto;
-
-    let mut last: i32 = 0;
-    let ret = unsafe { acl_check(acl, &mut last) };
-    if ret < 0 {
-        return fail_err(ret, "acl_check", ());
-    }
-
-    if ret == 0 {
-        return Ok(());
-    }
-
-    let msg = match ret.try_into().unwrap() {
-        ACL_MULTI_ERROR => "Multiple ACL entries with a tag that may occur at most once",
-        ACL_DUPLICATE_ERROR => "Multiple ACL entries with the same user/group ID",
-        ACL_MISS_ERROR => "Required ACL entry is missing",
-        ACL_ENTRY_ERROR => "Invalid ACL entry tag type",
-        _ => "Unknown acl_check error message",
-    };
-
-    fail_custom(msg)
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
@@ -752,12 +721,6 @@ mod util_tests_linux {
 
         // There are still two entries... one is corrupt.
         assert_eq!(xacl_entry_count(acl), 2);
-        // FIXME: xacl_check is not yet supported on FreeBSD.
-        #[cfg(target_os = "linux")]
-        {
-            let err = xacl_check(acl).unwrap_err();
-            assert!(err.to_string().contains("Invalid ACL entry tag type"));
-        }
 
         xacl_free(acl);
     }
