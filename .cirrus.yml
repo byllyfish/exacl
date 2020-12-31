@@ -29,7 +29,8 @@ task:
 
   test_script:
     - . $HOME/.cargo/env
+    - cargo build
+    - cargo test --no-run   # Compile only
     # Run tests on our mem-based FS with acls.
     - export TMPDIR=/tmp/exacl_acls
     - cargo test
-    - cargo build
