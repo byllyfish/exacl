@@ -117,15 +117,6 @@ impl Acl {
         Ok(())
     }
 
-    /// Check that ACL meets OS requirements.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`io::Error`] on failure.
-    pub fn check(&self) -> io::Result<()> {
-        xacl_check(self.acl)
-    }
-
     /// Compute mask.
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     fn compute_mask_perms(entries: &[AclEntry], filter: (Flag, Flag)) -> Option<Perm> {
@@ -156,6 +147,44 @@ impl Acl {
         Some(perms)
     }
 
+    /// Check for required entries that are missing.
+    ///
+    /// It is valid for there to be zero entries.
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+    fn find_missing_entries(entries: &[AclEntry], filter: (Flag, Flag)) -> Option<AclEntryKind> {
+        let mut has_user = false;
+        let mut has_group = false;
+        let mut has_other = false;
+        let mut is_empty = true;
+
+        for entry in entries {
+            // Skip over undesired entries in a unified ACL.
+            if (entry.flags & filter.1) != filter.0 {
+                continue;
+            }
+
+            is_empty = false;
+            match entry.kind {
+                AclEntryKind::User if entry.name.is_empty() => has_user = true,
+                AclEntryKind::Group if entry.name.is_empty() => has_group = true,
+                AclEntryKind::Other => has_other = true,
+                _ => (),
+            }
+        }
+
+        if is_empty {
+            None
+        } else if !has_user {
+            Some(AclEntryKind::User)
+        } else if !has_group {
+            Some(AclEntryKind::Group)
+        } else if !has_other {
+            Some(AclEntryKind::Other)
+        } else {
+            None
+        }
+    }
+
     /// Return an ACL from a slice of [`AclEntry`].
     ///
     /// On Linux, if there is no mask `AclEntry`, one will be computed and
@@ -179,6 +208,13 @@ impl Acl {
             }
         }
 
+        // Check for missing required entries.
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        if let Some(kind) = Acl::find_missing_entries(entries, (Flag::empty(), Flag::empty())) {
+            return fail_custom(&format!("missing required entry \"{}\"", kind));
+        }
+
+        // Check if we need to add a mask entry.
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::empty())) {
             let mask = AclEntry::allow_mask(mask_perms, None);
@@ -227,6 +263,16 @@ impl Acl {
             }
         }
 
+        // Check for missing entries in both access and default entries.
+        if let Some(kind) = Acl::find_missing_entries(entries, (Flag::empty(), Flag::DEFAULT)) {
+            return fail_custom(&format!("missing required entry \"{}\"", kind));
+        }
+
+        if let Some(kind) = Acl::find_missing_entries(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
+            return fail_custom(&format!("missing required default entry \"{}\"", kind));
+        }
+
+        // Check if we need to add a mask entry.
         if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::DEFAULT)) {
             let mask = AclEntry::allow_mask(mask_perms, None);
             if let Err(err) = mask.add_to_acl(&mut access_p) {

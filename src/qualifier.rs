@@ -5,6 +5,7 @@ use crate::failx::*;
 use crate::sys::{id_t, mbr_gid_to_uuid, mbr_uid_to_uuid, mbr_uuid_to_id, sg};
 
 use nix::unistd::{self, Gid, Uid};
+use std::fmt;
 use std::io;
 #[cfg(target_os = "macos")]
 use uuid::Uuid;
@@ -161,6 +162,26 @@ impl Qualifier {
             Qualifier::Mask => MASK_NAME.to_string(),
 
             Qualifier::Unknown(s) => s.clone(),
+        }
+    }
+}
+
+impl fmt::Display for Qualifier {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Qualifier::User(uid) => write!(f, "user:{}", uid),
+            Qualifier::Group(gid) => write!(f, "group:{}", gid),
+            #[cfg(target_os = "macos")]
+            Qualifier::Guid(guid) => write!(f, "guid:{}", guid),
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+            Qualifier::UserObj => write!(f, "user"),
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+            Qualifier::GroupObj => write!(f, "group"),
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+            Qualifier::Other => write!(f, "other"),
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+            Qualifier::Mask => write!(f, "mask"),
+            Qualifier::Unknown(s) => write!(f, "unknown:{}", s),
         }
     }
 }

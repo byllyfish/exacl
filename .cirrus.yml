@@ -20,17 +20,24 @@ task:
     - mkdir /tmp/exacl_acls
     - mdmfs -o acls -s 5m md /tmp/exacl_acls
     - mount
+    - env
 
   setup_script:
     # Install Rust.
-    - pkg install -y curl
+    - pkg install -y bash
     - curl https://sh.rustup.rs -sSf --output rustup.sh
     - sh rustup.sh -y
+    # Install shunit2.
+    - mkdir -p /tmp/bin
+    - curl https://raw.githubusercontent.com/kward/shunit2/master/shunit2 -sSf --output /tmp/bin/shunit2
+    - chmod ugo+x /tmp/bin/shunit2
 
   test_script:
     - . $HOME/.cargo/env
     - cargo build
     - cargo test --no-run   # Compile only
     # Run tests on our mem-based FS with acls.
+    - export PATH="$PATH:/tmp/bin"
     - export TMPDIR=/tmp/exacl_acls
     - cargo test
+    - ./tests/run_tests.sh

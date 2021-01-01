@@ -101,10 +101,7 @@ testReadAclForFile1() {
 
     # Remove owner read perm.
     chmod u-rw "$FILE1"
-
     assertEquals "-----w----" "$(fileperms $FILE1)"
-    ! isReadable "$FILE1" && ! isWritable "$FILE1"
-    assertEquals 0 $?
 
     # Add ACL entry for current group to "allow write".
     setfacl -m "g:$MY_GROUP:w" "$FILE1"
@@ -116,8 +113,6 @@ testReadAclForFile1() {
         "${msg//\"/}"
 
     assertEquals "-----w----" "$(fileperms $FILE1)"
-    ! isReadable "$FILE1" && ! isWritable "$FILE1"
-    assertEquals 0 $?
 
     # Reset permissions.
     chmod 600 "$FILE1"
@@ -167,7 +162,7 @@ testWriteAclToMissingFile() {
     msg=$(echo "$input" | $EXACL --set $DIR/non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "Invalid ACL: Required ACL entry is missing" \
+        "Invalid ACL: missing required entries" \
         "$msg"
 
     input=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
@@ -184,14 +179,14 @@ testWriteAclToFile1() {
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals "set acl to empty" 1 $?
     assertEquals \
-        "Invalid ACL: Required ACL entry is missing" \
+        "Invalid ACL: missing required entries" \
         "$msg"
 
     # Verify ACL.
     msg=$($EXACL $FILE1)
     assertEquals "verify acl" 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "-rw-------" "$(fileperms $FILE1)"
@@ -211,7 +206,7 @@ testWriteAclToFile1() {
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals "check required entry" 1 $?
     assertEquals \
-        "Invalid ACL: Required ACL entry is missing" \
+        'Invalid ACL: missing required entry "user"' \
         "$msg"
 
     # Set ACL for current user specifically, with required entries.
@@ -235,7 +230,7 @@ testWriteAclToFile1() {
     assertEquals \
         "user::rw-
 user:$ME:r--
-group::rw-
+group::rw-		# effective: r--
 mask::r--
 other::---" \
         "${msg}"
@@ -247,14 +242,14 @@ testWriteAclToDir1() {
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "Invalid ACL: Required ACL entry is missing" \
+        "Invalid ACL: missing required entries" \
         "$msg"
 
     # Verify directory ACL.
     msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "drwx------" "$(fileperms $DIR1)"
@@ -327,7 +322,7 @@ testWriteAclToLink1() {
     msg=$(echo "$input" | $EXACL --set $LINK1 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "Invalid ACL: Required ACL entry is missing" \
+        "Invalid ACL: missing required entries" \
         "$msg"
 
     input=$(quotifyJson "[{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
@@ -391,7 +386,7 @@ testReadDefaultAcl() {
     msg=$($EXACL --default $FILE1 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "File \"$FILE1\": Permission denied (os error 13)" \
+        "File \"$FILE1\": Invalid argument (os error 22)" \
         "$msg"
 
     # Reading default acl for a directory.
@@ -426,12 +421,18 @@ testWriteDefaultAcl() {
     assertEquals \
         "user::rwx
 group::---
-other::---
-default:user::rw-
-default:group::---
-default:group:$MY_GROUP:r--
-default:mask::r--
-default:other::---" \
+other::---" \
+        "${msg}"
+
+    # Check default ACL with getfacl.
+    msg=$(getfacl -dq $DIR1 2>/dev/null)
+    assertEquals "check default acl getfacl" 0 $?
+    assertEquals \
+        "user::rw-
+group::---
+group:$MY_GROUP:r--
+mask::r--
+other::---" \
         "${msg}"
 
     # Create subfile in DIR1.
@@ -440,8 +441,9 @@ default:other::---" \
 
     msg=$($EXACL $subfile 2>&1)
     assertEquals 0 $?
+    # Bug? mask has empty perms?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[read],flags:[],allow:true},{kind:mask,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     rm -f "$subfile"
@@ -509,10 +511,16 @@ testWriteUnifiedAclToDir1() {
     assertEquals \
         "user::rw-
 group::rw-
-other::---
-default:user::rw-
-default:group::rw-
-default:other::---" \
+other::---" \
+        "${msg}"
+
+    # Check default ACL with getfacl.
+    msg=$(getfacl -dq $DIR1 2>/dev/null)
+    assertEquals "check default acl getfacl" 0 $?
+    assertEquals \
+        "user::rw-
+group::rw-
+other::---" \
         "${msg}"
 }
 
@@ -522,7 +530,7 @@ testSetDefault() {
     msg=$(echo "$input" | $EXACL --set --default $DIR1 2>&1)
     assertEquals "set default acl" 1 $?
     assertEquals \
-        "Invalid ACL: Multiple ACL entries with a tag that may occur at most once" \
+        'Invalid ACL: entry 3: duplicate default entry for "user"' \
         "$msg"
 
     # Check ACL is updated.
@@ -553,7 +561,7 @@ testMissingFlags() {
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        'Invalid ACL: Required ACL entry is missing' \
+        'Invalid ACL: missing required entry "user"' \
         "${msg//\`/}"
 }
 
@@ -562,7 +570,7 @@ testMissingAllow() {
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        'Invalid ACL: Required ACL entry is missing' \
+        'Invalid ACL: missing required entry "user"' \
         "${msg//\`/}"
 }
 
@@ -572,7 +580,7 @@ testDuplicateEntry() {
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1)
     assertEquals 1 $?
     assertEquals \
-        'Invalid ACL: Multiple ACL entries with the same user/group ID' \
+        'Invalid ACL: entry 4: duplicate entry for "user:501"' \
         "${msg//\`/}"
 }
 
