@@ -101,10 +101,7 @@ testReadAclForFile1() {
 
     # Remove owner read perm.
     chmod u-rw "$FILE1"
-
     assertEquals "-----w----" "$(fileperms $FILE1)"
-    ! isReadable "$FILE1" && ! isWritable "$FILE1"
-    assertEquals 0 $?
 
     # Add ACL entry for current group to "allow write".
     setfacl -m "g:$MY_GROUP:w" "$FILE1"
@@ -116,8 +113,6 @@ testReadAclForFile1() {
         "${msg//\"/}"
 
     assertEquals "-----w----" "$(fileperms $FILE1)"
-    ! isReadable "$FILE1" && ! isWritable "$FILE1"
-    assertEquals 0 $?
 
     # Reset permissions.
     chmod 600 "$FILE1"
