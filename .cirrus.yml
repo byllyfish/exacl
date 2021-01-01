@@ -28,15 +28,16 @@ task:
     - curl https://sh.rustup.rs -sSf --output rustup.sh
     - sh rustup.sh -y
     # Install shunit2.
-    - mkdir bin
-    - curl https://raw.githubusercontent.com/kward/shunit2/master/shunit2 -sSf --output bin/shunit2
-    - chmod ugo+x bin/shunit2
+    - mkdir $HOME/bin
+    - curl https://raw.githubusercontent.com/kward/shunit2/master/shunit2 -sSf --output $HOME/bin/shunit2
+    - chmod ugo+x $HOME/bin/shunit2
 
   test_script:
     - . $HOME/.cargo/env
     - cargo build
     - cargo test --no-run   # Compile only
     # Run tests on our mem-based FS with acls.
+    - export PATH="$PATH:$HOME/bin"
     - export TMPDIR=/tmp/exacl_acls
     - cargo test
     - ./tests/run_tests.sh
