@@ -23,7 +23,7 @@ task:
 
   setup_script:
     # Install Rust.
-    - pkg install -y curl
+    - pkg install -y bash
     - curl https://sh.rustup.rs -sSf --output rustup.sh
     - sh rustup.sh -y
 
@@ -34,3 +34,4 @@ task:
     # Run tests on our mem-based FS with acls.
     - export TMPDIR=/tmp/exacl_acls
     - cargo test
+    - ./tests/run_tests.sh

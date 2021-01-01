@@ -438,7 +438,7 @@ group::---
 group:$MY_GROUP:r--
 mask::r--
 other::---" \
-        "${msg}" 
+        "${msg}"
 
     # Create subfile in DIR1.
     subfile="$DIR1/subfile"
