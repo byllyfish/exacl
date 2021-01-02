@@ -745,17 +745,25 @@ mod util_tests_linux {
         assert_eq!(ret, -1);
 
         // Write an empty access ACL to a file. Still works?
+        #[cfg(target_os = "linux")]
         xacl_set_file(file.as_ref(), acl, false, false)
             .ok()
             .unwrap();
 
+        // Not on FreeBSD.
+        #[cfg(target_os = "freebsd")]
+        let err = xacl_set_file(file.as_ref(), acl, false, false).err().unwrap();
+        assert_eq!(err.to_string(), "Invalid argument (os error 22)");
+
         // Write an empty default ACL to a file. Still works?
+        #[cfg(target_os = "linux")]
         xacl_set_file(file.as_ref(), acl, false, true).ok().unwrap();
 
         // Write an empty access ACL to a directory. Still works?
+        #[cfg(target_os = "linux")]
         xacl_set_file(dir.as_ref(), acl, false, false).ok().unwrap();
 
-        // Write an empty default ACL to a directory. This should be okay on Linux.
+        // Write an empty default ACL to a directory. Okay on Linux, FreeBSD.
         xacl_set_file(dir.as_ref(), acl, false, true).ok().unwrap();
 
         xacl_free(acl);
