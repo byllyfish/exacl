@@ -311,6 +311,8 @@ where
 ///   <perms> - comma-separated list of permissions
 /// ```
 ///
+/// Each record, including the last, is terminated by a final newline.
+///
 /// # Sample Output
 ///
 /// ```text
@@ -384,4 +386,28 @@ pub fn from_reader<R: io::Read>(reader: R) -> io::Result<Vec<AclEntry>> {
 /// Return line with end of line comment removed.
 fn trim_comment(line: &str) -> &str {
     line.find('#').map_or(line, |n| &line[0..n])
+}
+
+/// Write ACL entries to text.
+///
+/// See `to_writer` for the format.
+///
+/// # Errors
+///
+/// Returns an [`io::Error`] on failure.
+pub fn to_string(entries: &[AclEntry]) -> io::Result<String> {
+    let mut buf = Vec::<u8>::with_capacity(128);
+    to_writer(&mut buf, entries)?;
+    String::from_utf8(buf).map_err(|err| io::Error::new(io::ErrorKind::Other, err))
+}
+
+/// Read ACL entries from text.
+///
+/// See `from_reader` for the format.
+///
+/// # Errors
+///
+/// Returns an [`io::Error`] on failure.
+pub fn from_str(s: &str) -> io::Result<Vec<AclEntry>> {
+    from_reader(s.as_bytes())
 }
