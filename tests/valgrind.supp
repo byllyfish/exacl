@@ -35,3 +35,14 @@
    fun:_ZN3std3sys4unix2fs5lstat*
    fun:symlink_metadata<&*>
 }
+
+{
+   statx(file_name) points to unaddressable byte(s)
+   Memcheck:Param
+   statx(file_name)
+   fun:syscall
+   fun:statx
+   fun:_ZN3std3sys4unix2fs9try_statx*
+   fun:_ZN3std3sys4unix2fs5lstat*
+   fun:symlink_metadata<&*>
+}
