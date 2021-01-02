@@ -1,7 +1,7 @@
 //! API Tests for exacl module.
 
 use ctor::ctor;
-use exacl::{from_reader, getfacl, to_writer, Acl, AclEntry, AclOption, Flag, Perm};
+use exacl::{getfacl, Acl, AclEntry, AclOption, Flag, Perm};
 use log::debug;
 use std::io;
 
@@ -476,17 +476,14 @@ fn test_set_acl_flags() -> io::Result<()> {
 
 #[test]
 fn test_reader_writer() -> io::Result<()> {
-    let input = br#"
+    let input = r#"
     u:aaa:rwx#comment
     g:bbb:rwx
     u:ccc:rx
     "#;
 
-    let entries = from_reader(&input[..])?;
-
-    let mut buf = Vec::<u8>::new();
-    to_writer(&mut buf, &entries)?;
-    let actual = String::from_utf8(buf).unwrap();
+    let entries = exacl::from_str(input)?;
+    let actual = exacl::to_string(&entries)?;
 
     let expected = r#"allow::user:aaa:read,write,execute
 allow::group:bbb:read,write,execute
