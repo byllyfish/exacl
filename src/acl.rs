@@ -152,9 +152,9 @@ impl Acl {
     /// It is valid for there to be zero entries.
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     fn find_missing_entries(entries: &[AclEntry], filter: (Flag, Flag)) -> Option<AclEntryKind> {
-        let mut has_user = false;
-        let mut has_group = false;
-        let mut has_other = false;
+        let mut miss_user = true;
+        let mut miss_group = true;
+        let mut miss_other = true;
         let mut is_empty = true;
 
         for entry in entries {
@@ -165,20 +165,20 @@ impl Acl {
 
             is_empty = false;
             match entry.kind {
-                AclEntryKind::User if entry.name.is_empty() => has_user = true,
-                AclEntryKind::Group if entry.name.is_empty() => has_group = true,
-                AclEntryKind::Other => has_other = true,
+                AclEntryKind::User if entry.name.is_empty() => miss_user = false,
+                AclEntryKind::Group if entry.name.is_empty() => miss_group = false,
+                AclEntryKind::Other => miss_other = false,
                 _ => (),
             }
         }
 
         if is_empty {
             None
-        } else if !has_user {
+        } else if miss_user {
             Some(AclEntryKind::User)
-        } else if !has_group {
+        } else if miss_group {
             Some(AclEntryKind::Group)
-        } else if !has_other {
+        } else if miss_other {
             Some(AclEntryKind::Other)
         } else {
             None
@@ -340,7 +340,7 @@ impl Acl {
     /// Return true if ACL is empty.
     #[must_use]
     pub fn is_empty(&self) -> bool {
-        xacl_entry_count(self.acl) == 0
+        xacl_is_empty(self.acl)
     }
 
     /// Return flags for the ACL itself.

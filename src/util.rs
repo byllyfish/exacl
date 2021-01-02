@@ -79,7 +79,7 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
 }
 
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-fn get_acl_type(default_acl: bool) -> acl_type_t {
+const fn get_acl_type(default_acl: bool) -> acl_type_t {
     if default_acl {
         sg::ACL_TYPE_DEFAULT
     } else {
@@ -181,7 +181,7 @@ pub fn xacl_set_file(
     let c_path = CString::new(path.as_os_str().as_bytes())?;
 
     #[cfg(target_os = "freebsd")]
-    if default_acl && xacl_entry_count(acl) == 0 {
+    if default_acl && xacl_is_empty(acl) {
         // Special case to delete the ACL. The FreeBSD version of
         // acl_set_file does not handle this case.
         let ret = unsafe { acl_delete_def_file(c_path.as_ptr()) };
@@ -203,6 +203,13 @@ pub fn xacl_set_file(
     }
 
     Ok(())
+}
+
+/// Return true if acl is empty.
+pub fn xacl_is_empty(acl: acl_t) -> bool {
+    let mut entry: acl_entry_t = ptr::null_mut();
+
+    !xacl_get_entry(acl, sg::ACL_FIRST_ENTRY, &mut entry)
 }
 
 /// Return number of entries in the ACL.
@@ -721,6 +728,47 @@ mod util_tests_linux {
 
         // There are still two entries... one is corrupt.
         assert_eq!(xacl_entry_count(acl), 2);
+
+        xacl_free(acl);
+    }
+
+    #[test]
+    fn test_empty_acl() {
+        let file = tempfile::NamedTempFile::new().unwrap();
+        let dir = tempfile::TempDir::new().unwrap();
+
+        let acl = xacl_init(1).unwrap();
+        assert!(xacl_is_empty(acl));
+
+        // Empty acl is not "valid".
+        let ret = unsafe { acl_valid(acl) };
+        assert_eq!(ret, -1);
+
+        // Write an empty access ACL to a file. Still works?
+        #[cfg(target_os = "linux")]
+        xacl_set_file(file.as_ref(), acl, false, false)
+            .ok()
+            .unwrap();
+
+        // Not on FreeBSD.
+        #[cfg(target_os = "freebsd")]
+        {
+            let err = xacl_set_file(file.as_ref(), acl, false, false)
+                .err()
+                .unwrap();
+            assert_eq!(err.to_string(), "Invalid argument (os error 22)");
+        }
+
+        // Write an empty default ACL to a file. Still works?
+        #[cfg(target_os = "linux")]
+        xacl_set_file(file.as_ref(), acl, false, true).ok().unwrap();
+
+        // Write an empty access ACL to a directory. Still works?
+        #[cfg(target_os = "linux")]
+        xacl_set_file(dir.as_ref(), acl, false, false).ok().unwrap();
+
+        // Write an empty default ACL to a directory. Okay on Linux, FreeBSD.
+        xacl_set_file(dir.as_ref(), acl, false, true).ok().unwrap();
 
         xacl_free(acl);
     }
