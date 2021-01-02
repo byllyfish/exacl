@@ -752,8 +752,12 @@ mod util_tests_linux {
 
         // Not on FreeBSD.
         #[cfg(target_os = "freebsd")]
-        let err = xacl_set_file(file.as_ref(), acl, false, false).err().unwrap();
-        assert_eq!(err.to_string(), "Invalid argument (os error 22)");
+        {
+            let err = xacl_set_file(file.as_ref(), acl, false, false)
+                .err()
+                .unwrap();
+            assert_eq!(err.to_string(), "Invalid argument (os error 22)");
+        }
 
         // Write an empty default ACL to a file. Still works?
         #[cfg(target_os = "linux")]
