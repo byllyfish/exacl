@@ -394,16 +394,16 @@ fn test_from_unified_entries() {
     let (a, d) = Acl::from_unified_entries(&entries).unwrap();
 
     #[cfg(target_os = "linux")]
-    let expected = "user::r--\nuser:500:--x\ngroup::-w-\nmask::-wx\nother::---\n";
+    let expected1 = "user::r--\nuser:500:--x\ngroup::-w-\nmask::-wx\nother::---\n";
     #[cfg(target_os = "freebsd")]
-    let expected = "user:500:--x\ngroup::-w-\nuser::r--\nother::---\nmask::-wx\n";
-    assert_eq!(a.to_platform_text().unwrap(), expected);
+    let expected1 = "user:500:--x\ngroup::-w-\nuser::r--\nother::---\nmask::-wx\n";
+    assert_eq!(a.to_platform_text().unwrap(), expected1);
 
     #[cfg(target_os = "linux")]
-    let expected = "user::r--\nuser:501:--x\ngroup::-w-\nmask::-wx\nother::---\n";
+    let expected2 = "user::r--\nuser:501:--x\ngroup::-w-\nmask::-wx\nother::---\n";
     #[cfg(target_os = "freebsd")]
-    let expected = "user:501:--x\ngroup::-w-\nuser::r--\nother::---\nmask::-wx\n";
-    assert_eq!(d.to_platform_text().unwrap(), expected);
+    let expected2 = "user:501:--x\ngroup::-w-\nuser::r--\nother::---\nmask::-wx\n";
+    assert_eq!(d.to_platform_text().unwrap(), expected2);
 
     entries.push(AclEntry::allow_group("", Perm::WRITE, Flag::DEFAULT));
 
