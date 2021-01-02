@@ -35,7 +35,7 @@ struct Opt {
     symlink: bool,
 
     /// Format of input or output.
-    #[structopt(short = "f", possible_values = &Format::variants(), case_insensitive = true, default_value = "Json")]
+    #[structopt(short = "f", long, possible_values = &Format::variants(), case_insensitive = true, default_value = "Json")]
     format: Format,
 
     /// Input files

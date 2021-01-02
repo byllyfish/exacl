@@ -311,6 +311,8 @@ where
 ///   <perms> - comma-separated list of permissions
 /// ```
 ///
+/// Each record, including the last, is terminated by a final newline.
+///
 /// # Sample Output
 ///
 /// ```text
