@@ -1,6 +1,12 @@
 # Changelog
 
-## [0.2.0] - 2012-12-22
+## [0.3.0] - 2021-01-02
+
+- Add support for Posix.1e ACLs on `FreeBSD`.
+- Add `from_str` and `to_string` top-level functions.
+- Remove the `Acl::check` function from public API.
+
+## [0.2.0] - 2020-12-22
 
 - Implement buildtime_bindgen feature; use prebuilt bindings by default. 
 - Implement `FromStr` and `Display` for `AclEntry`.
