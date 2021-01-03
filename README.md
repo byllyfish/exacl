@@ -7,7 +7,7 @@
 [API]: https://docs.rs/exacl/badge.svg
 [docs]: https://docs.rs/exacl
 
-Rust library to manipulate file system access control lists (ACL) on `macOS` and `Linux`.
+Rust library to manipulate file system access control lists (ACL) on `macOS`, `Linux`, and `FreeBSD`.
 
 ## Example
 
@@ -25,9 +25,6 @@ for entry in &acl {
 // Add an ACL entry to the end.
 acl.push(AclEntry::allow_user("some_user", Perm::READ, None));
 
-// Sort the ACL in canonical order.
-acl.sort();
-
 // Set the ACL for "./tmp/foo".
 setfacl(&["./tmp/foo"], &acl, None)?;
 ```
@@ -39,7 +36,8 @@ This module provides two high level functions, `getfacl` and `setfacl`.
 - `getfacl` retrieves the ACL for a file or directory.
 - `setfacl` sets the ACL for files or directories.
 
-On Linux, the ACL contains entries for the default ACL, if present.
+On Linux and FreeBSD, the ACL contains entries for the default ACL, if
+present.
 
 Both `getfacl` and `setfacl` work with a `Vec<AclEntry>`. The
 `AclEntry` structure contains five fields:
@@ -53,21 +51,10 @@ Both `getfacl` and `setfacl` work with a `Vec<AclEntry>`. The
 - allow : `bool` - true if entry is allowed; false means deny. Linux only
     supports allow=true.
 
-`AclEntry` supports an ordering that corresponds to ACL canonical order. An
-ACL in canonical order has deny entries first, and inherited entries last.
-On Linux, entries for file-owner sort before named users. You can sort a
-vector of `AclEntry` to put the ACL in canonical order.
-
 ## Low Level API
 
-The low level API is appropriate if you need finer grained control over
-the ACL.
+Use the `Acl` class if you need finer grained control over the ACL.
 
 - Manipulate the access ACL and default ACL independently on Linux.
 - Manipulate the ACL's own flags on macOS.
 - Use the platform specific text formats.
-
-The low level API uses the `Acl` class which wraps the native ACL object.
-Each `Acl` is immutable once constructed. To manipulate its contents, you
-can retrieve a mutable vector of `AclEntry`, modify the vector's contents,
-then create a new `Acl`.
