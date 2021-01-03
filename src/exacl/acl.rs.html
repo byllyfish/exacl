@@ -387,6 +387,10 @@
 <span id="384">384</span>
 <span id="385">385</span>
 <span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Provides `Acl` and `AclOption` implementation.</span>
 
@@ -411,16 +415,20 @@
         <span class="doccomment">/// Get/set the ACL of the symlink itself (macOS only).</span>
         <span class="kw">const</span> <span class="ident">SYMLINK_ACL</span> <span class="op">=</span> <span class="number">0x01</span>;
 
-        <span class="doccomment">/// Get/set the default ACL only (Linux only).</span>
+        <span class="doccomment">/// Get/set the default ACL only (Linux and FreeBSD only).</span>
         <span class="kw">const</span> <span class="ident">DEFAULT_ACL</span> <span class="op">=</span> <span class="number">0x02</span>;
 
-        <span class="doccomment">/// Ignore expected error when using DEFAULT_ACL on a file (Linux only).</span>
+        <span class="doccomment">/// Ignore expected error when using DEFAULT_ACL on a file.</span>
         <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
         <span class="kw">const</span> <span class="ident">IGNORE_EXPECTED_FILE_ERR</span> <span class="op">=</span> <span class="number">0x10</span>;
     }
 }
 
 <span class="doccomment">/// Access Control List native object wrapper.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Each [`Acl`] is immutable once constructed. To manipulate its contents, you</span>
+<span class="doccomment">/// can retrieve a mutable vector of [`AclEntry`], modify the vector&#39;s contents,</span>
+<span class="doccomment">/// then create a new [`Acl`].</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Acl</span> {
     <span class="doccomment">/// Native acl.</span>
     <span class="ident">acl</span>: <span class="ident">acl_t</span>,
@@ -620,8 +628,8 @@
     <span class="doccomment">/// regular access entries from default entries and returns two ACL&#39;s, an</span>
     <span class="doccomment">/// access ACL and default ACL. Either may be empty.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// On Linux, if there is no mask `AclEntry` in an ACL, one will be</span>
-    <span class="doccomment">/// computed and added, if needed.</span>
+    <span class="doccomment">/// If there is no mask `AclEntry` in an ACL, one will be computed and</span>
+    <span class="doccomment">/// added, if needed.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Errors</span>
     <span class="doccomment">///</span>

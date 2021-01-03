@@ -402,22 +402,11 @@
 <span id="399">399</span>
 <span id="400">400</span>
 <span id="401">401</span>
-<span id="402">402</span>
-<span id="403">403</span>
-<span id="404">404</span>
-<span id="405">405</span>
-<span id="406">406</span>
-<span id="407">407</span>
-<span id="408">408</span>
-<span id="409">409</span>
-<span id="410">410</span>
-<span id="411">411</span>
-<span id="412">412</span>
-<span id="413">413</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! # exacl</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! Manipulate file system access control lists (ACL) on `macOS` and `Linux`.</span>
+<span class="doccomment">//! Manipulate file system access control lists (ACL) on `macOS`, `Linux`, and</span>
+<span class="doccomment">//! `FreeBSD`.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Example</span>
 <span class="doccomment">//!</span>
@@ -436,9 +425,6 @@
 <span class="doccomment">//! // Add an ACL entry to the end.</span>
 <span class="doccomment">//! acl.push(AclEntry::allow_user(&quot;some_user&quot;, Perm::READ, None));</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! // Sort the ACL in canonical order.</span>
-<span class="doccomment">//! acl.sort();</span>
-<span class="doccomment">//!</span>
 <span class="doccomment">//! // Set the ACL for &quot;./tmp/foo&quot;.</span>
 <span class="doccomment">//! setfacl(&amp;[&quot;./tmp/foo&quot;], &amp;acl, None)?;</span>
 <span class="doccomment">//!</span>
@@ -452,7 +438,8 @@
 <span class="doccomment">//! - [`getfacl`] retrieves the ACL for a file or directory.</span>
 <span class="doccomment">//! - [`setfacl`] sets the ACL for files or directories.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! On Linux, the ACL contains entries for the default ACL, if present.</span>
+<span class="doccomment">//! On Linux and FreeBSD, the ACL contains entries for the default ACL, if</span>
+<span class="doccomment">//! present.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Both [`getfacl`] and [`setfacl`] work with a `Vec&lt;AclEntry&gt;`. The</span>
 <span class="doccomment">//! [`AclEntry`] structure contains five fields:</span>
@@ -466,24 +453,13 @@
 <span class="doccomment">//! - allow : [`bool`] - true if entry is allowed; false means deny. Linux only</span>
 <span class="doccomment">//!     supports allow=true.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [`AclEntry`] supports an ordering that corresponds to ACL canonical order. An</span>
-<span class="doccomment">//! ACL in canonical order has deny entries first, and inherited entries last.</span>
-<span class="doccomment">//! On Linux, entries for file-owner sort before named users. You can sort a</span>
-<span class="doccomment">//! vector of `AclEntry` to put the ACL in canonical order.</span>
-<span class="doccomment">//!</span>
 <span class="doccomment">//! ## Low Level API</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! The low level API is appropriate if you need finer grained control over</span>
-<span class="doccomment">//! the ACL.</span>
+<span class="doccomment">//! Use the [`Acl`] class if you need finer grained control over the ACL.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! - Manipulate the access ACL and default ACL independently on Linux.</span>
 <span class="doccomment">//! - Manipulate the ACL&#39;s own flags on macOS.</span>
 <span class="doccomment">//! - Use the platform specific text formats.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The low level API uses the [`Acl`] class which wraps the native ACL object.</span>
-<span class="doccomment">//! Each [`Acl`] is immutable once constructed. To manipulate its contents, you</span>
-<span class="doccomment">//! can retrieve a mutable vector of [`AclEntry`], modify the vector&#39;s contents,</span>
-<span class="doccomment">//! then create a new [`Acl`].</span>
 
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
 <span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">feature</span>(<span class="ident">doc_cfg</span>))]</span>
