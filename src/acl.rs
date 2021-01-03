@@ -21,16 +21,20 @@ bitflags! {
         /// Get/set the ACL of the symlink itself (macOS only).
         const SYMLINK_ACL = 0x01;
 
-        /// Get/set the default ACL only (Linux only).
+        /// Get/set the default ACL only (Linux and FreeBSD only).
         const DEFAULT_ACL = 0x02;
 
-        /// Ignore expected error when using DEFAULT_ACL on a file (Linux only).
+        /// Ignore expected error when using DEFAULT_ACL on a file.
         #[doc(hidden)]
         const IGNORE_EXPECTED_FILE_ERR = 0x10;
     }
 }
 
 /// Access Control List native object wrapper.
+///
+/// Each [`Acl`] is immutable once constructed. To manipulate its contents, you
+/// can retrieve a mutable vector of [`AclEntry`], modify the vector's contents,
+/// then create a new [`Acl`].
 pub struct Acl {
     /// Native acl.
     acl: acl_t,
@@ -230,8 +234,8 @@ impl Acl {
     /// regular access entries from default entries and returns two ACL's, an
     /// access ACL and default ACL. Either may be empty.
     ///
-    /// On Linux, if there is no mask `AclEntry` in an ACL, one will be
-    /// computed and added, if needed.
+    /// If there is no mask `AclEntry` in an ACL, one will be computed and
+    /// added, if needed.
     ///
     /// # Errors
     ///
