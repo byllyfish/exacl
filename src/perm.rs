@@ -188,7 +188,10 @@ impl fmt::Display for Perm {
     }
 }
 
-/// Parse an abbreviated permission, "rwx", "wx", etc.
+/// Parse an abbreviated permission, "rwx", "wx", "r-x" etc.
+///
+/// Order doesn't matter. "xwr" is the same as "rwx". Allow for "r-x" by
+/// ignoring any number of '-'. Don't allow r, w, or x to be repeated.
 fn parse_perm_abbreviation(s: &str) -> Option<Perm> {
     let mut perms = Perm::empty();
     for ch in s.chars() {
@@ -196,6 +199,8 @@ fn parse_perm_abbreviation(s: &str) -> Option<Perm> {
             'r' if !perms.contains(Perm::READ) => perms |= Perm::READ,
             'w' if !perms.contains(Perm::WRITE) => perms |= Perm::WRITE,
             'x' if !perms.contains(Perm::EXECUTE) => perms |= Perm::EXECUTE,
+            '-' => (),
+            // Any other character is invalid.
             _ => return None,
         }
     }
@@ -323,10 +328,14 @@ mod perm_tests {
         let flags = Perm::READ | Perm::EXECUTE;
         assert_eq!(flags, "read, execute".parse().unwrap());
         assert_eq!(flags, "rx".parse().unwrap());
+        assert_eq!(flags, "r-x".parse().unwrap());
+        assert_eq!(flags, "--x--r--".parse().unwrap());
         assert_eq!(flags, "xr".parse().unwrap());
         assert_eq!(Perm::WRITE, "w".parse().unwrap());
-
         assert_eq!(Perm::empty(), "".parse().unwrap());
+
+        // Duplicate abbreviations not supported.
+        assert!("rr".parse::<Perm>().is_err());
 
         #[cfg(target_os = "macos")]
         {
