@@ -26,6 +26,10 @@ struct Opt {
     #[structopt(long)]
     set: bool,
 
+    /// Get or set the access ACL.
+    #[structopt(short = "a", long)]
+    access: bool,
+
     /// Get or set the default ACL.
     #[structopt(short = "d", long)]
     default: bool,
@@ -60,6 +64,9 @@ fn main() {
     let opt = Opt::from_args();
 
     let mut options = AclOption::empty();
+    if opt.access {
+        options |= AclOption::ACCESS_ACL;
+    }
     if opt.default {
         options |= AclOption::DEFAULT_ACL;
     }

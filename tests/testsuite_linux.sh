@@ -516,6 +516,30 @@ default:other::---" \
         "${msg}"
 }
 
+testWriteAccessAclToDir1() {
+    # Check access ACL.
+    msg=$($EXACL --access $DIR1)
+    assertEquals "check acl" 0 $?
+    assertEquals \
+        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "${msg//\"/}"
+
+    # Set access ACL.
+    input=$(quotifyJson "[{kind:user,name:,perms:[execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set --access $DIR1 2>&1)
+    assertEquals "set access acl" 0 $?
+    assertEquals \
+        "" \
+        "$msg"
+
+    # Check access ACL is updated, and default ACL is unchanged.
+    msg=$($EXACL $DIR1)
+    assertEquals "check acl again" 0 $?
+    assertEquals \
+        "[{kind:user,name:,perms:[execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]" \
+        "${msg//\"/}"
+}
+
 testSetDefault() {
     # Set ACL with both access and default entries.
     input=$(quotifyJson "[{kind:user,name:,perms:[execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[execute],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]")
@@ -525,11 +549,19 @@ testSetDefault() {
         'Invalid ACL: entry 3: duplicate default entry for "user"' \
         "$msg"
 
-    # Check ACL is updated.
+    # Set ACL with default entries.
+    input=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set --default $DIR1 2>&1)
+    assertEquals 0 $?
+    assertEquals \
+        '' \
+        "$msg"
+
+    # Check ACL.
     msg=$($EXACL $DIR1)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]" \
+        "[{kind:user,name:,perms:[execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]" \
         "${msg//\"/}"
 
     # Remove the default ACL.
@@ -544,7 +576,7 @@ testSetDefault() {
     msg=$($EXACL $DIR1)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 }
 

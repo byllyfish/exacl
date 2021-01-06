@@ -18,15 +18,18 @@ bitflags! {
     /// Controls how ACL's are accessed.
     #[derive(Default)]
     pub struct AclOption : u32 {
-        /// Get/set the ACL of the symlink itself (macOS only).
-        const SYMLINK_ACL = 0x01;
+        /// Get/set the access ACL only (Linux and FreeBSD only).
+        const ACCESS_ACL = 0b0001;
 
         /// Get/set the default ACL only (Linux and FreeBSD only).
-        const DEFAULT_ACL = 0x02;
+        const DEFAULT_ACL = 0b0010;
+
+        /// Get/set the ACL of the symlink itself (macOS only).
+        const SYMLINK_ACL = 0b0100;
 
         /// Ignore expected error when using DEFAULT_ACL on a file.
         #[doc(hidden)]
-        const IGNORE_EXPECTED_FILE_ERR = 0x10;
+        const IGNORE_EXPECTED_FILE_ERR = 0b10000;
     }
 }
 
