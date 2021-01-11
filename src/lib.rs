@@ -33,7 +33,7 @@
 //! - [`getfacl`] retrieves the ACL for a file or directory.
 //! - [`setfacl`] sets the ACL for files or directories.
 //!
-//! On Linux and FreeBSD, the ACL contains entries for the default ACL, if
+//! On Linux and `FreeBSD`, the ACL contains entries for the default ACL, if
 //! present.
 //!
 //! Both [`getfacl`] and [`setfacl`] work with a `Vec<AclEntry>`. The
@@ -146,7 +146,9 @@ fn _getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
 
 #[cfg(not(target_os = "macos"))]
 fn _getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
-    if options.contains(AclOption::DEFAULT_ACL) {
+    if options.contains(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
+        fail_custom("ACCESS_ACL and DEFAULT_ACL are mutually exclusive options")
+    } else if options.intersects(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
         Acl::read(path, options)?.entries()
     } else {
         let mut entries = Acl::read(path, options)?.entries()?;
@@ -253,7 +255,9 @@ fn _setfacl<P>(paths: &[P], entries: &[AclEntry], options: AclOption) -> io::Res
 where
     P: AsRef<Path>,
 {
-    if options.contains(AclOption::DEFAULT_ACL) {
+    if options.contains(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
+        fail_custom("ACCESS_ACL and DEFAULT_ACL are mutually exclusive options")?;
+    } else if options.intersects(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
         let acl = Acl::from_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
 
         for path in paths {

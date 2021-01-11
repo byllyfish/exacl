@@ -6,7 +6,7 @@ use std::fmt;
 use std::io;
 
 /// Write value of a simple enum as a `serde` serialized string.
-pub fn write_enum<'a, 'b, T: Serialize>(f: &'a mut fmt::Formatter<'b>, value: &T) -> fmt::Result {
+pub fn write_enum<T: Serialize>(f: &mut fmt::Formatter, value: &T) -> fmt::Result {
     let mut serializer = EnumSerializer(f);
     value
         .serialize(&mut serializer)

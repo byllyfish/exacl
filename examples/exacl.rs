@@ -21,10 +21,15 @@ use structopt::StructOpt;
 
 #[derive(StructOpt)]
 #[structopt(name = "exacl", about = "Read or write a file's ACL.")]
+#[allow(clippy::struct_excessive_bools)]
 struct Opt {
     /// Set file's ACL.
     #[structopt(long)]
     set: bool,
+
+    /// Get or set the access ACL.
+    #[structopt(short = "a", long)]
+    access: bool,
 
     /// Get or set the default ACL.
     #[structopt(short = "d", long)]
@@ -60,6 +65,9 @@ fn main() {
     let opt = Opt::from_args();
 
     let mut options = AclOption::empty();
+    if opt.access {
+        options |= AclOption::ACCESS_ACL;
+    }
     if opt.default {
         options |= AclOption::DEFAULT_ACL;
     }
