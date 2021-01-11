@@ -146,15 +146,17 @@ testReadAclForDir1() {
 }
 
 testReadAclForLink1() {
-    # Test symlink with no ACL. Not supported on Linux.
+    # Test symlink with no ACL.
     msg=$($EXACL $LINK1 2>&1)
     assertEquals 1 $?
     assertEquals "File \"$LINK1\": No such file or directory (os error 2)" "$msg"
 
-    # Test symlink with no ACL. Not supported on Linux.
+    # Test symlink with no ACL.
     msg=$($EXACL --symlink $LINK1 2>&1)
-    assertEquals 1 $?
-    assertEquals "File \"$LINK1\": Linux does not support symlinks with ACL's." "$msg"
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "${msg//\"/}"
 }
 
 testWriteAclToMissingFile() {

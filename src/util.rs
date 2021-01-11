@@ -87,11 +87,34 @@ const fn get_acl_type(default_acl: bool) -> acl_type_t {
     }
 }
 
+#[cfg(target_os = "freebsd")]
+fn xacl_get_link(path: &Path, default_acl: bool) -> io::Result<acl_t> {
+    use std::os::unix::ffi::OsStrExt;
+
+    let acl_type = get_acl_type(default_acl);
+    let c_path = CString::new(path.as_os_str().as_bytes())?;
+    let acl = unsafe { acl_get_link_np(c_path.as_ptr(), acl_type) };
+ 
+    if acl.is_null() {
+        let func = if default_acl {
+            "acl_get_link_np/default"
+        } else {
+            "acl_get_link_np/access"
+        };
+        return fail_err("null", func, &c_path);
+    }
+
+    Ok(acl)
+}
+
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::Result<acl_t> {
     use std::os::unix::ffi::OsStrExt;
 
     if symlink_acl {
+        #[cfg(target_os = "freebsd")]
+        return xacl_get_link(path, default_acl);
+        #[cfg(target_os = "linux")]
         return fail_custom("Linux does not support symlinks with ACL's.");
     }
 
