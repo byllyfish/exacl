@@ -24,6 +24,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+    - name: Update Rust Toolchain
+      run: rustup update
     - name: Install dependencies (macOS)
       run: brew install shunit2 shellcheck shfmt
       if: runner.os == 'macOS'
