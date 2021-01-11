@@ -349,6 +349,15 @@
 <span id="346">346</span>
 <span id="347">347</span>
 <span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Implements the permissions flags.</span>
 
@@ -540,7 +549,10 @@
     }
 }
 
-<span class="doccomment">/// Parse an abbreviated permission, &quot;rwx&quot;, &quot;wx&quot;, etc.</span>
+<span class="doccomment">/// Parse an abbreviated permission, &quot;rwx&quot;, &quot;wx&quot;, &quot;r-x&quot; etc.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Order doesn&#39;t matter. &quot;xwr&quot; is the same as &quot;rwx&quot;. Allow for &quot;r-x&quot; by</span>
+<span class="doccomment">/// ignoring any number of &#39;-&#39;. Don&#39;t allow r, w, or x to be repeated.</span>
 <span class="kw">fn</span> <span class="ident">parse_perm_abbreviation</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Perm</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">perms</span> <span class="op">=</span> <span class="ident">Perm</span>::<span class="ident">empty</span>();
     <span class="kw">for</span> <span class="ident">ch</span> <span class="kw">in</span> <span class="ident">s</span>.<span class="ident">chars</span>() {
@@ -548,6 +560,8 @@
             <span class="string">&#39;r&#39;</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">perms</span>.<span class="ident">contains</span>(<span class="ident">Perm</span>::<span class="ident">READ</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">perms</span> <span class="op">|</span><span class="op">=</span> <span class="ident">Perm</span>::<span class="ident">READ</span>,
             <span class="string">&#39;w&#39;</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">perms</span>.<span class="ident">contains</span>(<span class="ident">Perm</span>::<span class="ident">WRITE</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">perms</span> <span class="op">|</span><span class="op">=</span> <span class="ident">Perm</span>::<span class="ident">WRITE</span>,
             <span class="string">&#39;x&#39;</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">perms</span>.<span class="ident">contains</span>(<span class="ident">Perm</span>::<span class="ident">EXECUTE</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">perms</span> <span class="op">|</span><span class="op">=</span> <span class="ident">Perm</span>::<span class="ident">EXECUTE</span>,
+            <span class="string">&#39;-&#39;</span> <span class="op">=</span><span class="op">&gt;</span> (),
+            <span class="comment">// Any other character is invalid.</span>
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
         }
     }
@@ -675,10 +689,14 @@
         <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Perm</span>::<span class="ident">READ</span> <span class="op">|</span> <span class="ident">Perm</span>::<span class="ident">EXECUTE</span>;
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">flags</span>, <span class="string">&quot;read, execute&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">flags</span>, <span class="string">&quot;rx&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">flags</span>, <span class="string">&quot;r-x&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">flags</span>, <span class="string">&quot;--x--r--&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">flags</span>, <span class="string">&quot;xr&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Perm</span>::<span class="ident">WRITE</span>, <span class="string">&quot;w&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
-
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Perm</span>::<span class="ident">empty</span>(), <span class="string">&quot;&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
+
+        <span class="comment">// Duplicate abbreviations not supported.</span>
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="string">&quot;rr&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Perm</span><span class="op">&gt;</span>().<span class="ident">is_err</span>());
 
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
         {
