@@ -21,6 +21,7 @@ use structopt::StructOpt;
 
 #[derive(StructOpt)]
 #[structopt(name = "exacl", about = "Read or write a file's ACL.")]
+#[allow(clippy::struct_excessive_bools)]
 struct Opt {
     /// Set file's ACL.
     #[structopt(long)]
