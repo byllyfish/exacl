@@ -495,7 +495,7 @@ allow::user:ccc:read,execute
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn test_exclusive_acloptions() {
     let path = "/tmp";
 
@@ -509,5 +509,23 @@ fn test_exclusive_acloptions() {
     assert_eq!(
         err2.to_string(),
         "ACCESS_ACL and DEFAULT_ACL are mutually exclusive options"
+    );
+}
+
+#[test]
+#[cfg(target_os = "macos")]
+fn test_exclusive_acloptions() {
+    let path = "/tmp";
+
+    let err1 = getfacl(&path, AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL).unwrap_err();
+    assert_eq!(
+        err1.to_string(),
+        "File \"/tmp\": macOS does not support default ACL"
+    );
+
+    let err2 = setfacl(&[path], &[], AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL).unwrap_err();
+    assert_eq!(
+        err2.to_string(),
+        "File \"/tmp\": macOS does not support default ACL"
     );
 }

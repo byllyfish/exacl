@@ -33,7 +33,7 @@
 //! - [`getfacl`] retrieves the ACL for a file or directory.
 //! - [`setfacl`] sets the ACL for files or directories.
 //!
-//! On Linux and FreeBSD, the ACL contains entries for the default ACL, if
+//! On Linux and `FreeBSD`, the ACL contains entries for the default ACL, if
 //! present.
 //!
 //! Both [`getfacl`] and [`setfacl`] work with a `Vec<AclEntry>`. The

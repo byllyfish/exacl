@@ -381,7 +381,7 @@ pub fn xacl_get_perm(entry: acl_entry_t) -> io::Result<Perm> {
     let mut perms = Perm::empty();
     for perm in BitIter(Perm::all()) {
         let res = unsafe { acl_get_perm(permset, perm.bits()) };
-        debug_assert!(res >= 0 && res <= 1);
+        debug_assert!((0..=1).contains(&res));
         if res == 1 {
             perms |= perm;
         }
@@ -406,7 +406,7 @@ fn xacl_get_flags_np(obj: *mut c_void) -> io::Result<Flag> {
     let mut flags = Flag::empty();
     for flag in BitIter(Flag::all()) {
         let res = unsafe { acl_get_flag_np(flagset, flag.bits()) };
-        debug_assert!(res >= 0 && res <= 1);
+        debug_assert!((0..=1).contains(&res));
         if res == 1 {
             flags |= flag;
         }
