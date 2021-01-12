@@ -131,7 +131,7 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
 
 /// Set the acl for a symlink using `acl_set_fd`.
 #[cfg(target_os = "macos")]
-fn xacl_set_file_symlink(c_path: &CString, acl: acl_t) -> io::Result<()> {
+fn xacl_set_file_symlink_alt(c_path: &CString, acl: acl_t) -> io::Result<()> {
     let fd = unsafe { open(c_path.as_ptr(), sg::O_SYMLINK) };
     if fd < 0 {
         return fail_err(fd, "open", &c_path);
@@ -171,11 +171,39 @@ pub fn xacl_set_file(
         // by using acl_set_fd().
         if let Some(sg::ENOTSUP) = err.raw_os_error() {
             if symlink_acl {
-                return xacl_set_file_symlink(&c_path, acl);
+                return xacl_set_file_symlink_alt(&c_path, acl);
             }
         }
 
         return Err(err);
+    }
+
+    Ok(())
+}
+
+#[cfg(target_os = "freebsd")]
+fn xacl_set_file_symlink(path: &Path, acl: acl_t, default_acl: bool) -> io::Result<()> {
+    let c_path = CString::new(path.as_os_str().as_bytes())?;
+
+    if default_acl && xacl_is_empty(acl) {
+        // Special case to delete the ACL. The FreeBSD version of
+        // acl_set_link_np does not handle this case.
+        let ret = unsafe { acl_delete_def_link_np(c_path.as_ptr()) };
+        if ret != 0 {
+            return fail_err(ret, "acl_delete_def_link_np", &c_path);
+        }
+        return Ok(());
+    }
+
+    let acl_type = get_acl_type(default_acl);
+    let ret = unsafe { acl_set_link_np(c_path.as_ptr(), acl_type, acl) };
+    if ret != 0 {
+        let func = if default_acl {
+            "acl_set_link_np/default"
+        } else {
+            "acl_set_link_np/access"
+        };
+        return fail_err(ret, func, &c_path);
     }
 
     Ok(())
@@ -189,6 +217,9 @@ pub fn xacl_set_file(
     default_acl: bool,
 ) -> io::Result<()> {
     if symlink_acl {
+        #[cfg(target_os = "freebsd")]
+        return xacl_set_file_symlink(path, acl, default_acl);
+        #[cfg(target_os = "linux")]
         return fail_custom("Linux does not support symlinks with ACL's");
     }
 
