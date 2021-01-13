@@ -83,7 +83,7 @@ impl Acl {
                     && (err.kind() == io::ErrorKind::PermissionDenied
                         || err.kind() == io::ErrorKind::InvalidInput)
                     && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR)
-                    && is_non_directory(path)
+                    && is_non_directory(path, symlink_acl)
                 {
                     // Return an empty acl.
                     Ok(Acl::new(xacl_init(1)?, default_acl))
@@ -106,7 +106,7 @@ impl Acl {
         // If we're writing a default ACL to a non-directory, and we
         // specify the `IGNORE_EXPECTED_FILE_ERR` option, this function is a
         // no-op if the ACL is empty.
-        if default_acl && is_non_directory(path) {
+        if default_acl && is_non_directory(path, symlink_acl) {
             if self.is_empty() && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR) {
                 return Ok(());
             } else {
@@ -384,7 +384,16 @@ impl Drop for Acl {
 }
 
 /// Return true if path exists and it's not a directory.
-fn is_non_directory(path: &Path) -> bool {
+fn is_non_directory(path: &Path, symlink: bool) -> bool {
+    if symlink {
+        let result = if let Ok(meta) = path.symlink_metadata() {
+            !meta.is_dir()
+        } else {
+            false
+        };
+        return result;
+    }
+
     if let Ok(meta) = path.metadata() {
         !meta.is_dir()
     } else {
