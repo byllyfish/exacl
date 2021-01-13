@@ -336,10 +336,16 @@ testWriteAclToLink1() {
 
     input=$(quotifyJson "[{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set --symlink $LINK1 2>&1)
-    assertEquals 1 $?
+    assertEquals 0 $?
     assertEquals \
-        "File \"$LINK1\": Linux does not support symlinks with ACL's" \
+        "" \
         "$msg"
+
+    msg=$($EXACL --symlink $LINK1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:user,name:$ME,perms:[read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "${msg//\"/}"
 }
 
 testWriteAclNumericUID() {
