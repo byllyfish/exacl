@@ -41,3 +41,6 @@ task:
     - export TMPDIR=/tmp/exacl_acls
     - cargo test
     - ./tests/run_tests.sh
+    - export TMPDIR=/tmp
+    - ./ci/bindgen.sh
+

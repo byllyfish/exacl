@@ -17,6 +17,9 @@ case "$os" in
 "Linux")
     target="linux"
     ;;
+"FreeBSD")
+    target="freebsd"
+    ;;
 *)
     echo "Unknown OS: $os"
     exit 1
