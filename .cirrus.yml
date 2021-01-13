@@ -21,10 +21,11 @@ task:
     - mdmfs -o acls -s 5m md /tmp/exacl_acls
     - mount
     - env
+    - pkg info
 
   setup_script:
     # Install Rust.
-    - pkg install -y bash
+    - pkg install -y bash llvm11
     - curl https://sh.rustup.rs -sSf --output rustup.sh
     - sh rustup.sh -y
     # Install shunit2.
