@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0] - 2021-01-13
+
+- Add support for symbolic links on `FreeBSD`.
+- Add support for `ACCESS_ACL` option to `getfacl` and `setfacl`.
+- Allow for `-` in permission abbreviation, e.g. `r-x`.
+- Update rust toolchain to latest stable version and fix clippy/lint issues.
+- Fix package metadata for docs.rs; improve platform-specific documentation.
+
 ## [0.3.0] - 2021-01-02
 
 - Add support for Posix.1e ACLs on `FreeBSD`.
