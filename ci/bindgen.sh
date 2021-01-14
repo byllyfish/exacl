@@ -17,6 +17,9 @@ case "$os" in
 "Linux")
     target="linux"
     ;;
+"FreeBSD")
+    target="freebsd"
+    ;;
 *)
     echo "Unknown OS: $os"
     exit 1
@@ -29,9 +32,5 @@ bindings=$(find ./target/debug/build -name "bindings.rs")
 
 echo "Comparing $bindings and $prebuilt_bindings"
 diff "$bindings" "$prebuilt_bindings"
-
-# Finish by running tests.
-cargo test --features buildtime_bindgen
-./tests/run_tests.sh
 
 exit 0
