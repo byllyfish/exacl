@@ -1,4 +1,4 @@
-# Exacl &emsp; [![CRATE]][crates] [![CI]][actions] [![API]][docs] [![BUILD]][cirrus]
+# Exacl &emsp; [![CRATE]][crates] [![API]][docs] [![CI]][actions] [![BUILD]][cirrus]
 
 [CRATE]: https://img.shields.io/crates/v/exacl
 [crates]: https://crates.io/crates/exacl
