@@ -1,3 +1,16 @@
+use crate::failx::*;
+use crate::flag::Flag;
+use crate::qualifier::Qualifier;
+use crate::sys::*;
+use crate::util::util_common::*;
+
+use nix::unistd::{Gid, Uid};
+use scopeguard::defer;
+use std::ffi::{c_void, CString};
+use std::io;
+use std::os::unix::ffi::OsStrExt;
+use std::path::Path;
+
 const fn get_acl_type(default_acl: bool) -> acl_type_t {
     if default_acl {
         sg::ACL_TYPE_DEFAULT
@@ -153,7 +166,7 @@ pub fn xacl_get_flags(_entry: acl_entry_t) -> io::Result<Flag> {
     Ok(Flag::empty()) // noop
 }
 
-fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
+pub fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
     let id_ptr = &mut id as *mut uid_t;
 
     let ret = unsafe { acl_set_qualifier(entry, id_ptr as *mut c_void) };

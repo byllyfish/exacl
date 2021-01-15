@@ -28,8 +28,8 @@ pub use util_common::{
 
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 pub use util_linux::{
-    xacl_get_acl_flags, xacl_get_file, xacl_get_flags, xacl_get_tag_qualifier, xacl_set_acl_flags,
-    xacl_set_file, xacl_set_flags, xacl_set_tag_qualifier,
+    xacl_get_file, xacl_get_flags, xacl_get_tag_qualifier, xacl_set_file, xacl_set_flags,
+    xacl_set_tag_qualifier,
 };
 
 #[cfg(target_os = "macos")]
