@@ -24,6 +24,7 @@ fn test_acl_api_misuse() {
 
     // Even though ACL contains 1 invalid entry, the platform text still
     // results in empty string.
+    #[cfg(target_os = "linux")]
     assert_eq!(xacl_to_text(acl).unwrap(), "");
 
     // Add another entry and set it to a valid value.
@@ -31,6 +32,7 @@ fn test_acl_api_misuse() {
     xacl_set_tag_type(entry2, sg::ACL_USER_OBJ).unwrap();
 
     // ACL only prints the one valid entry; no sign of other entry.
+    #[cfg(target_os = "linux")]
     assert_eq!(xacl_to_text(acl).unwrap(), "\nuser::---\n");
 
     // There are still two entries... one is corrupt.
@@ -51,15 +53,18 @@ fn test_empty_acl() {
     let ret = unsafe { acl_valid(acl) };
     assert_eq!(ret, -1);
 
-    // Write an empty access ACL to a file. Still works?
-    xacl_set_file(file.as_ref(), acl, false, false)
-        .ok()
+    // Not on FreeBSD.
+    let err = xacl_set_file(file.as_ref(), acl, false, false)
+        .err()
         .unwrap();
+    assert_eq!(err.to_string(), "Invalid argument (os error 22)");
 
     // Write an empty default ACL to a file. Still works?
+    #[cfg(target_os = "linux")]
     xacl_set_file(file.as_ref(), acl, false, true).ok().unwrap();
 
     // Write an empty access ACL to a directory. Still works?
+    #[cfg(target_os = "linux")]
     xacl_set_file(dir.as_ref(), acl, false, false).ok().unwrap();
 
     // Write an empty default ACL to a directory. Okay on Linux, FreeBSD.

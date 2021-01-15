@@ -19,9 +19,26 @@ const fn get_acl_type(default_acl: bool) -> acl_type_t {
     }
 }
 
+fn xacl_get_link(path: &Path, default_acl: bool) -> io::Result<acl_t> {
+    let acl_type = get_acl_type(default_acl);
+    let c_path = CString::new(path.as_os_str().as_bytes())?;
+    let acl = unsafe { acl_get_link_np(c_path.as_ptr(), acl_type) };
+
+    if acl.is_null() {
+        let func = if default_acl {
+            "acl_get_link_np/default"
+        } else {
+            "acl_get_link_np/access"
+        };
+        return fail_err("null", func, &c_path);
+    }
+
+    Ok(acl)
+}
+
 pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::Result<acl_t> {
     if symlink_acl {
-        return fail_custom("Linux does not support symlinks with ACL's.");
+        return xacl_get_link(path, default_acl);
     }
 
     let acl_type = get_acl_type(default_acl);
@@ -40,6 +57,33 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
     Ok(acl)
 }
 
+fn xacl_set_file_symlink(path: &Path, acl: acl_t, default_acl: bool) -> io::Result<()> {
+    let c_path = CString::new(path.as_os_str().as_bytes())?;
+
+    if default_acl && xacl_is_empty(acl) {
+        // Special case to delete the ACL. The FreeBSD version of
+        // acl_set_link_np does not handle this case.
+        let ret = unsafe { acl_delete_def_link_np(c_path.as_ptr()) };
+        if ret != 0 {
+            return fail_err(ret, "acl_delete_def_link_np", &c_path);
+        }
+        return Ok(());
+    }
+
+    let acl_type = get_acl_type(default_acl);
+    let ret = unsafe { acl_set_link_np(c_path.as_ptr(), acl_type, acl) };
+    if ret != 0 {
+        let func = if default_acl {
+            "acl_set_link_np/default"
+        } else {
+            "acl_set_link_np/access"
+        };
+        return fail_err(ret, func, &c_path);
+    }
+
+    Ok(())
+}
+
 pub fn xacl_set_file(
     path: &Path,
     acl: acl_t,
@@ -47,10 +91,21 @@ pub fn xacl_set_file(
     default_acl: bool,
 ) -> io::Result<()> {
     if symlink_acl {
-        return fail_custom("Linux does not support symlinks with ACL's");
+        return xacl_set_file_symlink(path, acl, default_acl);
     }
 
     let c_path = CString::new(path.as_os_str().as_bytes())?;
+
+    if default_acl && xacl_is_empty(acl) {
+        // Special case to delete the ACL. The FreeBSD version of
+        // acl_set_file does not handle this case.
+        let ret = unsafe { acl_delete_def_file(c_path.as_ptr()) };
+        if ret != 0 {
+            return fail_err(ret, "acl_delete_def_file", &c_path);
+        }
+        return Ok(());
+    }
+
     let acl_type = get_acl_type(default_acl);
     let ret = unsafe { acl_set_file(c_path.as_ptr(), acl_type, acl) };
     if ret != 0 {
