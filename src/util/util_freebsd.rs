@@ -19,6 +19,7 @@ const fn get_acl_type(default_acl: bool) -> acl_type_t {
     }
 }
 
+/// Get ACL from file path, don't follow symbolic links.
 fn xacl_get_link(path: &Path, default_acl: bool) -> io::Result<acl_t> {
     let acl_type = get_acl_type(default_acl);
     let c_path = CString::new(path.as_os_str().as_bytes())?;
@@ -36,25 +37,43 @@ fn xacl_get_link(path: &Path, default_acl: bool) -> io::Result<acl_t> {
     Ok(acl)
 }
 
+/// Get ACL from file path.
+///
+/// This code first tries to obtain the Posix.1e ACL. If that's not appropriate
+/// for the file system object, we try to access the NFS4 ACL.
 pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::Result<acl_t> {
+    // Symlinks will use `acl_get_link_np` instead of `acl_get_file`.
     if symlink_acl {
         return xacl_get_link(path, default_acl);
     }
 
-    let acl_type = get_acl_type(default_acl);
+    let mut acl_type = get_acl_type(default_acl);
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
 
-    if acl.is_null() {
-        let func = if default_acl {
-            "acl_get_file/default"
-        } else {
-            "acl_get_file/access"
-        };
-        return fail_err("null", func, &c_path);
+    if !acl.is_null() {
+        return Ok(acl);
     }
 
-    Ok(acl)
+    // `acl_get_file` returns EINVAL when the ACL type is not appropriate for
+    // the file system object. Retry with NFSv4 type.
+    // FIXME: `default_acl` setting is currently ignored!
+    if io::Error::last_os_error() == EINVAL {
+        acl_type = sg::ACL_TYPE_NFS4;
+        let nfs_acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
+        if !nfs_acl.is_null() {
+            return Ok(nfs_acl);
+        }
+    }
+
+    // Report acl_type and path to file that failed.
+    let func = match acl_type {
+        sg::ACL_TYPE_ACCESS => "acl_get_file/access",
+        sg::ACL_TYPE_DEFAULT => "acl_get_file/default",
+        sg::ACL_TYPE_NFS4 => "acl_get_file/nfs4",
+    };
+
+    return fail_err("null", func, &c_path);
 }
 
 fn xacl_set_file_symlink(path: &Path, acl: acl_t, default_acl: bool) -> io::Result<()> {

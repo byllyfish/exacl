@@ -60,6 +60,35 @@ pub mod np {
     pub const ACL_ENTRY_ONLY_INHERIT: acl_flag_t = acl_flag_t_ACL_ENTRY_ONLY_INHERIT;
 }
 
+/// Non-portable ACL Permissions & Flags (`FreeBSD` only)
+#[cfg(all(target_os = "freebsd", not(docsrs)))]
+pub mod np {
+    use super::{acl_flag_t, acl_perm_t};
+
+    pub const ACL_READ_DATA: acl_perm_t = super::ACL_READ_DATA;
+    pub const ACL_WRITE_DATA: acl_perm_t = super::ACL_WRITE_DATA;
+    // `ACL_EXECUTE` is portable.
+    pub const ACL_DELETE: acl_perm_t = super::ACL_DELETE;
+    pub const ACL_APPEND_DATA: acl_perm_t = super::ACL_APPEND_DATA;
+    pub const ACL_DELETE_CHILD: acl_perm_t = super::ACL_DELETE_CHILD;
+    pub const ACL_READ_ATTRIBUTES: acl_perm_t = super::ACL_READ_ATTRIBUTES;
+    pub const ACL_WRITE_ATTRIBUTES: acl_perm_t = super::ACL_WRITE_ATTRIBUTES;
+    pub const ACL_READ_EXTATTRIBUTES: acl_perm_t = super::ACL_READ_NAMED_ATTRS;
+    pub const ACL_WRITE_EXTATTRIBUTES: acl_perm_t = super::ACL_WRITE_NAMED_ATTRS;
+    pub const ACL_READ_SECURITY: acl_perm_t = super::ACL_READ_ACL;
+    pub const ACL_WRITE_SECURITY: acl_perm_t = super::ACL_WRITE_ACL;
+    pub const ACL_CHANGE_OWNER: acl_perm_t = super::ACL_WRITE_OWNER;
+    pub const ACL_SYNCHRONIZE: acl_perm_t = super::ACL_SYNCHRONIZE;
+
+    pub const ACL_ENTRY_INHERITED: acl_flag_t = super::ACL_ENTRY_INHERITED;
+    pub const ACL_ENTRY_FILE_INHERIT: acl_flag_t = super::ACL_ENTRY_FILE_INHERIT;
+    pub const ACL_ENTRY_DIRECTORY_INHERIT: acl_flag_t = super::ACL_ENTRY_DIRECTORY_INHERIT;
+    pub const ACL_ENTRY_LIMIT_INHERIT: acl_flag_t = super::ACL_ENTRY_NO_PROPAGATE_INHERIT;
+    pub const ACL_ENTRY_ONLY_INHERIT: acl_flag_t = super::ACL_ENTRY_INHERIT_ONLY;
+    pub const ACL_ENTRY_SUCCESSFUL_ACCESS: acl_flag_t = super::ACL_ENTRY_SUCCESSFUL_ACCESS;
+    pub const ACL_ENTRY_FAILED_ACCESS: acl_flag_t = super::ACL_ENTRY_FAILED_ACCESS;
+}
+
 /// Non-portable ACL Permissions (Docs only). These are fabricated constants to
 /// make it possible for docs to be built on macOS and Linux.
 #[cfg(docsrs)]
@@ -107,6 +136,8 @@ pub mod sg {
     pub const ACL_TYPE_ACCESS: acl_type_t = super::ACL_TYPE_ACCESS as acl_type_t;
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub const ACL_TYPE_DEFAULT: acl_type_t = super::ACL_TYPE_DEFAULT as acl_type_t;
+    #[cfg(target_os = "freebsd")]
+    pub const ACL_TYPE_NFS4: acl_type_t = super::ACL_TYPE_NFS4 as acl_type_t;
 
     #[cfg(target_os = "macos")]
     pub const ACL_FIRST_ENTRY: i32 = super::acl_entry_id_t_ACL_FIRST_ENTRY;
