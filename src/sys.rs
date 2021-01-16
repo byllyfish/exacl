@@ -1,12 +1,10 @@
 //! Rust bindings to system C API.
 
-#![allow(nonstandard_style)]
 #![allow(dead_code)]
-#![allow(clippy::redundant_static_lifetimes)]
+#![allow(non_camel_case_types)]
+#![allow(non_upper_case_globals)]
 #![allow(clippy::unseparated_literal_suffix)]
 #![allow(clippy::unreadable_literal)]
-#![allow(clippy::used_underscore_binding)]
-#![allow(clippy::too_many_lines)]
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
