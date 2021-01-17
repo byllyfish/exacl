@@ -82,10 +82,13 @@ pub mod np {
 
     pub const ACL_ENTRY_INHERITED: acl_flag_t = super::ACL_ENTRY_INHERITED as acl_flag_t;
     pub const ACL_ENTRY_FILE_INHERIT: acl_flag_t = super::ACL_ENTRY_FILE_INHERIT as acl_flag_t;
-    pub const ACL_ENTRY_DIRECTORY_INHERIT: acl_flag_t = super::ACL_ENTRY_DIRECTORY_INHERIT as acl_flag_t;
-    pub const ACL_ENTRY_LIMIT_INHERIT: acl_flag_t = super::ACL_ENTRY_NO_PROPAGATE_INHERIT as acl_flag_t;
+    pub const ACL_ENTRY_DIRECTORY_INHERIT: acl_flag_t =
+        super::ACL_ENTRY_DIRECTORY_INHERIT as acl_flag_t;
+    pub const ACL_ENTRY_LIMIT_INHERIT: acl_flag_t =
+        super::ACL_ENTRY_NO_PROPAGATE_INHERIT as acl_flag_t;
     pub const ACL_ENTRY_ONLY_INHERIT: acl_flag_t = super::ACL_ENTRY_INHERIT_ONLY as acl_flag_t;
-    pub const ACL_ENTRY_SUCCESSFUL_ACCESS: acl_flag_t = super::ACL_ENTRY_SUCCESSFUL_ACCESS as acl_flag_t;
+    pub const ACL_ENTRY_SUCCESSFUL_ACCESS: acl_flag_t =
+        super::ACL_ENTRY_SUCCESSFUL_ACCESS as acl_flag_t;
     pub const ACL_ENTRY_FAILED_ACCESS: acl_flag_t = super::ACL_ENTRY_FAILED_ACCESS as acl_flag_t;
 }
 

@@ -233,7 +233,7 @@ pub fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
 
 pub fn xacl_is_posix(acl: acl_t) -> bool {
     let mut brand: std::os::raw::c_int = 0;
-    let ret = unsafe { acl_get_brand_np(acl, &mut brand) }; 
+    let ret = unsafe { acl_get_brand_np(acl, &mut brand) };
     assert_eq!(ret, 0);
     brand == sg::ACL_BRAND_POSIX
 }
