@@ -58,7 +58,7 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
     // `acl_get_file` returns EINVAL when the ACL type is not appropriate for
     // the file system object. Retry with NFSv4 type.
     // FIXME: `default_acl` setting is currently ignored!
-    if io::Error::last_os_error() == EINVAL {
+    if let Some(sg::EINVAL) = io::Error::last_os_error().raw_os_error() {
         acl_type = sg::ACL_TYPE_NFS4;
         let nfs_acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
         if !nfs_acl.is_null() {
@@ -71,6 +71,7 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
         sg::ACL_TYPE_ACCESS => "acl_get_file/access",
         sg::ACL_TYPE_DEFAULT => "acl_get_file/default",
         sg::ACL_TYPE_NFS4 => "acl_get_file/nfs4",
+        _ => "acl_get_file/?",
     };
 
     return fail_err("null", func, &c_path);
@@ -228,4 +229,11 @@ pub fn xacl_set_tag_qualifier(
 #[allow(clippy::clippy::missing_const_for_fn)]
 pub fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
     Ok(()) // noop
+}
+
+pub fn xacl_is_posix(acl: acl_t) -> bool {
+    let mut brand: std::os::raw::c_int = 0;
+    let ret = unsafe { acl_get_brand_np(acl, &mut brand) }; 
+    assert_eq!(ret, 0);
+    brand == sg::ACL_BRAND_POSIX
 }

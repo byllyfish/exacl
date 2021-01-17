@@ -151,14 +151,17 @@ fn _getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
     } else if options.intersects(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
         Acl::read(path, options)?.entries()
     } else {
-        let mut entries = Acl::read(path, options)?.entries()?;
-        let mut default = Acl::read(
-            path,
-            options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
-        )?
-        .entries()?;
+        let acl = Acl::read(path, options)?;
+        let mut entries = acl.entries()?;
 
-        entries.append(&mut default);
+        if acl.is_posix() {
+            let mut default = Acl::read(
+                path,
+                options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
+            )?.entries()?;
+
+            entries.append(&mut default);
+        }
         Ok(entries)
     }
 }

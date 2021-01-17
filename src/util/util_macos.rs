@@ -234,3 +234,7 @@ pub fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
 pub fn xacl_set_acl_flags(acl: acl_t, flags: Flag) -> io::Result<()> {
     xacl_set_flags_np(acl as *mut c_void, flags)
 }
+
+pub fn xacl_is_posix(_acl: acl_t) -> bool {
+    false
+}

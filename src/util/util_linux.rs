@@ -155,3 +155,7 @@ pub fn xacl_set_tag_qualifier(
 pub fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
     Ok(()) // noop
 }
+
+pub fn xacl_is_posix(_acl: acl_t) -> bool {
+    true
+}

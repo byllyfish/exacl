@@ -81,13 +81,15 @@ bitflags! {
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const SYNC = np::ACL_SYNCHRONIZE;
 
+        /// NFSv4 READ_DATA permission.
         #[cfg(any(docsrs, target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
-        const READ_DATA = np::READ_DATA;
+        const READ_DATA = np::ACL_READ_DATA;
 
+        /// NFSv4 WRITE_DATA permission.
         #[cfg(any(docsrs, target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
-        const WRITE_DATA = np::WRITE_DATA;
+        const WRITE_DATA = np::ACL_WRITE_DATA;
     }
 }
 
@@ -333,8 +335,11 @@ mod perm_tests {
         #[cfg(target_os = "macos")]
         assert_eq!(Perm::all().to_string(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync");
 
-        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        #[cfg(target_os = "linux")]
         assert_eq!(Perm::all().to_string(), "read,write,execute");
+
+        #[cfg(target_os = "freebsd")]
+        assert_eq!(Perm::all().to_string(), "sync,chown,writesecurity,readsecurity,delete,writeattr,readattr,delete_child,writeextattr,readextattr,append,write_data,read_data,read,write,execute");
     }
 
     #[test]
@@ -358,7 +363,7 @@ mod perm_tests {
             assert_eq!(Perm::all(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync".parse().unwrap());
         }
 
-        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        #[cfg(target_os = "linux")]
         {
             assert_eq!(
                 "unknown variant `qq`, expected one of `read`, `write`, `execute`",
@@ -366,6 +371,16 @@ mod perm_tests {
             );
 
             assert_eq!(Perm::all(), "read,write,execute".parse().unwrap());
+        }
+
+        #[cfg(target_os = "freebsd")]
+        {
+            assert_eq!(
+                "unknown variant `qq`, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`, `read_data`, `write_data`",
+                " ,qq ".parse::<Perm>().unwrap_err().to_string()
+            );
+
+            assert_eq!(Perm::all(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync,read_data,write_data".parse().unwrap());
         }
     }
 }
