@@ -350,8 +350,9 @@ impl Acl {
         xacl_is_empty(self.acl)
     }
 
-    /// Return true if ACL is a Posix.1e ACL on Linux or FreeBSD.
+    /// Return true if ACL is a Posix.1e ACL on Linux or `FreeBSD`.
     #[must_use]
+    #[allow(clippy::missing_const_for_fn)]
     pub fn is_posix(&self) -> bool {
         xacl_is_posix(self.acl)
     }
