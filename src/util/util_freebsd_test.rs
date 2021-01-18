@@ -67,7 +67,8 @@ fn test_empty_acl() {
     #[cfg(target_os = "linux")]
     xacl_set_file(dir.as_ref(), acl, false, false).ok().unwrap();
 
-    // Write an empty default ACL to a directory. Okay on Linux, FreeBSD.
+    // Write an empty default ACL to a directory. Okay with Posix.1e ACL
+    // but fails on NFSv4, because default ACL is not supported.
     xacl_set_file(dir.as_ref(), acl, false, true).ok().unwrap();
 
     xacl_free(acl);

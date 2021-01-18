@@ -16,6 +16,8 @@ const OWNER_NAME: &str = "";
 const OTHER_NAME: &str = "";
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 const MASK_NAME: &str = "";
+#[cfg(target_os = "freebsd")]
+const EVERYONE_NAME: &str = "";
 
 /// A Qualifier specifies the principal that is allowed/denied access to a
 /// resource.
@@ -35,6 +37,8 @@ pub enum Qualifier {
     Other,
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     Mask,
+    #[cfg(target_os = "freebsd")]
+    Everyone,
 
     Unknown(String),
 }
@@ -136,6 +140,15 @@ impl Qualifier {
         }
     }
 
+    /// Create qualifier from everyone.
+    #[cfg(target_os = "freebsd")]
+    pub fn everyone_named(name: &str) -> io::Result<Qualifier> {
+        match name {
+            EVERYONE_NAME => Ok(Qualifier::Everyone),
+            s => fail_custom(&format!("unknown everyone name: {:?}", s)),
+        }
+    }
+
     /// Return the GUID for the user/group.
     #[cfg(target_os = "macos")]
     pub fn guid(&self) -> io::Result<Uuid> {
@@ -160,6 +173,8 @@ impl Qualifier {
             Qualifier::Other => OTHER_NAME.to_string(),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::Mask => MASK_NAME.to_string(),
+            #[cfg(target_os = "freebsd")]
+            Qualifier::Everyone => EVERYONE_NAME.to_string(),
 
             Qualifier::Unknown(s) => s.clone(),
         }
@@ -181,6 +196,8 @@ impl fmt::Display for Qualifier {
             Qualifier::Other => write!(f, "other"),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::Mask => write!(f, "mask"),
+            #[cfg(target_os = "freebsd")]
+            Qualifier::Everyone => write!(f, "everyone"),
             Qualifier::Unknown(s) => write!(f, "unknown:{}", s),
         }
     }

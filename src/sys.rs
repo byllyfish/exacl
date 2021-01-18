@@ -175,6 +175,8 @@ pub mod sg {
     pub const ACL_MASK: acl_tag_t = super::ACL_MASK as acl_tag_t;
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub const ACL_OTHER: acl_tag_t = super::ACL_OTHER as acl_tag_t;
+    #[cfg( target_os = "freebsd")]
+    pub const ACL_EVERYONE: acl_tag_t = super::ACL_EVERYONE as acl_tag_t;
 
     #[cfg(target_os = "macos")]
     pub const ID_TYPE_UID: i32 = super::ID_TYPE_UID as i32;

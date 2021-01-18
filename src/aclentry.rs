@@ -32,6 +32,11 @@ pub enum AclEntryKind {
     #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
     Other,
 
+    /// Entry represents a NFS "everyone" entry.
+    #[cfg(any(docsrs, target_os = "freebsd"))]
+    #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
+    Everyone,
+
     /// Entry represents a possibly corrupt ACL entry, caused by an unknown tag.
     Unknown,
 }
@@ -44,7 +49,7 @@ pub enum AclEntryKind {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct AclEntry {
-    /// Kind of entry (User, Group, Other, Mask, or Unknown).
+    /// Kind of entry (User, Group, Other, Mask, Everyone, or Unknown).
     pub kind: AclEntryKind,
 
     /// Name of the principal being given access. You can use a user/group name
@@ -204,6 +209,9 @@ impl AclEntry {
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::Other => (AclEntryKind::Other, qualifier.name()),
+
+            #[cfg(target_os = "freebsd")]
+            Qualifier::Everyone => (AclEntryKind::Everyone, qualifier.name()),
         };
 
         Ok(AclEntry {
@@ -253,6 +261,8 @@ impl AclEntry {
             AclEntryKind::Mask => Qualifier::mask_named(&self.name)?,
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             AclEntryKind::Other => Qualifier::other_named(&self.name)?,
+            #[cfg(target_os = "freebsd")]
+            AclEntryKind::Everyone => Qualifier::everyone_named(&self.name)?,
             AclEntryKind::Unknown => {
                 return fail_custom("unsupported kind: \"unknown\"");
             }
