@@ -277,7 +277,10 @@ mod flag_tests {
             let bad_flag = Flag { bits: 0x8000 } | Flag::DEFAULT;
             assert_eq!(bad_flag.to_string(), "default");
 
-            assert_eq!(Flag::all().to_string(), "file_inherit,directory_inherit,limit_inherit,only_inherit,inherited,default");
+            assert_eq!(
+                Flag::all().to_string(),
+                "file_inherit,directory_inherit,limit_inherit,only_inherit,inherited,default"
+            );
         }
     }
 
@@ -313,7 +316,12 @@ mod flag_tests {
             assert_eq!(Flag::empty(), "".parse::<Flag>().unwrap());
 
             assert_eq!(Flag::DEFAULT, "d".parse().unwrap());
-            assert_eq!(Flag::all(), "default,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit".parse().unwrap());
+            assert_eq!(
+                Flag::all(),
+                "default,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit"
+                    .parse()
+                    .unwrap()
+            );
 
             assert_eq!(
                 "unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`, `default`",

@@ -43,6 +43,8 @@ testInvalidKind() {
 
     if [ "$CURRENT_OS" = "Darwin" ]; then
         expected='user, group, unknown'
+    elif [ "$CURRENT_OS" = "FreeBSD" ]; then
+        expected='user, group, mask, other, everyone, unknown'
     else
         expected='user, group, mask, other, unknown'
     fi
