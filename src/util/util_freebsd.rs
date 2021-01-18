@@ -21,20 +21,34 @@ const fn get_acl_type(default_acl: bool) -> acl_type_t {
 
 /// Get ACL from file path, don't follow symbolic links.
 fn xacl_get_link(path: &Path, default_acl: bool) -> io::Result<acl_t> {
-    let acl_type = get_acl_type(default_acl);
+    let mut acl_type = get_acl_type(default_acl);
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let acl = unsafe { acl_get_link_np(c_path.as_ptr(), acl_type) };
 
-    if acl.is_null() {
-        let func = if default_acl {
-            "acl_get_link_np/default"
-        } else {
-            "acl_get_link_np/access"
-        };
-        return fail_err("null", func, &c_path);
+    if !acl.is_null() {
+        return Ok(acl);
     }
 
-    Ok(acl)
+    // `acl_get_link_np` returns EINVAL when the ACL type is not appropriate for
+    // the file system object. Retry with NFSv4 type.
+    // FIXME: `default_acl` setting is currently ignored!
+    if let Some(sg::EINVAL) = io::Error::last_os_error().raw_os_error() {
+        acl_type = sg::ACL_TYPE_NFS4;
+        let nfs_acl = unsafe { acl_get_link_np(c_path.as_ptr(), acl_type) };
+        if !nfs_acl.is_null() {
+            return Ok(nfs_acl);
+        }
+    }
+
+    // Report acl_type and path to file that failed.
+    let func = match acl_type {
+        sg::ACL_TYPE_ACCESS => "acl_get_link_np/access",
+        sg::ACL_TYPE_DEFAULT => "acl_get_link_np/default",
+        sg::ACL_TYPE_NFS4 => "acl_get_link_np/nfs4",
+        _ => "acl_get_link_np/?",
+    };
+
+    return fail_err("null", func, &c_path);
 }
 
 /// Get ACL from file path.
@@ -168,9 +182,36 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     Ok(result)
 }
 
+fn xacl_get_entry_type(entry: acl_entry_t) -> io::Result<acl_entry_type_t> {
+    let mut entry_type: acl_entry_type_t = 0;
+
+    let ret = unsafe { acl_get_entry_type_np(entry, &mut entry_type) };
+    if ret != 0 {
+        return fail_err(ret, "acl_get_entry_type_np", ());
+    }
+
+    Ok(entry_type)
+}
+
 pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
     let qualifier = xacl_get_qualifier(entry)?;
-    Ok((true, qualifier))
+
+    let allow = match xacl_get_entry_type(entry) {
+        Ok(sg::ACL_ENTRY_TYPE_ALLOW) => true,
+        // FIXME: anything else is considered a deny... DENY, AUDIT, ALARM are not
+        // handled here yet.
+        Ok(_) => false,
+        Err(err) =>
+            // If the ACL is not brand NFS, `acl_get_entry_type_np` returns EINVAL.
+            // Posix.1e ACLs only support allow=true.
+            if let Some(sg::EINVAL) = err.raw_os_error() {
+                true
+            } else {
+                return Err(err);
+            }
+    };
+
+    Ok((allow, qualifier))
 }
 
 pub const fn xacl_get_flags(_entry: acl_entry_t) -> io::Result<Flag> {

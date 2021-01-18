@@ -384,8 +384,11 @@ mod aclentry_tests {
         #[cfg(target_os = "macos")]
         assert_eq!(entry.allow, false);
 
-        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        #[cfg(target_os = "linux")]
         assert_eq!(entry.allow, true);
+
+        #[cfg(target_os = "freebsd")]
+        assert_eq!(entry.allow, false);
 
         xacl_free(acl);
     }

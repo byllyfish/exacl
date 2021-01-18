@@ -127,7 +127,7 @@ pub mod np {
 pub mod sg {
     #![allow(clippy::cast_possible_wrap)]
 
-    use super::{acl_tag_t, acl_type_t};
+    use super::*;
 
     pub const ENOENT: i32 = super::ENOENT as i32;
     pub const ENOTSUP: i32 = super::ENOTSUP as i32;
@@ -145,6 +145,8 @@ pub mod sg {
     pub const ACL_TYPE_NFS4: acl_type_t = super::ACL_TYPE_NFS4 as acl_type_t;
     #[cfg(target_os = "freebsd")]
     pub const ACL_BRAND_POSIX: i32 = super::ACL_BRAND_POSIX as i32;
+    #[cfg(target_os = "freebsd")]
+    pub const ACL_ENTRY_TYPE_ALLOW: acl_entry_type_t = super::ACL_ENTRY_TYPE_ALLOW as acl_entry_type_t;
 
     #[cfg(target_os = "macos")]
     pub const ACL_FIRST_ENTRY: i32 = super::acl_entry_id_t_ACL_FIRST_ENTRY;
