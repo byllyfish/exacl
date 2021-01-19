@@ -92,12 +92,12 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     Ok(result)
 }
 
-pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
+pub fn xacl_get_tag_qualifier(_acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
     let qualifier = xacl_get_qualifier(entry)?;
     Ok((true, qualifier))
 }
 
-pub const fn xacl_get_flags(_entry: acl_entry_t) -> io::Result<Flag> {
+pub const fn xacl_get_flags(_acl: acl_t, _entry: acl_entry_t) -> io::Result<Flag> {
     Ok(Flag::empty()) // noop
 }
 

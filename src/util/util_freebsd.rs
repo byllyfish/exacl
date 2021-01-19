@@ -1,3 +1,4 @@
+use crate::bititer::BitIter;
 use crate::failx::*;
 use crate::flag::Flag;
 use crate::qualifier::Qualifier;
@@ -190,32 +191,47 @@ fn xacl_get_entry_type(entry: acl_entry_t) -> io::Result<acl_entry_type_t> {
         return fail_err(ret, "acl_get_entry_type_np", ());
     }
 
+    // FIXME: AUDIT, ALARM entry types are not supported.
+    debug_assert!(entry_type == sg::ACL_ENTRY_TYPE_ALLOW || entry_type == sg::ACL_ENTRY_TYPE_DENY);
+
     Ok(entry_type)
 }
 
-pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
+pub fn xacl_get_tag_qualifier(acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
     let qualifier = xacl_get_qualifier(entry)?;
 
-    let allow = match xacl_get_entry_type(entry) {
-        Ok(sg::ACL_ENTRY_TYPE_ALLOW) => true,
-        // FIXME: anything else is considered a deny... DENY, AUDIT, ALARM are not
-        // handled here yet.
-        Ok(_) => false,
-        Err(err) =>
-            // If the ACL is not brand NFS, `acl_get_entry_type_np` returns EINVAL.
-            // Posix.1e ACLs only support allow=true.
-            if let Some(sg::EINVAL) = err.raw_os_error() {
-                true
-            } else {
-                return Err(err);
-            }
+    let allow = if xacl_is_posix(acl) {
+        true
+    } else {
+        xacl_get_entry_type(entry)? == sg::ACL_ENTRY_TYPE_ALLOW
     };
 
     Ok((allow, qualifier))
 }
 
-pub const fn xacl_get_flags(_entry: acl_entry_t) -> io::Result<Flag> {
-    Ok(Flag::empty()) // noop
+pub fn xacl_get_flags(acl: acl_t, entry: acl_entry_t) -> io::Result<Flag> {
+    if xacl_is_posix(acl) {
+        return Ok(Flag::empty());
+    }
+
+    let mut flagset: acl_flagset_t = std::ptr::null_mut();
+    let ret = unsafe { acl_get_flagset_np(entry, &mut flagset) };
+    if ret != 0 {
+        return fail_err(ret, "acl_get_flagset_np", ());
+    }
+
+    assert!(!flagset.is_null());
+
+    let mut flags = Flag::empty();
+    for flag in BitIter(Flag::all() - Flag::DEFAULT) {
+        let res = unsafe { acl_get_flag_np(flagset, flag.bits()) };
+        debug_assert!((0..=1).contains(&res));
+        if res == 1 {
+            flags |= flag;
+        }
+    }
+
+    Ok(flags)
 }
 
 pub fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
@@ -278,5 +294,8 @@ pub fn xacl_is_posix(acl: acl_t) -> bool {
     let mut brand: std::os::raw::c_int = 0;
     let ret = unsafe { acl_get_brand_np(acl, &mut brand) };
     assert_eq!(ret, 0);
-    brand == sg::ACL_BRAND_POSIX
+    debug_assert!(brand == sg::ACL_BRAND_UNKNOWN || brand == sg::ACL_BRAND_POSIX || brand == sg::ACL_BRAND_NFS4);
+
+    // Treat an Unknown branded ACL as Posix.
+    brand == sg::ACL_BRAND_POSIX || brand == sg::ACL_BRAND_UNKNOWN
 }

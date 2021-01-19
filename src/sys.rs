@@ -144,9 +144,15 @@ pub mod sg {
     #[cfg(target_os = "freebsd")]
     pub const ACL_TYPE_NFS4: acl_type_t = super::ACL_TYPE_NFS4 as acl_type_t;
     #[cfg(target_os = "freebsd")]
+    pub const ACL_BRAND_UNKNOWN: i32 = super::ACL_BRAND_UNKNOWN as i32;
+    #[cfg(target_os = "freebsd")]
     pub const ACL_BRAND_POSIX: i32 = super::ACL_BRAND_POSIX as i32;
     #[cfg(target_os = "freebsd")]
+    pub const ACL_BRAND_NFS4: i32 = super::ACL_BRAND_NFS4 as i32;
+    #[cfg(target_os = "freebsd")]
     pub const ACL_ENTRY_TYPE_ALLOW: acl_entry_type_t = super::ACL_ENTRY_TYPE_ALLOW as acl_entry_type_t;
+    #[cfg(target_os = "freebsd")]
+    pub const ACL_ENTRY_TYPE_DENY: acl_entry_type_t = super::ACL_ENTRY_TYPE_DENY as acl_entry_type_t;
 
     #[cfg(target_os = "macos")]
     pub const ACL_FIRST_ENTRY: i32 = super::acl_entry_id_t_ACL_FIRST_ENTRY;

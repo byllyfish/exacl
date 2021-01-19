@@ -309,7 +309,7 @@ impl Acl {
         let mut entries = Vec::<AclEntry>::with_capacity(xacl_entry_count(self.acl));
 
         xacl_foreach(self.acl, |entry_p| {
-            let entry = AclEntry::from_raw(entry_p)?;
+            let entry = AclEntry::from_raw(entry_p, self.acl)?;
             entries.push(entry);
             Ok(())
         })?;

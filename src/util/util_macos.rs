@@ -124,10 +124,9 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
 }
 
 /// Get tag and qualifier from the entry.
-pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
+pub fn xacl_get_tag_qualifier(_acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
     let tag = xacl_get_tag_type(entry)?;
 
-    #[allow(non_upper_case_globals)]
     let result = match tag {
         sg::ACL_EXTENDED_ALLOW => (true, xacl_get_qualifier(entry)?),
         sg::ACL_EXTENDED_DENY => (false, xacl_get_qualifier(entry)?),
@@ -161,7 +160,7 @@ fn xacl_get_flags_np(obj: *mut c_void) -> io::Result<Flag> {
     Ok(flags)
 }
 
-pub fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
+pub fn xacl_get_flags(_acl: acl_t, entry: acl_entry_t) -> io::Result<Flag> {
     xacl_get_flags_np(entry as *mut c_void)
 }
 

@@ -184,10 +184,10 @@ impl AclEntry {
     }
 
     /// Return an `AclEntry` constructed from a native `acl_entry_t`.
-    pub(crate) fn from_raw(entry: acl_entry_t) -> io::Result<AclEntry> {
-        let (allow, qualifier) = xacl_get_tag_qualifier(entry)?;
+    pub(crate) fn from_raw(entry: acl_entry_t, acl: acl_t) -> io::Result<AclEntry> {
+        let (allow, qualifier) = xacl_get_tag_qualifier(acl, entry)?;
         let perms = xacl_get_perm(entry)?;
-        let flags = xacl_get_flags(entry)?;
+        let flags = xacl_get_flags(acl, entry)?;
 
         let (kind, name) = match qualifier {
             Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
@@ -226,10 +226,10 @@ impl AclEntry {
     pub(crate) fn add_to_acl(&self, acl: &mut acl_t) -> io::Result<()> {
         let qualifier = self.qualifier()?;
 
-        // Check for duplicates already in the list (Linux & FreeBSD only)
+        // Check for duplicates already in the list (Linux & FreeBSD only). FIXME!
         #[cfg(not(target_os = "macos"))]
         xacl_foreach(*acl, |entry| {
-            let (_, prev) = xacl_get_tag_qualifier(entry)?;
+            let (_, prev) = xacl_get_tag_qualifier(*acl, entry)?;
             if prev == qualifier {
                 #[cfg(target_os = "macos")]
                 let default = "";
@@ -378,7 +378,7 @@ mod aclentry_tests {
         let mut acl = xacl_init(1).unwrap();
         let entry_p = xacl_create_entry(&mut acl).unwrap();
 
-        let entry = AclEntry::from_raw(entry_p).unwrap();
+        let entry = AclEntry::from_raw(entry_p, acl).unwrap();
         assert_eq!(entry.name, "@tag 0");
 
         #[cfg(target_os = "macos")]
@@ -387,8 +387,9 @@ mod aclentry_tests {
         #[cfg(target_os = "linux")]
         assert_eq!(entry.allow, true);
 
+        // FreeBSD: Unbranded entry is treated as Posix.
         #[cfg(target_os = "freebsd")]
-        assert_eq!(entry.allow, false);
+        assert_eq!(entry.allow, true);
 
         xacl_free(acl);
     }
