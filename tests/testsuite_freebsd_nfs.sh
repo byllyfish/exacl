@@ -83,7 +83,7 @@ allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextat
 allow::group::sync,readsecurity,readattr,readextattr
 allow::everyone::sync,readsecurity,readattr,readextattr" \
         "${msg//\"/}"
-    
+
     # Remove owner read perm.
     chmod u-rw "$FILE1"
     assertEquals "----------" "$(fileperms $FILE1)"
@@ -155,7 +155,7 @@ allow::everyone::sync,readsecurity,readattr,readextattr" \
         "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute
 allow::group::sync,readsecurity,readattr,readextattr
 allow::everyone::sync,readsecurity,readattr,readextattr" \
-        "${msg//\"/}"    
+        "${msg//\"/}"
 }
 
 testReadAclForLink1() {

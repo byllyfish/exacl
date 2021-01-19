@@ -294,7 +294,11 @@ pub fn xacl_is_posix(acl: acl_t) -> bool {
     let mut brand: std::os::raw::c_int = 0;
     let ret = unsafe { acl_get_brand_np(acl, &mut brand) };
     assert_eq!(ret, 0);
-    debug_assert!(brand == sg::ACL_BRAND_UNKNOWN || brand == sg::ACL_BRAND_POSIX || brand == sg::ACL_BRAND_NFS4);
+    debug_assert!(
+        brand == sg::ACL_BRAND_UNKNOWN
+            || brand == sg::ACL_BRAND_POSIX
+            || brand == sg::ACL_BRAND_NFS4
+    );
 
     // Treat an Unknown branded ACL as Posix.
     brand == sg::ACL_BRAND_POSIX || brand == sg::ACL_BRAND_UNKNOWN
