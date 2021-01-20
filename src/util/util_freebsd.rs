@@ -214,7 +214,11 @@ fn xacl_get_entry_type(entry: acl_entry_t) -> io::Result<acl_entry_type_t> {
     }
 
     // FIXME: AUDIT, ALARM entry types are not supported.
-    debug_assert!(entry_type == 0 || entry_type == sg::ACL_ENTRY_TYPE_ALLOW || entry_type == sg::ACL_ENTRY_TYPE_DENY);
+    debug_assert!(
+        entry_type == 0
+            || entry_type == sg::ACL_ENTRY_TYPE_ALLOW
+            || entry_type == sg::ACL_ENTRY_TYPE_DENY
+    );
 
     Ok(entry_type)
 }

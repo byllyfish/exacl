@@ -281,14 +281,18 @@ impl Acl {
             }
 
             // Check if we need to add a mask entry.
-            if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::DEFAULT)) {
+            if let Some(mask_perms) =
+                Acl::compute_mask_perms(entries, (Flag::empty(), Flag::DEFAULT))
+            {
                 let mask = AclEntry::allow_mask(mask_perms, None);
                 if let Err(err) = mask.add_to_acl(&mut access_p) {
                     return fail_custom(&format!("mask entry: {}", err));
                 }
             }
 
-            if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
+            if let Some(mask_perms) =
+                Acl::compute_mask_perms(entries, (Flag::DEFAULT, Flag::DEFAULT))
+            {
                 let mask = AclEntry::allow_mask(mask_perms, Flag::DEFAULT);
                 if let Err(err) = mask.add_to_acl(&mut default_p) {
                     return fail_custom(&format!("default mask entry: {}", err));
