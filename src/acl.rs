@@ -270,27 +270,29 @@ impl Acl {
             }
         }
 
-        // Check for missing entries in both access and default entries.
-        if let Some(kind) = Acl::find_missing_entries(entries, (Flag::empty(), Flag::DEFAULT)) {
-            return fail_custom(&format!("missing required entry \"{}\"", kind));
-        }
-
-        if let Some(kind) = Acl::find_missing_entries(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
-            return fail_custom(&format!("missing required default entry \"{}\"", kind));
-        }
-
-        // Check if we need to add a mask entry.
-        if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::DEFAULT)) {
-            let mask = AclEntry::allow_mask(mask_perms, None);
-            if let Err(err) = mask.add_to_acl(&mut access_p) {
-                return fail_custom(&format!("mask entry: {}", err));
+        if xacl_is_posix(*access_p) {
+            // Check for missing entries in both access and default entries.
+            if let Some(kind) = Acl::find_missing_entries(entries, (Flag::empty(), Flag::DEFAULT)) {
+                return fail_custom(&format!("missing required entry \"{}\"", kind));
             }
-        }
 
-        if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
-            let mask = AclEntry::allow_mask(mask_perms, Flag::DEFAULT);
-            if let Err(err) = mask.add_to_acl(&mut default_p) {
-                return fail_custom(&format!("default mask entry: {}", err));
+            if let Some(kind) = Acl::find_missing_entries(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
+                return fail_custom(&format!("missing required default entry \"{}\"", kind));
+            }
+
+            // Check if we need to add a mask entry.
+            if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::DEFAULT)) {
+                let mask = AclEntry::allow_mask(mask_perms, None);
+                if let Err(err) = mask.add_to_acl(&mut access_p) {
+                    return fail_custom(&format!("mask entry: {}", err));
+                }
+            }
+
+            if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
+                let mask = AclEntry::allow_mask(mask_perms, Flag::DEFAULT);
+                if let Err(err) = mask.add_to_acl(&mut default_p) {
+                    return fail_custom(&format!("default mask entry: {}", err));
+                }
             }
         }
 

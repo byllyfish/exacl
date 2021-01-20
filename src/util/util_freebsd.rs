@@ -5,15 +5,19 @@ use crate::qualifier::Qualifier;
 use crate::sys::*;
 use crate::util::util_common::*;
 
+use log::debug;
 use nix::unistd::{Gid, Uid};
 use scopeguard::defer;
 use std::ffi::{c_void, CString};
 use std::io;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
+use std::ptr;
 
-const fn get_acl_type(default_acl: bool) -> acl_type_t {
-    if default_acl {
+fn get_acl_type(acl: acl_t, default_acl: bool) -> acl_type_t {
+    if !acl.is_null() && !xacl_is_posix(acl) {
+        sg::ACL_TYPE_NFS4
+    } else if default_acl {
         sg::ACL_TYPE_DEFAULT
     } else {
         sg::ACL_TYPE_ACCESS
@@ -22,7 +26,7 @@ const fn get_acl_type(default_acl: bool) -> acl_type_t {
 
 /// Get ACL from file path, don't follow symbolic links.
 fn xacl_get_link(path: &Path, default_acl: bool) -> io::Result<acl_t> {
-    let mut acl_type = get_acl_type(default_acl);
+    let mut acl_type = get_acl_type(ptr::null_mut(), default_acl);
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let acl = unsafe { acl_get_link_np(c_path.as_ptr(), acl_type) };
 
@@ -62,7 +66,7 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
         return xacl_get_link(path, default_acl);
     }
 
-    let mut acl_type = get_acl_type(default_acl);
+    let mut acl_type = get_acl_type(ptr::null_mut(), default_acl);
     let c_path = CString::new(path.as_os_str().as_bytes())?;
     let acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
 
@@ -105,7 +109,7 @@ fn xacl_set_file_symlink(path: &Path, acl: acl_t, default_acl: bool) -> io::Resu
         return Ok(());
     }
 
-    let acl_type = get_acl_type(default_acl);
+    let acl_type = get_acl_type(acl, default_acl);
     let ret = unsafe { acl_set_link_np(c_path.as_ptr(), acl_type, acl) };
     if ret != 0 {
         let func = if default_acl {
@@ -119,12 +123,29 @@ fn xacl_set_file_symlink(path: &Path, acl: acl_t, default_acl: bool) -> io::Resu
     Ok(())
 }
 
+fn xacl_repair_nfs4(acl: acl_t) -> io::Result<()> {
+    xacl_foreach(acl, |entry| {
+        let entry_type = xacl_get_entry_type(entry)?;
+        if entry_type == 0 {
+            xacl_set_entry_type(entry, sg::ACL_ENTRY_TYPE_ALLOW)?;
+        }
+        Ok(())
+    })
+}
+
 pub fn xacl_set_file(
     path: &Path,
     acl: acl_t,
     symlink_acl: bool,
     default_acl: bool,
 ) -> io::Result<()> {
+    if !xacl_is_posix(acl) {
+        // Fix up the ACL to make sure that all entry types are set.
+        xacl_repair_nfs4(acl)?;
+    }
+
+    log_brand("xacl_set_file", acl)?;
+
     if symlink_acl {
         return xacl_set_file_symlink(path, acl, default_acl);
     }
@@ -141,13 +162,14 @@ pub fn xacl_set_file(
         return Ok(());
     }
 
-    let acl_type = get_acl_type(default_acl);
+    let acl_type = get_acl_type(acl, default_acl);
     let ret = unsafe { acl_set_file(c_path.as_ptr(), acl_type, acl) };
     if ret != 0 {
-        let func = if default_acl {
-            "acl_set_file/default"
-        } else {
-            "acl_set_file/access"
+        let func = match acl_type {
+            sg::ACL_TYPE_ACCESS => "acl_set_file/access",
+            sg::ACL_TYPE_DEFAULT => "acl_set_file/default",
+            sg::ACL_TYPE_NFS4 => "acl_set_file/nfs4",
+            _ => "acl_set_file/?",
         };
         return fail_err(ret, func, &c_path);
     }
@@ -192,7 +214,7 @@ fn xacl_get_entry_type(entry: acl_entry_t) -> io::Result<acl_entry_type_t> {
     }
 
     // FIXME: AUDIT, ALARM entry types are not supported.
-    debug_assert!(entry_type == sg::ACL_ENTRY_TYPE_ALLOW || entry_type == sg::ACL_ENTRY_TYPE_DENY);
+    debug_assert!(entry_type == 0 || entry_type == sg::ACL_ENTRY_TYPE_ALLOW || entry_type == sg::ACL_ENTRY_TYPE_DENY);
 
     Ok(entry_type)
 }
@@ -245,14 +267,23 @@ pub fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
     Ok(())
 }
 
+fn xacl_set_entry_type(entry: acl_entry_t, entry_type: acl_entry_type_t) -> io::Result<()> {
+    let ret = unsafe { acl_set_entry_type_np(entry, entry_type) };
+    if ret != 0 {
+        return fail_err(ret, "acl_set_entry_type_np", ());
+    }
+
+    Ok(())
+}
+
 pub fn xacl_set_tag_qualifier(
     entry: acl_entry_t,
     allow: bool,
     qualifier: &Qualifier,
 ) -> io::Result<()> {
     if !allow {
-        return fail_custom("allow=false is not supported on Linux");
-    }
+        xacl_set_entry_type(entry, sg::ACL_ENTRY_TYPE_DENY)?;
+    };
 
     match qualifier {
         Qualifier::User(uid) => {
@@ -290,10 +321,18 @@ pub const fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()>
     Ok(()) // noop
 }
 
-pub fn xacl_is_posix(acl: acl_t) -> bool {
-    let mut brand: std::os::raw::c_int = 0;
+fn xacl_get_brand(acl: acl_t) -> io::Result<i32> {
+    let mut brand: i32 = 0;
     let ret = unsafe { acl_get_brand_np(acl, &mut brand) };
-    assert_eq!(ret, 0);
+    if ret != 0 {
+        return fail_err(ret, "acl_get_brand_np", ());
+    }
+
+    return Ok(brand);
+}
+
+pub fn xacl_is_posix(acl: acl_t) -> bool {
+    let brand = xacl_get_brand(acl).expect("xacl_get_brand failed");
     debug_assert!(
         brand == sg::ACL_BRAND_UNKNOWN
             || brand == sg::ACL_BRAND_POSIX
@@ -302,4 +341,18 @@ pub fn xacl_is_posix(acl: acl_t) -> bool {
 
     // Treat an Unknown branded ACL as Posix.
     brand == sg::ACL_BRAND_POSIX || brand == sg::ACL_BRAND_UNKNOWN
+}
+
+fn log_brand(func: &str, acl: acl_t) -> io::Result<()> {
+    let brand = match xacl_get_brand(acl)? {
+        sg::ACL_BRAND_UNKNOWN => "brand_unknown".to_owned(),
+        sg::ACL_BRAND_POSIX => "brand_posix".to_owned(),
+        sg::ACL_BRAND_NFS4 => "brand_nfs4".to_owned(),
+        value => value.to_string(),
+    };
+
+    let text = xacl_to_text(acl)?;
+    debug!("{}: acl {}\n{}", func, brand, text.trim_end());
+
+    Ok(())
 }
