@@ -125,7 +125,7 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
 }
 
 /// Get tag and qualifier from the entry.
-pub fn xacl_get_tag_qualifier(_acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
+fn xacl_get_tag_qualifier(_acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
     let tag = xacl_get_tag_type(entry)?;
 
     let result = match tag {
@@ -161,7 +161,7 @@ fn xacl_get_flags_np(obj: *mut c_void) -> io::Result<Flag> {
     Ok(flags)
 }
 
-pub fn xacl_get_flags(_acl: acl_t, entry: acl_entry_t) -> io::Result<Flag> {
+fn xacl_get_flags(_acl: acl_t, entry: acl_entry_t) -> io::Result<Flag> {
     xacl_get_flags_np(entry as *mut c_void)
 }
 
@@ -178,6 +178,8 @@ pub fn xacl_get_entry(acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Quali
 }
 
 /// Set qualifier for entry.
+///
+/// Used in test.
 pub fn xacl_set_qualifier(entry: acl_entry_t, qualifier: &Qualifier) -> io::Result<()> {
     // Translate qualifier User/Group to guid.
     let guid = qualifier.guid()?;
@@ -191,7 +193,7 @@ pub fn xacl_set_qualifier(entry: acl_entry_t, qualifier: &Qualifier) -> io::Resu
 }
 
 /// Set tag and qualifier for ACL entry.
-pub fn xacl_set_tag_qualifier(
+fn xacl_set_tag_qualifier(
     entry: acl_entry_t,
     allow: bool,
     qualifier: &Qualifier,
@@ -235,7 +237,7 @@ fn xacl_set_flags_np(obj: *mut c_void, flags: Flag) -> io::Result<()> {
     Ok(())
 }
 
-pub fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
+fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
     xacl_set_flags_np(entry as *mut c_void, flags)
 }
 

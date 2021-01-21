@@ -93,12 +93,12 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     Ok(result)
 }
 
-pub fn xacl_get_tag_qualifier(_acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
+fn xacl_get_tag_qualifier(_acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
     let qualifier = xacl_get_qualifier(entry)?;
     Ok((true, qualifier))
 }
 
-pub const fn xacl_get_flags(_acl: acl_t, _entry: acl_entry_t) -> io::Result<Flag> {
+const fn xacl_get_flags(_acl: acl_t, _entry: acl_entry_t) -> io::Result<Flag> {
     Ok(Flag::empty()) // noop
 }
 
@@ -110,7 +110,7 @@ pub fn xacl_get_entry(acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Quali
     Ok((allow, qualifier, perms, flags))
 }
 
-pub fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
+fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
     let id_ptr = &mut id as *mut uid_t;
 
     let ret = unsafe { acl_set_qualifier(entry, id_ptr as *mut c_void) };
@@ -121,7 +121,7 @@ pub fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
     Ok(())
 }
 
-pub fn xacl_set_tag_qualifier(
+fn xacl_set_tag_qualifier(
     entry: acl_entry_t,
     allow: bool,
     qualifier: &Qualifier,
@@ -159,7 +159,7 @@ pub fn xacl_set_tag_qualifier(
     Ok(())
 }
 
-pub const fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
+const fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
     Ok(()) // noop
 }
 

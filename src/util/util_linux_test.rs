@@ -1,7 +1,7 @@
 use crate::qualifier::Qualifier;
 use crate::sys::*;
-use crate::util::util_linux::xacl_set_qualifier;
-use crate::util::*;
+use crate::util::util_common::*;
+use crate::util::util_linux::*;
 
 #[test]
 fn test_acl_api_misuse() {
