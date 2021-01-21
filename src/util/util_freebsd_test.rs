@@ -3,6 +3,13 @@ use crate::sys::*;
 use crate::util::util_common::*;
 use crate::util::util_freebsd::*;
 
+use ctor::ctor;
+
+#[ctor]
+fn init() {
+    env_logger::init();
+}
+
 #[test]
 fn test_acl_api_misuse() {
     // Create empty list and add an entry.

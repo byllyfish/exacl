@@ -341,24 +341,34 @@ pub fn xacl_add_entry(
     perms: Perm,
     flags: Flag,
 ) -> io::Result<acl_entry_t> {
-    // Check for duplicates already in the list.
-    xacl_foreach(*acl, |entry| {
-        let (_, prev) = xacl_get_tag_qualifier(*acl, entry)?;
-        if prev == *qualifier {
-            let default = if flags.contains(Flag::DEFAULT) {
-                "default "
-            } else {
-                ""
-            };
-            fail_custom(&format!("duplicate {}entry for \"{}\"", default, prev))?;
-        }
-        Ok(())
-    })?;
+    let nfs4_specific = perms.intersects(Perm::NFS4_SPECIFIC);
+
+    if allow && xacl_is_posix(*acl) && !nfs4_specific {
+        // Check for duplicates already in the list.
+        xacl_foreach(*acl, |entry| {
+            let (_, prev) = xacl_get_tag_qualifier(*acl, entry)?;
+            if prev == *qualifier {
+                let default = if flags.contains(Flag::DEFAULT) {
+                    "default "
+                } else {
+                    ""
+                };
+                fail_custom(&format!("duplicate {}entry for \"{}\"", default, prev))?;
+            }
+            Ok(())
+        })?;
+    }
 
     let entry = xacl_create_entry(acl)?;
     xacl_set_tag_qualifier(entry, allow, qualifier)?;
     xacl_set_perm(entry, perms)?;
     xacl_set_flags(entry, flags)?;
+
+    // If permissions allow NFSv4 specific bits, set entry type `allow` to force
+    // the ACL brand to NFS4.
+    if allow && nfs4_specific {
+        xacl_set_entry_type(entry, sg::ACL_ENTRY_TYPE_ALLOW)?;
+    }
 
     Ok(entry)
 }
@@ -393,8 +403,7 @@ fn log_brand(func: &str, acl: acl_t) -> io::Result<()> {
         value => value.to_string(),
     };
 
-    let text = xacl_to_text(acl)?;
-    debug!("{}: acl {}\n{}", func, brand, text.trim_end());
+    debug!("{}: acl {}", func, brand);
 
     Ok(())
 }

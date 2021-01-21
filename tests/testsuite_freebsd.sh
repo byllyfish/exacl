@@ -195,12 +195,12 @@ testWriteAclToFile1() {
     isReadable "$FILE1" && isWritable "$FILE1"
     assertEquals "is readable" 0 $?
 
-    # Set ACL for current user to "allow:false". This fails on Linux.
+    # Set ACL for current user to "allow:false". This fails because of brand mismatch (FIXME).
     input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]")
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals "check failure" 1 $?
     assertEquals \
-        "Invalid ACL: entry 0: allow=false is not supported on Linux" \
+        "File \"$FILE1\": Invalid argument (os error 22)" \
         "$msg"
 
     # Set ACL for current user specifically.
@@ -258,12 +258,12 @@ testWriteAclToDir1() {
     isReadableDir "$DIR1"
     assertEquals 0 $?
 
-    # Set ACL for current user to "deny read". Fails on Linux.
+    # Set ACL for current user to "deny read". Fails due to brand mismatch (FIXME).
     input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]")
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "Invalid ACL: entry 0: allow=false is not supported on Linux" \
+        "File \"$DIR1\": Invalid argument (os error 22)" \
         "$msg"
 
     # Set ACL without mask entry.
