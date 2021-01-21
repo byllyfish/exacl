@@ -1,5 +1,6 @@
 use crate::failx::*;
 use crate::flag::Flag;
+use crate::perm::Perm;
 use crate::qualifier::Qualifier;
 use crate::sys::*;
 use crate::util::util_common::*;
@@ -92,14 +93,21 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     Ok(result)
 }
 
-pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
+fn xacl_get_tag_qualifier(_acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
     let qualifier = xacl_get_qualifier(entry)?;
     Ok((true, qualifier))
 }
 
-#[allow(clippy::clippy::missing_const_for_fn)]
-pub fn xacl_get_flags(_entry: acl_entry_t) -> io::Result<Flag> {
+const fn xacl_get_flags(_acl: acl_t, _entry: acl_entry_t) -> io::Result<Flag> {
     Ok(Flag::empty()) // noop
+}
+
+pub fn xacl_get_entry(acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Qualifier, Perm, Flag)> {
+    let (allow, qualifier) = xacl_get_tag_qualifier(acl, entry)?;
+    let perms = xacl_get_perm(entry)?;
+    let flags = xacl_get_flags(acl, entry)?;
+
+    Ok((allow, qualifier, perms, flags))
 }
 
 pub fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
@@ -151,7 +159,39 @@ pub fn xacl_set_tag_qualifier(
     Ok(())
 }
 
-#[allow(clippy::clippy::missing_const_for_fn)]
-pub fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
+const fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
     Ok(()) // noop
+}
+
+pub fn xacl_add_entry(
+    acl: &mut acl_t,
+    allow: bool,
+    qualifier: &Qualifier,
+    perms: Perm,
+    flags: Flag,
+) -> io::Result<acl_entry_t> {
+    // Check for duplicates already in the list.
+    xacl_foreach(*acl, |entry| {
+        let (_, prev) = xacl_get_tag_qualifier(*acl, entry)?;
+        if prev == *qualifier {
+            let default = if flags.contains(Flag::DEFAULT) {
+                "default "
+            } else {
+                ""
+            };
+            fail_custom(&format!("duplicate {}entry for \"{}\"", default, prev))?;
+        }
+        Ok(())
+    })?;
+
+    let entry = xacl_create_entry(acl)?;
+    xacl_set_tag_qualifier(entry, allow, qualifier)?;
+    xacl_set_perm(entry, perms)?;
+    xacl_set_flags(entry, flags)?;
+
+    Ok(entry)
+}
+
+pub const fn xacl_is_posix(_acl: acl_t) -> bool {
+    true
 }

@@ -1,6 +1,7 @@
 use crate::bititer::BitIter;
 use crate::failx::*;
 use crate::flag::Flag;
+use crate::perm::Perm;
 use crate::qualifier::Qualifier;
 use crate::sys::*;
 use crate::util::util_common::*;
@@ -124,10 +125,9 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
 }
 
 /// Get tag and qualifier from the entry.
-pub fn xacl_get_tag_qualifier(entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
+fn xacl_get_tag_qualifier(_acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Qualifier)> {
     let tag = xacl_get_tag_type(entry)?;
 
-    #[allow(non_upper_case_globals)]
     let result = match tag {
         sg::ACL_EXTENDED_ALLOW => (true, xacl_get_qualifier(entry)?),
         sg::ACL_EXTENDED_DENY => (false, xacl_get_qualifier(entry)?),
@@ -161,7 +161,7 @@ fn xacl_get_flags_np(obj: *mut c_void) -> io::Result<Flag> {
     Ok(flags)
 }
 
-pub fn xacl_get_flags(entry: acl_entry_t) -> io::Result<Flag> {
+fn xacl_get_flags(_acl: acl_t, entry: acl_entry_t) -> io::Result<Flag> {
     xacl_get_flags_np(entry as *mut c_void)
 }
 
@@ -169,7 +169,17 @@ pub fn xacl_get_acl_flags(acl: acl_t) -> io::Result<Flag> {
     xacl_get_flags_np(acl as *mut c_void)
 }
 
+pub fn xacl_get_entry(acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Qualifier, Perm, Flag)> {
+    let (allow, qualifier) = xacl_get_tag_qualifier(acl, entry)?;
+    let perms = xacl_get_perm(entry)?;
+    let flags = xacl_get_flags(acl, entry)?;
+
+    Ok((allow, qualifier, perms, flags))
+}
+
 /// Set qualifier for entry.
+///
+/// Used in test.
 pub fn xacl_set_qualifier(entry: acl_entry_t, qualifier: &Qualifier) -> io::Result<()> {
     // Translate qualifier User/Group to guid.
     let guid = qualifier.guid()?;
@@ -183,7 +193,7 @@ pub fn xacl_set_qualifier(entry: acl_entry_t, qualifier: &Qualifier) -> io::Resu
 }
 
 /// Set tag and qualifier for ACL entry.
-pub fn xacl_set_tag_qualifier(
+fn xacl_set_tag_qualifier(
     entry: acl_entry_t,
     allow: bool,
     qualifier: &Qualifier,
@@ -227,10 +237,29 @@ fn xacl_set_flags_np(obj: *mut c_void, flags: Flag) -> io::Result<()> {
     Ok(())
 }
 
-pub fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
+fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
     xacl_set_flags_np(entry as *mut c_void, flags)
 }
 
 pub fn xacl_set_acl_flags(acl: acl_t, flags: Flag) -> io::Result<()> {
     xacl_set_flags_np(acl as *mut c_void, flags)
+}
+
+pub fn xacl_add_entry(
+    acl: &mut acl_t,
+    allow: bool,
+    qualifier: &Qualifier,
+    perms: Perm,
+    flags: Flag,
+) -> io::Result<acl_entry_t> {
+    let entry = xacl_create_entry(acl)?;
+    xacl_set_tag_qualifier(entry, allow, qualifier)?;
+    xacl_set_perm(entry, perms)?;
+    xacl_set_flags(entry, flags)?;
+
+    Ok(entry)
+}
+
+pub const fn xacl_is_posix(_acl: acl_t) -> bool {
+    false
 }

@@ -32,6 +32,11 @@ pub enum AclEntryKind {
     #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
     Other,
 
+    /// Entry represents a NFS "everyone" entry.
+    #[cfg(any(docsrs, target_os = "freebsd"))]
+    #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
+    Everyone,
+
     /// Entry represents a possibly corrupt ACL entry, caused by an unknown tag.
     Unknown,
 }
@@ -44,7 +49,7 @@ pub enum AclEntryKind {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct AclEntry {
-    /// Kind of entry (User, Group, Other, Mask, or Unknown).
+    /// Kind of entry (User, Group, Other, Mask, Everyone, or Unknown).
     pub kind: AclEntryKind,
 
     /// Name of the principal being given access. You can use a user/group name
@@ -179,10 +184,8 @@ impl AclEntry {
     }
 
     /// Return an `AclEntry` constructed from a native `acl_entry_t`.
-    pub(crate) fn from_raw(entry: acl_entry_t) -> io::Result<AclEntry> {
-        let (allow, qualifier) = xacl_get_tag_qualifier(entry)?;
-        let perms = xacl_get_perm(entry)?;
-        let flags = xacl_get_flags(entry)?;
+    pub(crate) fn from_raw(entry: acl_entry_t, acl: acl_t) -> io::Result<AclEntry> {
+        let (allow, qualifier, perms, flags) = xacl_get_entry(acl, entry)?;
 
         let (kind, name) = match qualifier {
             Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
@@ -204,6 +207,9 @@ impl AclEntry {
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::Other => (AclEntryKind::Other, qualifier.name()),
+
+            #[cfg(target_os = "freebsd")]
+            Qualifier::Everyone => (AclEntryKind::Everyone, qualifier.name()),
         };
 
         Ok(AclEntry {
@@ -217,30 +223,7 @@ impl AclEntry {
 
     pub(crate) fn add_to_acl(&self, acl: &mut acl_t) -> io::Result<()> {
         let qualifier = self.qualifier()?;
-
-        // Check for duplicates already in the list (Linux & FreeBSD only)
-        #[cfg(not(target_os = "macos"))]
-        xacl_foreach(*acl, |entry| {
-            let (_, prev) = xacl_get_tag_qualifier(entry)?;
-            if prev == qualifier {
-                #[cfg(target_os = "macos")]
-                let default = "";
-                #[cfg(not(target_os = "macos"))]
-                let default = if self.flags.contains(Flag::DEFAULT) {
-                    "default "
-                } else {
-                    ""
-                };
-                fail_custom(&format!("duplicate {}entry for \"{}\"", default, qualifier))?;
-            }
-            Ok(())
-        })?;
-
-        // Adding an ACL entry may cause the acl's memory to be reallocated.
-        let entry_p = xacl_create_entry(acl)?;
-        xacl_set_tag_qualifier(entry_p, self.allow, &qualifier)?;
-        xacl_set_perm(entry_p, self.perms)?;
-        xacl_set_flags(entry_p, self.flags)?;
+        xacl_add_entry(acl, self.allow, &qualifier, self.perms, self.flags)?;
 
         Ok(())
     }
@@ -253,6 +236,8 @@ impl AclEntry {
             AclEntryKind::Mask => Qualifier::mask_named(&self.name)?,
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             AclEntryKind::Other => Qualifier::other_named(&self.name)?,
+            #[cfg(target_os = "freebsd")]
+            AclEntryKind::Everyone => Qualifier::everyone_named(&self.name)?,
             AclEntryKind::Unknown => {
                 return fail_custom("unsupported kind: \"unknown\"");
             }
@@ -368,13 +353,17 @@ mod aclentry_tests {
         let mut acl = xacl_init(1).unwrap();
         let entry_p = xacl_create_entry(&mut acl).unwrap();
 
-        let entry = AclEntry::from_raw(entry_p).unwrap();
+        let entry = AclEntry::from_raw(entry_p, acl).unwrap();
         assert_eq!(entry.name, "@tag 0");
 
         #[cfg(target_os = "macos")]
         assert_eq!(entry.allow, false);
 
-        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        #[cfg(target_os = "linux")]
+        assert_eq!(entry.allow, true);
+
+        // FreeBSD: Unbranded entry is treated as Posix.
+        #[cfg(target_os = "freebsd")]
         assert_eq!(entry.allow, true);
 
         xacl_free(acl);

@@ -12,7 +12,7 @@ if [ -n "${MEMCHECK+x}" ]; then
     EXACL="$MEMCHECK $EXACL"
 fi
 
-# Retrieve name of OS: "Darwin" or "Linux"
+# Retrieve name of OS: "Darwin", "Linux", or "FreeBSD"
 CURRENT_OS=$(uname -s)
 
 # Put quotes back on JSON text.
@@ -43,6 +43,8 @@ testInvalidKind() {
 
     if [ "$CURRENT_OS" = "Darwin" ]; then
         expected='user, group, unknown'
+    elif [ "$CURRENT_OS" = "FreeBSD" ]; then
+        expected='user, group, mask, other, everyone, unknown'
     else
         expected='user, group, mask, other, unknown'
     fi
@@ -102,6 +104,24 @@ testUnknownKind() {
         "$msg"
 }
 
+testInvalidPerm() {
+    input=$(quotifyJson "[{kind:user,name:501,perms:[whatever],flags:[],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set non_existant 2>&1 | sed -E -e 's/\`//g')
+    assertEquals 1 $?
+
+    if [ "$CURRENT_OS" = "Darwin" ]; then
+        expected='read, write, execute, delete, append, delete_child, readattr, writeattr, readextattr, writeextattr, readsecurity, writesecurity, chown, sync'
+    elif [ "$CURRENT_OS" = "FreeBSD" ]; then
+        expected='read, write, execute, delete, append, delete_child, readattr, writeattr, readextattr, writeextattr, readsecurity, writesecurity, chown, sync, read_data, write_data'
+    else
+        expected='read, write, execute'
+    fi
+
+    assertEquals \
+        "JSON parser error: unknown variant whatever, expected one of $expected at line 1 column 48" \
+        "${msg//\`/}"
+}
+
 testInvalidFlag() {
     input=$(quotifyJson "[{kind:user,name:501,perms:[execute],flags:[whatever],allow:true}]")
     msg=$(echo "$input" | $EXACL --set non_existant 2>&1 | sed -E -e 's/\`//g')
@@ -109,6 +129,8 @@ testInvalidFlag() {
 
     if [ "$CURRENT_OS" = "Darwin" ]; then
         expected='expected one of defer_inherit, no_inherit, inherited, file_inherit, directory_inherit, limit_inherit, only_inherit'
+    elif [ "$CURRENT_OS" = "FreeBSD" ]; then
+        expected='expected one of inherited, file_inherit, directory_inherit, limit_inherit, only_inherit, default'
     else
         expected='expected default'
     fi

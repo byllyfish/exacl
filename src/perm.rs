@@ -26,60 +26,79 @@ bitflags! {
         const EXECUTE = ACL_EXECUTE;
 
         /// DELETE permission for a file.
-        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const DELETE = np::ACL_DELETE;
 
         /// APPEND_DATA permission for a file.
         /// Same as ADD_SUBDIRECTORY permission for a directory.
-        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const APPEND = np::ACL_APPEND_DATA;
 
         /// DELETE_CHILD permission for a directory.
-        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const DELETE_CHILD = np::ACL_DELETE_CHILD;
 
         /// READ_ATTRIBUTES permission for file or directory.
-        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const READATTR = np::ACL_READ_ATTRIBUTES;
 
         /// WRITE_ATTRIBUTES permission for a file or directory.
-        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const WRITEATTR = np::ACL_WRITE_ATTRIBUTES;
 
         /// READ_EXTATTRIBUTES permission for a file or directory.
-        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const READEXTATTR = np::ACL_READ_EXTATTRIBUTES;
 
         /// WRITE_EXTATTRIBUTES permission for a file or directory.
-        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const WRITEEXTATTR = np::ACL_WRITE_EXTATTRIBUTES;
 
         /// READ_SECURITY permission for a file or directory.
-        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const READSECURITY = np::ACL_READ_SECURITY;
 
         /// WRITE_SECURITY permission for a file or directory.
-        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const WRITESECURITY = np::ACL_WRITE_SECURITY;
 
         /// CHANGE_OWNER permission for a file or directory.
-        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const CHOWN = np::ACL_CHANGE_OWNER;
 
         /// SYNCHRONIZE permission (unsupported).
-        #[cfg(any(docsrs, target_os = "macos"))]
+        #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
         const SYNC = np::ACL_SYNCHRONIZE;
+
+        /// NFSv4 READ_DATA permission.
+        #[cfg(any(docsrs, target_os = "freebsd"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
+        const READ_DATA = np::ACL_READ_DATA;
+
+        /// NFSv4 WRITE_DATA permission.
+        #[cfg(any(docsrs, target_os = "freebsd"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
+        const WRITE_DATA = np::ACL_WRITE_DATA;
+
+        /// All NFSv4 specific permissions.
+        #[cfg(any(docsrs, target_os = "freebsd"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
+        const NFS4_SPECIFIC = Self::READ_DATA.bits | Self::WRITE_DATA.bits
+            | Self::DELETE.bits | Self::APPEND.bits | Self::DELETE_CHILD.bits
+            | Self::READATTR.bits | Self::WRITEATTR.bits | Self::READEXTATTR.bits
+            | Self::WRITEEXTATTR.bits | Self::READSECURITY.bits
+            | Self::WRITESECURITY.bits | Self::CHOWN.bits | Self::SYNC.bits;
     }
 }
 
@@ -116,38 +135,44 @@ enum PermName {
 
     execute = Perm::EXECUTE.bits,
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     delete = Perm::DELETE.bits,
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     append = Perm::APPEND.bits,
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     delete_child = Perm::DELETE_CHILD.bits,
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     readattr = Perm::READATTR.bits,
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     writeattr = Perm::WRITEATTR.bits,
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     readextattr = Perm::READEXTATTR.bits,
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     writeextattr = Perm::WRITEEXTATTR.bits,
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     readsecurity = Perm::READSECURITY.bits,
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     writesecurity = Perm::WRITESECURITY.bits,
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     chown = Perm::CHOWN.bits,
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     sync = Perm::SYNC.bits,
+
+    #[cfg(target_os = "freebsd")]
+    read_data = Perm::READ_DATA.bits,
+
+    #[cfg(target_os = "freebsd")]
+    write_data = Perm::WRITE_DATA.bits,
 }
 
 impl PermName {
@@ -319,8 +344,11 @@ mod perm_tests {
         #[cfg(target_os = "macos")]
         assert_eq!(Perm::all().to_string(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync");
 
-        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        #[cfg(target_os = "linux")]
         assert_eq!(Perm::all().to_string(), "read,write,execute");
+
+        #[cfg(target_os = "freebsd")]
+        assert_eq!(Perm::all().to_string(), "sync,chown,writesecurity,readsecurity,delete,writeattr,readattr,delete_child,writeextattr,readextattr,append,write_data,read_data,read,write,execute");
     }
 
     #[test]
@@ -344,7 +372,7 @@ mod perm_tests {
             assert_eq!(Perm::all(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync".parse().unwrap());
         }
 
-        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        #[cfg(target_os = "linux")]
         {
             assert_eq!(
                 "unknown variant `qq`, expected one of `read`, `write`, `execute`",
@@ -352,6 +380,16 @@ mod perm_tests {
             );
 
             assert_eq!(Perm::all(), "read,write,execute".parse().unwrap());
+        }
+
+        #[cfg(target_os = "freebsd")]
+        {
+            assert_eq!(
+                "unknown variant `qq`, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`, `read_data`, `write_data`",
+                " ,qq ".parse::<Perm>().unwrap_err().to_string()
+            );
+
+            assert_eq!(Perm::all(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync,read_data,write_data".parse().unwrap());
         }
     }
 }

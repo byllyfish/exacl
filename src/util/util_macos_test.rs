@@ -1,7 +1,7 @@
 use crate::qualifier::Qualifier;
 use crate::sys::*;
-use crate::util::util_macos::xacl_set_qualifier;
-use crate::util::*;
+use crate::util::util_common::*;
+use crate::util::util_macos::*;
 
 use ctor::ctor;
 use uuid::Uuid;

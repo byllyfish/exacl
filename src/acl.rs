@@ -270,27 +270,33 @@ impl Acl {
             }
         }
 
-        // Check for missing entries in both access and default entries.
-        if let Some(kind) = Acl::find_missing_entries(entries, (Flag::empty(), Flag::DEFAULT)) {
-            return fail_custom(&format!("missing required entry \"{}\"", kind));
-        }
-
-        if let Some(kind) = Acl::find_missing_entries(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
-            return fail_custom(&format!("missing required default entry \"{}\"", kind));
-        }
-
-        // Check if we need to add a mask entry.
-        if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::DEFAULT)) {
-            let mask = AclEntry::allow_mask(mask_perms, None);
-            if let Err(err) = mask.add_to_acl(&mut access_p) {
-                return fail_custom(&format!("mask entry: {}", err));
+        if xacl_is_posix(*access_p) {
+            // Check for missing entries in both access and default entries.
+            if let Some(kind) = Acl::find_missing_entries(entries, (Flag::empty(), Flag::DEFAULT)) {
+                return fail_custom(&format!("missing required entry \"{}\"", kind));
             }
-        }
 
-        if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
-            let mask = AclEntry::allow_mask(mask_perms, Flag::DEFAULT);
-            if let Err(err) = mask.add_to_acl(&mut default_p) {
-                return fail_custom(&format!("default mask entry: {}", err));
+            if let Some(kind) = Acl::find_missing_entries(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
+                return fail_custom(&format!("missing required default entry \"{}\"", kind));
+            }
+
+            // Check if we need to add a mask entry.
+            if let Some(mask_perms) =
+                Acl::compute_mask_perms(entries, (Flag::empty(), Flag::DEFAULT))
+            {
+                let mask = AclEntry::allow_mask(mask_perms, None);
+                if let Err(err) = mask.add_to_acl(&mut access_p) {
+                    return fail_custom(&format!("mask entry: {}", err));
+                }
+            }
+
+            if let Some(mask_perms) =
+                Acl::compute_mask_perms(entries, (Flag::DEFAULT, Flag::DEFAULT))
+            {
+                let mask = AclEntry::allow_mask(mask_perms, Flag::DEFAULT);
+                if let Err(err) = mask.add_to_acl(&mut default_p) {
+                    return fail_custom(&format!("default mask entry: {}", err));
+                }
             }
         }
 
@@ -309,7 +315,7 @@ impl Acl {
         let mut entries = Vec::<AclEntry>::with_capacity(xacl_entry_count(self.acl));
 
         xacl_foreach(self.acl, |entry_p| {
-            let entry = AclEntry::from_raw(entry_p)?;
+            let entry = AclEntry::from_raw(entry_p, self.acl)?;
             entries.push(entry);
             Ok(())
         })?;
@@ -348,6 +354,13 @@ impl Acl {
     #[must_use]
     pub fn is_empty(&self) -> bool {
         xacl_is_empty(self.acl)
+    }
+
+    /// Return true if ACL is a Posix.1e ACL on Linux or `FreeBSD`.
+    #[must_use]
+    #[allow(clippy::missing_const_for_fn)]
+    pub fn is_posix(&self) -> bool {
+        xacl_is_posix(self.acl)
     }
 
     /// Return flags for the ACL itself.

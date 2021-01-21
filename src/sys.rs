@@ -60,12 +60,46 @@ pub mod np {
     pub const ACL_ENTRY_ONLY_INHERIT: acl_flag_t = acl_flag_t_ACL_ENTRY_ONLY_INHERIT;
 }
 
+/// Non-portable ACL Permissions & Flags (`FreeBSD` only)
+#[cfg(all(target_os = "freebsd", not(docsrs)))]
+pub mod np {
+    use super::{acl_flag_t, acl_perm_t};
+
+    pub const ACL_READ_DATA: acl_perm_t = super::ACL_READ_DATA;
+    pub const ACL_WRITE_DATA: acl_perm_t = super::ACL_WRITE_DATA;
+    // `ACL_EXECUTE` is portable.
+    pub const ACL_DELETE: acl_perm_t = super::ACL_DELETE;
+    pub const ACL_APPEND_DATA: acl_perm_t = super::ACL_APPEND_DATA;
+    pub const ACL_DELETE_CHILD: acl_perm_t = super::ACL_DELETE_CHILD;
+    pub const ACL_READ_ATTRIBUTES: acl_perm_t = super::ACL_READ_ATTRIBUTES;
+    pub const ACL_WRITE_ATTRIBUTES: acl_perm_t = super::ACL_WRITE_ATTRIBUTES;
+    pub const ACL_READ_EXTATTRIBUTES: acl_perm_t = super::ACL_READ_NAMED_ATTRS;
+    pub const ACL_WRITE_EXTATTRIBUTES: acl_perm_t = super::ACL_WRITE_NAMED_ATTRS;
+    pub const ACL_READ_SECURITY: acl_perm_t = super::ACL_READ_ACL;
+    pub const ACL_WRITE_SECURITY: acl_perm_t = super::ACL_WRITE_ACL;
+    pub const ACL_CHANGE_OWNER: acl_perm_t = super::ACL_WRITE_OWNER;
+    pub const ACL_SYNCHRONIZE: acl_perm_t = super::ACL_SYNCHRONIZE;
+
+    pub const ACL_ENTRY_INHERITED: acl_flag_t = super::ACL_ENTRY_INHERITED as acl_flag_t;
+    pub const ACL_ENTRY_FILE_INHERIT: acl_flag_t = super::ACL_ENTRY_FILE_INHERIT as acl_flag_t;
+    pub const ACL_ENTRY_DIRECTORY_INHERIT: acl_flag_t =
+        super::ACL_ENTRY_DIRECTORY_INHERIT as acl_flag_t;
+    pub const ACL_ENTRY_LIMIT_INHERIT: acl_flag_t =
+        super::ACL_ENTRY_NO_PROPAGATE_INHERIT as acl_flag_t;
+    pub const ACL_ENTRY_ONLY_INHERIT: acl_flag_t = super::ACL_ENTRY_INHERIT_ONLY as acl_flag_t;
+    pub const ACL_ENTRY_SUCCESSFUL_ACCESS: acl_flag_t =
+        super::ACL_ENTRY_SUCCESSFUL_ACCESS as acl_flag_t;
+    pub const ACL_ENTRY_FAILED_ACCESS: acl_flag_t = super::ACL_ENTRY_FAILED_ACCESS as acl_flag_t;
+}
+
 /// Non-portable ACL Permissions (Docs only). These are fabricated constants to
 /// make it possible for docs to be built on macOS and Linux.
 #[cfg(docsrs)]
 pub mod np {
     use super::*;
 
+    pub const ACL_READ_DATA: acl_perm_t = 1 << 8;
+    pub const ACL_WRITE_DATA: acl_perm_t = 1 << 9;
     pub const ACL_DELETE: acl_perm_t = 1 << 10;
     pub const ACL_APPEND_DATA: acl_perm_t = 1 << 11;
     pub const ACL_DELETE_CHILD: acl_perm_t = 1 << 12;
@@ -93,7 +127,7 @@ pub mod np {
 pub mod sg {
     #![allow(clippy::cast_possible_wrap)]
 
-    use super::{acl_tag_t, acl_type_t};
+    use super::*;
 
     pub const ENOENT: i32 = super::ENOENT as i32;
     pub const ENOTSUP: i32 = super::ENOTSUP as i32;
@@ -107,6 +141,20 @@ pub mod sg {
     pub const ACL_TYPE_ACCESS: acl_type_t = super::ACL_TYPE_ACCESS as acl_type_t;
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub const ACL_TYPE_DEFAULT: acl_type_t = super::ACL_TYPE_DEFAULT as acl_type_t;
+    #[cfg(target_os = "freebsd")]
+    pub const ACL_TYPE_NFS4: acl_type_t = super::ACL_TYPE_NFS4 as acl_type_t;
+    #[cfg(target_os = "freebsd")]
+    pub const ACL_BRAND_UNKNOWN: i32 = super::ACL_BRAND_UNKNOWN as i32;
+    #[cfg(target_os = "freebsd")]
+    pub const ACL_BRAND_POSIX: i32 = super::ACL_BRAND_POSIX as i32;
+    #[cfg(target_os = "freebsd")]
+    pub const ACL_BRAND_NFS4: i32 = super::ACL_BRAND_NFS4 as i32;
+    #[cfg(target_os = "freebsd")]
+    pub const ACL_ENTRY_TYPE_ALLOW: acl_entry_type_t =
+        super::ACL_ENTRY_TYPE_ALLOW as acl_entry_type_t;
+    #[cfg(target_os = "freebsd")]
+    pub const ACL_ENTRY_TYPE_DENY: acl_entry_type_t =
+        super::ACL_ENTRY_TYPE_DENY as acl_entry_type_t;
 
     #[cfg(target_os = "macos")]
     pub const ACL_FIRST_ENTRY: i32 = super::acl_entry_id_t_ACL_FIRST_ENTRY;
@@ -137,6 +185,8 @@ pub mod sg {
     pub const ACL_MASK: acl_tag_t = super::ACL_MASK as acl_tag_t;
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub const ACL_OTHER: acl_tag_t = super::ACL_OTHER as acl_tag_t;
+    #[cfg(target_os = "freebsd")]
+    pub const ACL_EVERYONE: acl_tag_t = super::ACL_EVERYONE as acl_tag_t;
 
     #[cfg(target_os = "macos")]
     pub const ID_TYPE_UID: i32 = super::ID_TYPE_UID as i32;

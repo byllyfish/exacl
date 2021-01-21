@@ -18,26 +18,22 @@ mod util_macos;
 pub use crate::sys::{acl_entry_t, acl_t};
 
 pub use util_common::{
-    xacl_create_entry, xacl_entry_count, xacl_foreach, xacl_free, xacl_from_text, xacl_get_perm,
-    xacl_init, xacl_is_empty, xacl_set_perm, xacl_set_tag_type, xacl_to_text,
+    xacl_create_entry, xacl_entry_count, xacl_foreach, xacl_free, xacl_from_text, xacl_init,
+    xacl_is_empty, xacl_to_text,
 };
 
 #[cfg(target_os = "freebsd")]
 pub use util_freebsd::{
-    xacl_get_file, xacl_get_flags, xacl_get_tag_qualifier, xacl_set_file, xacl_set_flags,
-    xacl_set_tag_qualifier,
+    xacl_add_entry, xacl_get_entry, xacl_get_file, xacl_is_posix, xacl_set_file,
 };
 
 #[cfg(target_os = "linux")]
-pub use util_linux::{
-    xacl_get_file, xacl_get_flags, xacl_get_tag_qualifier, xacl_set_file, xacl_set_flags,
-    xacl_set_tag_qualifier,
-};
+pub use util_linux::{xacl_add_entry, xacl_get_entry, xacl_get_file, xacl_is_posix, xacl_set_file};
 
 #[cfg(target_os = "macos")]
 pub use util_macos::{
-    xacl_get_acl_flags, xacl_get_file, xacl_get_flags, xacl_get_tag_qualifier, xacl_set_acl_flags,
-    xacl_set_file, xacl_set_flags, xacl_set_tag_qualifier,
+    xacl_add_entry, xacl_get_acl_flags, xacl_get_entry, xacl_get_file, xacl_is_posix,
+    xacl_set_acl_flags, xacl_set_file,
 };
 
 #[cfg(test)]

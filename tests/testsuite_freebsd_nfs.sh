@@ -1,45 +1,15 @@
 #! /usr/bin/env bash
 
-# Basic test suite for exacl tool (Linux).
+# Basic test suite for exacl tool (FreeBSD).
 
 set -u -o pipefail
 
 EXACL='../target/debug/examples/exacl'
 
-# Add memcheck command if defined.
-if [ -n "${MEMCHECK+x}" ]; then
-    echo "# MEMCHECK=$MEMCHECK"
-    EXACL="$MEMCHECK $EXACL"
-fi
-
 ME=$(id -un)
 ME_NUM=$(id -u)
 MY_GROUP=$(id -gn)
 MY_GROUP_NUM=$(id -g)
-
-# Return true if file is readable.
-isReadable() {
-    cat "$1" >/dev/null 2>&1
-    return $?
-}
-
-# Return true if file is writable (tries to overwrite file).
-isWritable() {
-    echo "x" 2>/dev/null >"$1"
-    return $?
-}
-
-# Return true if directory is readable.
-isReadableDir() {
-    ls "$1" >/dev/null 2>&1
-    return $?
-}
-
-# Return true if link is readable.
-isReadableLink() {
-    readlink "$1" >/dev/null 2>&1
-    return $?
-}
 
 fileperms() {
     stat -f "%Sp" "$1"
@@ -76,86 +46,131 @@ testReadAclFromMissingFile() {
 }
 
 testReadAclForFile1() {
-    msg=$($EXACL $FILE1)
+    msg=$($EXACL -f std $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data
+allow::group::sync,readsecurity,readattr,readextattr
+allow::everyone::sync,readsecurity,readattr,readextattr" \
         "${msg//\"/}"
 
     assertEquals "-rw-------" "$(fileperms $FILE1)"
-    isReadable "$FILE1" && isWritable "$FILE1"
+
+    # Add ACL entry for current user to "write-only".
+    setfacl -m "u:$ME:w::allow" "$FILE1"
     assertEquals 0 $?
 
-    # Add ACL entry for current user to "write-only". (Note: owner still has read access)
-    setfacl -m "u:$ME:w" "$FILE1"
-
-    msg=$($EXACL $FILE1)
+    msg=$($EXACL -f std $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "allow::user:$ME:write_data
+allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data
+allow::group::sync,readsecurity,readattr,readextattr
+allow::everyone::sync,readsecurity,readattr,readextattr" \
         "${msg//\"/}"
 
-    assertEquals "-rw--w----" "$(fileperms $FILE1)"
-    isReadable "$FILE1" && isWritable "$FILE1"
+    assertEquals "-rw-------" "$(fileperms $FILE1)"
+
+    # Deny execute access for user "777"
+    setfacl -m "g:777:execute::deny" "$FILE1"
+
+    msg=$($EXACL -f std $FILE1)
     assertEquals 0 $?
+    assertEquals \
+        "deny::group:777:execute
+allow::user:$ME:write_data
+allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data
+allow::group::sync,readsecurity,readattr,readextattr
+allow::everyone::sync,readsecurity,readattr,readextattr" \
+        "${msg//\"/}"
 
     # Remove owner read perm.
     chmod u-rw "$FILE1"
-    assertEquals "-----w----" "$(fileperms $FILE1)"
+    assertEquals "----------" "$(fileperms $FILE1)"
 
-    # Add ACL entry for current group to "allow write".
-    setfacl -m "g:$MY_GROUP:w" "$FILE1"
-
-    msg=$($EXACL $FILE1)
+    msg=$($EXACL -f std $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[write],flags:[],allow:true},{kind:mask,name:,perms:[write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr
+allow::group::sync,readsecurity,readattr,readextattr
+allow::everyone::sync,readsecurity,readattr,readextattr" \
         "${msg//\"/}"
 
-    assertEquals "-----w----" "$(fileperms $FILE1)"
+    # Add ACL entry for current group to "allow write".
+    setfacl -m "g:$MY_GROUP:w::allow" "$FILE1"
+
+    msg=$($EXACL -f std $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "allow::group:$MY_GROUP:write_data
+allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr
+allow::group::sync,readsecurity,readattr,readextattr
+allow::everyone::sync,readsecurity,readattr,readextattr" \
+        "${msg//\"/}"
+
+    assertEquals "----------" "$(fileperms $FILE1)"
 
     # Reset permissions.
     chmod 600 "$FILE1"
-    setfacl -b "$FILE1"
+
+    msg=$($EXACL -f std $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data
+allow::group::sync,readsecurity,readattr,readextattr
+allow::everyone::sync,readsecurity,readattr,readextattr" \
+        "${msg//\"/}"
 }
 
 testReadAclForDir1() {
-    msg=$($EXACL $DIR1)
+    msg=$($EXACL -f std $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute
+allow::group::sync,readsecurity,readattr,readextattr
+allow::everyone::sync,readsecurity,readattr,readextattr" \
         "${msg//\"/}"
 
     # Add ACL entry for current user to "write-only". (Note: owner still has read access)
-    setfacl -m "u:$ME:w" "$DIR1"
+    setfacl -m "u:$ME:w::allow" "$DIR1"
 
-    msg=$($EXACL $DIR1)
+    msg=$($EXACL -f std $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "allow::user:bfish:write_data
+allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute
+allow::group::sync,readsecurity,readattr,readextattr
+allow::everyone::sync,readsecurity,readattr,readextattr" \
         "${msg//\"/}"
 
-    assertEquals "drwx-w----" "$(fileperms $DIR1)"
-    isReadableDir "$DIR1"
+    assertEquals "drwx------" "$(fileperms $DIR1)"
     assertEquals 0 $?
 
-    # TODO: test default ACL in a separate test.
-
-    # Clear directory ACL's so we can delete them.
+    # Clear extended ACL entries.
     setfacl -b "$DIR1"
+
+    msg=$($EXACL -f std $DIR1)
+    assertEquals 0 $?
+    assertEquals \
+        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute
+allow::group::sync,readsecurity,readattr,readextattr
+allow::everyone::sync,readsecurity,readattr,readextattr" \
+        "${msg//\"/}"
 }
 
 testReadAclForLink1() {
     # Test symlink with no ACL.
-    msg=$($EXACL $LINK1 2>&1)
+    msg=$($EXACL -f std $LINK1 2>&1)
     assertEquals 1 $?
     assertEquals "File \"$LINK1\": No such file or directory (os error 2)" "$msg"
 
     # Test symlink with no ACL.
-    msg=$($EXACL --symlink $LINK1 2>&1)
+    msg=$($EXACL --symlink -f std $LINK1 2>&1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute
+allow::group::sync,readsecurity,readattr,readextattr
+allow::everyone::sync,readsecurity,readattr,readextattr" \
         "${msg//\"/}"
 }
 
@@ -185,22 +200,22 @@ testWriteAclToFile1() {
         "$msg"
 
     # Verify ACL.
-    msg=$($EXACL $FILE1)
+    msg=$($EXACL -f std $FILE1)
     assertEquals "verify acl" 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data
+allow::group::sync,readsecurity,readattr,readextattr
+allow::everyone::sync,readsecurity,readattr,readextattr" \
         "${msg//\"/}"
 
     assertEquals "-rw-------" "$(fileperms $FILE1)"
-    isReadable "$FILE1" && isWritable "$FILE1"
-    assertEquals "is readable" 0 $?
 
-    # Set ACL for current user to "allow:false". This fails because of brand mismatch (FIXME).
+    # Set ACL for current user to "allow:false". This fails on Linux.
     input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]")
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals "check failure" 1 $?
     assertEquals \
-        "File \"$FILE1\": Invalid argument (os error 22)" \
+        "Invalid ACL: entry 0: allow=false is not supported on Linux" \
         "$msg"
 
     # Set ACL for current user specifically.
@@ -258,12 +273,12 @@ testWriteAclToDir1() {
     isReadableDir "$DIR1"
     assertEquals 0 $?
 
-    # Set ACL for current user to "deny read". Fails due to brand mismatch (FIXME).
+    # Set ACL for current user to "deny read". Fails on Linux.
     input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]")
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "File \"$DIR1\": Invalid argument (os error 22)" \
+        "Invalid ACL: entry 0: allow=false is not supported on Linux" \
         "$msg"
 
     # Set ACL without mask entry.
