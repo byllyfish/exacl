@@ -94,9 +94,11 @@ bitflags! {
         /// All NFSv4 specific permissions.
         #[cfg(any(docsrs, target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
-        const NFS4_SPECIFIC = Self::READ_DATA.bits | Self::WRITE_DATA.bits | Self::DELETE.bits | Self::APPEND.bits | 
-            Self::DELETE_CHILD.bits | Self::READATTR.bits | Self::WRITEATTR.bits | Self::READEXTATTR.bits | 
-            Self::WRITEEXTATTR.bits | Self::READSECURITY.bits | Self::WRITESECURITY.bits | Self::CHOWN.bits | Self::SYNC.bits;
+        const NFS4_SPECIFIC = Self::READ_DATA.bits | Self::WRITE_DATA.bits
+            | Self::DELETE.bits | Self::APPEND.bits | Self::DELETE_CHILD.bits
+            | Self::READATTR.bits | Self::WRITEATTR.bits | Self::READEXTATTR.bits
+            | Self::WRITEEXTATTR.bits | Self::READSECURITY.bits
+            | Self::WRITESECURITY.bits | Self::CHOWN.bits | Self::SYNC.bits;
     }
 }
 
