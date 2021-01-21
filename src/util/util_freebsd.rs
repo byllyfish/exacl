@@ -1,6 +1,7 @@
 use crate::bititer::BitIter;
 use crate::failx::*;
 use crate::flag::Flag;
+use crate::perm::Perm;
 use crate::qualifier::Qualifier;
 use crate::sys::*;
 use crate::util::util_common::*;
