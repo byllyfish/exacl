@@ -269,7 +269,7 @@ pub fn xacl_get_entry(acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Quali
     Ok((allow, qualifier, perms, flags))
 }
 
-fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
+pub fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
     let id_ptr = &mut id as *mut uid_t;
 
     let ret = unsafe { acl_set_qualifier(entry, id_ptr as *mut c_void) };
@@ -289,7 +289,7 @@ fn xacl_set_entry_type(entry: acl_entry_t, entry_type: acl_entry_type_t) -> io::
     Ok(())
 }
 
-fn xacl_set_tag_qualifier(
+pub fn xacl_set_tag_qualifier(
     entry: acl_entry_t,
     allow: bool,
     qualifier: &Qualifier,
