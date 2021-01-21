@@ -185,9 +185,7 @@ impl AclEntry {
 
     /// Return an `AclEntry` constructed from a native `acl_entry_t`.
     pub(crate) fn from_raw(entry: acl_entry_t, acl: acl_t) -> io::Result<AclEntry> {
-        let (allow, qualifier) = xacl_get_tag_qualifier(acl, entry)?;
-        let perms = xacl_get_perm(entry)?;
-        let flags = xacl_get_flags(acl, entry)?;
+        let (allow, qualifier, perms, flags) = xacl_get_entry(acl, entry)?;
 
         let (kind, name) = match qualifier {
             Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
@@ -225,30 +223,7 @@ impl AclEntry {
 
     pub(crate) fn add_to_acl(&self, acl: &mut acl_t) -> io::Result<()> {
         let qualifier = self.qualifier()?;
-
-        // Check for duplicates already in the list (Linux & FreeBSD only). FIXME!
-        #[cfg(not(target_os = "macos"))]
-        xacl_foreach(*acl, |entry| {
-            let (_, prev) = xacl_get_tag_qualifier(*acl, entry)?;
-            if prev == qualifier {
-                #[cfg(target_os = "macos")]
-                let default = "";
-                #[cfg(not(target_os = "macos"))]
-                let default = if self.flags.contains(Flag::DEFAULT) {
-                    "default "
-                } else {
-                    ""
-                };
-                fail_custom(&format!("duplicate {}entry for \"{}\"", default, qualifier))?;
-            }
-            Ok(())
-        })?;
-
-        // Adding an ACL entry may cause the acl's memory to be reallocated.
-        let entry_p = xacl_create_entry(acl)?;
-        xacl_set_tag_qualifier(entry_p, self.allow, &qualifier)?;
-        xacl_set_perm(entry_p, self.perms)?;
-        xacl_set_flags(entry_p, self.flags)?;
+        xacl_add_entry(acl, self.allow, &qualifier, self.perms, self.flags)?;
 
         Ok(())
     }
