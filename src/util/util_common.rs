@@ -21,19 +21,6 @@ pub fn xacl_is_empty(acl: acl_t) -> bool {
     !xacl_get_entry(acl, sg::ACL_FIRST_ENTRY, &mut entry)
 }
 
-/// Return number of entries in the ACL.
-pub fn xacl_entry_count(acl: acl_t) -> usize {
-    let mut count = 0;
-
-    xacl_foreach(acl, |_| {
-        count += 1;
-        Ok(())
-    })
-    .unwrap();
-
-    count
-}
-
 /// Return next entry in ACL.
 fn xacl_get_entry(acl: acl_t, entry_id: i32, entry_p: *mut acl_entry_t) -> bool {
     let ret = unsafe { acl_get_entry(acl, entry_id, entry_p) };

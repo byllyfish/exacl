@@ -19,21 +19,19 @@ pub use crate::sys::{acl_entry_t, acl_t};
 
 #[cfg(target_os = "freebsd")]
 pub use util_freebsd::{
-    xacl_add_entry, xacl_create_entry, xacl_entry_count, xacl_foreach, xacl_free, xacl_from_text,
-    xacl_get_entry, xacl_get_file, xacl_init, xacl_is_empty, xacl_is_posix, xacl_set_file,
-    xacl_to_text,
+    xacl_add_entry, xacl_create_entry, xacl_foreach, xacl_free, xacl_from_text, xacl_get_entry,
+    xacl_get_file, xacl_init, xacl_is_empty, xacl_is_posix, xacl_set_file, xacl_to_text,
 };
 
 #[cfg(target_os = "linux")]
 pub use util_linux::{
-    xacl_add_entry, xacl_create_entry, xacl_entry_count, xacl_foreach, xacl_free, xacl_from_text,
-    xacl_get_entry, xacl_get_file, xacl_init, xacl_is_empty, xacl_is_posix, xacl_set_file,
-    xacl_to_text,
+    xacl_add_entry, xacl_create_entry, xacl_foreach, xacl_free, xacl_from_text, xacl_get_entry,
+    xacl_get_file, xacl_init, xacl_is_empty, xacl_is_posix, xacl_set_file, xacl_to_text,
 };
 
 #[cfg(target_os = "macos")]
 pub use util_macos::{
-    xacl_add_entry, xacl_create_entry, xacl_entry_count, xacl_foreach, xacl_free, xacl_from_text,
-    xacl_get_acl_flags, xacl_get_entry, xacl_get_file, xacl_init, xacl_is_empty, xacl_is_posix,
-    xacl_set_acl_flags, xacl_set_file, xacl_to_text,
+    xacl_add_entry, xacl_create_entry, xacl_foreach, xacl_free, xacl_from_text, xacl_get_acl_flags,
+    xacl_get_entry, xacl_get_file, xacl_init, xacl_is_empty, xacl_is_posix, xacl_set_acl_flags,
+    xacl_set_file, xacl_to_text,
 };

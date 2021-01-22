@@ -312,7 +312,7 @@ impl Acl {
     ///
     /// Returns an [`io::Error`] on failure.
     pub fn entries(&self) -> io::Result<Vec<AclEntry>> {
-        let mut entries = Vec::<AclEntry>::with_capacity(xacl_entry_count(self.acl));
+        let mut entries = Vec::<AclEntry>::with_capacity(8);
 
         xacl_foreach(self.acl, |entry_p| {
             let entry = AclEntry::from_raw(entry_p, self.acl)?;

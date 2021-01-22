@@ -14,8 +14,8 @@ use std::path::Path;
 use uuid::Uuid;
 
 pub use util_common::{
-    xacl_create_entry, xacl_entry_count, xacl_foreach, xacl_free, xacl_from_text, xacl_init,
-    xacl_is_empty, xacl_to_text,
+    xacl_create_entry, xacl_foreach, xacl_free, xacl_from_text, xacl_init, xacl_is_empty,
+    xacl_to_text,
 };
 
 use util_common::*;
@@ -330,8 +330,6 @@ mod util_macos_test {
             "!#acl 1\nuser:00000000-0000-0000-0000-000000000000:::allow\n"
         );
 
-        // There are still two entries... one is corrupt.
-        assert_eq!(xacl_entry_count(acl), 2);
         xacl_free(acl);
     }
 }

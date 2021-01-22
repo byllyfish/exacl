@@ -13,8 +13,8 @@ use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 
 pub use util_common::{
-    xacl_create_entry, xacl_entry_count, xacl_foreach, xacl_free, xacl_from_text, xacl_init,
-    xacl_is_empty, xacl_to_text,
+    xacl_create_entry, xacl_foreach, xacl_free, xacl_from_text, xacl_init, xacl_is_empty,
+    xacl_to_text,
 };
 
 use util_common::*;
@@ -236,9 +236,6 @@ mod util_linux_test {
 
         // ACL only prints the one valid entry; no sign of other entry.
         assert_eq!(xacl_to_text(acl).unwrap(), "\nuser::---\n");
-
-        // There are still two entries... one is corrupt.
-        assert_eq!(xacl_entry_count(acl), 2);
 
         xacl_free(acl);
     }
