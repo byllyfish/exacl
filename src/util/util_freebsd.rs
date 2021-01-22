@@ -488,4 +488,20 @@ mod util_freebsd_test {
 
         xacl_free(acl);
     }
+
+    #[test]
+    fn test_uninitialized_entry() {
+        let mut acl = xacl_init(1).unwrap();
+        let entry_p = xacl_create_entry(&mut acl).unwrap();
+
+        let (allow, qualifier) = xacl_get_tag_qualifier(acl, entry_p).unwrap();
+        assert_eq!(qualifier.name(), "@tag 0");
+        // FreeBSD: Unbranded entry is treated as Posix.
+        assert_eq!(allow, true);
+
+        let brand = xacl_get_brand(acl).unwrap();
+        assert_eq!(brand, sg::ACL_BRAND_UNKNOWN);
+
+        xacl_free(acl);
+    }
 }

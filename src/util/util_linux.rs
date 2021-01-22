@@ -268,4 +268,16 @@ mod util_linux_test {
 
         xacl_free(acl);
     }
+
+    #[test]
+    fn test_uninitialized_entry() {
+        let mut acl = xacl_init(1).unwrap();
+        let entry_p = xacl_create_entry(&mut acl).unwrap();
+
+        let (allow, qualifier) = xacl_get_tag_qualifier(acl, entry_p).unwrap();
+        assert_eq!(qualifier.name(), "@tag 0");
+        assert_eq!(allow, true);
+
+        xacl_free(acl);
+    }
 }
