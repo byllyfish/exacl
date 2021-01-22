@@ -4,7 +4,7 @@ use crate::flag::Flag;
 use crate::perm::Perm;
 use crate::qualifier::Qualifier;
 use crate::sys::*;
-use crate::util::util_common::*;
+use crate::util::util_common;
 
 use log::debug;
 use nix::unistd::{Gid, Uid};
