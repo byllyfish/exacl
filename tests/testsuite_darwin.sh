@@ -359,7 +359,7 @@ testWriteAllFilePerms() {
 
 testWriteAllFileFlags() {
     entry_flags="inherited,file_inherit,directory_inherit,limit_inherit,only_inherit"
-    all="defer_inherit,no_inherit,$entry_flags"
+    all="$entry_flags"
     input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[$all],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $FILE1)
     assertEquals 0 $?
@@ -369,7 +369,7 @@ testWriteAllFileFlags() {
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:$ME,perms:[read],flags:[$entry_flags,no_inherit],allow:true}]" \
+        "[{kind:user,name:$ME,perms:[read],flags:[$entry_flags],allow:true}]" \
         "${msg//\"/}"
 
     # ls output only shows inherited and limit_inherit.
@@ -396,7 +396,7 @@ testWriteAllDirPerms() {
 
 testWriteAllDirFlags() {
     entry_flags="inherited,file_inherit,directory_inherit,limit_inherit,only_inherit"
-    all="defer_inherit,no_inherit,$entry_flags"
+    all="$entry_flags"
     input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[$all],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $DIR1)
     assertEquals 0 $?
@@ -406,7 +406,7 @@ testWriteAllDirFlags() {
     msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:$ME,perms:[read],flags:[$entry_flags,no_inherit],allow:true}]" \
+        "[{kind:user,name:$ME,perms:[read],flags:[$entry_flags],allow:true}]" \
         "${msg//\"/}"
 }
 
