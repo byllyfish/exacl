@@ -4,6 +4,7 @@ use crate::aclentry::AclEntry;
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 use crate::aclentry::AclEntryKind;
 use crate::failx::{fail_custom, path_err};
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 use crate::flag::Flag;
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 use crate::perm::Perm;
@@ -361,32 +362,6 @@ impl Acl {
     #[allow(clippy::missing_const_for_fn)]
     pub fn is_posix(&self) -> bool {
         xacl_is_posix(self.acl)
-    }
-
-    /// Return flags for the ACL itself.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`io::Error`] on failure.
-    #[cfg(any(docsrs, target_os = "macos"))]
-    #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-    pub fn flags(&self) -> io::Result<Flag> {
-        xacl_get_acl_flags(self.acl)
-    }
-
-    /// Set flags for the ACL itself.
-    ///
-    /// This method is marked mutable, because we are altering the in-memory
-    /// representation of the ACL. The ACL on disk will only be updated when we
-    /// call [`Acl::write`].
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`io::Error`] on failure.
-    #[cfg(any(docsrs, target_os = "macos"))]
-    #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-    pub fn set_flags(&mut self, flags: Flag) -> io::Result<()> {
-        xacl_set_acl_flags(self.acl, flags)
     }
 }
 

@@ -172,10 +172,6 @@ fn xacl_get_flags(_acl: acl_t, entry: acl_entry_t) -> io::Result<Flag> {
     xacl_get_flags_np(entry as *mut c_void)
 }
 
-pub fn xacl_get_acl_flags(acl: acl_t) -> io::Result<Flag> {
-    xacl_get_flags_np(acl as *mut c_void)
-}
-
 pub fn xacl_get_entry(acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Qualifier, Perm, Flag)> {
     let (allow, qualifier) = xacl_get_tag_qualifier(acl, entry)?;
     let perms = xacl_get_perm(entry)?;
@@ -246,10 +242,6 @@ fn xacl_set_flags_np(obj: *mut c_void, flags: Flag) -> io::Result<()> {
 
 fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
     xacl_set_flags_np(entry as *mut c_void, flags)
-}
-
-pub fn xacl_set_acl_flags(acl: acl_t, flags: Flag) -> io::Result<()> {
-    xacl_set_flags_np(acl as *mut c_void, flags)
 }
 
 pub fn xacl_add_entry(

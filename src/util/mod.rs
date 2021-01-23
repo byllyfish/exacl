@@ -1,7 +1,19 @@
-//! Utility functions and constants for the underlying system API.
+//! Provides a cross-platform, minimal ACL API.
 //!
-//! This module combines code from `util_common`, `util_macos`, `util_linux`,
-//! and `util_freebsd`.
+//! Types:
+//!    `acl_t`
+//!    `acl_entry_t`
+//!
+//! Functions:
+//!    `xacl_init`      - create a new empty ACL
+//!    `xacl_free`      - destroy ACL
+//!    `xacl_foreach`   - apply a function to each entry in an ACL
+//!    `xacl_is_empty`  - test if an ACL is empty
+//!    `xacl_is_posix`  - return true if ACL has Posix.1e semantics.
+//!    `xacl_add_entry` - append new entry to an ACL
+//!    `xacl_get_entry` - retrieve contents of specified ACL entry
+//!    `xacl_get_file`  - get ACL from file path
+//!    `xacl_set_file`  - set ACL for file path
 
 mod util_common;
 
@@ -31,7 +43,6 @@ pub use util_linux::{
 
 #[cfg(target_os = "macos")]
 pub use util_macos::{
-    xacl_add_entry, xacl_foreach, xacl_free, xacl_from_text, xacl_get_acl_flags, xacl_get_entry,
-    xacl_get_file, xacl_init, xacl_is_empty, xacl_is_posix, xacl_set_acl_flags, xacl_set_file,
-    xacl_to_text,
+    xacl_add_entry, xacl_foreach, xacl_free, xacl_from_text, xacl_get_entry, xacl_get_file,
+    xacl_init, xacl_is_empty, xacl_is_posix, xacl_set_file, xacl_to_text,
 };
