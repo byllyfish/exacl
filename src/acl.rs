@@ -332,23 +332,20 @@ impl Acl {
         Ok(entries)
     }
 
-    /// Construct ACL from platform-dependent textual description.
+    /// Return ACL as a string.
+    ///
+    /// This method is provided as a tracing/debugging aid.
     ///
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
-    pub fn from_platform_text(text: &str) -> io::Result<Acl> {
-        let acl = xacl_from_text(text)?;
-        Ok(Acl::new(acl, false))
-    }
-
-    /// Return platform-dependent textual description.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`io::Error`] on failure.
-    pub fn to_platform_text(&self) -> io::Result<String> {
-        xacl_to_text(self.acl)
+    pub fn to_string(&self) -> io::Result<String> {
+        use std::io::Write;
+        let mut buf = Vec::new();
+        for entry in self.entries()? {
+            writeln!(buf, "{}", entry)?;
+        }
+        String::from_utf8(buf).map_err(|err| io::Error::new(io::ErrorKind::Other, err))
     }
 
     /// Return true if ACL is empty.

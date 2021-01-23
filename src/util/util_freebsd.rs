@@ -15,10 +15,7 @@ use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 use std::ptr;
 
-pub use util_common::{
-    xacl_create_entry, xacl_foreach, xacl_free, xacl_from_text, xacl_init, xacl_is_empty,
-    xacl_to_text,
-};
+pub use util_common::{xacl_create_entry, xacl_foreach, xacl_free, xacl_init, xacl_is_empty};
 
 use util_common::*;
 
@@ -440,18 +437,9 @@ mod util_freebsd_test {
             xacl_set_tag_qualifier(entry, true, &Qualifier::Unknown("x".to_string())).unwrap_err();
         assert!(err.to_string().contains("unknown tag: x"));
 
-        // Even though ACL contains 1 invalid entry, the platform text still
-        // results in empty string.
-        #[cfg(target_os = "linux")]
-        assert_eq!(xacl_to_text(acl).unwrap(), "");
-
         // Add another entry and set it to a valid value.
         let entry2 = xacl_create_entry(&mut acl).unwrap();
         xacl_set_tag_type(entry2, sg::ACL_USER_OBJ).unwrap();
-
-        // ACL only prints the one valid entry; no sign of other entry.
-        #[cfg(target_os = "linux")]
-        assert_eq!(xacl_to_text(acl).unwrap(), "\nuser::---\n");
 
         xacl_free(acl);
     }

@@ -13,10 +13,7 @@ use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 use uuid::Uuid;
 
-pub use util_common::{
-    xacl_create_entry, xacl_foreach, xacl_free, xacl_from_text, xacl_init, xacl_is_empty,
-    xacl_to_text,
-};
+pub use util_common::{xacl_create_entry, xacl_foreach, xacl_free, xacl_init, xacl_is_empty};
 
 use util_common::*;
 
@@ -312,15 +309,8 @@ mod util_macos_test {
         let err = xacl_set_qualifier(entry, &Qualifier::Guid(Uuid::nil())).unwrap_err();
         assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
 
-        assert_eq!(xacl_to_text(acl).unwrap(), "!#acl 1\n");
-
         let entry2 = xacl_create_entry(&mut acl).unwrap();
         xacl_set_tag_type(entry2, 1).unwrap();
-
-        assert_eq!(
-            xacl_to_text(acl).unwrap(),
-            "!#acl 1\nuser:00000000-0000-0000-0000-000000000000:::allow\n"
-        );
 
         xacl_free(acl);
     }
