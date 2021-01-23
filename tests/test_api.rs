@@ -109,14 +109,14 @@ fn test_write_acl_linux() -> io::Result<()> {
 
     assert_eq!(
         acl.to_string()?,
-        r#"user::rwx
-user:11501:rwx
-user:11502:rwx
-user:11503:rwx
-group::rwx
-group:bin:rwx
-mask::rwx
-other::rwx
+        r#"allow::user::read,write,execute
+allow::user:11501:read,write,execute
+allow::user:11502:read,write,execute
+allow::user:11503:read,write,execute
+allow::group::read,write,execute
+allow::group:bin:read,write,execute
+allow::mask::read,write,execute
+allow::other::read,write,execute
 "#
     );
 
@@ -199,8 +199,6 @@ fn test_write_default_acl() -> io::Result<()> {
     assert_ne!(acl.to_string()?, acl2.to_string()?);
 
     let default_acl = Acl::read(path, AclOption::DEFAULT_ACL)?;
-    assert_eq!(default_acl.to_string()?, acl.to_string()?);
-
     let default_entries = default_acl.entries()?;
     for entry in &default_entries {
         assert_eq!(entry.flags, Flag::DEFAULT);
@@ -295,9 +293,11 @@ fn test_from_entries() {
         let acl = Acl::from_entries(&entries).unwrap();
 
         #[cfg(target_os = "linux")]
-        let expected = "user::r--\nuser:500:--x\ngroup::r--\nmask::r-x\nother::r--\n";
+        let expected =
+            "allow::user::read\nallow::user:500:execute\nallow::group::read\nallow::mask::read,execute\nallow::other::read\n";
         #[cfg(target_os = "freebsd")]
-        let expected = "group::r--\nother::r--\nuser:500:--x\nuser::r--\nmask::r-x\n";
+        let expected =
+            "allow::group::read\nallow::other::read\nallow::user:500:execute\nallow::user::read\nallow::mask::read,execute\n";
         assert_eq!(acl.to_string().unwrap(), expected);
 
         entries.push(AclEntry::allow_group("", Perm::WRITE, None));
@@ -338,15 +338,15 @@ fn test_from_unified_entries() {
     let (a, d) = Acl::from_unified_entries(&entries).unwrap();
 
     #[cfg(target_os = "linux")]
-    let expected1 = "user::r--\nuser:500:--x\ngroup::-w-\nmask::-wx\nother::---\n";
+    let expected1 = "allow::user::read\nallow::user:500:execute\nallow::group::write\nallow::mask::write,execute\nallow::other::\n";
     #[cfg(target_os = "freebsd")]
-    let expected1 = "user:500:--x\ngroup::-w-\nuser::r--\nother::---\nmask::-wx\n";
+    let expected1 = "allow::user:500:execute\nallow::group::write\nallow::user::read\nallow::other::\nallow::mask::write,execute\n";
     assert_eq!(a.to_string().unwrap(), expected1);
 
     #[cfg(target_os = "linux")]
-    let expected2 = "user::r--\nuser:501:--x\ngroup::-w-\nmask::-wx\nother::---\n";
+    let expected2 = "allow:default:user::read\nallow:default:user:501:execute\nallow:default:group::write\nallow:default:mask::write,execute\nallow:default:other::\n";
     #[cfg(target_os = "freebsd")]
-    let expected2 = "user:501:--x\ngroup::-w-\nuser::r--\nother::---\nmask::-wx\n";
+    let expected2 = "allow:default:user:501:execute\nallow:default:group::write\nallow:default:user::read\nallow:default:other::\nallow:default:mask::write,execute\n";
     assert_eq!(d.to_string().unwrap(), expected2);
 
     entries.push(AclEntry::allow_group("", Perm::WRITE, Flag::DEFAULT));
