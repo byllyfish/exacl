@@ -367,7 +367,8 @@ pub fn xacl_add_entry(
     perms: Perm,
     flags: Flag,
 ) -> io::Result<acl_entry_t> {
-    let nfs4_specific = perms.intersects(Perm::NFS4_SPECIFIC) || flags.intersects(Flag::NFS4_SPECIFIC);
+    let nfs4_specific =
+        perms.intersects(Perm::NFS4_SPECIFIC) || flags.intersects(Flag::NFS4_SPECIFIC);
 
     if allow && xacl_is_posix(*acl) && !nfs4_specific {
         // Check for duplicates already in the list.
