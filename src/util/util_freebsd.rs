@@ -334,8 +334,30 @@ pub fn xacl_set_tag_qualifier(
     Ok(())
 }
 
-const fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
-    Ok(()) // noop
+fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
+    if flags.is_empty() || flags == Flag::DEFAULT {
+        return Ok(());
+    }
+
+    let mut flagset: acl_flagset_t = std::ptr::null_mut();
+    let ret_get = unsafe { acl_get_flagset_np(entry, &mut flagset) };
+    if ret_get != 0 {
+        return fail_err(ret_get, "acl_get_flagset_np", ());
+    }
+
+    assert!(!flagset.is_null());
+
+    let ret_clear = unsafe { acl_clear_flags_np(flagset) };
+    if ret_clear != 0 {
+        return fail_err(ret_clear, "acl_clear_flags_np", ());
+    }
+
+    for flag in BitIter(flags) {
+        let ret = unsafe { acl_add_flag_np(flagset, flag.bits()) };
+        debug_assert!(ret == 0);
+    }
+
+    Ok(())
 }
 
 pub fn xacl_add_entry(
@@ -345,7 +367,7 @@ pub fn xacl_add_entry(
     perms: Perm,
     flags: Flag,
 ) -> io::Result<acl_entry_t> {
-    let nfs4_specific = perms.intersects(Perm::NFS4_SPECIFIC);
+    let nfs4_specific = perms.intersects(Perm::NFS4_SPECIFIC) || flags.intersects(Flag::NFS4_SPECIFIC);
 
     if allow && xacl_is_posix(*acl) && !nfs4_specific {
         // Check for duplicates already in the list.

@@ -277,14 +277,16 @@ where
 
         for path in paths {
             let path = path.as_ref();
-            // Try to set default acl first. This will fail if path is not
-            // a directory and default_acl is non-empty. This ordering
-            // avoids leaving the file's ACL in a partially changed state
-            // after an error (simply because it was a non-directory).
-            default_acl.write(
-                path,
-                options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
-            )?;
+            if access_acl.is_posix() {
+                // Try to set default acl first. This will fail if path is not
+                // a directory and default_acl is non-empty. This ordering
+                // avoids leaving the file's ACL in a partially changed state
+                // after an error (simply because it was a non-directory).
+                default_acl.write(
+                    path,
+                    options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
+                )?;
+            }
             access_acl.write(path, options)?;
         }
     }
