@@ -49,12 +49,23 @@
 <span id="46">46</span>
 <span id="47">47</span>
 <span id="48">48</span>
-<span id="49">49</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="doccomment">//! Utility functions and constants for the underlying system API.</span>
+<span class="doccomment">//! Provides a cross-platform, minimal ACL API.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! This module combines code from `util_common`, `util_macos`, `util_linux`,</span>
-<span class="doccomment">//! and `util_freebsd`.</span>
+<span class="doccomment">//! Types:</span>
+<span class="doccomment">//!    `acl_t`</span>
+<span class="doccomment">//!    `acl_entry_t`</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Functions:</span>
+<span class="doccomment">//!    `xacl_init`      - create a new empty ACL</span>
+<span class="doccomment">//!    `xacl_free`      - destroy ACL</span>
+<span class="doccomment">//!    `xacl_foreach`   - apply a function to each entry in an ACL</span>
+<span class="doccomment">//!    `xacl_is_empty`  - test if an ACL is empty</span>
+<span class="doccomment">//!    `xacl_is_posix`  - return true if ACL has Posix.1e semantics.</span>
+<span class="doccomment">//!    `xacl_add_entry` - append new entry to an ACL</span>
+<span class="doccomment">//!    `xacl_get_entry` - retrieve contents of specified ACL entry</span>
+<span class="doccomment">//!    `xacl_get_file`  - get ACL from file path</span>
+<span class="doccomment">//!    `xacl_set_file`  - set ACL for file path</span>
 
 <span class="kw">mod</span> <span class="ident">util_common</span>;
 
@@ -70,36 +81,23 @@
 <span class="comment">// Re-export acl_entry_t and acl_t from crate::sys.</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">sys</span>::{<span class="ident">acl_entry_t</span>, <span class="ident">acl_t</span>};
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">util_common</span>::{
-    <span class="ident">xacl_create_entry</span>, <span class="ident">xacl_entry_count</span>, <span class="ident">xacl_foreach</span>, <span class="ident">xacl_free</span>, <span class="ident">xacl_from_text</span>, <span class="ident">xacl_init</span>,
-    <span class="ident">xacl_is_empty</span>, <span class="ident">xacl_to_text</span>,
-};
-
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">util_freebsd</span>::{
-    <span class="ident">xacl_add_entry</span>, <span class="ident">xacl_get_entry</span>, <span class="ident">xacl_get_file</span>, <span class="ident">xacl_is_posix</span>, <span class="ident">xacl_set_file</span>,
+    <span class="ident">xacl_add_entry</span>, <span class="ident">xacl_foreach</span>, <span class="ident">xacl_free</span>, <span class="ident">xacl_get_entry</span>, <span class="ident">xacl_get_file</span>, <span class="ident">xacl_init</span>,
+    <span class="ident">xacl_is_empty</span>, <span class="ident">xacl_is_posix</span>, <span class="ident">xacl_set_file</span>,
 };
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">util_linux</span>::{<span class="ident">xacl_add_entry</span>, <span class="ident">xacl_get_entry</span>, <span class="ident">xacl_get_file</span>, <span class="ident">xacl_is_posix</span>, <span class="ident">xacl_set_file</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">util_linux</span>::{
+    <span class="ident">xacl_add_entry</span>, <span class="ident">xacl_foreach</span>, <span class="ident">xacl_free</span>, <span class="ident">xacl_get_entry</span>, <span class="ident">xacl_get_file</span>, <span class="ident">xacl_init</span>,
+    <span class="ident">xacl_is_empty</span>, <span class="ident">xacl_is_posix</span>, <span class="ident">xacl_set_file</span>,
+};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">util_macos</span>::{
-    <span class="ident">xacl_add_entry</span>, <span class="ident">xacl_get_acl_flags</span>, <span class="ident">xacl_get_entry</span>, <span class="ident">xacl_get_file</span>, <span class="ident">xacl_is_posix</span>,
-    <span class="ident">xacl_set_acl_flags</span>, <span class="ident">xacl_set_file</span>,
+    <span class="ident">xacl_add_entry</span>, <span class="ident">xacl_foreach</span>, <span class="ident">xacl_free</span>, <span class="ident">xacl_get_entry</span>, <span class="ident">xacl_get_file</span>, <span class="ident">xacl_init</span>,
+    <span class="ident">xacl_is_empty</span>, <span class="ident">xacl_is_posix</span>, <span class="ident">xacl_set_file</span>,
 };
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>)]</span>
-<span class="kw">mod</span> <span class="ident">util_freebsd_test</span>;
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-<span class="kw">mod</span> <span class="ident">util_linux_test</span>;
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="kw">mod</span> <span class="ident">util_macos_test</span>;
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="exacl"></div>
     <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

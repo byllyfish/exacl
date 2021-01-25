@@ -330,9 +330,6 @@
 <span id="327">327</span>
 <span id="328">328</span>
 <span id="329">329</span>
-<span id="330">330</span>
-<span id="331">331</span>
-<span id="332">332</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Implements the inheritance flags.</span>
 
@@ -349,16 +346,6 @@
     <span class="doccomment">/// Represents ACL entry inheritance flags.</span>
     <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Flag</span> : <span class="ident">acl_flag_t</span> {
-        <span class="doccomment">/// ACL Flag.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>))]</span>
-        <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)))]</span>
-        <span class="kw">const</span> <span class="ident">DEFER_INHERIT</span> <span class="op">=</span> <span class="ident">np</span>::<span class="ident">ACL_FLAG_DEFER_INHERIT</span>;
-
-        <span class="doccomment">/// ACL Flag.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>))]</span>
-        <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)))]</span>
-        <span class="kw">const</span> <span class="ident">NO_INHERIT</span> <span class="op">=</span> <span class="ident">np</span>::<span class="ident">ACL_FLAG_NO_INHERIT</span>;
-
         <span class="doccomment">/// ACL entry was inherited.</span>
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
         <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)))]</span>
@@ -388,6 +375,11 @@
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
         <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))))]</span>
         <span class="kw">const</span> <span class="ident">DEFAULT</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">13</span>;
+
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
+        <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>)))]</span>
+        <span class="doccomment">/// NFSv4 Specific Flags on FreeBSD.</span>
+        <span class="kw">const</span> <span class="ident">NFS4_SPECIFIC</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">INHERITED</span>.<span class="ident">bits</span> <span class="op">|</span> <span class="self">Self</span>::<span class="ident">FILE_INHERIT</span>.<span class="ident">bits</span> <span class="op">|</span> <span class="self">Self</span>::<span class="ident">DIRECTORY_INHERIT</span>.<span class="ident">bits</span> <span class="op">|</span> <span class="self">Self</span>::<span class="ident">LIMIT_INHERIT</span>.<span class="ident">bits</span> <span class="op">|</span> <span class="self">Self</span>::<span class="ident">ONLY_INHERIT</span>.<span class="ident">bits</span>;
     }
 }
 
@@ -421,12 +413,6 @@
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">u32</span>)]</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
 <span class="kw">enum</span> <span class="ident">FlagName</span> {
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-    <span class="ident">defer_inherit</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">DEFER_INHERIT</span>.<span class="ident">bits</span>,
-
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-    <span class="ident">no_inherit</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">NO_INHERIT</span>.<span class="ident">bits</span>,
-
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
     <span class="ident">inherited</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">INHERITED</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
 
@@ -591,7 +577,10 @@
             <span class="kw">let</span> <span class="ident">bad_flag</span> <span class="op">=</span> <span class="ident">Flag</span> { <span class="ident">bits</span>: <span class="number">0x0080_0000</span> } <span class="op">|</span> <span class="ident">Flag</span>::<span class="ident">INHERITED</span>;
             <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">bad_flag</span>.<span class="ident">to_string</span>(), <span class="string">&quot;inherited&quot;</span>);
 
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Flag</span>::<span class="ident">all</span>().<span class="ident">to_string</span>(), <span class="string">&quot;defer_inherit,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit,no_inherit&quot;</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(
+                <span class="ident">Flag</span>::<span class="ident">all</span>().<span class="ident">to_string</span>(),
+                <span class="string">&quot;inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;</span>
+            );
         }
 
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
@@ -629,9 +618,14 @@
             <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">INHERITED</span> <span class="op">|</span> <span class="ident">Flag</span>::<span class="ident">FILE_INHERIT</span>;
             <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">flags</span>, <span class="string">&quot;inherited,file_inherit&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
 
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Flag</span>::<span class="ident">all</span>(), <span class="string">&quot;defer_inherit,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit,no_inherit&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
+            <span class="macro">assert_eq</span><span class="macro">!</span>(
+                <span class="ident">Flag</span>::<span class="ident">all</span>(),
+                <span class="string">&quot;inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;</span>
+                    .<span class="ident">parse</span>()
+                    .<span class="ident">unwrap</span>()
+            );
 
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;unknown variant `bad_flag`, expected one of `defer_inherit`, `no_inherit`, `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`&quot;</span>, <span class="string">&quot;bad_flag&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>().<span class="ident">unwrap_err</span>().<span class="ident">to_string</span>());
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`&quot;</span>, <span class="string">&quot;bad_flag&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>().<span class="ident">unwrap_err</span>().<span class="ident">to_string</span>());
         }
 
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
