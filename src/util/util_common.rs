@@ -3,7 +3,7 @@ use crate::failx::*;
 use crate::perm::Perm;
 use crate::sys::*;
 
-use std::ffi::{c_void, CStr, CString};
+use std::ffi::c_void;
 use std::io;
 use std::ptr;
 
@@ -19,19 +19,6 @@ pub fn xacl_is_empty(acl: acl_t) -> bool {
     let mut entry: acl_entry_t = ptr::null_mut();
 
     !xacl_get_entry(acl, sg::ACL_FIRST_ENTRY, &mut entry)
-}
-
-/// Return number of entries in the ACL.
-pub fn xacl_entry_count(acl: acl_t) -> usize {
-    let mut count = 0;
-
-    xacl_foreach(acl, |_| {
-        count += 1;
-        Ok(())
-    })
-    .unwrap();
-
-    count
 }
 
 /// Return next entry in ACL.
@@ -168,28 +155,4 @@ pub fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
     }
 
     Ok(())
-}
-
-pub fn xacl_from_text(text: &str) -> io::Result<acl_t> {
-    let cstr = CString::new(text.as_bytes())?;
-
-    let acl = unsafe { acl_from_text(cstr.as_ptr()) };
-    if acl.is_null() {
-        return fail_err("null", "acl_from_text", cstr);
-    }
-
-    Ok(acl)
-}
-
-pub fn xacl_to_text(acl: acl_t) -> io::Result<String> {
-    let mut size: ssize_t = 0;
-    let ptr = unsafe { acl_to_text(acl, &mut size) };
-    if ptr.is_null() {
-        return fail_err("null", "acl_to_text", ());
-    }
-
-    let result = unsafe { CStr::from_ptr(ptr).to_string_lossy().into_owned() };
-    xacl_free(ptr);
-
-    Ok(result)
 }

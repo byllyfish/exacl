@@ -69,13 +69,12 @@ fn test_write_acl_macos() -> io::Result<()> {
     // Even though the last entry is a group, the `acl_to_text` representation
     // displays it as `user`.
     assert_eq!(
-        acl.to_platform_text()?,
-        r#"!#acl 1
-group:ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000059:_spotlight:89:allow:read,write,execute
-user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CED:::allow:read,write,execute
-user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CEE:::allow:read,write,execute
-user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CEF:::allow:read,write,execute
-user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:read,write,execute
+        acl.to_string()?,
+        r#"allow::group:_spotlight:read,write,execute
+allow::user:11501:read,write,execute
+allow::user:11502:read,write,execute
+allow::user:11503:read,write,execute
+deny:file_inherit,directory_inherit:group:11504:read,write,execute
 "#
     );
 
@@ -109,15 +108,15 @@ fn test_write_acl_linux() -> io::Result<()> {
     acl.write(file.as_ref(), AclOption::empty())?;
 
     assert_eq!(
-        acl.to_platform_text()?,
-        r#"user::rwx
-user:11501:rwx
-user:11502:rwx
-user:11503:rwx
-group::rwx
-group:bin:rwx
-mask::rwx
-other::rwx
+        acl.to_string()?,
+        r#"allow::user::read,write,execute
+allow::user:11501:read,write,execute
+allow::user:11502:read,write,execute
+allow::user:11503:read,write,execute
+allow::group::read,write,execute
+allow::group:bin:read,write,execute
+allow::mask::read,write,execute
+allow::other::read,write,execute
 "#
     );
 
@@ -170,58 +169,6 @@ fn test_write_acl_too_big() {
 }
 
 #[test]
-#[cfg(target_os = "macos")]
-fn test_from_platform_text() {
-    let text = r#"!#acl 1
-user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CED:::allow:read,write,execute
-user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CEE:::allow:read,write,execute
-user:FFFFEEEE-DDDD-CCCC-BBBB-AAAA00002CEF:::allow:read,write,execute
-user:AAAABBBB-CCCC-DDDD-EEEE-FFFF00002CF0:::deny,file_inherit,directory_inherit:read,write,execute
-"#;
-
-    let acl = Acl::from_platform_text(text).unwrap();
-    assert_eq!(acl.to_platform_text().unwrap(), text);
-
-    let input = r#"!#acl 1
-group::_spotlight::allow:read,write,execute
-"#;
-    let output = r#"!#acl 1
-group:ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000059:_spotlight:89:allow:read,write,execute
-"#;
-    let acl = Acl::from_platform_text(input).unwrap();
-    assert_eq!(acl.to_platform_text().unwrap(), output);
-
-    // Giving bad input can result in bad output.
-    let bad_input = r#"!#acl 1
-group:_spotlight:::allow:read,write,execute
-"#;
-    let bad_output = r#"!#acl 1
-user:00000000-0000-0000-0000-000000000000:::allow:read,write,execute
-"#;
-    let acl = Acl::from_platform_text(bad_input).unwrap();
-    assert_eq!(acl.to_platform_text().unwrap(), bad_output);
-
-    log_acl(&acl.entries().unwrap());
-}
-
-#[test]
-#[cfg(any(target_os = "linux", target_os = "freebsd"))]
-fn test_from_platform_text() {
-    let text = r#"user::rwx
-user:11501:rwx
-user:11502:rwx
-user:11503:rwx
-group::rwx
-group:bin:rwx
-mask::rwx
-other::rwx
-"#;
-
-    let acl = Acl::from_platform_text(text).unwrap();
-    assert_eq!(acl.to_platform_text().unwrap(), text);
-}
-
-#[test]
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn test_read_default_acl() -> io::Result<()> {
     let dir = tempfile::tempdir()?;
@@ -249,11 +196,9 @@ fn test_write_default_acl() -> io::Result<()> {
     acl.write(path, AclOption::DEFAULT_ACL)?;
 
     let acl2 = Acl::read(path, AclOption::empty())?;
-    assert_ne!(acl.to_platform_text()?, acl2.to_platform_text()?);
+    assert_ne!(acl.to_string()?, acl2.to_string()?);
 
     let default_acl = Acl::read(path, AclOption::DEFAULT_ACL)?;
-    assert_eq!(default_acl.to_platform_text()?, acl.to_platform_text()?);
-
     let default_entries = default_acl.entries()?;
     for entry in &default_entries {
         assert_eq!(entry.flags, Flag::DEFAULT);
@@ -329,10 +274,7 @@ fn test_from_entries() {
     {
         let entries = vec![AclEntry::allow_user("500", Perm::EXECUTE, None)];
         let acl = Acl::from_entries(&entries).unwrap();
-        assert_eq!(
-            acl.to_platform_text().unwrap(),
-            "!#acl 1\nuser:FFFFEEEE-DDDD-CCCC-BBBB-AAAA000001F4:::allow:execute\n"
-        );
+        assert_eq!(acl.to_string().unwrap(), "allow::user:500:execute\n");
     }
 
     // Test named user on Linux. It should add correct mask.
@@ -351,10 +293,12 @@ fn test_from_entries() {
         let acl = Acl::from_entries(&entries).unwrap();
 
         #[cfg(target_os = "linux")]
-        let expected = "user::r--\nuser:500:--x\ngroup::r--\nmask::r-x\nother::r--\n";
+        let expected =
+            "allow::user::read\nallow::user:500:execute\nallow::group::read\nallow::mask::read,execute\nallow::other::read\n";
         #[cfg(target_os = "freebsd")]
-        let expected = "group::r--\nother::r--\nuser:500:--x\nuser::r--\nmask::r-x\n";
-        assert_eq!(acl.to_platform_text().unwrap(), expected);
+        let expected =
+            "allow::group::read\nallow::other::read\nallow::user:500:execute\nallow::user::read\nallow::mask::read,execute\n";
+        assert_eq!(acl.to_string().unwrap(), expected);
 
         entries.push(AclEntry::allow_group("", Perm::WRITE, None));
         let err = Acl::from_entries(&entries).err().unwrap();
@@ -394,16 +338,16 @@ fn test_from_unified_entries() {
     let (a, d) = Acl::from_unified_entries(&entries).unwrap();
 
     #[cfg(target_os = "linux")]
-    let expected1 = "user::r--\nuser:500:--x\ngroup::-w-\nmask::-wx\nother::---\n";
+    let expected1 = "allow::user::read\nallow::user:500:execute\nallow::group::write\nallow::mask::write,execute\nallow::other::\n";
     #[cfg(target_os = "freebsd")]
-    let expected1 = "user:500:--x\ngroup::-w-\nuser::r--\nother::---\nmask::-wx\n";
-    assert_eq!(a.to_platform_text().unwrap(), expected1);
+    let expected1 = "allow::user:500:execute\nallow::group::write\nallow::user::read\nallow::other::\nallow::mask::write,execute\n";
+    assert_eq!(a.to_string().unwrap(), expected1);
 
     #[cfg(target_os = "linux")]
-    let expected2 = "user::r--\nuser:501:--x\ngroup::-w-\nmask::-wx\nother::---\n";
+    let expected2 = "allow:default:user::read\nallow:default:user:501:execute\nallow:default:group::write\nallow:default:mask::write,execute\nallow:default:other::\n";
     #[cfg(target_os = "freebsd")]
-    let expected2 = "user:501:--x\ngroup::-w-\nuser::r--\nother::---\nmask::-wx\n";
-    assert_eq!(d.to_platform_text().unwrap(), expected2);
+    let expected2 = "allow:default:user:501:execute\nallow:default:group::write\nallow:default:user::read\nallow:default:other::\nallow:default:mask::write,execute\n";
+    assert_eq!(d.to_string().unwrap(), expected2);
 
     entries.push(AclEntry::allow_group("", Perm::WRITE, Flag::DEFAULT));
 
@@ -444,32 +388,6 @@ fn test_too_many_entries() -> io::Result<()> {
     // 508th entry is one too many.
     let err = setfacl(&files, &entries, None).unwrap_err();
     assert!(err.to_string().contains("No space left on device"));
-
-    Ok(())
-}
-
-#[test]
-#[cfg(target_os = "macos")]
-fn test_set_acl_flags() -> io::Result<()> {
-    let file = tempfile::NamedTempFile::new()?;
-    let entries = vec![AclEntry::allow_user("600", Perm::READ, Flag::empty())];
-
-    let mut acl = Acl::from_entries(&entries)?;
-    assert_eq!(acl.flags()?, Flag::empty());
-
-    acl.set_flags(Flag::NO_INHERIT)?;
-    assert_eq!(acl.flags()?, Flag::NO_INHERIT);
-
-    // Setting the flag in memory has no effect on the file.
-    let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
-    assert_eq!(acl2.flags()?, Flag::empty());
-
-    // Writing the ACL will change the file.
-    acl.write(file.as_ref(), AclOption::empty())?;
-
-    // The NO_INHERIT flag only seems to persist if the ACL is not empty.
-    let acl3 = Acl::read(file.as_ref(), AclOption::empty())?;
-    assert_eq!(acl3.flags()?, Flag::NO_INHERIT);
 
     Ok(())
 }

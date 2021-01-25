@@ -4,7 +4,7 @@ use crate::flag::Flag;
 use crate::perm::Perm;
 use crate::qualifier::Qualifier;
 use crate::sys::*;
-use crate::util::util_common::*;
+use crate::util::util_common;
 
 use log::debug;
 use nix::unistd::{Gid, Uid};
@@ -14,6 +14,10 @@ use std::io;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 use std::ptr;
+
+pub use util_common::{xacl_create_entry, xacl_foreach, xacl_free, xacl_init, xacl_is_empty};
+
+use util_common::*;
 
 fn get_acl_type(acl: acl_t, default_acl: bool) -> acl_type_t {
     if !acl.is_null() && !xacl_is_posix(acl) {
@@ -330,8 +334,30 @@ pub fn xacl_set_tag_qualifier(
     Ok(())
 }
 
-const fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
-    Ok(()) // noop
+fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
+    if flags.is_empty() || flags == Flag::DEFAULT {
+        return Ok(());
+    }
+
+    let mut flagset: acl_flagset_t = std::ptr::null_mut();
+    let ret_get = unsafe { acl_get_flagset_np(entry, &mut flagset) };
+    if ret_get != 0 {
+        return fail_err(ret_get, "acl_get_flagset_np", ());
+    }
+
+    assert!(!flagset.is_null());
+
+    let ret_clear = unsafe { acl_clear_flags_np(flagset) };
+    if ret_clear != 0 {
+        return fail_err(ret_clear, "acl_clear_flags_np", ());
+    }
+
+    for flag in BitIter(flags) {
+        let ret = unsafe { acl_add_flag_np(flagset, flag.bits()) };
+        debug_assert!(ret == 0);
+    }
+
+    Ok(())
 }
 
 pub fn xacl_add_entry(
@@ -341,7 +367,8 @@ pub fn xacl_add_entry(
     perms: Perm,
     flags: Flag,
 ) -> io::Result<acl_entry_t> {
-    let nfs4_specific = perms.intersects(Perm::NFS4_SPECIFIC);
+    let nfs4_specific =
+        perms.intersects(Perm::NFS4_SPECIFIC) || flags.intersects(Flag::NFS4_SPECIFIC);
 
     if allow && xacl_is_posix(*acl) && !nfs4_specific {
         // Check for duplicates already in the list.
@@ -406,4 +433,86 @@ fn log_brand(func: &str, acl: acl_t) -> io::Result<()> {
     debug!("{}: acl {}", func, brand);
 
     Ok(())
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[cfg(test)]
+mod util_freebsd_test {
+    use super::*;
+
+    #[test]
+    fn test_acl_api_misuse() {
+        // Create empty list and add an entry.
+        let mut acl = xacl_init(1).unwrap();
+        let entry = xacl_create_entry(&mut acl).unwrap();
+
+        // Setting tag other than 1 or 2 results in EINVAL error.
+        let err = xacl_set_tag_type(entry, 0).unwrap_err();
+        assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
+
+        // Setting qualifier without first setting tag to a valid value results in EINVAL.
+        let err = xacl_set_qualifier(entry, 500).unwrap_err();
+        assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
+
+        // Try to set entry using unknown qualifier -- this should fail.
+        let err =
+            xacl_set_tag_qualifier(entry, true, &Qualifier::Unknown("x".to_string())).unwrap_err();
+        assert!(err.to_string().contains("unknown tag: x"));
+
+        // Add another entry and set it to a valid value.
+        let entry2 = xacl_create_entry(&mut acl).unwrap();
+        xacl_set_tag_type(entry2, sg::ACL_USER_OBJ).unwrap();
+
+        xacl_free(acl);
+    }
+
+    #[test]
+    fn test_empty_acl() {
+        let file = tempfile::NamedTempFile::new().unwrap();
+        let dir = tempfile::TempDir::new().unwrap();
+
+        let acl = xacl_init(1).unwrap();
+        assert!(xacl_is_empty(acl));
+
+        // Empty acl is not "valid".
+        let ret = unsafe { acl_valid(acl) };
+        assert_eq!(ret, -1);
+
+        // Not on FreeBSD.
+        let err = xacl_set_file(file.as_ref(), acl, false, false)
+            .err()
+            .unwrap();
+        assert_eq!(err.to_string(), "Invalid argument (os error 22)");
+
+        // Write an empty default ACL to a file. Still works?
+        #[cfg(target_os = "linux")]
+        xacl_set_file(file.as_ref(), acl, false, true).ok().unwrap();
+
+        // Write an empty access ACL to a directory. Still works?
+        #[cfg(target_os = "linux")]
+        xacl_set_file(dir.as_ref(), acl, false, false).ok().unwrap();
+
+        // Write an empty default ACL to a directory. Okay with Posix.1e ACL
+        // but fails on NFSv4, because default ACL is not supported.
+        xacl_set_file(dir.as_ref(), acl, false, true).ok().unwrap();
+
+        xacl_free(acl);
+    }
+
+    #[test]
+    fn test_uninitialized_entry() {
+        let mut acl = xacl_init(1).unwrap();
+        let entry_p = xacl_create_entry(&mut acl).unwrap();
+
+        let (allow, qualifier) = xacl_get_tag_qualifier(acl, entry_p).unwrap();
+        assert_eq!(qualifier.name(), "@tag 0");
+        // FreeBSD: Unbranded entry is treated as Posix.
+        assert_eq!(allow, true);
+
+        let brand = xacl_get_brand(acl).unwrap();
+        assert_eq!(brand, sg::ACL_BRAND_UNKNOWN);
+
+        xacl_free(acl);
+    }
 }

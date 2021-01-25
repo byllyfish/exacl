@@ -3,7 +3,7 @@ use crate::flag::Flag;
 use crate::perm::Perm;
 use crate::qualifier::Qualifier;
 use crate::sys::*;
-use crate::util::util_common::*;
+use crate::util::util_common;
 
 use nix::unistd::{Gid, Uid};
 use scopeguard::defer;
@@ -11,6 +11,10 @@ use std::ffi::{c_void, CString};
 use std::io;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
+
+pub use util_common::{xacl_create_entry, xacl_foreach, xacl_free, xacl_init, xacl_is_empty};
+
+use util_common::*;
 
 const fn get_acl_type(default_acl: bool) -> acl_type_t {
     if default_acl {
@@ -194,4 +198,76 @@ pub fn xacl_add_entry(
 
 pub const fn xacl_is_posix(_acl: acl_t) -> bool {
     true
+}
+
+#[cfg(test)]
+mod util_linux_test {
+    use super::*;
+
+    #[test]
+    fn test_acl_api_misuse() {
+        // Create empty list and add an entry.
+        let mut acl = xacl_init(1).unwrap();
+        let entry = xacl_create_entry(&mut acl).unwrap();
+
+        // Setting tag other than 1 or 2 results in EINVAL error.
+        let err = xacl_set_tag_type(entry, 0).unwrap_err();
+        assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
+
+        // Setting qualifier without first setting tag to a valid value results in EINVAL.
+        let err = xacl_set_qualifier(entry, 500).unwrap_err();
+        assert_eq!(err.raw_os_error(), Some(sg::EINVAL));
+
+        // Try to set entry using unknown qualifier -- this should fail.
+        let err =
+            xacl_set_tag_qualifier(entry, true, &Qualifier::Unknown("x".to_string())).unwrap_err();
+        assert!(err.to_string().contains("unknown tag: x"));
+
+        // Add another entry and set it to a valid value.
+        let entry2 = xacl_create_entry(&mut acl).unwrap();
+        xacl_set_tag_type(entry2, sg::ACL_USER_OBJ).unwrap();
+
+        xacl_free(acl);
+    }
+
+    #[test]
+    fn test_empty_acl() {
+        let file = tempfile::NamedTempFile::new().unwrap();
+        let dir = tempfile::TempDir::new().unwrap();
+
+        let acl = xacl_init(1).unwrap();
+        assert!(xacl_is_empty(acl));
+
+        // Empty acl is not "valid".
+        let ret = unsafe { acl_valid(acl) };
+        assert_eq!(ret, -1);
+
+        // Write an empty access ACL to a file. Still works?
+        xacl_set_file(file.as_ref(), acl, false, false)
+            .ok()
+            .unwrap();
+
+        // Write an empty default ACL to a file. Still works?
+        xacl_set_file(file.as_ref(), acl, false, true).ok().unwrap();
+
+        // Write an empty access ACL to a directory. Still works?
+        xacl_set_file(dir.as_ref(), acl, false, false).ok().unwrap();
+
+        // Write an empty default ACL to a directory. Okay on Linux, FreeBSD.
+        xacl_set_file(dir.as_ref(), acl, false, true).ok().unwrap();
+
+        xacl_free(acl);
+    }
+
+    #[test]
+    fn test_uninitialized_entry() {
+        let mut acl = xacl_init(1).unwrap();
+        let entry_p = xacl_create_entry(&mut acl).unwrap();
+
+        let (allow, qualifier) = xacl_get_tag_qualifier(acl, entry_p).unwrap();
+        assert_eq!(qualifier.name(), "@tag 0");
+        assert_eq!(allow, true);
+
+        xacl_free(acl);
+    }
 }

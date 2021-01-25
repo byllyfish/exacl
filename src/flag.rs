@@ -13,16 +13,6 @@ bitflags! {
     /// Represents ACL entry inheritance flags.
     #[derive(Default)]
     pub struct Flag : acl_flag_t {
-        /// ACL Flag.
-        #[cfg(any(docsrs, target_os = "macos"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const DEFER_INHERIT = np::ACL_FLAG_DEFER_INHERIT;
-
-        /// ACL Flag.
-        #[cfg(any(docsrs, target_os = "macos"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-        const NO_INHERIT = np::ACL_FLAG_NO_INHERIT;
-
         /// ACL entry was inherited.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
@@ -52,6 +42,11 @@ bitflags! {
         #[cfg(any(docsrs, target_os = "linux", target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
         const DEFAULT = 1 << 13;
+
+        #[cfg(any(docsrs, target_os = "freebsd"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
+        /// NFSv4 Specific Flags on FreeBSD.
+        const NFS4_SPECIFIC = Self::INHERITED.bits | Self::FILE_INHERIT.bits | Self::DIRECTORY_INHERIT.bits | Self::LIMIT_INHERIT.bits | Self::ONLY_INHERIT.bits;
     }
 }
 
@@ -85,12 +80,6 @@ impl BitIterable for Flag {
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 enum FlagName {
-    #[cfg(target_os = "macos")]
-    defer_inherit = Flag::DEFER_INHERIT.bits,
-
-    #[cfg(target_os = "macos")]
-    no_inherit = Flag::NO_INHERIT.bits,
-
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     inherited = Flag::INHERITED.bits as u32,
 
@@ -255,7 +244,10 @@ mod flag_tests {
             let bad_flag = Flag { bits: 0x0080_0000 } | Flag::INHERITED;
             assert_eq!(bad_flag.to_string(), "inherited");
 
-            assert_eq!(Flag::all().to_string(), "defer_inherit,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit,no_inherit");
+            assert_eq!(
+                Flag::all().to_string(),
+                "inherited,file_inherit,directory_inherit,limit_inherit,only_inherit"
+            );
         }
 
         #[cfg(target_os = "linux")]
@@ -293,9 +285,14 @@ mod flag_tests {
             let flags = Flag::INHERITED | Flag::FILE_INHERIT;
             assert_eq!(flags, "inherited,file_inherit".parse().unwrap());
 
-            assert_eq!(Flag::all(), "defer_inherit,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit,no_inherit".parse().unwrap());
+            assert_eq!(
+                Flag::all(),
+                "inherited,file_inherit,directory_inherit,limit_inherit,only_inherit"
+                    .parse()
+                    .unwrap()
+            );
 
-            assert_eq!("unknown variant `bad_flag`, expected one of `defer_inherit`, `no_inherit`, `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`", "bad_flag".parse::<Flag>().unwrap_err().to_string());
+            assert_eq!("unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`", "bad_flag".parse::<Flag>().unwrap_err().to_string());
         }
 
         #[cfg(target_os = "linux")]

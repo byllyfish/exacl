@@ -4,6 +4,7 @@ use crate::aclentry::AclEntry;
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 use crate::aclentry::AclEntryKind;
 use crate::failx::{fail_custom, path_err};
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 use crate::flag::Flag;
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 use crate::perm::Perm;
@@ -312,7 +313,7 @@ impl Acl {
     ///
     /// Returns an [`io::Error`] on failure.
     pub fn entries(&self) -> io::Result<Vec<AclEntry>> {
-        let mut entries = Vec::<AclEntry>::with_capacity(xacl_entry_count(self.acl));
+        let mut entries = Vec::<AclEntry>::with_capacity(8);
 
         xacl_foreach(self.acl, |entry_p| {
             let entry = AclEntry::from_raw(entry_p, self.acl)?;
@@ -331,23 +332,20 @@ impl Acl {
         Ok(entries)
     }
 
-    /// Construct ACL from platform-dependent textual description.
+    /// Return ACL as a string.
+    ///
+    /// This method is provided as a tracing/debugging aid.
     ///
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
-    pub fn from_platform_text(text: &str) -> io::Result<Acl> {
-        let acl = xacl_from_text(text)?;
-        Ok(Acl::new(acl, false))
-    }
-
-    /// Return platform-dependent textual description.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`io::Error`] on failure.
-    pub fn to_platform_text(&self) -> io::Result<String> {
-        xacl_to_text(self.acl)
+    pub fn to_string(&self) -> io::Result<String> {
+        use std::io::Write;
+        let mut buf = Vec::new();
+        for entry in self.entries()? {
+            writeln!(buf, "{}", entry)?;
+        }
+        String::from_utf8(buf).map_err(|err| io::Error::new(io::ErrorKind::Other, err))
     }
 
     /// Return true if ACL is empty.
@@ -361,32 +359,6 @@ impl Acl {
     #[allow(clippy::missing_const_for_fn)]
     pub fn is_posix(&self) -> bool {
         xacl_is_posix(self.acl)
-    }
-
-    /// Return flags for the ACL itself.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`io::Error`] on failure.
-    #[cfg(any(docsrs, target_os = "macos"))]
-    #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-    pub fn flags(&self) -> io::Result<Flag> {
-        xacl_get_acl_flags(self.acl)
-    }
-
-    /// Set flags for the ACL itself.
-    ///
-    /// This method is marked mutable, because we are altering the in-memory
-    /// representation of the ACL. The ACL on disk will only be updated when we
-    /// call [`Acl::write`].
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`io::Error`] on failure.
-    #[cfg(any(docsrs, target_os = "macos"))]
-    #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-    pub fn set_flags(&mut self, flags: Flag) -> io::Result<()> {
-        xacl_set_acl_flags(self.acl, flags)
     }
 }
 

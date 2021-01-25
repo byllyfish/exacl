@@ -1,7 +1,19 @@
-//! Utility functions and constants for the underlying system API.
+//! Provides a cross-platform, minimal ACL API.
 //!
-//! This module combines code from `util_common`, `util_macos`, `util_linux`,
-//! and `util_freebsd`.
+//! Types:
+//!    `acl_t`
+//!    `acl_entry_t`
+//!
+//! Functions:
+//!    `xacl_init`      - create a new empty ACL
+//!    `xacl_free`      - destroy ACL
+//!    `xacl_foreach`   - apply a function to each entry in an ACL
+//!    `xacl_is_empty`  - test if an ACL is empty
+//!    `xacl_is_posix`  - return true if ACL has Posix.1e semantics.
+//!    `xacl_add_entry` - append new entry to an ACL
+//!    `xacl_get_entry` - retrieve contents of specified ACL entry
+//!    `xacl_get_file`  - get ACL from file path
+//!    `xacl_set_file`  - set ACL for file path
 
 mod util_common;
 
@@ -17,33 +29,20 @@ mod util_macos;
 // Re-export acl_entry_t and acl_t from crate::sys.
 pub use crate::sys::{acl_entry_t, acl_t};
 
-pub use util_common::{
-    xacl_create_entry, xacl_entry_count, xacl_foreach, xacl_free, xacl_from_text, xacl_init,
-    xacl_is_empty, xacl_to_text,
-};
-
 #[cfg(target_os = "freebsd")]
 pub use util_freebsd::{
-    xacl_add_entry, xacl_get_entry, xacl_get_file, xacl_is_posix, xacl_set_file,
+    xacl_add_entry, xacl_foreach, xacl_free, xacl_get_entry, xacl_get_file, xacl_init,
+    xacl_is_empty, xacl_is_posix, xacl_set_file,
 };
 
 #[cfg(target_os = "linux")]
-pub use util_linux::{xacl_add_entry, xacl_get_entry, xacl_get_file, xacl_is_posix, xacl_set_file};
+pub use util_linux::{
+    xacl_add_entry, xacl_foreach, xacl_free, xacl_get_entry, xacl_get_file, xacl_init,
+    xacl_is_empty, xacl_is_posix, xacl_set_file,
+};
 
 #[cfg(target_os = "macos")]
 pub use util_macos::{
-    xacl_add_entry, xacl_get_acl_flags, xacl_get_entry, xacl_get_file, xacl_is_posix,
-    xacl_set_acl_flags, xacl_set_file,
+    xacl_add_entry, xacl_foreach, xacl_free, xacl_get_entry, xacl_get_file, xacl_init,
+    xacl_is_empty, xacl_is_posix, xacl_set_file,
 };
-
-#[cfg(test)]
-#[cfg(target_os = "freebsd")]
-mod util_freebsd_test;
-
-#[cfg(test)]
-#[cfg(target_os = "linux")]
-mod util_linux_test;
-
-#[cfg(test)]
-#[cfg(target_os = "macos")]
-mod util_macos_test;
