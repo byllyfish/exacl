@@ -210,12 +210,12 @@ allow::everyone::sync,readsecurity,readattr,readextattr" \
 
     assertEquals "-rw-------" "$(fileperms $FILE1)"
 
-    # Set ACL for current user to "allow:false". This fails on Linux.
-    input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]")
+    # Set ACL for current user to "allow:false".
+    input=$(quotifyJson "[{kind:user,name:$ME,perms:[read_data],flags:[],allow:false}]")
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
-    assertEquals "check failure" 1 $?
+    assertEquals "check failure" 0 $?
     assertEquals \
-        "Invalid ACL: entry 0: allow=false is not supported on Linux" \
+        "" \
         "$msg"
 
     # Set ACL for current user specifically.

@@ -17,8 +17,9 @@ task:
     # Create a 5 MB memory based FS with acls enabled and
     # mount it to a sub-directory of /tmp (where it won't
     # interfere with other uses of /tmp.)
-    - mkdir /tmp/exacl_acls
+    - mkdir /tmp/exacl_acls /tmp/exacl_nfsv4acls
     - mdmfs -o acls -s 5m md /tmp/exacl_acls
+    - mdmfs -o nfsv4acls -s 5m md /tmp/exacl_nfsv4acls
     - mount
     - env
     - pkg info
@@ -35,11 +36,14 @@ task:
 
   test_script:
     - . $HOME/.cargo/env
+    # Set up path for shunit2.
+    - export PATH="$PATH:/tmp/bin"
     - cargo build
     - cargo test --no-run   # Compile only
     # Run tests on our mem-based FS with acls.
-    - export PATH="$PATH:/tmp/bin"
     - export TMPDIR=/tmp/exacl_acls
+    - cargo test
+    - export TMPDIR=/tmp/exacl_nfsv4acls
     - cargo test
     - ./tests/run_tests.sh
     - export TMPDIR=/tmp
