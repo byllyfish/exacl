@@ -435,6 +435,22 @@ fn log_brand(func: &str, acl: acl_t) -> io::Result<()> {
     Ok(())
 }
 
+pub fn xacl_is_nfs4(path: &Path, symlink: bool) -> io::Result<bool> {
+    let c_path = CString::new(path.as_os_str().as_bytes())?;
+    let ret = if symlink {
+        unsafe { lpathconf(c_path.as_ptr(), _PC_ACL_NFS4) }
+    } else {
+        unsafe { pathconf(c_path.as_ptr(), _PC_ACL_NFS4) }
+    };
+
+    if ret < 0 {
+        return fail_err(ret, "pathconf", symlink);
+    }
+
+    assert!(ret == 0 || ret == 1);
+    ret == 1
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]

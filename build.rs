@@ -48,9 +48,12 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
         "mbr_uuid_to_id",
         "open",
         "close",
+        "fpathconf",
+        "lpathconf",
     ];
     let vars = [
         "ACL_.*",
+        ".*_ACL_.*",
         "ENOENT",
         "ENOTSUP",
         "EINVAL",
