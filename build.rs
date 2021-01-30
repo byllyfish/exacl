@@ -46,18 +46,23 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
         "mbr_uid_to_uuid",
         "mbr_gid_to_uuid",
         "mbr_uuid_to_id",
+        #[cfg(target_os = "macos")]
         "open",
+        #[cfg(target_os = "macos")]
         "close",
-        "fpathconf",
+        #[cfg(target_os = "freebsd")]
+        "pathconf",
+        #[cfg(target_os = "freebsd")]
         "lpathconf",
     ];
     let vars = [
         "ACL_.*",
-        ".*_ACL_.*",
+        ".*_ACL_NFS4",
         "ENOENT",
         "ENOTSUP",
         "EINVAL",
         "ENOMEM",
+        #[cfg(target_os = "macos")]
         "O_SYMLINK",
         "ID_TYPE_UID",
         "ID_TYPE_GID",
