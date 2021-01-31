@@ -88,7 +88,7 @@ deny:file_inherit,directory_inherit:group:11504:read,write,execute
 
 #[test]
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-fn test_write_acl_linux() -> io::Result<()> {
+fn test_write_acl_posix() -> io::Result<()> {
     let mut entries = Vec::<AclEntry>::new();
     let rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 

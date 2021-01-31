@@ -66,6 +66,7 @@ pub const ACL_FLAGS_BITS: u32 = 191;
 pub const ACL_TEXT_VERBOSE: u32 = 1;
 pub const ACL_TEXT_NUMERIC_IDS: u32 = 2;
 pub const ACL_TEXT_APPEND_ID: u32 = 4;
+pub const _PC_ACL_NFS4: u32 = 64;
 pub type __uint16_t = ::std::os::raw::c_ushort;
 pub type __uint32_t = ::std::os::raw::c_uint;
 pub type __int64_t = ::std::os::raw::c_long;
@@ -331,12 +332,14 @@ extern "C" {
     pub fn acl_strip_np(_acl: acl_t, recalculate_mask: ::std::os::raw::c_int) -> acl_t;
 }
 extern "C" {
-    pub fn open(
+    pub fn pathconf(
         arg1: *const ::std::os::raw::c_char,
         arg2: ::std::os::raw::c_int,
-        ...
-    ) -> ::std::os::raw::c_int;
+    ) -> ::std::os::raw::c_long;
 }
 extern "C" {
-    pub fn close(arg1: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+    pub fn lpathconf(
+        arg1: *const ::std::os::raw::c_char,
+        arg2: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_long;
 }
