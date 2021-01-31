@@ -505,7 +505,10 @@ mod util_freebsd_test {
         // but fails on NFSv4, because default ACL is not supported.
         let result = xacl_set_file(dir.as_ref(), acl, false, true);
         if xacl_is_nfs4(dir.as_ref(), false).unwrap() {
-            assert_eq!(result.err().unwrap().to_string(), "Invalid argument (os error 22)");
+            assert_eq!(
+                result.err().unwrap().to_string(),
+                "Invalid argument (os error 22)"
+            );
         } else {
             result.ok().unwrap();
         }

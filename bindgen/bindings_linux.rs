@@ -152,13 +152,6 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    pub fn open(
-        __file: *const ::std::os::raw::c_char,
-        __oflag: ::std::os::raw::c_int,
-        ...
-    ) -> ::std::os::raw::c_int;
-}
-extern "C" {
     pub fn acl_to_any_text(
         acl: acl_t,
         prefix: *const ::std::os::raw::c_char,
@@ -197,7 +190,4 @@ extern "C" {
 }
 extern "C" {
     pub fn acl_get_perm(permset_d: acl_permset_t, perm: acl_perm_t) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn close(__fd: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
