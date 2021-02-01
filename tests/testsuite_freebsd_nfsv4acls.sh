@@ -137,7 +137,7 @@ allow::everyone::sync,readsecurity,readattr,readextattr" \
     msg=$($EXACL -f std $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "allow::user:bfish:write_data
+        "allow::user:$ME:write_data
 allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute
 allow::group::sync,readsecurity,readattr,readextattr
 allow::everyone::sync,readsecurity,readattr,readextattr" \
@@ -242,13 +242,13 @@ allow::everyone::sync,readsecurity,readattr,readextattr" \
         "${msg//\"/}"
 
     # Check ACL with getfacl.
-    msg=$(getfacl -q $FILE1 2>/dev/null)
+    msg=$(getfacl -q $FILE1 2>/dev/null | sed -e 's/ *//')
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
-        "            owner@:rw------------:-------:allow
-            group@:rw------------:-------:allow
-         everyone@:--------------:-------:allow
-        user:$ME:r-------------:-------:allow" \
+        "owner@:rw------------:-------:allow
+group@:rw------------:-------:allow
+everyone@:--------------:-------:allow
+user:$ME:r-------------:-------:allow" \
         "${msg}"
 }
 
@@ -373,7 +373,7 @@ testWriteAclNumericUID() {
     msg=$(getfacl -q $FILE1 2>/dev/null)
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
-        "        user:bfish:r-------------:-------:allow" \
+        "        user:$ME:r-------------:-------:allow" \
         "${msg}"
 }
 
@@ -488,7 +488,7 @@ testWriteUnifiedAclToFile1() {
     msg=$($EXACL $FILE1)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:group,name:$ME,perms:[read_data],flags:[],allow:true}]" \
+        "[{kind:group,name:$MY_GROUP,perms:[read_data],flags:[],allow:true}]" \
         "${msg//\"/}"
 }
 
