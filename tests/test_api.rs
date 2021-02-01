@@ -201,6 +201,7 @@ fn test_write_default_acl() -> io::Result<()> {
     let dir = tempfile::tempdir()?;
 
     // Skip the rest of the test if file uses NFSv4 ACL (FIXME).
+    #[cfg(target_os = "freebsd")]
     if Acl::is_nfs4(dir.as_ref(), AclOption::empty())? {
         return Ok(());
     }
