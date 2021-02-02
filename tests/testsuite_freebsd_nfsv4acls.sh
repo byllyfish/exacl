@@ -311,13 +311,13 @@ testWriteAclToDir1() {
     assertEquals "drwx------" "$(fileperms $DIR1)"
 
     # Check ACL with getfacl.
-    msg=$(getfacl -q $DIR1 2>/dev/null)
+    msg=$(getfacl -q $DIR1 2>/dev/null | sed -e 's/ *//')
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
-        "        user:$ME:r-------------:-------:allow
-            owner@:rwx-----------:-------:allow
-            group@:--------------:-------:allow
-         everyone@:--------------:-------:allow" \
+        "user:$ME:r-------------:-------:allow
+owner@:rwx-----------:-------:allow
+group@:--------------:-------:allow
+everyone@:--------------:-------:allow" \
         "${msg}"
 
     # Reset ACL back to the original.
@@ -370,10 +370,10 @@ testWriteAclNumericUID() {
         "${msg//\"/}"
 
     # Check ACL with getfacl.
-    msg=$(getfacl -q $FILE1 2>/dev/null)
+    msg=$(getfacl -q $FILE1 2>/dev/null | sed -e 's/ *//')
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
-        "        user:$ME:r-------------:-------:allow" \
+        "user:$ME:r-------------:-------:allow" \
         "${msg}"
 }
 
@@ -432,12 +432,12 @@ testWriteDefaultAcl() {
         "${msg//\"/}"
 
     # Check ACL with getfacl.
-    msg=$(getfacl -q $DIR1 2>/dev/null)
+    msg=$(getfacl -q $DIR1 2>/dev/null | sed -e 's/ *//')
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
-        "            owner@:rwxp--aARWcCos:-------:allow
-            group@:------a-R-c--s:-------:allow
-         everyone@:------a-R-c--s:-------:allow" \
+        "owner@:rwxp--aARWcCos:-------:allow
+group@:------a-R-c--s:-------:allow
+everyone@:------a-R-c--s:-------:allow" \
         "${msg}"
 
     # Check default ACL with getfacl.
@@ -519,12 +519,12 @@ testWriteUnifiedAclToDir1() {
         "${msg//\"/}"
 
     # Check ACL with getfacl.
-    msg=$(getfacl -q $DIR1 2>/dev/null)
+    msg=$(getfacl -q $DIR1 2>/dev/null | sed -e 's/ *//')
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
-        "            owner@:rw------------:-------:allow
-            group@:rw------------:-------:allow
-         everyone@:--------------:-------:allow" \
+        "owner@:rw------------:-------:allow
+group@:rw------------:-------:allow
+everyone@:--------------:-------:allow" \
         "${msg}"
 
     # Check default ACL with getfacl.
