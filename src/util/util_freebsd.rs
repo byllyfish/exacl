@@ -435,6 +435,22 @@ fn log_brand(func: &str, acl: acl_t) -> io::Result<()> {
     Ok(())
 }
 
+pub fn xacl_is_nfs4(path: &Path, symlink: bool) -> io::Result<bool> {
+    let c_path = CString::new(path.as_os_str().as_bytes())?;
+    let ret = if symlink {
+        unsafe { lpathconf(c_path.as_ptr(), sg::PC_ACL_NFS4) }
+    } else {
+        unsafe { pathconf(c_path.as_ptr(), sg::PC_ACL_NFS4) }
+    };
+
+    if ret < 0 {
+        return fail_err(ret, "pathconf", symlink);
+    }
+
+    assert!(ret == 0 || ret == 1);
+    Ok(ret == 1)
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
@@ -485,17 +501,17 @@ mod util_freebsd_test {
             .unwrap();
         assert_eq!(err.to_string(), "Invalid argument (os error 22)");
 
-        // Write an empty default ACL to a file. Still works?
-        #[cfg(target_os = "linux")]
-        xacl_set_file(file.as_ref(), acl, false, true).ok().unwrap();
-
-        // Write an empty access ACL to a directory. Still works?
-        #[cfg(target_os = "linux")]
-        xacl_set_file(dir.as_ref(), acl, false, false).ok().unwrap();
-
         // Write an empty default ACL to a directory. Okay with Posix.1e ACL
         // but fails on NFSv4, because default ACL is not supported.
-        xacl_set_file(dir.as_ref(), acl, false, true).ok().unwrap();
+        let result = xacl_set_file(dir.as_ref(), acl, false, true);
+        if xacl_is_nfs4(dir.as_ref(), false).unwrap() {
+            assert_eq!(
+                result.err().unwrap().to_string(),
+                "Invalid argument (os error 22)"
+            );
+        } else {
+            result.ok().unwrap();
+        }
 
         xacl_free(acl);
     }

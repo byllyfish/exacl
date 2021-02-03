@@ -360,6 +360,13 @@ impl Acl {
     pub fn is_posix(&self) -> bool {
         xacl_is_posix(self.acl)
     }
+
+    /// Return true if file uses an NFSv4 ACL (`FreeBSD` only).
+    #[cfg(any(docsrs, target_os = "freebsd"))]
+    #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
+    pub fn is_nfs4(path: &Path, options: AclOption) -> io::Result<bool> {
+        xacl_is_nfs4(path, options.contains(AclOption::SYMLINK_ACL))
+    }
 }
 
 impl Drop for Acl {

@@ -20,6 +20,11 @@ unit_tests() {
     find ../target/debug/deps -type f -executable -print | grep -vE '\w+\.\w+$'
 }
 
+print_header() {
+    # shellcheck disable=SC2046
+    printf "\n%s\n%s\n" "$1" $(printf '=%.0s' $(seq 1 ${#1}))
+}
+
 exit_status=0
 
 if [ "$arg1" = "memcheck" ]; then
@@ -42,10 +47,11 @@ if [ "$arg1" = "memcheck" ]; then
 fi
 
 for test in testsuite*_all.sh testsuite*_"$OS".sh; do
-    # Before running test, print name of file underlined with = signs.
-    # shellcheck disable=SC2046
-    printf "\n%s\n%s\n" "$test" $(printf '=%.0s' $(seq 1 ${#test}))
-    # Run the test.
+    if [ ! -f "$test" ]; then
+        continue
+    fi
+
+    print_header "$test"
     ./"$test"
     status=$?
 
@@ -54,6 +60,25 @@ for test in testsuite*_all.sh testsuite*_"$OS".sh; do
         exit_status=$status
     fi
 done
+
+# Run FreeBSD-specific tests.
+saved_tmp="$TMPDIR"
+for option in acls nfsv4acls; do
+    if [ -d "/tmp/exacl_$option" ]; then
+        export TMPDIR="/tmp/exacl_$option"
+        for test in testsuite*_"$OS"_"$option".sh; do
+            print_header "$test"
+            ./"$test"
+            status=$?
+
+            # Track if any test returns a non-zero exit status.
+            if [ $status -ne 0 ]; then
+                exit_status=$status
+            fi
+        done
+    fi
+done
+export TMPDIR="$saved_tmp"
 
 # Log non-zero exit status.
 if [ $exit_status -ne 0 ]; then

@@ -193,6 +193,9 @@ pub mod sg {
     #[cfg(target_os = "macos")]
     pub const ID_TYPE_GID: i32 = super::ID_TYPE_GID as i32;
 
+    #[cfg(target_os = "freebsd")]
+    pub const PC_ACL_NFS4: i32 = super::_PC_ACL_NFS4 as i32;
+
     #[test]
     fn test_signed() {
         assert!(super::ENOENT as i32 >= 0);
