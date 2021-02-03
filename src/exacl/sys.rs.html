@@ -219,6 +219,9 @@
 <span id="216">216</span>
 <span id="217">217</span>
 <span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Rust bindings to system C API.</span>
 
@@ -414,6 +417,9 @@
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ID_TYPE_UID</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ID_TYPE_UID</span> <span class="kw">as</span> <span class="ident">i32</span>;
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ID_TYPE_GID</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">ID_TYPE_GID</span> <span class="kw">as</span> <span class="ident">i32</span>;
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PC_ACL_NFS4</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">_PC_ACL_NFS4</span> <span class="kw">as</span> <span class="ident">i32</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_signed</span>() {

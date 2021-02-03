@@ -49,6 +49,7 @@
 <span id="46">46</span>
 <span id="47">47</span>
 <span id="48">48</span>
+<span id="49">49</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Provides a cross-platform, minimal ACL API.</span>
 <span class="doccomment">//!</span>
@@ -60,12 +61,13 @@
 <span class="doccomment">//!    `xacl_init`      - create a new empty ACL</span>
 <span class="doccomment">//!    `xacl_free`      - destroy ACL</span>
 <span class="doccomment">//!    `xacl_foreach`   - apply a function to each entry in an ACL</span>
-<span class="doccomment">//!    `xacl_is_empty`  - test if an ACL is empty</span>
+<span class="doccomment">//!    `xacl_is_empty`  - return true if an ACL is empty</span>
 <span class="doccomment">//!    `xacl_is_posix`  - return true if ACL has Posix.1e semantics.</span>
 <span class="doccomment">//!    `xacl_add_entry` - append new entry to an ACL</span>
-<span class="doccomment">//!    `xacl_get_entry` - retrieve contents of specified ACL entry</span>
+<span class="doccomment">//!    `xacl_get_entry` - retrieve contents from an ACL entry</span>
 <span class="doccomment">//!    `xacl_get_file`  - get ACL from file path</span>
 <span class="doccomment">//!    `xacl_set_file`  - set ACL for file path</span>
+<span class="doccomment">//!    `xacl_is_nfs4`   - return true if file path uses NFSv4 ACL on `FreeBSD`</span>
 
 <span class="kw">mod</span> <span class="ident">util_common</span>;
 
@@ -84,7 +86,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">util_freebsd</span>::{
     <span class="ident">xacl_add_entry</span>, <span class="ident">xacl_foreach</span>, <span class="ident">xacl_free</span>, <span class="ident">xacl_get_entry</span>, <span class="ident">xacl_get_file</span>, <span class="ident">xacl_init</span>,
-    <span class="ident">xacl_is_empty</span>, <span class="ident">xacl_is_posix</span>, <span class="ident">xacl_set_file</span>,
+    <span class="ident">xacl_is_empty</span>, <span class="ident">xacl_is_nfs4</span>, <span class="ident">xacl_is_posix</span>, <span class="ident">xacl_set_file</span>,
 };
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
