@@ -282,8 +282,7 @@ fn test_getfacl_file() -> io::Result<()> {
     {
         let result = getfacl(&file, AclOption::DEFAULT_ACL);
         if Acl::is_nfs4(&file.as_ref(), AclOption::empty())? {
-            // FIXME - should return an error; NFSv4 doesn't have default ACL.
-            assert!(result.is_ok());
+            assert!(result.unwrap_err().to_string().contains("Default ACL not supported"));
         } else {
             assert!(result.unwrap_err().to_string().contains("Invalid argument"));
         }

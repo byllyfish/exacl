@@ -393,19 +393,19 @@ testWriteAclNumericGID() {
 }
 
 testReadDefaultAcl() {
-    # Reading default acl for a file should fail. (FIXME)
+    # Reading default acl for a file should fail.
     msg=$($EXACL --default $FILE1 2>&1)
-    assertEquals 0 $?
+    assertEquals 1 $?
     assertEquals \
-        "[{kind:group,name:$MY_GROUP,perms:[read_data],flags:[default],allow:true}]" \
-        "${msg//\"/}"
+        "File \"$FILE1\": Default ACL not supported" \
+        "${msg}"
 
-    # Reading default acl for a directory. (FIXME)
+    # Reading default acl for a directory.
     msg=$($EXACL --default $DIR1 2>&1)
-    assertEquals 0 $?
+    assertEquals 1 $?
     assertEquals \
-        "[{kind:user,name:,perms:[sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute],flags:[default],allow:true},{kind:group,name:,perms:[sync,readsecurity,readattr,readextattr],flags:[default],allow:true},{kind:everyone,name:,perms:[sync,readsecurity,readattr,readextattr],flags:[default],allow:true}]" \
-        "${msg//\"/}"
+        "File \"$DIR1\": Default ACL not supported" \
+        "${msg}"
 }
 
 testWriteDefaultAcl() {
@@ -417,12 +417,12 @@ testWriteDefaultAcl() {
         "Invalid ACL: missing required entry \"user\"" \
         "$msg"
 
-    # Check ACL again. (FIXME)
-    msg=$($EXACL --default $DIR1)
-    assertEquals 0 $?
+    # Check ACL again.
+    msg=$($EXACL --default $DIR1 2>&1)
+    assertEquals 1 $?
     assertEquals \
-        "[{kind:user,name:,perms:[sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute],flags:[default],allow:true},{kind:group,name:,perms:[sync,readsecurity,readattr,readextattr],flags:[default],allow:true},{kind:everyone,name:,perms:[sync,readsecurity,readattr,readextattr],flags:[default],allow:true}]" \
-        "${msg//\"/}"
+        "File \"$DIR1\": Default ACL not supported" \
+        "${msg}"
 
     # Check ACL without --default.
     msg=$($EXACL $DIR1)
@@ -467,12 +467,12 @@ everyone@:------a-R-c--s:-------:allow" \
         "File \"$DIR1\": Invalid argument (os error 22)" \
         "$msg"
 
-    # Default acl should now be empty. (FIXME)
+    # Default acl should now be empty.
     msg=$($EXACL --default $DIR1 2>&1)
-    assertEquals 0 $?
+    assertEquals 1 $?
     assertEquals \
-        "[{kind:user,name:,perms:[sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute],flags:[default],allow:true},{kind:group,name:,perms:[sync,readsecurity,readattr,readextattr],flags:[default],allow:true},{kind:everyone,name:,perms:[sync,readsecurity,readattr,readextattr],flags:[default],allow:true}]" \
-        "${msg//\"/}"
+        "File \"$DIR1\": Default ACL not supported" \
+        "${msg}"
 }
 
 testWriteUnifiedAclToFile1() {
