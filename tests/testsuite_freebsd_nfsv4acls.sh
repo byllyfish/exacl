@@ -464,7 +464,7 @@ everyone@:------a-R-c--s:-------:allow" \
     msg=$(echo "$input" | $EXACL --set --default $DIR1 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "File \"$DIR1\": Invalid argument (os error 22)" \
+        "File \"$DIR1\": Default ACL not supported" \
         "$msg"
 
     # Default acl should now be empty.
@@ -556,7 +556,7 @@ testSetDefault() {
     msg=$(echo "$input" | $EXACL --set --default $DIR1 2>&1)
     assertEquals "remove default acl" 1 $?
     assertEquals \
-        "File \"$DIR1\": Invalid argument (os error 22)" \
+        "File \"$DIR1\": Default ACL not supported" \
         "$msg"
 
     # Check ACL is updated. (FIXME)

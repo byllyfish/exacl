@@ -150,6 +150,10 @@ pub fn xacl_set_file(
     symlink_acl: bool,
     default_acl: bool,
 ) -> io::Result<()> {
+    if default_acl && xacl_is_nfs4(path, symlink_acl)? {
+        return fail_custom("Default ACL not supported");
+    }
+
     if !xacl_is_posix(acl) {
         // Fix up the ACL to make sure that all entry types are set.
         xacl_repair_nfs4(acl)?;
@@ -513,7 +517,7 @@ mod util_freebsd_test {
         if xacl_is_nfs4(dir.as_ref(), false).unwrap() {
             assert_eq!(
                 result.err().unwrap().to_string(),
-                "Invalid argument (os error 22)"
+                "Default ACL not supported"
             );
         } else {
             result.ok().unwrap();
