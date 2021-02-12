@@ -37,7 +37,8 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
     // crate when any included header file changes.
     let mut builder = bindgen::Builder::default()
         .header(wrapper)
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks));
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .disable_header_comment();
 
     // Specify the types, functions, and constants we want to include.
     let types = ["acl_.*", "uid_t"];
