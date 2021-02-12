@@ -110,12 +110,12 @@ impl Acl {
         if default_acl && is_non_directory(path, symlink_acl) {
             if self.is_empty() && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR) {
                 return Ok(());
-            } else {
-                return fail_custom(&format!(
-                    "File {:?}: Non-directory does not have default ACL",
-                    path
-                ));
             }
+
+            return fail_custom(&format!(
+                "File {:?}: Non-directory does not have default ACL",
+                path
+            ));
         }
 
         if let Err(err) = xacl_set_file(path, self.acl, symlink_acl, default_acl) {

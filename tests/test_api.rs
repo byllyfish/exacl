@@ -273,7 +273,10 @@ fn test_getfacl_file() -> io::Result<()> {
     {
         let result = getfacl(&file, AclOption::DEFAULT_ACL);
         if Acl::is_nfs4(&file.as_ref(), AclOption::empty())? {
-            assert!(result.unwrap_err().to_string().contains("Default ACL not supported"));
+            assert!(result
+                .unwrap_err()
+                .to_string()
+                .contains("Default ACL not supported"));
         } else {
             assert!(result.unwrap_err().to_string().contains("Invalid argument"));
         }
