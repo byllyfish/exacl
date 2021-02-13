@@ -81,12 +81,18 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
 
     // `acl_get_file` returns EINVAL when the ACL type is not appropriate for
     // the file system object. Retry with NFSv4 type.
-    // FIXME: `default_acl` setting is currently ignored!
     if let Some(sg::EINVAL) = io::Error::last_os_error().raw_os_error() {
-        acl_type = sg::ACL_TYPE_NFS4;
-        let nfs_acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
-        if !nfs_acl.is_null() {
-            return Ok(nfs_acl);
+        if xacl_is_nfs4(path, symlink_acl)? {
+            // NFSv4 does not support default ACL.
+            if default_acl {
+                return fail_custom("Default ACL not supported");
+            }
+
+            acl_type = sg::ACL_TYPE_NFS4;
+            let nfs_acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
+            if !nfs_acl.is_null() {
+                return Ok(nfs_acl);
+            }
         }
     }
 
@@ -144,6 +150,10 @@ pub fn xacl_set_file(
     symlink_acl: bool,
     default_acl: bool,
 ) -> io::Result<()> {
+    if default_acl && xacl_is_nfs4(path, symlink_acl)? {
+        return fail_custom("Default ACL not supported");
+    }
+
     if !xacl_is_posix(acl) {
         // Fix up the ACL to make sure that all entry types are set.
         xacl_repair_nfs4(acl)?;
@@ -507,7 +517,7 @@ mod util_freebsd_test {
         if xacl_is_nfs4(dir.as_ref(), false).unwrap() {
             assert_eq!(
                 result.err().unwrap().to_string(),
-                "Invalid argument (os error 22)"
+                "Default ACL not supported"
             );
         } else {
             result.ok().unwrap();

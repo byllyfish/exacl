@@ -14,7 +14,7 @@
 //!    `xacl_get_entry` - retrieve contents from an ACL entry
 //!    `xacl_get_file`  - get ACL from file path
 //!    `xacl_set_file`  - set ACL for file path
-//!    `xacl_is_nfs4`   - return true if file path uses NFSv4 ACL on `FreeBSD`
+//!    `xacl_is_nfs4`   - return true if file path uses `NFSv4` ACL on `FreeBSD`
 
 mod util_common;
 

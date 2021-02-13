@@ -52,9 +52,8 @@ impl Qualifier {
             Err(err) => {
                 if let Some(sg::ENOENT) = err.raw_os_error() {
                     return Ok(Qualifier::Guid(guid));
-                } else {
-                    return Err(err);
                 }
+                return Err(err);
             }
         };
 

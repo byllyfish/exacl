@@ -46,3 +46,47 @@
    fun:_ZN3std3sys4unix2fs5lstat*
    fun:symlink_metadata<&*>
 }
+
+{
+   statx(file_name) points to unaddressable byte(s)
+   Memcheck:Param
+   statx(file_name)
+   fun:statx
+   fun:statx
+   fun:_ZN3std3sys4unix2fs9try_statx*
+   fun:_ZN3std3sys4unix2fs4stat*
+   fun:metadata<&*>
+}
+
+{
+   statx(buf) points to unaddressable byte(s)
+   Memcheck:Param
+   statx(buf)
+   fun:statx
+   fun:statx
+   fun:_ZN3std3sys4unix2fs9try_statx*
+   fun:_ZN3std3sys4unix2fs4stat*
+   fun:metadata<&*>
+}
+
+{
+   statx(file_name) points to unaddressable byte(s)
+   Memcheck:Param
+   statx(file_name)
+   fun:statx
+   fun:statx
+   fun:_ZN3std3sys4unix2fs9try_statx*
+   fun:_ZN3std3sys4unix2fs5lstat*
+   fun:symlink_metadata<&*>
+}
+
+{
+   statx(buf) points to unaddressable byte(s)
+   Memcheck:Param
+   statx(buf)
+   fun:statx
+   fun:statx
+   fun:_ZN3std3sys4unix2fs9try_statx*
+   fun:_ZN3std3sys4unix2fs5lstat*
+   fun:symlink_metadata<&*>
+}

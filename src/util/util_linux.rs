@@ -102,6 +102,7 @@ fn xacl_get_tag_qualifier(_acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, 
     Ok((true, qualifier))
 }
 
+#[allow(clippy::unnecessary_wraps)]
 const fn xacl_get_flags(_acl: acl_t, _entry: acl_entry_t) -> io::Result<Flag> {
     Ok(Flag::empty()) // noop
 }
@@ -163,6 +164,7 @@ pub fn xacl_set_tag_qualifier(
     Ok(())
 }
 
+#[allow(clippy::unnecessary_wraps)]
 const fn xacl_set_flags(_entry: acl_entry_t, _flags: Flag) -> io::Result<()> {
     Ok(()) // noop
 }

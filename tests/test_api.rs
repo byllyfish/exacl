@@ -176,21 +176,12 @@ fn test_write_acl_too_big() {
 }
 
 #[test]
-#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+#[cfg(target_os = "linux")]
 fn test_read_default_acl() -> io::Result<()> {
     let dir = tempfile::tempdir()?;
     let default_acl = Acl::read(dir.as_ref(), AclOption::DEFAULT_ACL)?;
 
-    #[cfg(target_os = "linux")]
     assert!(default_acl.is_empty());
-
-    #[cfg(target_os = "freebsd")]
-    if Acl::is_nfs4(dir.as_ref(), AclOption::empty())? {
-        // FIXME - NFSv4 doesn't have default ACL.
-        assert!(!default_acl.is_empty());
-    } else {
-        assert!(default_acl.is_empty());
-    }
 
     Ok(())
 }
@@ -282,8 +273,10 @@ fn test_getfacl_file() -> io::Result<()> {
     {
         let result = getfacl(&file, AclOption::DEFAULT_ACL);
         if Acl::is_nfs4(&file.as_ref(), AclOption::empty())? {
-            // FIXME - should return an error; NFSv4 doesn't have default ACL.
-            assert!(result.is_ok());
+            assert!(result
+                .unwrap_err()
+                .to_string()
+                .contains("Default ACL not supported"));
         } else {
             assert!(result.unwrap_err().to_string().contains("Invalid argument"));
         }
