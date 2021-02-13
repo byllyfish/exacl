@@ -483,7 +483,6 @@
 <span id="480">480</span>
 <span id="481">481</span>
 <span id="482">482</span>
-<span id="483">483</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Implements the `Qualifier` type for internal use</span>
 
@@ -539,9 +538,8 @@
             <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">sg</span>::<span class="ident">ENOENT</span>) <span class="op">=</span> <span class="ident">err</span>.<span class="ident">raw_os_error</span>() {
                     <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">Qualifier</span>::<span class="ident">Guid</span>(<span class="ident">guid</span>));
-                } <span class="kw">else</span> {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>);
                 }
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>);
             }
         };
 

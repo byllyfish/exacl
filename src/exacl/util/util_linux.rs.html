@@ -274,6 +274,8 @@
 <span id="271">271</span>
 <span id="272">272</span>
 <span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">failx</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">flag</span>::<span class="ident">Flag</span>;
@@ -379,6 +381,7 @@
     <span class="prelude-val">Ok</span>((<span class="bool-val">true</span>, <span class="ident">qualifier</span>))
 }
 
+<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">unnecessary_wraps</span>)]</span>
 <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">xacl_get_flags</span>(<span class="ident">_acl</span>: <span class="ident">acl_t</span>, <span class="ident">_entry</span>: <span class="ident">acl_entry_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span> {
     <span class="prelude-val">Ok</span>(<span class="ident">Flag</span>::<span class="ident">empty</span>()) <span class="comment">// noop</span>
 }
@@ -440,6 +443,7 @@
     <span class="prelude-val">Ok</span>(())
 }
 
+<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">unnecessary_wraps</span>)]</span>
 <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">xacl_set_flags</span>(<span class="ident">_entry</span>: <span class="ident">acl_entry_t</span>, <span class="ident">_flags</span>: <span class="ident">Flag</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="prelude-val">Ok</span>(()) <span class="comment">// noop</span>
 }
