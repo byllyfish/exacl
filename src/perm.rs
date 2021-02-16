@@ -123,7 +123,9 @@ impl Perm {
 
     #[cfg(target_os = "freebsd")]
     fn iter(self) -> std::iter::Chain<RevPermIter, BitIter<Perm>> {
-        BitIter(self & Perm::POSIX_SPECIFIC).rev().chain(BitIter(self & Perm::NFS4_SPECIFIC))
+        BitIter(self & Perm::POSIX_SPECIFIC)
+            .rev()
+            .chain(BitIter(self & Perm::NFS4_SPECIFIC))
     }
 }
 
