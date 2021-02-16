@@ -162,6 +162,12 @@ enum PermName {
 
     execute = Perm::EXECUTE.bits,
 
+    #[cfg(target_os = "freebsd")]
+    read_data = Perm::READ_DATA.bits,
+
+    #[cfg(target_os = "freebsd")]
+    write_data = Perm::WRITE_DATA.bits,
+
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     delete = Perm::DELETE.bits,
 
@@ -194,12 +200,6 @@ enum PermName {
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     sync = Perm::SYNC.bits,
-
-    #[cfg(target_os = "freebsd")]
-    read_data = Perm::READ_DATA.bits,
-
-    #[cfg(target_os = "freebsd")]
-    write_data = Perm::WRITE_DATA.bits,
 }
 
 impl PermName {
@@ -401,7 +401,7 @@ mod perm_tests {
         #[cfg(target_os = "freebsd")]
         {
             assert_eq!(
-                "unknown variant `qq`, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`, `read_data`, `write_data`",
+                "unknown variant `qq`, expected one of `read`, `write`, `execute`, `read_data`, `write_data`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`",
                 " ,qq ".parse::<Perm>().unwrap_err().to_string()
             );
 
