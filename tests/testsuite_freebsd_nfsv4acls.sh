@@ -49,9 +49,9 @@ testReadAclForFile1() {
     msg=$($EXACL -f std $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data
-allow::group::sync,readsecurity,readattr,readextattr
-allow::everyone::sync,readsecurity,readattr,readextattr" \
+        "allow::user::read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
         "${msg//\"/}"
 
     assertEquals "-rw-------" "$(fileperms $FILE1)"
@@ -64,9 +64,9 @@ allow::everyone::sync,readsecurity,readattr,readextattr" \
     assertEquals 0 $?
     assertEquals \
         "allow::user:$ME:write_data
-allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data
-allow::group::sync,readsecurity,readattr,readextattr
-allow::everyone::sync,readsecurity,readattr,readextattr" \
+allow::user::read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
         "${msg//\"/}"
 
     assertEquals "-rw-------" "$(fileperms $FILE1)"
@@ -79,9 +79,9 @@ allow::everyone::sync,readsecurity,readattr,readextattr" \
     assertEquals \
         "deny::group:777:execute
 allow::user:$ME:write_data
-allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data
-allow::group::sync,readsecurity,readattr,readextattr
-allow::everyone::sync,readsecurity,readattr,readextattr" \
+allow::user::read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
         "${msg//\"/}"
 
     # Remove owner read perm.
@@ -91,9 +91,9 @@ allow::everyone::sync,readsecurity,readattr,readextattr" \
     msg=$($EXACL -f std $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr
-allow::group::sync,readsecurity,readattr,readextattr
-allow::everyone::sync,readsecurity,readattr,readextattr" \
+        "allow::user::readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
         "${msg//\"/}"
 
     # Add ACL entry for current group to "allow write".
@@ -103,9 +103,9 @@ allow::everyone::sync,readsecurity,readattr,readextattr" \
     assertEquals 0 $?
     assertEquals \
         "allow::group:$MY_GROUP:write_data
-allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr
-allow::group::sync,readsecurity,readattr,readextattr
-allow::everyone::sync,readsecurity,readattr,readextattr" \
+allow::user::readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
         "${msg//\"/}"
 
     assertEquals "----------" "$(fileperms $FILE1)"
@@ -116,9 +116,9 @@ allow::everyone::sync,readsecurity,readattr,readextattr" \
     msg=$($EXACL -f std $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data
-allow::group::sync,readsecurity,readattr,readextattr
-allow::everyone::sync,readsecurity,readattr,readextattr" \
+        "allow::user::read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
         "${msg//\"/}"
 }
 
@@ -126,9 +126,9 @@ testReadAclForDir1() {
     msg=$($EXACL -f std $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute
-allow::group::sync,readsecurity,readattr,readextattr
-allow::everyone::sync,readsecurity,readattr,readextattr" \
+        "allow::user::execute,read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
         "${msg//\"/}"
 
     # Add ACL entry for current user to "write-only". (Note: owner still has read access)
@@ -138,9 +138,9 @@ allow::everyone::sync,readsecurity,readattr,readextattr" \
     assertEquals 0 $?
     assertEquals \
         "allow::user:$ME:write_data
-allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute
-allow::group::sync,readsecurity,readattr,readextattr
-allow::everyone::sync,readsecurity,readattr,readextattr" \
+allow::user::execute,read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
         "${msg//\"/}"
 
     assertEquals "drwx------" "$(fileperms $DIR1)"
@@ -152,9 +152,9 @@ allow::everyone::sync,readsecurity,readattr,readextattr" \
     msg=$($EXACL -f std $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute
-allow::group::sync,readsecurity,readattr,readextattr
-allow::everyone::sync,readsecurity,readattr,readextattr" \
+        "allow::user::execute,read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
         "${msg//\"/}"
 }
 
@@ -168,9 +168,9 @@ testReadAclForLink1() {
     msg=$($EXACL --symlink -f std $LINK1 2>&1)
     assertEquals 0 $?
     assertEquals \
-        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute
-allow::group::sync,readsecurity,readattr,readextattr
-allow::everyone::sync,readsecurity,readattr,readextattr" \
+        "allow::user::execute,read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
         "${msg//\"/}"
 }
 
@@ -203,9 +203,9 @@ testWriteAclToFile1() {
     msg=$($EXACL -f std $FILE1)
     assertEquals "verify acl" 0 $?
     assertEquals \
-        "allow::user::sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data
-allow::group::sync,readsecurity,readattr,readextattr
-allow::everyone::sync,readsecurity,readattr,readextattr" \
+        "allow::user::read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
         "${msg//\"/}"
 
     assertEquals "-rw-------" "$(fileperms $FILE1)"
@@ -238,7 +238,7 @@ allow::everyone::sync,readsecurity,readattr,readextattr" \
     msg=$($EXACL $FILE1)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[write_data,read_data],flags:[],allow:true},{kind:group,name:,perms:[write_data,read_data],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true},{kind:user,name:$ME,perms:[read_data],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[read_data,write_data],flags:[],allow:true},{kind:group,name:,perms:[read_data,write_data],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true},{kind:user,name:$ME,perms:[read_data],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     # Check ACL with getfacl.
@@ -265,7 +265,7 @@ testWriteAclToDir1() {
     msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute],flags:[],allow:true},{kind:group,name:,perms:[sync,readsecurity,readattr,readextattr],flags:[],allow:true},{kind:everyone,name:,perms:[sync,readsecurity,readattr,readextattr],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[execute,read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync],flags:[],allow:true},{kind:group,name:,perms:[readextattr,readattr,readsecurity,sync],flags:[],allow:true},{kind:everyone,name:,perms:[readextattr,readattr,readsecurity,sync],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "drwx------" "$(fileperms $DIR1)"
@@ -279,7 +279,7 @@ testWriteAclToDir1() {
         "$msg"
 
     # Set ACL without mask entry.
-    input=$(quotifyJson "[{kind:user,name:$ME,perms:[read_data],flags:[],allow:true},{kind:user,name:,perms:[read_data,write_data,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]")
+    input=$(quotifyJson "[{kind:user,name:$ME,perms:[read_data],flags:[],allow:true},{kind:user,name:,perms:[execute,read_data,write_data],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals 0 $?
     assertEquals \
@@ -290,11 +290,11 @@ testWriteAclToDir1() {
     msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:$ME,perms:[read_data],flags:[],allow:true},{kind:user,name:,perms:[write_data,read_data,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:$ME,perms:[read_data],flags:[],allow:true},{kind:user,name:,perms:[execute,read_data,write_data],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     # Set ACL with mask entry (not valid).
-    input=$(quotifyJson "[{kind:mask,name:,perms:[read_data],flags:[],allow:true},{kind:user,name:$ME,perms:[read_data],flags:[],allow:true},{kind:user,name:,perms:[read_data,write_data,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]")
+    input=$(quotifyJson "[{kind:mask,name:,perms:[read_data],flags:[],allow:true},{kind:user,name:$ME,perms:[read_data],flags:[],allow:true},{kind:user,name:,perms:[execute,read_data,write_data],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]")
     msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
     assertEquals 1 $?
     assertEquals \
@@ -305,7 +305,7 @@ testWriteAclToDir1() {
     msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:$ME,perms:[read_data],flags:[],allow:true},{kind:user,name:,perms:[write_data,read_data,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:$ME,perms:[read_data],flags:[],allow:true},{kind:user,name:,perms:[execute,read_data,write_data],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "drwx------" "$(fileperms $DIR1)"
@@ -351,7 +351,7 @@ testWriteAclToLink1() {
     msg=$($EXACL --symlink $LINK1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:$ME,perms:[read_data],flags:[],allow:true},{kind:user,name:,perms:[write_data,read_data,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:$ME,perms:[read_data],flags:[],allow:true},{kind:user,name:,perms:[execute,read_data,write_data],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 }
 
@@ -428,7 +428,7 @@ testWriteDefaultAcl() {
     msg=$($EXACL $DIR1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data,execute],flags:[],allow:true},{kind:group,name:,perms:[sync,readsecurity,readattr,readextattr],flags:[],allow:true},{kind:everyone,name:,perms:[sync,readsecurity,readattr,readextattr],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[execute,read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync],flags:[],allow:true},{kind:group,name:,perms:[readextattr,readattr,readsecurity,sync],flags:[],allow:true},{kind:everyone,name:,perms:[readextattr,readattr,readsecurity,sync],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     # Check ACL with getfacl.
@@ -454,7 +454,7 @@ everyone@:------a-R-c--s:-------:allow" \
     msg=$($EXACL $subfile 2>&1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[sync,chown,writesecurity,readsecurity,writeattr,readattr,writeextattr,readextattr,append,write_data,read_data],flags:[],allow:true},{kind:group,name:,perms:[sync,readsecurity,readattr,readextattr],flags:[],allow:true},{kind:everyone,name:,perms:[sync,readsecurity,readattr,readextattr],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync],flags:[],allow:true},{kind:group,name:,perms:[readextattr,readattr,readsecurity,sync],flags:[],allow:true},{kind:everyone,name:,perms:[readextattr,readattr,readsecurity,sync],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     rm -f "$subfile"
@@ -515,7 +515,7 @@ testWriteUnifiedAclToDir1() {
     msg=$($EXACL $DIR1)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[write_data,read_data],flags:[],allow:true},{kind:group,name:,perms:[write_data,read_data],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[read_data,write_data],flags:[],allow:true},{kind:group,name:,perms:[read_data,write_data],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     # Check ACL with getfacl.
@@ -548,7 +548,7 @@ testSetDefault() {
     msg=$($EXACL $DIR1)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[write_data,read_data],flags:[],allow:true},{kind:group,name:,perms:[write_data,read_data],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[read_data,write_data],flags:[],allow:true},{kind:group,name:,perms:[read_data,write_data],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     # Remove the default ACL. (FIXME)
@@ -563,7 +563,7 @@ testSetDefault() {
     msg=$($EXACL $DIR1)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[write_data,read_data],flags:[],allow:true},{kind:group,name:,perms:[write_data,read_data],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[read_data,write_data],flags:[],allow:true},{kind:group,name:,perms:[read_data,write_data],flags:[],allow:true},{kind:everyone,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 }
 
