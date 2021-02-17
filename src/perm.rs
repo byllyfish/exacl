@@ -91,6 +91,11 @@ bitflags! {
         #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
         const WRITE_DATA = np::ACL_WRITE_DATA;
 
+        /// Posix specific permissions.
+        #[cfg(any(docsrs, target_os = "freebsd"))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
+        const POSIX_SPECIFIC = Self::READ.bits | Self::WRITE.bits | Self::EXECUTE.bits;
+
         /// All NFSv4 specific permissions.
         #[cfg(any(docsrs, target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
@@ -99,6 +104,28 @@ bitflags! {
             | Self::READATTR.bits | Self::WRITEATTR.bits | Self::READEXTATTR.bits
             | Self::WRITEEXTATTR.bits | Self::READSECURITY.bits
             | Self::WRITESECURITY.bits | Self::CHOWN.bits | Self::SYNC.bits;
+    }
+}
+
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+type RevPermIter = std::iter::Rev<BitIter<Perm>>;
+
+impl Perm {
+    #[cfg(target_os = "macos")]
+    fn iter(self) -> BitIter<Perm> {
+        BitIter(self & Perm::all())
+    }
+
+    #[cfg(target_os = "linux")]
+    fn iter(self) -> RevPermIter {
+        BitIter(self & Perm::all()).rev()
+    }
+
+    #[cfg(target_os = "freebsd")]
+    fn iter(self) -> std::iter::Chain<RevPermIter, BitIter<Perm>> {
+        BitIter(self & Perm::POSIX_SPECIFIC)
+            .rev()
+            .chain(BitIter(self & Perm::NFS4_SPECIFIC))
     }
 }
 
@@ -135,6 +162,12 @@ enum PermName {
 
     execute = Perm::EXECUTE.bits,
 
+    #[cfg(target_os = "freebsd")]
+    read_data = Perm::READ_DATA.bits,
+
+    #[cfg(target_os = "freebsd")]
+    write_data = Perm::WRITE_DATA.bits,
+
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     delete = Perm::DELETE.bits,
 
@@ -167,12 +200,6 @@ enum PermName {
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     sync = Perm::SYNC.bits,
-
-    #[cfg(target_os = "freebsd")]
-    read_data = Perm::READ_DATA.bits,
-
-    #[cfg(target_os = "freebsd")]
-    write_data = Perm::WRITE_DATA.bits,
 }
 
 impl PermName {
@@ -194,12 +221,7 @@ impl fmt::Display for PermName {
 
 impl fmt::Display for Perm {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // Iterate forwards on macOS and backwards elsewhere. Only iterate over
-        // valid bits.
-        #[cfg(target_os = "macos")]
-        let mut iter = BitIter(*self & Perm::all());
-        #[cfg(not(target_os = "macos"))]
-        let mut iter = BitIter(*self & Perm::all()).rev();
+        let mut iter = self.iter();
 
         if let Some(perm) = iter.next() {
             write!(f, "{}", PermName::from_perm(perm).unwrap())?;
@@ -269,13 +291,7 @@ impl ser::Serialize for Perm {
         use ser::SerializeSeq;
         let mut seq = serializer.serialize_seq(None)?;
 
-        // Iterate forwards on macOS and backwards elsewhere.
-        #[cfg(target_os = "macos")]
-        let iter = BitIter(*self);
-        #[cfg(not(target_os = "macos"))]
-        let iter = BitIter(*self).rev();
-
-        for perm in iter {
+        for perm in self.iter() {
             seq.serialize_element(&PermName::from_perm(perm))?;
         }
 
@@ -348,7 +364,7 @@ mod perm_tests {
         assert_eq!(Perm::all().to_string(), "read,write,execute");
 
         #[cfg(target_os = "freebsd")]
-        assert_eq!(Perm::all().to_string(), "sync,chown,writesecurity,readsecurity,delete,writeattr,readattr,delete_child,writeextattr,readextattr,append,write_data,read_data,read,write,execute");
+        assert_eq!(Perm::all().to_string(), "read,write,execute,read_data,write_data,append,readextattr,writeextattr,delete_child,readattr,writeattr,delete,readsecurity,writesecurity,chown,sync");
     }
 
     #[test]
@@ -385,7 +401,7 @@ mod perm_tests {
         #[cfg(target_os = "freebsd")]
         {
             assert_eq!(
-                "unknown variant `qq`, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`, `read_data`, `write_data`",
+                "unknown variant `qq`, expected one of `read`, `write`, `execute`, `read_data`, `write_data`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`",
                 " ,qq ".parse::<Perm>().unwrap_err().to_string()
             );
 

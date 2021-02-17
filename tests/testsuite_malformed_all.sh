@@ -112,7 +112,7 @@ testInvalidPerm() {
     if [ "$CURRENT_OS" = "Darwin" ]; then
         expected='read, write, execute, delete, append, delete_child, readattr, writeattr, readextattr, writeextattr, readsecurity, writesecurity, chown, sync'
     elif [ "$CURRENT_OS" = "FreeBSD" ]; then
-        expected='read, write, execute, delete, append, delete_child, readattr, writeattr, readextattr, writeextattr, readsecurity, writesecurity, chown, sync, read_data, write_data'
+        expected='read, write, execute, read_data, write_data, delete, append, delete_child, readattr, writeattr, readextattr, writeextattr, readsecurity, writesecurity, chown, sync'
     else
         expected='read, write, execute'
     fi
