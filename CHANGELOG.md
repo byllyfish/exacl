@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.0] - 2021-02-22
+
+- Add support for NFSv4 ACL's on `FreeBSD`.
+- Remove support for platform-specific text formats.
+
 ## [0.4.0] - 2021-01-13
 
 - Add support for symbolic links on `FreeBSD`.
