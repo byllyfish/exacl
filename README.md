@@ -31,7 +31,7 @@ acl.push(AclEntry::allow_user("some_user", Perm::READ, None));
 setfacl(&["./tmp/foo"], &acl, None)?;
 ```
 
-## High Level API
+## API
 
 This module provides two high level functions, `getfacl` and `setfacl`.
 
@@ -52,11 +52,3 @@ Both `getfacl` and `setfacl` work with a `Vec<AclEntry>`. The
 - flags : `Flag` - flags indicating whether an entry is inherited, etc.
 - allow : `bool` - true if entry is allowed; false means deny. Linux only
     supports allow=true.
-
-## Low Level API
-
-Use the `Acl` class if you need finer grained control over the ACL.
-
-- Manipulate the access ACL and default ACL independently on Linux.
-- Manipulate the ACL's own flags on macOS.
-- Use the platform specific text formats.
