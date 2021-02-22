@@ -25,7 +25,7 @@ buildtime_bindgen = ["bindgen"]
 [dependencies]
 bitflags = "1.2.1"
 log = "0.4.11"
-nix = "0.19.1"
+nix = "0.20.0"
 num_enum = "0.5.1"
 uuid = "0.8.1"
 scopeguard = "1.1.0"
