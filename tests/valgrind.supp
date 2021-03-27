@@ -3,6 +3,8 @@
 # N.B. We need separate entries for statx(buf) and statx(file_name) because
 # glob "*" doesn't work in syscall name.
 
+# syscall, statx
+
 {
    statx(buf) points to unaddressable byte(s)
    Memcheck:Param
@@ -10,8 +12,6 @@
    fun:syscall
    fun:statx
    fun:_ZN3std3sys4unix2fs9try_statx*
-   fun:_ZN3std3sys4unix2fs4stat*
-   fun:metadata<&*>
 }
 
 {
@@ -21,31 +21,9 @@
    fun:syscall
    fun:statx
    fun:_ZN3std3sys4unix2fs9try_statx*
-   fun:_ZN3std3sys4unix2fs4stat*
-   fun:metadata<&*>
 }
 
-{
-   statx(buf) points to unaddressable byte(s)
-   Memcheck:Param
-   statx(buf)
-   fun:syscall
-   fun:statx
-   fun:_ZN3std3sys4unix2fs9try_statx*
-   fun:_ZN3std3sys4unix2fs5lstat*
-   fun:symlink_metadata<&*>
-}
-
-{
-   statx(file_name) points to unaddressable byte(s)
-   Memcheck:Param
-   statx(file_name)
-   fun:syscall
-   fun:statx
-   fun:_ZN3std3sys4unix2fs9try_statx*
-   fun:_ZN3std3sys4unix2fs5lstat*
-   fun:symlink_metadata<&*>
-}
+# statx, statx
 
 {
    statx(file_name) points to unaddressable byte(s)
@@ -54,8 +32,6 @@
    fun:statx
    fun:statx
    fun:_ZN3std3sys4unix2fs9try_statx*
-   fun:_ZN3std3sys4unix2fs4stat*
-   fun:metadata<&*>
 }
 
 {
@@ -65,28 +41,4 @@
    fun:statx
    fun:statx
    fun:_ZN3std3sys4unix2fs9try_statx*
-   fun:_ZN3std3sys4unix2fs4stat*
-   fun:metadata<&*>
-}
-
-{
-   statx(file_name) points to unaddressable byte(s)
-   Memcheck:Param
-   statx(file_name)
-   fun:statx
-   fun:statx
-   fun:_ZN3std3sys4unix2fs9try_statx*
-   fun:_ZN3std3sys4unix2fs5lstat*
-   fun:symlink_metadata<&*>
-}
-
-{
-   statx(buf) points to unaddressable byte(s)
-   Memcheck:Param
-   statx(buf)
-   fun:statx
-   fun:statx
-   fun:_ZN3std3sys4unix2fs9try_statx*
-   fun:_ZN3std3sys4unix2fs5lstat*
-   fun:symlink_metadata<&*>
 }
