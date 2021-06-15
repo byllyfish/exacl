@@ -1,7 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/flag.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>flag.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../exacl/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../exacl/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -330,46 +329,46 @@
 <span id="327">327</span>
 <span id="328">328</span>
 <span id="329">329</span>
-</pre><div class="example-wrap"><pre class="rust ">
+</pre><pre class="rust">
 <span class="doccomment">//! Implements the inheritance flags.</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">bititer</span>::{<span class="ident">BitIter</span>, <span class="ident">BitIterable</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">format</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">sys</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::bititer</span>::{<span class="ident">BitIter</span>, <span class="ident">BitIterable</span>};
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::format</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::sys</span>::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident">bitflags</span>::<span class="ident">bitflags</span>;
-<span class="kw">use</span> <span class="ident">num_enum</span>::<span class="ident">TryFromPrimitive</span>;
+<span class="kw">use</span> <span class="ident">bitflags::bitflags</span>;
+<span class="kw">use</span> <span class="ident">num_enum::TryFromPrimitive</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">de</span>, <span class="ident">ser</span>, <span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
+<span class="kw">use</span> <span class="ident">std::fmt</span>;
 
-<span class="macro">bitflags</span><span class="macro">!</span> {
+<span class="macro">bitflags!</span> {
     <span class="doccomment">/// Represents ACL entry inheritance flags.</span>
     <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Flag</span> : <span class="ident">acl_flag_t</span> {
         <span class="doccomment">/// ACL entry was inherited.</span>
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
         <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)))]</span>
-        <span class="kw">const</span> <span class="ident">INHERITED</span> <span class="op">=</span> <span class="ident">np</span>::<span class="ident">ACL_ENTRY_INHERITED</span>;
+        <span class="kw">const</span> <span class="ident">INHERITED</span> <span class="op">=</span> <span class="ident">np::ACL_ENTRY_INHERITED</span>;
 
         <span class="doccomment">/// Inherit to files.</span>
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
         <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)))]</span>
-        <span class="kw">const</span> <span class="ident">FILE_INHERIT</span> <span class="op">=</span> <span class="ident">np</span>::<span class="ident">ACL_ENTRY_FILE_INHERIT</span>;
+        <span class="kw">const</span> <span class="ident">FILE_INHERIT</span> <span class="op">=</span> <span class="ident">np::ACL_ENTRY_FILE_INHERIT</span>;
 
         <span class="doccomment">/// Inherit to directories.</span>
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
         <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)))]</span>
-        <span class="kw">const</span> <span class="ident">DIRECTORY_INHERIT</span> <span class="op">=</span> <span class="ident">np</span>::<span class="ident">ACL_ENTRY_DIRECTORY_INHERIT</span>;
+        <span class="kw">const</span> <span class="ident">DIRECTORY_INHERIT</span> <span class="op">=</span> <span class="ident">np::ACL_ENTRY_DIRECTORY_INHERIT</span>;
 
         <span class="doccomment">/// Clear the DIRECTORY_INHERIT flag in the ACL entry that is inherited.</span>
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
         <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)))]</span>
-        <span class="kw">const</span> <span class="ident">LIMIT_INHERIT</span> <span class="op">=</span> <span class="ident">np</span>::<span class="ident">ACL_ENTRY_LIMIT_INHERIT</span>;
+        <span class="kw">const</span> <span class="ident">LIMIT_INHERIT</span> <span class="op">=</span> <span class="ident">np::ACL_ENTRY_LIMIT_INHERIT</span>;
 
         <span class="doccomment">/// Don&#39;t consider this entry when processing the ACL. Just inherit it.</span>
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
         <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)))]</span>
-        <span class="kw">const</span> <span class="ident">ONLY_INHERIT</span> <span class="op">=</span> <span class="ident">np</span>::<span class="ident">ACL_ENTRY_ONLY_INHERIT</span>;
+        <span class="kw">const</span> <span class="ident">ONLY_INHERIT</span> <span class="op">=</span> <span class="ident">np::ACL_ENTRY_ONLY_INHERIT</span>;
 
         <span class="doccomment">/// Specifies a default ACL entry on Linux.</span>
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
@@ -379,7 +378,7 @@
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
         <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>)))]</span>
         <span class="doccomment">/// NFSv4 Specific Flags on FreeBSD.</span>
-        <span class="kw">const</span> <span class="ident">NFS4_SPECIFIC</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">INHERITED</span>.<span class="ident">bits</span> <span class="op">|</span> <span class="self">Self</span>::<span class="ident">FILE_INHERIT</span>.<span class="ident">bits</span> <span class="op">|</span> <span class="self">Self</span>::<span class="ident">DIRECTORY_INHERIT</span>.<span class="ident">bits</span> <span class="op">|</span> <span class="self">Self</span>::<span class="ident">LIMIT_INHERIT</span>.<span class="ident">bits</span> <span class="op">|</span> <span class="self">Self</span>::<span class="ident">ONLY_INHERIT</span>.<span class="ident">bits</span>;
+        <span class="kw">const</span> <span class="ident">NFS4_SPECIFIC</span> <span class="op">=</span> <span class="self">Self</span><span class="ident">::INHERITED</span>.<span class="ident">bits</span> <span class="op">|</span> <span class="self">Self</span><span class="ident">::FILE_INHERIT</span>.<span class="ident">bits</span> <span class="op">|</span> <span class="self">Self</span><span class="ident">::DIRECTORY_INHERIT</span>.<span class="ident">bits</span> <span class="op">|</span> <span class="self">Self</span><span class="ident">::LIMIT_INHERIT</span>.<span class="ident">bits</span> <span class="op">|</span> <span class="self">Self</span><span class="ident">::ONLY_INHERIT</span>.<span class="ident">bits</span>;
     }
 }
 
@@ -397,8 +396,8 @@
 
     <span class="kw">fn</span> <span class="ident">msb</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="comment">// FIXME: Replace computation with `BITS` once it lands in stable.</span>
-        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">cast_possible_truncation</span>)]</span>
-        <span class="kw">const</span> <span class="ident">MAX_BITS</span>: <span class="ident">acl_flag_t</span> <span class="op">=</span> <span class="number">8</span> <span class="op">*</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">acl_flag_t</span> <span class="op">-</span> <span class="number">1</span>;
+        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::cast_possible_truncation</span>)]</span>
+        <span class="kw">const</span> <span class="ident">MAX_BITS</span>: <span class="ident">acl_flag_t</span> <span class="op">=</span> <span class="number">8</span> <span class="op">*</span> <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">acl_flag_t</span> <span class="op">-</span> <span class="number">1</span>;
 
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_empty</span>() {
             <span class="kw">return</span> <span class="prelude-val">None</span>;
@@ -414,28 +413,28 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
 <span class="kw">enum</span> <span class="ident">FlagName</span> {
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="ident">inherited</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">INHERITED</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
+    <span class="ident">inherited</span> <span class="op">=</span> <span class="ident">Flag::INHERITED</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="ident">file_inherit</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">FILE_INHERIT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
+    <span class="ident">file_inherit</span> <span class="op">=</span> <span class="ident">Flag::FILE_INHERIT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="ident">directory_inherit</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">DIRECTORY_INHERIT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
+    <span class="ident">directory_inherit</span> <span class="op">=</span> <span class="ident">Flag::DIRECTORY_INHERIT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="ident">limit_inherit</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">LIMIT_INHERIT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
+    <span class="ident">limit_inherit</span> <span class="op">=</span> <span class="ident">Flag::LIMIT_INHERIT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="ident">only_inherit</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">ONLY_INHERIT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
+    <span class="ident">only_inherit</span> <span class="op">=</span> <span class="ident">Flag::ONLY_INHERIT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="ident">default</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">DEFAULT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
+    <span class="ident">default</span> <span class="op">=</span> <span class="ident">Flag::DEFAULT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">FlagName</span> {
     <span class="kw">fn</span> <span class="ident">from_flag</span>(<span class="ident">flag</span>: <span class="ident">Flag</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FlagName</span><span class="op">&gt;</span> {
-        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
-        <span class="ident">FlagName</span>::<span class="ident">try_from</span>(<span class="ident">flag</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>).<span class="ident">ok</span>()
+        <span class="kw">use</span> <span class="ident">std::convert::TryFrom</span>;
+        <span class="ident">FlagName::try_from</span>(<span class="ident">flag</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>).<span class="ident">ok</span>()
     }
 
     <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">to_flag</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Flag</span> {
@@ -445,21 +444,21 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">FlagName</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="ident">format</span>::<span class="ident">write_enum</span>(<span class="ident">f</span>, <span class="self">self</span>)
+<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">FlagName</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+        <span class="ident">format::write_enum</span>(<span class="ident">f</span>, <span class="self">self</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Flag</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">BitIter</span>(<span class="kw-2">*</span><span class="self">self</span> <span class="op">&amp;</span> <span class="ident">Flag</span>::<span class="ident">all</span>());
+<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Flag</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">BitIter</span>(<span class="kw-2">*</span><span class="self">self</span> <span class="op">&amp;</span> <span class="ident">Flag::all</span>());
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">flag</span>) <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">next</span>() {
-            <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">FlagName</span>::<span class="ident">from_flag</span>(<span class="ident">flag</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
+            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">FlagName::from_flag</span>(<span class="ident">flag</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
 
             <span class="kw">for</span> <span class="ident">flag</span> <span class="kw">in</span> <span class="ident">iter</span> {
-                <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;,{}&quot;</span>, <span class="ident">FlagName</span>::<span class="ident">from_flag</span>(<span class="ident">flag</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
+                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;,{}&quot;</span>, <span class="ident">FlagName::from_flag</span>(<span class="ident">flag</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
             }
         }
 
@@ -471,7 +470,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
 <span class="kw">fn</span> <span class="ident">parse_flag_abbreviation</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">s</span> {
-        <span class="string">&quot;d&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Flag</span>::<span class="ident">DEFAULT</span>),
+        <span class="string">&quot;d&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Flag::DEFAULT</span>),
         <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
     }
 }
@@ -481,19 +480,19 @@
     <span class="prelude-val">None</span>
 }
 
-<span class="kw">impl</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">FlagName</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">format</span>::<span class="ident">Error</span>;
+<span class="kw">impl</span> <span class="ident">std::str::FromStr</span> <span class="kw">for</span> <span class="ident">FlagName</span> {
+    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">format::Error</span>;
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="prelude-val">Err</span><span class="op">&gt;</span> {
-        <span class="ident">format</span>::<span class="ident">read_enum</span>(<span class="ident">s</span>)
+    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span><span class="ident">::Err</span><span class="op">&gt;</span> {
+        <span class="ident">format::read_enum</span>(<span class="ident">s</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">Flag</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">format</span>::<span class="ident">Error</span>;
+<span class="kw">impl</span> <span class="ident">std::str::FromStr</span> <span class="kw">for</span> <span class="ident">Flag</span> {
+    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">format::Error</span>;
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="prelude-val">Err</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">empty</span>();
+    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span><span class="ident">::Err</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">Flag::empty</span>();
 
         <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="ident">s</span>.<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>) {
             <span class="kw">let</span> <span class="ident">word</span> <span class="op">=</span> <span class="ident">item</span>.<span class="ident">trim</span>();
@@ -510,41 +509,41 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">ser</span>::<span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">Flag</span> {
-    <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span>::<span class="prelude-val">Ok</span>, <span class="ident">S</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+<span class="kw">impl</span> <span class="ident">ser::Serialize</span> <span class="kw">for</span> <span class="ident">Flag</span> {
+    <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="ident">ser</span>::<span class="ident">Serializer</span>,
+        <span class="ident">S</span>: <span class="ident">ser::Serializer</span>,
     {
-        <span class="kw">use</span> <span class="ident">ser</span>::<span class="ident">SerializeSeq</span>;
+        <span class="kw">use</span> <span class="ident">ser::SerializeSeq</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">seq</span> <span class="op">=</span> <span class="ident">serializer</span>.<span class="ident">serialize_seq</span>(<span class="prelude-val">None</span>)<span class="question-mark">?</span>;
 
         <span class="kw">for</span> <span class="ident">flag</span> <span class="kw">in</span> <span class="ident">BitIter</span>(<span class="kw-2">*</span><span class="self">self</span>) {
-            <span class="ident">seq</span>.<span class="ident">serialize_element</span>(<span class="kw-2">&amp;</span><span class="ident">FlagName</span>::<span class="ident">from_flag</span>(<span class="ident">flag</span>))<span class="question-mark">?</span>;
+            <span class="ident">seq</span>.<span class="ident">serialize_element</span>(<span class="kw-2">&amp;</span><span class="ident">FlagName::from_flag</span>(<span class="ident">flag</span>))<span class="question-mark">?</span>;
         }
 
         <span class="ident">seq</span>.<span class="ident">end</span>()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">de</span>::<span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Flag</span> {
-    <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">D</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">de::Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Flag</span> {
+    <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">de</span>::<span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+        <span class="ident">D</span>: <span class="ident">de::Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
     {
         <span class="kw">struct</span> <span class="ident">FlagVisitor</span>;
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">de</span>::<span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">FlagVisitor</span> {
+        <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">de::Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">FlagVisitor</span> {
             <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">Flag</span>;
 
-            <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+            <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
                 <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;list of flags&quot;</span>)
             }
 
-            <span class="kw">fn</span> <span class="ident">visit_seq</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">seq</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Value</span>, <span class="ident">A</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+            <span class="kw">fn</span> <span class="ident">visit_seq</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">seq</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Value</span>, <span class="ident">A::Error</span><span class="op">&gt;</span>
             <span class="kw">where</span>
-                <span class="ident">A</span>: <span class="ident">de</span>::<span class="ident">SeqAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+                <span class="ident">A</span>: <span class="ident">de::SeqAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
             {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">flags</span>: <span class="ident">Flag</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">empty</span>();
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">flags</span>: <span class="ident">Flag</span> <span class="op">=</span> <span class="ident">Flag::empty</span>();
 
                 <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="ident">seq</span>.<span class="ident">next_element</span>()<span class="question-mark">?</span> {
                     <span class="kw">let</span> <span class="ident">name</span>: <span class="ident">FlagName</span> <span class="op">=</span> <span class="ident">value</span>;
@@ -567,43 +566,43 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_flag_display</span>() {
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Flag</span>::<span class="ident">empty</span>().<span class="ident">to_string</span>(), <span class="string">&quot;&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">Flag::empty</span>().<span class="ident">to_string</span>(), <span class="string">&quot;&quot;</span>);
 
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
         {
-            <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">INHERITED</span> <span class="op">|</span> <span class="ident">Flag</span>::<span class="ident">FILE_INHERIT</span>;
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">flags</span>.<span class="ident">to_string</span>(), <span class="string">&quot;inherited,file_inherit&quot;</span>);
+            <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag::INHERITED</span> <span class="op">|</span> <span class="ident">Flag::FILE_INHERIT</span>;
+            <span class="macro">assert_eq!</span>(<span class="ident">flags</span>.<span class="ident">to_string</span>(), <span class="string">&quot;inherited,file_inherit&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">bad_flag</span> <span class="op">=</span> <span class="ident">Flag</span> { <span class="ident">bits</span>: <span class="number">0x0080_0000</span> } <span class="op">|</span> <span class="ident">Flag</span>::<span class="ident">INHERITED</span>;
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">bad_flag</span>.<span class="ident">to_string</span>(), <span class="string">&quot;inherited&quot;</span>);
+            <span class="kw">let</span> <span class="ident">bad_flag</span> <span class="op">=</span> <span class="ident">Flag</span> { <span class="ident">bits</span>: <span class="number">0x0080_0000</span> } <span class="op">|</span> <span class="ident">Flag::INHERITED</span>;
+            <span class="macro">assert_eq!</span>(<span class="ident">bad_flag</span>.<span class="ident">to_string</span>(), <span class="string">&quot;inherited&quot;</span>);
 
-            <span class="macro">assert_eq</span><span class="macro">!</span>(
-                <span class="ident">Flag</span>::<span class="ident">all</span>().<span class="ident">to_string</span>(),
+            <span class="macro">assert_eq!</span>(
+                <span class="ident">Flag::all</span>().<span class="ident">to_string</span>(),
                 <span class="string">&quot;inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;</span>
             );
         }
 
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
         {
-            <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">DEFAULT</span>;
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">flags</span>.<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
+            <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag::DEFAULT</span>;
+            <span class="macro">assert_eq!</span>(<span class="ident">flags</span>.<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">bad_flag</span> <span class="op">=</span> <span class="ident">Flag</span> { <span class="ident">bits</span>: <span class="number">0x8000</span> } <span class="op">|</span> <span class="ident">Flag</span>::<span class="ident">DEFAULT</span>;
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">bad_flag</span>.<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
+            <span class="kw">let</span> <span class="ident">bad_flag</span> <span class="op">=</span> <span class="ident">Flag</span> { <span class="ident">bits</span>: <span class="number">0x8000</span> } <span class="op">|</span> <span class="ident">Flag::DEFAULT</span>;
+            <span class="macro">assert_eq!</span>(<span class="ident">bad_flag</span>.<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
 
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Flag</span>::<span class="ident">all</span>().<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
+            <span class="macro">assert_eq!</span>(<span class="ident">Flag::all</span>().<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
         }
 
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>)]</span>
         {
-            <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">DEFAULT</span>;
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">flags</span>.<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
+            <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag::DEFAULT</span>;
+            <span class="macro">assert_eq!</span>(<span class="ident">flags</span>.<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">bad_flag</span> <span class="op">=</span> <span class="ident">Flag</span> { <span class="ident">bits</span>: <span class="number">0x8000</span> } <span class="op">|</span> <span class="ident">Flag</span>::<span class="ident">DEFAULT</span>;
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">bad_flag</span>.<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
+            <span class="kw">let</span> <span class="ident">bad_flag</span> <span class="op">=</span> <span class="ident">Flag</span> { <span class="ident">bits</span>: <span class="number">0x8000</span> } <span class="op">|</span> <span class="ident">Flag::DEFAULT</span>;
+            <span class="macro">assert_eq!</span>(<span class="ident">bad_flag</span>.<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
 
-            <span class="macro">assert_eq</span><span class="macro">!</span>(
-                <span class="ident">Flag</span>::<span class="ident">all</span>().<span class="ident">to_string</span>(),
+            <span class="macro">assert_eq!</span>(
+                <span class="ident">Flag::all</span>().<span class="ident">to_string</span>(),
                 <span class="string">&quot;file_inherit,directory_inherit,limit_inherit,only_inherit,inherited,default&quot;</span>
             );
         }
@@ -613,29 +612,29 @@
     <span class="kw">fn</span> <span class="ident">test_flag_fromstr</span>() {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
         {
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Flag</span>::<span class="ident">empty</span>(), <span class="string">&quot;&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
+            <span class="macro">assert_eq!</span>(<span class="ident">Flag::empty</span>(), <span class="string">&quot;&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
 
-            <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">INHERITED</span> <span class="op">|</span> <span class="ident">Flag</span>::<span class="ident">FILE_INHERIT</span>;
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">flags</span>, <span class="string">&quot;inherited,file_inherit&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
+            <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag::INHERITED</span> <span class="op">|</span> <span class="ident">Flag::FILE_INHERIT</span>;
+            <span class="macro">assert_eq!</span>(<span class="ident">flags</span>, <span class="string">&quot;inherited,file_inherit&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
 
-            <span class="macro">assert_eq</span><span class="macro">!</span>(
-                <span class="ident">Flag</span>::<span class="ident">all</span>(),
+            <span class="macro">assert_eq!</span>(
+                <span class="ident">Flag::all</span>(),
                 <span class="string">&quot;inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;</span>
                     .<span class="ident">parse</span>()
                     .<span class="ident">unwrap</span>()
             );
 
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`&quot;</span>, <span class="string">&quot;bad_flag&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>().<span class="ident">unwrap_err</span>().<span class="ident">to_string</span>());
+            <span class="macro">assert_eq!</span>(<span class="string">&quot;unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`&quot;</span>, <span class="string">&quot;bad_flag&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>().<span class="ident">unwrap_err</span>().<span class="ident">to_string</span>());
         }
 
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
         {
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Flag</span>::<span class="ident">empty</span>(), <span class="string">&quot;&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
+            <span class="macro">assert_eq!</span>(<span class="ident">Flag::empty</span>(), <span class="string">&quot;&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
 
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Flag</span>::<span class="ident">DEFAULT</span>, <span class="string">&quot;d&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Flag</span>::<span class="ident">all</span>(), <span class="string">&quot;default&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
+            <span class="macro">assert_eq!</span>(<span class="ident">Flag::DEFAULT</span>, <span class="string">&quot;d&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
+            <span class="macro">assert_eq!</span>(<span class="ident">Flag::all</span>(), <span class="string">&quot;default&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
 
-            <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;unknown variant `bad_flag`, expected `default`&quot;</span>,
                 <span class="string">&quot;bad_flag&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>().<span class="ident">unwrap_err</span>().<span class="ident">to_string</span>()
             );
@@ -643,17 +642,17 @@
 
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>)]</span>
         {
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Flag</span>::<span class="ident">empty</span>(), <span class="string">&quot;&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
+            <span class="macro">assert_eq!</span>(<span class="ident">Flag::empty</span>(), <span class="string">&quot;&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
 
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Flag</span>::<span class="ident">DEFAULT</span>, <span class="string">&quot;d&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
-            <span class="macro">assert_eq</span><span class="macro">!</span>(
-                <span class="ident">Flag</span>::<span class="ident">all</span>(),
+            <span class="macro">assert_eq!</span>(<span class="ident">Flag::DEFAULT</span>, <span class="string">&quot;d&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
+            <span class="macro">assert_eq!</span>(
+                <span class="ident">Flag::all</span>(),
                 <span class="string">&quot;default,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;</span>
                     .<span class="ident">parse</span>()
                     .<span class="ident">unwrap</span>()
             );
 
-            <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`, `default`&quot;</span>,
                 <span class="string">&quot;bad_flag&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span>().<span class="ident">unwrap_err</span>().<span class="ident">to_string</span>()
             );
@@ -661,5 +660,4 @@
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-search-js="../../search-index.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>

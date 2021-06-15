@@ -1,7 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/aclentry.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>aclentry.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../exacl/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../exacl/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -544,20 +543,20 @@
 <span id="541">541</span>
 <span id="542">542</span>
 <span id="543">543</span>
-</pre><div class="example-wrap"><pre class="rust ">
+</pre><pre class="rust">
 <span class="doccomment">//! Provides `AclEntry` implementation.</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">failx</span>::<span class="ident">fail_custom</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">flag</span>::<span class="ident">Flag</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">format</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">perm</span>::<span class="ident">Perm</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">qualifier</span>::<span class="ident">Qualifier</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">util</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::failx::fail_custom</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::flag::Flag</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::format</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::perm::Perm</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::qualifier::Qualifier</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::util</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
+<span class="kw">use</span> <span class="ident">std::cmp::Ordering</span>;
+<span class="kw">use</span> <span class="ident">std::fmt</span>;
+<span class="kw">use</span> <span class="ident">std::io</span>;
 
 <span class="doccomment">/// Kind of ACL entry (User, Group, Mask, Other, or Unknown).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">PartialOrd</span>, <span class="ident">Eq</span>, <span class="ident">Ord</span>)]</span>
@@ -625,20 +624,20 @@
     <span class="kw">fn</span> <span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ordering</span> {
         <span class="comment">// Entries with flags last.</span>
         <span class="kw">match</span> (<span class="self">self</span>.<span class="ident">flags</span>.<span class="ident">is_empty</span>(), <span class="ident">other</span>.<span class="ident">flags</span>.<span class="ident">is_empty</span>()) {
-            (<span class="bool-val">true</span>, <span class="bool-val">false</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="ident">Ordering</span>::<span class="ident">Less</span>,
-            (<span class="bool-val">false</span>, <span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="ident">Ordering</span>::<span class="ident">Greater</span>,
+            (<span class="bool-val">true</span>, <span class="bool-val">false</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="ident">Ordering::Less</span>,
+            (<span class="bool-val">false</span>, <span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="ident">Ordering::Greater</span>,
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> (),
         }
 
         <span class="comment">// Denied entries first.</span>
         <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">allow</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">allow</span>);
-        <span class="kw">if</span> <span class="ident">ret</span> <span class="op">!</span><span class="op">=</span> <span class="ident">Ordering</span>::<span class="ident">Equal</span> {
+        <span class="kw">if</span> <span class="ident">ret</span> <span class="op">!</span><span class="op">=</span> <span class="ident">Ordering::Equal</span> {
             <span class="kw">return</span> <span class="ident">ret</span>;
         }
 
         <span class="comment">// Order by kind.</span>
         <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">kind</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">kind</span>);
-        <span class="kw">if</span> <span class="ident">ret</span> <span class="op">!</span><span class="op">=</span> <span class="ident">Ordering</span>::<span class="ident">Equal</span> {
+        <span class="kw">if</span> <span class="ident">ret</span> <span class="op">!</span><span class="op">=</span> <span class="ident">Ordering::Equal</span> {
             <span class="kw">return</span> <span class="ident">ret</span>;
         }
 
@@ -665,7 +664,7 @@
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AclEntry</span> {
         <span class="ident">AclEntry</span> {
             <span class="ident">kind</span>,
-            <span class="ident">name</span>: <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">name</span>),
+            <span class="ident">name</span>: <span class="ident">String::from</span>(<span class="ident">name</span>),
             <span class="ident">perms</span>,
             <span class="ident">flags</span>: <span class="ident">flags</span>.<span class="ident">unwrap_or_default</span>(),
             <span class="ident">allow</span>,
@@ -678,7 +677,7 @@
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     {
-        <span class="ident">AclEntry</span>::<span class="ident">new</span>(<span class="ident">AclEntryKind</span>::<span class="ident">User</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="ident">flags</span>.<span class="ident">into</span>(), <span class="bool-val">true</span>)
+        <span class="ident">AclEntry::new</span>(<span class="ident">AclEntryKind::User</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="ident">flags</span>.<span class="ident">into</span>(), <span class="bool-val">true</span>)
     }
 
     <span class="doccomment">/// Construct an ALLOW access control entry for a group.</span>
@@ -687,7 +686,7 @@
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     {
-        <span class="ident">AclEntry</span>::<span class="ident">new</span>(<span class="ident">AclEntryKind</span>::<span class="ident">Group</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="ident">flags</span>.<span class="ident">into</span>(), <span class="bool-val">true</span>)
+        <span class="ident">AclEntry::new</span>(<span class="ident">AclEntryKind::Group</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="ident">flags</span>.<span class="ident">into</span>(), <span class="bool-val">true</span>)
     }
 
     <span class="doccomment">/// Construct an ALLOW access control entry for mask.</span>
@@ -698,7 +697,7 @@
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     {
-        <span class="ident">AclEntry</span>::<span class="ident">new</span>(<span class="ident">AclEntryKind</span>::<span class="ident">Mask</span>, <span class="string">&quot;&quot;</span>, <span class="ident">perms</span>, <span class="ident">flags</span>.<span class="ident">into</span>(), <span class="bool-val">true</span>)
+        <span class="ident">AclEntry::new</span>(<span class="ident">AclEntryKind::Mask</span>, <span class="string">&quot;&quot;</span>, <span class="ident">perms</span>, <span class="ident">flags</span>.<span class="ident">into</span>(), <span class="bool-val">true</span>)
     }
 
     <span class="doccomment">/// Construct an ALLOW access control entry for other.</span>
@@ -709,7 +708,7 @@
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     {
-        <span class="ident">AclEntry</span>::<span class="ident">new</span>(<span class="ident">AclEntryKind</span>::<span class="ident">Other</span>, <span class="string">&quot;&quot;</span>, <span class="ident">perms</span>, <span class="ident">flags</span>.<span class="ident">into</span>(), <span class="bool-val">true</span>)
+        <span class="ident">AclEntry::new</span>(<span class="ident">AclEntryKind::Other</span>, <span class="string">&quot;&quot;</span>, <span class="ident">perms</span>, <span class="ident">flags</span>.<span class="ident">into</span>(), <span class="bool-val">true</span>)
     }
 
     <span class="doccomment">/// Construct a DENY access control entry for a user.</span>
@@ -718,7 +717,7 @@
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     {
-        <span class="ident">AclEntry</span>::<span class="ident">new</span>(<span class="ident">AclEntryKind</span>::<span class="ident">User</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="ident">flags</span>.<span class="ident">into</span>(), <span class="bool-val">false</span>)
+        <span class="ident">AclEntry::new</span>(<span class="ident">AclEntryKind::User</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="ident">flags</span>.<span class="ident">into</span>(), <span class="bool-val">false</span>)
     }
 
     <span class="doccomment">/// Construct a DENY access control entry for a group.</span>
@@ -727,36 +726,36 @@
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Flag</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     {
-        <span class="ident">AclEntry</span>::<span class="ident">new</span>(<span class="ident">AclEntryKind</span>::<span class="ident">Group</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="ident">flags</span>.<span class="ident">into</span>(), <span class="bool-val">false</span>)
+        <span class="ident">AclEntry::new</span>(<span class="ident">AclEntryKind::Group</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="ident">flags</span>.<span class="ident">into</span>(), <span class="bool-val">false</span>)
     }
 
     <span class="doccomment">/// Return an `AclEntry` constructed from a native `acl_entry_t`.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from_raw</span>(<span class="ident">entry</span>: <span class="ident">acl_entry_t</span>, <span class="ident">acl</span>: <span class="ident">acl_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from_raw</span>(<span class="ident">entry</span>: <span class="ident">acl_entry_t</span>, <span class="ident">acl</span>: <span class="ident">acl_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">allow</span>, <span class="ident">qualifier</span>, <span class="ident">perms</span>, <span class="ident">flags</span>) <span class="op">=</span> <span class="ident">xacl_get_entry</span>(<span class="ident">acl</span>, <span class="ident">entry</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> (<span class="ident">kind</span>, <span class="ident">name</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">qualifier</span> {
-            <span class="ident">Qualifier</span>::<span class="ident">Unknown</span>(<span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind</span>::<span class="ident">Unknown</span>, <span class="ident">s</span>),
+            <span class="ident">Qualifier::Unknown</span>(<span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind::Unknown</span>, <span class="ident">s</span>),
 
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-            <span class="ident">Qualifier</span>::<span class="ident">User</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Qualifier</span>::<span class="ident">Guid</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind</span>::<span class="ident">User</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
+            <span class="ident">Qualifier::User</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Qualifier::Guid</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind::User</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
 
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-            <span class="ident">Qualifier</span>::<span class="ident">Group</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind</span>::<span class="ident">Group</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
+            <span class="ident">Qualifier::Group</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind::Group</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
 
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="ident">Qualifier</span>::<span class="ident">User</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Qualifier</span>::<span class="ident">UserObj</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind</span>::<span class="ident">User</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
+            <span class="ident">Qualifier::User</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Qualifier::UserObj</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind::User</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
 
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="ident">Qualifier</span>::<span class="ident">Group</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Qualifier</span>::<span class="ident">GroupObj</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind</span>::<span class="ident">Group</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
+            <span class="ident">Qualifier::Group</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Qualifier::GroupObj</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind::Group</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
 
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="ident">Qualifier</span>::<span class="ident">Mask</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind</span>::<span class="ident">Mask</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
+            <span class="ident">Qualifier::Mask</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind::Mask</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
 
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="ident">Qualifier</span>::<span class="ident">Other</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind</span>::<span class="ident">Other</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
+            <span class="ident">Qualifier::Other</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind::Other</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
 
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>)]</span>
-            <span class="ident">Qualifier</span>::<span class="ident">Everyone</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind</span>::<span class="ident">Everyone</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
+            <span class="ident">Qualifier::Everyone</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">AclEntryKind::Everyone</span>, <span class="ident">qualifier</span>.<span class="ident">name</span>()),
         };
 
         <span class="prelude-val">Ok</span>(<span class="ident">AclEntry</span> {
@@ -768,24 +767,24 @@
         })
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">add_to_acl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">acl</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">acl_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">add_to_acl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">acl</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">acl_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">qualifier</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">qualifier</span>()<span class="question-mark">?</span>;
         <span class="ident">xacl_add_entry</span>(<span class="ident">acl</span>, <span class="self">self</span>.<span class="ident">allow</span>, <span class="kw-2">&amp;</span><span class="ident">qualifier</span>, <span class="self">self</span>.<span class="ident">perms</span>, <span class="self">self</span>.<span class="ident">flags</span>)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">qualifier</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Qualifier</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">qualifier</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">Qualifier</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">qualifier</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">kind</span> {
-            <span class="ident">AclEntryKind</span>::<span class="ident">User</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Qualifier</span>::<span class="ident">user_named</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>)<span class="question-mark">?</span>,
-            <span class="ident">AclEntryKind</span>::<span class="ident">Group</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Qualifier</span>::<span class="ident">group_named</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>)<span class="question-mark">?</span>,
+            <span class="ident">AclEntryKind::User</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Qualifier::user_named</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>)<span class="question-mark">?</span>,
+            <span class="ident">AclEntryKind::Group</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Qualifier::group_named</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>)<span class="question-mark">?</span>,
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="ident">AclEntryKind</span>::<span class="ident">Mask</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Qualifier</span>::<span class="ident">mask_named</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>)<span class="question-mark">?</span>,
+            <span class="ident">AclEntryKind::Mask</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Qualifier::mask_named</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>)<span class="question-mark">?</span>,
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="ident">AclEntryKind</span>::<span class="ident">Other</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Qualifier</span>::<span class="ident">other_named</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>)<span class="question-mark">?</span>,
+            <span class="ident">AclEntryKind::Other</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Qualifier::other_named</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>)<span class="question-mark">?</span>,
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>)]</span>
-            <span class="ident">AclEntryKind</span>::<span class="ident">Everyone</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Qualifier</span>::<span class="ident">everyone_named</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>)<span class="question-mark">?</span>,
-            <span class="ident">AclEntryKind</span>::<span class="ident">Unknown</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">AclEntryKind::Everyone</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Qualifier::everyone_named</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>)<span class="question-mark">?</span>,
+            <span class="ident">AclEntryKind::Unknown</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">return</span> <span class="ident">fail_custom</span>(<span class="string">&quot;unsupported kind: \&quot;unknown\&quot;&quot;</span>);
             }
         };
@@ -794,34 +793,34 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">AclEntryKind</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="ident">format</span>::<span class="ident">write_enum</span>(<span class="ident">f</span>, <span class="self">self</span>)
+<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">AclEntryKind</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+        <span class="ident">format::write_enum</span>(<span class="ident">f</span>, <span class="self">self</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">AclEntryKind</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">format</span>::<span class="ident">Error</span>;
+<span class="kw">impl</span> <span class="ident">std::str::FromStr</span> <span class="kw">for</span> <span class="ident">AclEntryKind</span> {
+    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">format::Error</span>;
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="prelude-val">Err</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span><span class="ident">::Err</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">s</span> {
-            <span class="string">&quot;u&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">AclEntryKind</span>::<span class="ident">User</span>),
-            <span class="string">&quot;g&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">AclEntryKind</span>::<span class="ident">Group</span>),
+            <span class="string">&quot;u&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">AclEntryKind::User</span>),
+            <span class="string">&quot;g&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">AclEntryKind::Group</span>),
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="string">&quot;o&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">AclEntryKind</span>::<span class="ident">Other</span>),
+            <span class="string">&quot;o&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">AclEntryKind::Other</span>),
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="string">&quot;m&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">AclEntryKind</span>::<span class="ident">Mask</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">format</span>::<span class="ident">read_enum</span>(<span class="ident">s</span>),
+            <span class="string">&quot;m&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">AclEntryKind::Mask</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">format::read_enum</span>(<span class="ident">s</span>),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">AclEntry</span> {
+<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">AclEntry</span> {
     <span class="doccomment">/// Format an `AclEntry` 5-tuple:</span>
     <span class="doccomment">///   &lt;allow&gt;:&lt;flags&gt;:&lt;kind&gt;:&lt;name&gt;:&lt;perms&gt;</span>
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
         <span class="kw">let</span> <span class="ident">allow</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">allow</span> { <span class="string">&quot;allow&quot;</span> } <span class="kw">else</span> { <span class="string">&quot;deny&quot;</span> };
-        <span class="macro">write</span><span class="macro">!</span>(
+        <span class="macro">write!</span>(
             <span class="ident">f</span>,
             <span class="string">&quot;{}:{}:{}:{}:{}&quot;</span>,
             <span class="ident">allow</span>, <span class="self">self</span>.<span class="ident">flags</span>, <span class="self">self</span>.<span class="ident">kind</span>, <span class="self">self</span>.<span class="ident">name</span>, <span class="self">self</span>.<span class="ident">perms</span>
@@ -829,12 +828,12 @@
     }
 }
 
-<span class="kw">fn</span> <span class="ident">parse_allow</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">format</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_allow</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">format::Error</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">value</span> {
         <span class="string">&quot;allow&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
         <span class="string">&quot;deny&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
         <span class="ident">s</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">format</span>::<span class="ident">Error</span>::<span class="ident">Message</span>(<span class="macro">format</span><span class="macro">!</span>(
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">format::Error::Message</span>(<span class="macro">format!</span>(
                 <span class="string">&quot;Unknown variant `{}`, expected one of `allow`, `deny`&quot;</span>,
                 <span class="ident">s</span>
             )))
@@ -843,11 +842,11 @@
     <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
 }
 
-<span class="kw">impl</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">AclEntry</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">format</span>::<span class="ident">Error</span>;
+<span class="kw">impl</span> <span class="ident">std::str::FromStr</span> <span class="kw">for</span> <span class="ident">AclEntry</span> {
+    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">format::Error</span>;
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="prelude-val">Err</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">fields</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">splitn</span>(<span class="number">5</span>, <span class="string">&#39;:&#39;</span>).<span class="ident">map</span>(<span class="ident">str</span>::<span class="ident">trim</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span><span class="ident">::Err</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">fields</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">splitn</span>(<span class="number">5</span>, <span class="string">&#39;:&#39;</span>).<span class="ident">map</span>(<span class="ident">str::trim</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
         <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">fields</span>.<span class="ident">len</span>() {
             <span class="number">5</span> <span class="op">=</span><span class="op">&gt;</span> {
@@ -857,7 +856,7 @@
                 <span class="kw">let</span> <span class="ident">kind</span> <span class="op">=</span> <span class="ident">fields</span>[<span class="number">2</span>].<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntryKind</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">fields</span>[<span class="number">3</span>];
                 <span class="kw">let</span> <span class="ident">perms</span> <span class="op">=</span> <span class="ident">fields</span>[<span class="number">4</span>].<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Perm</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-                <span class="ident">AclEntry</span>::<span class="ident">new</span>(<span class="ident">kind</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="prelude-val">Some</span>(<span class="ident">flags</span>), <span class="ident">allow</span>)
+                <span class="ident">AclEntry::new</span>(<span class="ident">kind</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="prelude-val">Some</span>(<span class="ident">flags</span>), <span class="ident">allow</span>)
             }
             <span class="number">4</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// &lt;flags&gt;:&lt;kind&gt;:&lt;name&gt;:&lt;perms&gt;</span>
@@ -866,19 +865,19 @@
                 <span class="kw">let</span> <span class="ident">kind</span> <span class="op">=</span> <span class="ident">fields</span>[<span class="number">1</span>].<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntryKind</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">fields</span>[<span class="number">2</span>];
                 <span class="kw">let</span> <span class="ident">perms</span> <span class="op">=</span> <span class="ident">fields</span>[<span class="number">3</span>].<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Perm</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-                <span class="ident">AclEntry</span>::<span class="ident">new</span>(<span class="ident">kind</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="prelude-val">Some</span>(<span class="ident">flags</span>), <span class="ident">allow</span>)
+                <span class="ident">AclEntry::new</span>(<span class="ident">kind</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="prelude-val">Some</span>(<span class="ident">flags</span>), <span class="ident">allow</span>)
             }
             <span class="number">3</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// &lt;kind&gt;:&lt;name&gt;:&lt;perms&gt;</span>
                 <span class="kw">let</span> <span class="ident">allow</span> <span class="op">=</span> <span class="bool-val">true</span>;
-                <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">empty</span>();
+                <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag::empty</span>();
                 <span class="kw">let</span> <span class="ident">kind</span> <span class="op">=</span> <span class="ident">fields</span>[<span class="number">0</span>].<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntryKind</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">fields</span>[<span class="number">1</span>];
                 <span class="kw">let</span> <span class="ident">perms</span> <span class="op">=</span> <span class="ident">fields</span>[<span class="number">2</span>].<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Perm</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-                <span class="ident">AclEntry</span>::<span class="ident">new</span>(<span class="ident">kind</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="prelude-val">Some</span>(<span class="ident">flags</span>), <span class="ident">allow</span>)
+                <span class="ident">AclEntry::new</span>(<span class="ident">kind</span>, <span class="ident">name</span>, <span class="ident">perms</span>, <span class="prelude-val">Some</span>(<span class="ident">flags</span>), <span class="ident">allow</span>)
             }
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">format</span>::<span class="ident">Error</span>::<span class="ident">Message</span>(<span class="macro">format</span><span class="macro">!</span>(
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">format::Error::Message</span>(<span class="macro">format!</span>(
                     <span class="string">&quot;Unknown ACL format: `{}`&quot;</span>,
                     <span class="ident">s</span>
                 )))
@@ -897,82 +896,82 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_ordering</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">acl</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[
-            <span class="ident">AclEntry</span>::<span class="ident">allow_user</span>(<span class="string">&quot;f&quot;</span>, <span class="ident">Perm</span>::<span class="ident">WRITE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;3&quot;</span>, <span class="ident">Perm</span>::<span class="ident">EXECUTE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;d&quot;</span>, <span class="ident">Perm</span>::<span class="ident">EXECUTE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_user</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">acl</span> <span class="op">=</span> <span class="macro">vec!</span>[
+            <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;f&quot;</span>, <span class="ident">Perm::WRITE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;3&quot;</span>, <span class="ident">Perm::EXECUTE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;d&quot;</span>, <span class="ident">Perm::EXECUTE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-            <span class="ident">AclEntry</span>::<span class="ident">deny_user</span>(<span class="string">&quot;a&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="ident">Flag</span>::<span class="ident">FILE_INHERIT</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">deny_user</span>(<span class="string">&quot;c&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::deny_user</span>(<span class="string">&quot;a&quot;</span>, <span class="ident">Perm::READ</span>, <span class="ident">Flag::FILE_INHERIT</span>),
+            <span class="ident">AclEntry::deny_user</span>(<span class="string">&quot;c&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
         ];
 
         <span class="ident">acl</span>.<span class="ident">sort</span>();
 
-        <span class="kw">let</span> <span class="ident">acl_sorted</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[
-            <span class="ident">AclEntry</span>::<span class="ident">deny_user</span>(<span class="string">&quot;c&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_user</span>(<span class="string">&quot;f&quot;</span>, <span class="ident">Perm</span>::<span class="ident">WRITE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_user</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;3&quot;</span>, <span class="ident">Perm</span>::<span class="ident">EXECUTE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;d&quot;</span>, <span class="ident">Perm</span>::<span class="ident">EXECUTE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
+        <span class="kw">let</span> <span class="ident">acl_sorted</span> <span class="op">=</span> <span class="macro">vec!</span>[
+            <span class="ident">AclEntry::deny_user</span>(<span class="string">&quot;c&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;f&quot;</span>, <span class="ident">Perm::WRITE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;3&quot;</span>, <span class="ident">Perm::EXECUTE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;d&quot;</span>, <span class="ident">Perm::EXECUTE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-            <span class="ident">AclEntry</span>::<span class="ident">deny_user</span>(<span class="string">&quot;a&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="ident">Flag</span>::<span class="ident">FILE_INHERIT</span>),
+            <span class="ident">AclEntry::deny_user</span>(<span class="string">&quot;a&quot;</span>, <span class="ident">Perm::READ</span>, <span class="ident">Flag::FILE_INHERIT</span>),
         ];
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">acl</span>, <span class="ident">acl_sorted</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">acl</span>, <span class="ident">acl_sorted</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
     <span class="kw">fn</span> <span class="ident">test_ordering_linux</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">acl</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[
-            <span class="ident">AclEntry</span>::<span class="ident">allow_user</span>(<span class="string">&quot;f&quot;</span>, <span class="ident">Perm</span>::<span class="ident">WRITE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_mask</span>(<span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;b&quot;</span>, <span class="ident">Perm</span>::<span class="ident">EXECUTE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;d&quot;</span>, <span class="ident">Perm</span>::<span class="ident">EXECUTE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_user</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_user</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_other</span>(<span class="ident">Perm</span>::<span class="ident">EXECUTE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;a&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="ident">Flag</span>::<span class="ident">DEFAULT</span>),
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">acl</span> <span class="op">=</span> <span class="macro">vec!</span>[
+            <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;f&quot;</span>, <span class="ident">Perm::WRITE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_mask</span>(<span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;b&quot;</span>, <span class="ident">Perm::EXECUTE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;d&quot;</span>, <span class="ident">Perm::EXECUTE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_other</span>(<span class="ident">Perm::EXECUTE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;a&quot;</span>, <span class="ident">Perm::READ</span>, <span class="ident">Flag::DEFAULT</span>),
         ];
 
         <span class="ident">acl</span>.<span class="ident">sort</span>();
 
-        <span class="kw">let</span> <span class="ident">acl_sorted</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[
-            <span class="ident">AclEntry</span>::<span class="ident">allow_user</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_user</span>(<span class="string">&quot;f&quot;</span>, <span class="ident">Perm</span>::<span class="ident">WRITE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_user</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;b&quot;</span>, <span class="ident">Perm</span>::<span class="ident">EXECUTE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;d&quot;</span>, <span class="ident">Perm</span>::<span class="ident">EXECUTE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_mask</span>(<span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_other</span>(<span class="ident">Perm</span>::<span class="ident">EXECUTE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry</span>::<span class="ident">allow_group</span>(<span class="string">&quot;a&quot;</span>, <span class="ident">Perm</span>::<span class="ident">READ</span>, <span class="ident">Flag</span>::<span class="ident">DEFAULT</span>),
+        <span class="kw">let</span> <span class="ident">acl_sorted</span> <span class="op">=</span> <span class="macro">vec!</span>[
+            <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;f&quot;</span>, <span class="ident">Perm::WRITE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;b&quot;</span>, <span class="ident">Perm::EXECUTE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;d&quot;</span>, <span class="ident">Perm::EXECUTE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;z&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_mask</span>(<span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_other</span>(<span class="ident">Perm::EXECUTE</span>, <span class="prelude-val">None</span>),
+            <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;a&quot;</span>, <span class="ident">Perm::READ</span>, <span class="ident">Flag::DEFAULT</span>),
         ];
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">acl</span>, <span class="ident">acl_sorted</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">acl</span>, <span class="ident">acl_sorted</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_display_kind</span>() {
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">AclEntryKind</span>::<span class="ident">User</span>), <span class="string">&quot;user&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">AclEntryKind</span>::<span class="ident">Group</span>), <span class="string">&quot;group&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">AclEntryKind::User</span>), <span class="string">&quot;user&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">AclEntryKind::Group</span>), <span class="string">&quot;group&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
     <span class="kw">fn</span> <span class="ident">test_display_entry</span>() {
-        <span class="kw">let</span> <span class="ident">perms</span> <span class="op">=</span> <span class="ident">Perm</span>::<span class="ident">READ</span> <span class="op">|</span> <span class="ident">Perm</span>::<span class="ident">EXECUTE</span>;
-        <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">INHERITED</span> <span class="op">|</span> <span class="ident">Flag</span>::<span class="ident">FILE_INHERIT</span>;
-        <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="ident">AclEntry</span>::<span class="ident">allow_user</span>(<span class="string">&quot;x&quot;</span>, <span class="ident">perms</span>, <span class="ident">flags</span>);
+        <span class="kw">let</span> <span class="ident">perms</span> <span class="op">=</span> <span class="ident">Perm::READ</span> <span class="op">|</span> <span class="ident">Perm::EXECUTE</span>;
+        <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag::INHERITED</span> <span class="op">|</span> <span class="ident">Flag::FILE_INHERIT</span>;
+        <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;x&quot;</span>, <span class="ident">perms</span>, <span class="ident">flags</span>);
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">entry</span>),
+        <span class="macro">assert_eq!</span>(
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">entry</span>),
             <span class="string">&quot;allow:inherited,file_inherit:user:x:read,execute&quot;</span>
         );
     }
@@ -980,76 +979,76 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
     <span class="kw">fn</span> <span class="ident">test_display_entry</span>() {
-        <span class="kw">let</span> <span class="ident">perms</span> <span class="op">=</span> <span class="ident">Perm</span>::<span class="ident">READ</span> <span class="op">|</span> <span class="ident">Perm</span>::<span class="ident">EXECUTE</span>;
-        <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag</span>::<span class="ident">DEFAULT</span>;
+        <span class="kw">let</span> <span class="ident">perms</span> <span class="op">=</span> <span class="ident">Perm::READ</span> <span class="op">|</span> <span class="ident">Perm::EXECUTE</span>;
+        <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">Flag::DEFAULT</span>;
 
-        <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="ident">AclEntry</span>::<span class="ident">allow_user</span>(<span class="string">&quot;x&quot;</span>, <span class="ident">perms</span>, <span class="ident">flags</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">entry</span>), <span class="string">&quot;allow:default:user:x:read,execute&quot;</span>);
+        <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;x&quot;</span>, <span class="ident">perms</span>, <span class="ident">flags</span>);
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">entry</span>), <span class="string">&quot;allow:default:user:x:read,execute&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_display_entry_name</span>() {
-        <span class="kw">let</span> <span class="ident">perms</span> <span class="op">=</span> <span class="ident">Perm</span>::<span class="ident">READ</span>;
+        <span class="kw">let</span> <span class="ident">perms</span> <span class="op">=</span> <span class="ident">Perm::READ</span>;
 
         <span class="comment">// FIXME: Need to have colons in user names escaped on output!</span>
-        <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="ident">AclEntry</span>::<span class="ident">allow_user</span>(<span class="string">&quot;x:y&quot;</span>, <span class="ident">perms</span>, <span class="prelude-val">None</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">entry</span>), <span class="string">&quot;allow::user:x:y:read&quot;</span>);
+        <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;x:y&quot;</span>, <span class="ident">perms</span>, <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">entry</span>), <span class="string">&quot;allow::user:x:y:read&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
     <span class="kw">fn</span> <span class="ident">test_entry_fromstr</span>() {
         <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="string">&quot;allow:inherited:user:x:read&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow:inherited:user:x:read&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow:inherited:user:x:read&quot;</span>);
 
         <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="string">&quot;allow::user:x:read&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow::user:x:read&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow::user:x:read&quot;</span>);
 
         <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="string">&quot;user:x:read&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow::user:x:read&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow::user:x:read&quot;</span>);
 
         <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="string">&quot; deny : inherited : user : x : read &quot;</span>
             .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>()
             .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;deny:inherited:user:x:read&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;deny:inherited:user:x:read&quot;</span>);
 
         <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="string">&quot;inherited:user:x:read&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow:inherited:user:x:read&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow:inherited:user:x:read&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
     <span class="kw">fn</span> <span class="ident">test_entry_fromstr</span>() {
         <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="string">&quot;allow:default:user:x:read&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow:default:user:x:read&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow:default:user:x:read&quot;</span>);
 
         <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="string">&quot;allow::user:x:read&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow::user:x:read&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow::user:x:read&quot;</span>);
 
         <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="string">&quot;user:x:read&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow::user:x:read&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow::user:x:read&quot;</span>);
 
         <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="string">&quot; deny : default : user : x : read &quot;</span>
             .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>()
             .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;deny:default:user:x:read&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;deny:default:user:x:read&quot;</span>);
 
         <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="string">&quot;default:user:x:read&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow:default:user:x:read&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">entry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;allow:default:user:x:read&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_entry_fromstr_err</span>() {
         <span class="comment">// Mispelled &quot;allow&quot;.</span>
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="string">&quot;all::user:x:read&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>().<span class="ident">unwrap_err</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">err</span>.<span class="ident">to_string</span>(),
             <span class="string">&quot;Unknown variant `all`, expected one of `allow`, `deny`&quot;</span>
         );
 
         <span class="comment">// Invalid format.</span>
         <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="string">&quot;allow:foo&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>().<span class="ident">unwrap_err</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;Unknown ACL format: `allow:foo`&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;Unknown ACL format: `allow:foo`&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1066,7 +1065,7 @@
 
         <span class="kw">for</span> (<span class="ident">input</span>, <span class="ident">expected</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">values</span> {
             <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">expected</span>, <span class="ident">entry</span>.<span class="ident">to_string</span>());
+            <span class="macro">assert_eq!</span>(<span class="kw-2">*</span><span class="ident">expected</span>, <span class="ident">entry</span>.<span class="ident">to_string</span>());
         }
     }
 
@@ -1084,10 +1083,9 @@
 
         <span class="kw">for</span> (<span class="ident">input</span>, <span class="ident">expected</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">values</span> {
             <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">expected</span>, <span class="ident">entry</span>.<span class="ident">to_string</span>());
+            <span class="macro">assert_eq!</span>(<span class="kw-2">*</span><span class="ident">expected</span>, <span class="ident">entry</span>.<span class="ident">to_string</span>());
         }
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-search-js="../../search-index.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>
