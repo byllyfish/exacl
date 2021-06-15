@@ -70,15 +70,15 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
     ];
 
     for type_ in &types {
-        builder = builder.whitelist_type(type_);
+        builder = builder.allowlist_type(type_);
     }
 
     for func_ in &funcs {
-        builder = builder.whitelist_function(func_);
+        builder = builder.allowlist_function(func_);
     }
 
     for var_ in &vars {
-        builder = builder.whitelist_var(var_);
+        builder = builder.allowlist_var(var_);
     }
 
     // Generate the bindings.
