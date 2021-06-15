@@ -118,7 +118,7 @@ pub fn xacl_set_file(
 ///
 /// Only call this function for `ACL_EXTENDED_ALLOW` or `ACL_EXTENDED_DENY`.
 fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
-    let uuid_ptr = unsafe { acl_get_qualifier(entry) as *mut Uuid };
+    let uuid_ptr = unsafe { acl_get_qualifier(entry).cast::<Uuid>() };
     if uuid_ptr.is_null() {
         return fail_err("null", "acl_get_qualifier", ());
     }
@@ -166,7 +166,7 @@ fn xacl_get_flags_np(obj: *mut c_void) -> io::Result<Flag> {
 }
 
 fn xacl_get_flags(_acl: acl_t, entry: acl_entry_t) -> io::Result<Flag> {
-    xacl_get_flags_np(entry as *mut c_void)
+    xacl_get_flags_np(entry.cast::<c_void>())
 }
 
 pub fn xacl_get_entry(acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Qualifier, Perm, Flag)> {
@@ -238,7 +238,7 @@ fn xacl_set_flags_np(obj: *mut c_void, flags: Flag) -> io::Result<()> {
 }
 
 fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
-    xacl_set_flags_np(entry as *mut c_void, flags)
+    xacl_set_flags_np(entry.cast::<c_void>(), flags)
 }
 
 pub fn xacl_add_entry(

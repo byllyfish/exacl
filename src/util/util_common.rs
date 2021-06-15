@@ -10,7 +10,7 @@ use std::ptr;
 /// Free memory allocated by native acl_* routines.
 pub fn xacl_free<T>(ptr: *mut T) {
     assert!(!ptr.is_null());
-    let ret = unsafe { acl_free(ptr as *mut c_void) };
+    let ret = unsafe { acl_free(ptr.cast::<c_void>()) };
     assert_eq!(ret, 0);
 }
 
