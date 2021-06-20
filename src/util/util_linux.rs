@@ -74,7 +74,7 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     let tag = xacl_get_tag_type(entry)?;
 
     let id = if tag == sg::ACL_USER || tag == sg::ACL_GROUP {
-        let id_ptr = unsafe { acl_get_qualifier(entry) as *mut uid_t };
+        let id_ptr = unsafe { acl_get_qualifier(entry).cast::<uid_t>() };
         if id_ptr.is_null() {
             return fail_err("null", "acl_get_qualifier", ());
         }
@@ -118,7 +118,7 @@ pub fn xacl_get_entry(acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Quali
 pub fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
     let id_ptr = &mut id as *mut uid_t;
 
-    let ret = unsafe { acl_set_qualifier(entry, id_ptr as *mut c_void) };
+    let ret = unsafe { acl_set_qualifier(entry, id_ptr.cast::<c_void>()) };
     if ret != 0 {
         return fail_err(ret, "acl_set_qualifier", ());
     }
@@ -268,7 +268,7 @@ mod util_linux_test {
 
         let (allow, qualifier) = xacl_get_tag_qualifier(acl, entry_p).unwrap();
         assert_eq!(qualifier.name(), "@tag 0");
-        assert_eq!(allow, true);
+        assert!(allow);
 
         xacl_free(acl);
     }
