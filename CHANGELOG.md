@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.0] - 2021-06-20
+
+- Fix new rust clippy warnings.
+- Update version dependencies for bindgen and nix.
+- Update valgrind suppressions used in testing.
+
 ## [0.5.0] - 2021-02-22
 
 - Add support for NFSv4 ACL's on `FreeBSD`.
