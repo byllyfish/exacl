@@ -40,6 +40,11 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .disable_header_comment();
 
+    if cfg!(target_os = "macos") {
+        // Pass output of `xcrun --sdk macosx --show-sdk-path`.
+        builder = builder.clang_arg("-isysroot/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk");
+    }
+
     // Specify the types, functions, and constants we want to include.
     let types = ["acl_.*", "uid_t"];
     let funcs = [
