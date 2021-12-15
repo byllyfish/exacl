@@ -1,8 +1,9 @@
 //! Implements the `Qualifier` type for internal use
 
 use crate::failx::*;
+use crate::sys::uid_t;
 #[cfg(target_os = "macos")]
-use crate::sys::{id_t, mbr_gid_to_uuid, mbr_uid_to_uuid, mbr_uuid_to_id, sg, uid_t};
+use crate::sys::{id_t, mbr_gid_to_uuid, mbr_uid_to_uuid, mbr_uuid_to_id, sg};
 
 use nix::unistd::{self, Gid, Uid};
 use std::fmt;
