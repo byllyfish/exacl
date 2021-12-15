@@ -138,7 +138,7 @@ pub fn xacl_set_tag_qualifier(
     match qualifier {
         Qualifier::User(uid) => {
             xacl_set_tag_type(entry, sg::ACL_USER)?;
-            xacl_set_qualifier(entry, uid)?;
+            xacl_set_qualifier(entry, *uid)?;
         }
         Qualifier::Group(gid) => {
             xacl_set_tag_type(entry, sg::ACL_GROUP)?;

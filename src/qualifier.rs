@@ -456,7 +456,7 @@ mod qualifier_tests {
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
             let user = Qualifier::user_named("daemon").ok();
-            assert_eq!(user, Some(Qualifier::User(Uid::from_raw(1))));
+            assert_eq!(user, Some(Qualifier::User(1)));
         }
     }
 
