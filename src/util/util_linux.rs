@@ -5,7 +5,7 @@ use crate::qualifier::Qualifier;
 use crate::sys::*;
 use crate::util::util_common;
 
-use nix::unistd::{Gid, Uid};
+use nix::unistd::Gid;
 use scopeguard::defer;
 use std::ffi::{c_void, CString};
 use std::io;
@@ -85,7 +85,7 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     };
 
     let result = match tag {
-        sg::ACL_USER => Qualifier::User(Uid::from_raw(id.unwrap())),
+        sg::ACL_USER => Qualifier::User(id.unwrap()),
         sg::ACL_GROUP => Qualifier::Group(Gid::from_raw(id.unwrap())),
         sg::ACL_USER_OBJ => Qualifier::UserObj,
         sg::ACL_GROUP_OBJ => Qualifier::GroupObj,
