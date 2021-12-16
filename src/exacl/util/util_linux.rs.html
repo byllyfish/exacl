@@ -273,7 +273,6 @@
 <span id="272">272</span>
 <span id="273">273</span>
 <span id="274">274</span>
-<span id="275">275</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::failx</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::flag::Flag</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::perm::Perm</span>;
@@ -281,7 +280,6 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::sys</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::util_common</span>;
 
-<span class="kw">use</span> <span class="ident">nix::unistd</span>::{<span class="ident">Gid</span>, <span class="ident">Uid</span>};
 <span class="kw">use</span> <span class="ident">scopeguard::defer</span>;
 <span class="kw">use</span> <span class="ident">std::ffi</span>::{<span class="ident">c_void</span>, <span class="ident">CString</span>};
 <span class="kw">use</span> <span class="ident">std::io</span>;
@@ -361,8 +359,8 @@
     };
 
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">tag</span> {
-        <span class="ident">sg::ACL_USER</span> =&gt; <span class="ident">Qualifier::User</span>(<span class="ident">Uid::from_raw</span>(<span class="ident">id</span>.<span class="ident">unwrap</span>())),
-        <span class="ident">sg::ACL_GROUP</span> =&gt; <span class="ident">Qualifier::Group</span>(<span class="ident">Gid::from_raw</span>(<span class="ident">id</span>.<span class="ident">unwrap</span>())),
+        <span class="ident">sg::ACL_USER</span> =&gt; <span class="ident">Qualifier::User</span>(<span class="ident">id</span>.<span class="ident">unwrap</span>()),
+        <span class="ident">sg::ACL_GROUP</span> =&gt; <span class="ident">Qualifier::Group</span>(<span class="ident">id</span>.<span class="ident">unwrap</span>()),
         <span class="ident">sg::ACL_USER_OBJ</span> =&gt; <span class="ident">Qualifier::UserObj</span>,
         <span class="ident">sg::ACL_GROUP_OBJ</span> =&gt; <span class="ident">Qualifier::GroupObj</span>,
         <span class="ident">sg::ACL_OTHER</span> =&gt; <span class="ident">Qualifier::Other</span>,
@@ -414,11 +412,11 @@
     <span class="kw">match</span> <span class="ident">qualifier</span> {
         <span class="ident">Qualifier::User</span>(<span class="ident">uid</span>) =&gt; {
             <span class="ident">xacl_set_tag_type</span>(<span class="ident">entry</span>, <span class="ident">sg::ACL_USER</span>)<span class="question-mark">?</span>;
-            <span class="ident">xacl_set_qualifier</span>(<span class="ident">entry</span>, <span class="ident">uid</span>.<span class="ident">as_raw</span>())<span class="question-mark">?</span>;
+            <span class="ident">xacl_set_qualifier</span>(<span class="ident">entry</span>, <span class="kw-2">*</span><span class="ident">uid</span>)<span class="question-mark">?</span>;
         }
         <span class="ident">Qualifier::Group</span>(<span class="ident">gid</span>) =&gt; {
             <span class="ident">xacl_set_tag_type</span>(<span class="ident">entry</span>, <span class="ident">sg::ACL_GROUP</span>)<span class="question-mark">?</span>;
-            <span class="ident">xacl_set_qualifier</span>(<span class="ident">entry</span>, <span class="ident">gid</span>.<span class="ident">as_raw</span>())<span class="question-mark">?</span>;
+            <span class="ident">xacl_set_qualifier</span>(<span class="ident">entry</span>, <span class="kw-2">*</span><span class="ident">gid</span>)<span class="question-mark">?</span>;
         }
         <span class="ident">Qualifier::UserObj</span> =&gt; {
             <span class="ident">xacl_set_tag_type</span>(<span class="ident">entry</span>, <span class="ident">sg::ACL_USER_OBJ</span>)<span class="question-mark">?</span>;
@@ -550,5 +548,5 @@
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0-nightly (8f117a77d 2021-12-13)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0-nightly (c5ecc1570 2021-12-15)" ></div>
 </body></html>
