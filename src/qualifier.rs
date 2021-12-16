@@ -1,7 +1,7 @@
 //! Implements the `Qualifier` type for internal use
 
 use crate::failx::*;
-use crate::sys::uid_t;
+use crate::sys::{gid_t, uid_t};
 #[cfg(target_os = "macos")]
 use crate::sys::{id_t, mbr_gid_to_uuid, mbr_uid_to_uuid, mbr_uuid_to_id, sg};
 
@@ -25,7 +25,7 @@ const EVERYONE_NAME: &str = "";
 #[derive(Debug, PartialEq)]
 pub enum Qualifier {
     User(uid_t),
-    Group(Gid),
+    Group(gid_t),
 
     #[cfg(target_os = "macos")]
     Guid(Uuid),
@@ -60,7 +60,7 @@ impl Qualifier {
 
         let qualifier = match idtype {
             sg::ID_TYPE_UID => Qualifier::User(id_c),
-            sg::ID_TYPE_GID => Qualifier::Group(Gid::from_raw(id_c)),
+            sg::ID_TYPE_GID => Qualifier::Group(id_c),
             _ => Qualifier::Unknown(guid.to_string()),
         };
 
@@ -219,15 +219,15 @@ fn str_to_uid(name: &str) -> io::Result<uid_t> {
 }
 
 /// Convert group name to gid.
-fn str_to_gid(name: &str) -> io::Result<Gid> {
+fn str_to_gid(name: &str) -> io::Result<gid_t> {
     // Lookup group by group name.
     if let Ok(Some(group)) = unistd::Group::from_name(name) {
-        return Ok(group.gid);
+        return Ok(group.gid.as_raw());
     }
 
     // Try to parse name as a decimal group ID.
     if let Ok(num) = name.parse::<u32>() {
-        return Ok(Gid::from_raw(num));
+        return Ok(num);
     }
 
     fail_custom(&format!("unknown group name: {:?}", name))
@@ -243,8 +243,8 @@ fn uid_to_str(uid: uid_t) -> String {
 }
 
 /// Convert gid to group name.
-fn gid_to_str(gid: Gid) -> String {
-    if let Ok(Some(group)) = unistd::Group::from_gid(gid) {
+fn gid_to_str(gid: gid_t) -> String {
+    if let Ok(Some(group)) = unistd::Group::from_gid(Gid::from_raw(gid)) {
         group.name
     } else {
         gid.to_string()
@@ -267,11 +267,11 @@ fn uid_to_guid(uid: uid_t) -> io::Result<Uuid> {
 
 /// Convert gid to GUID.
 #[cfg(target_os = "macos")]
-fn gid_to_guid(gid: Gid) -> io::Result<Uuid> {
+fn gid_to_guid(gid: gid_t) -> io::Result<Uuid> {
     let guid = Uuid::nil();
 
     // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
-    let ret = unsafe { mbr_gid_to_uuid(gid.as_raw(), guid.as_bytes().as_ptr() as *mut u8) };
+    let ret = unsafe { mbr_gid_to_uuid(gid, guid.as_bytes().as_ptr() as *mut u8) };
     if ret != 0 {
         return fail_from_err(ret, "mbr_gid_to_uuid", gid);
     }
@@ -326,13 +326,13 @@ mod qualifier_tests {
         let msg = str_to_gid("non_existant").unwrap_err().to_string();
         assert_eq!(msg, "unknown group name: \"non_existant\"");
 
-        assert_eq!(str_to_gid("500").ok(), Some(Gid::from_raw(500)));
+        assert_eq!(str_to_gid("500").ok(), Some(500));
 
         #[cfg(target_os = "macos")]
-        assert_eq!(str_to_gid("_spotlight").ok(), Some(Gid::from_raw(89)));
+        assert_eq!(str_to_gid("_spotlight").ok(), Some(89));
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(str_to_gid("daemon").ok(), Some(Gid::from_raw(1)));
+        assert_eq!(str_to_gid("daemon").ok(), Some(1));
     }
 
     #[test]
@@ -348,13 +348,13 @@ mod qualifier_tests {
 
     #[test]
     fn test_gid_to_str() {
-        assert_eq!(gid_to_str(Gid::from_raw(1500)), "1500");
+        assert_eq!(gid_to_str(1500), "1500");
 
         #[cfg(target_os = "macos")]
-        assert_eq!(gid_to_str(Gid::from_raw(89)), "_spotlight");
+        assert_eq!(gid_to_str(89), "_spotlight");
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(gid_to_str(Gid::from_raw(1)), "daemon");
+        assert_eq!(gid_to_str(1), "daemon");
     }
 
     #[test]
@@ -375,17 +375,17 @@ mod qualifier_tests {
     #[cfg(target_os = "macos")]
     fn test_gid_to_guid() {
         assert_eq!(
-            gid_to_guid(Gid::from_raw(89)).ok(),
+            gid_to_guid(89).ok(),
             Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap())
         );
 
         assert_eq!(
-            gid_to_guid(Gid::from_raw(1500)).ok(),
+            gid_to_guid(1500).ok(),
             Some(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap())
         );
 
         assert_eq!(
-            gid_to_guid(Gid::from_raw(20)).ok(),
+            gid_to_guid(20).ok(),
             Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap())
         );
     }
@@ -433,7 +433,7 @@ mod qualifier_tests {
         let group =
             Qualifier::from_guid(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap())
                 .ok();
-        assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+        assert_eq!(group, Some(Qualifier::Group(89)));
 
         let user = Qualifier::from_guid(Uuid::nil()).ok();
         assert_eq!(user, Some(Qualifier::Guid(Uuid::nil())));
@@ -463,21 +463,21 @@ mod qualifier_tests {
     #[test]
     fn test_group_named() {
         let group = Qualifier::group_named("89").ok();
-        assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+        assert_eq!(group, Some(Qualifier::Group(89)));
 
         #[cfg(target_os = "macos")]
         {
             let group = Qualifier::group_named("_spotlight").ok();
-            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+            assert_eq!(group, Some(Qualifier::Group(89)));
 
             let group = Qualifier::group_named("abcdefab-cdef-abcd-efab-cdef00000059").ok();
-            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(89))));
+            assert_eq!(group, Some(Qualifier::Group(89)));
         }
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
             let group = Qualifier::group_named("daemon").ok();
-            assert_eq!(group, Some(Qualifier::Group(Gid::from_raw(1))));
+            assert_eq!(group, Some(Qualifier::Group(1)));
         }
     }
 }

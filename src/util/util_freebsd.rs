@@ -7,7 +7,6 @@ use crate::sys::*;
 use crate::util::util_common;
 
 use log::debug;
-use nix::unistd::Gid;
 use scopeguard::defer;
 use std::ffi::{c_void, CString};
 use std::io;
@@ -208,7 +207,7 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
 
     let result = match tag {
         sg::ACL_USER => Qualifier::User(id.unwrap()),
-        sg::ACL_GROUP => Qualifier::Group(Gid::from_raw(id.unwrap())),
+        sg::ACL_GROUP => Qualifier::Group(id.unwrap()),
         sg::ACL_USER_OBJ => Qualifier::UserObj,
         sg::ACL_GROUP_OBJ => Qualifier::GroupObj,
         sg::ACL_OTHER => Qualifier::Other,
@@ -319,7 +318,7 @@ pub fn xacl_set_tag_qualifier(
         }
         Qualifier::Group(gid) => {
             xacl_set_tag_type(entry, sg::ACL_GROUP)?;
-            xacl_set_qualifier(entry, gid.as_raw())?;
+            xacl_set_qualifier(entry, *gid)?;
         }
         Qualifier::UserObj => {
             xacl_set_tag_type(entry, sg::ACL_USER_OBJ)?;
