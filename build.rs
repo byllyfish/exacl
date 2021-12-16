@@ -46,7 +46,7 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
     }
 
     // Specify the types, functions, and constants we want to include.
-    let types = ["acl_.*", "uid_t"];
+    let types = ["acl_.*", "uid_t", "gid_t"];
     let funcs = [
         "acl_.*",
         "mbr_uid_to_uuid",
