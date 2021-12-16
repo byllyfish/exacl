@@ -5,7 +5,7 @@ use crate::sys::{gid_t, uid_t};
 #[cfg(target_os = "macos")]
 use crate::sys::{id_t, mbr_gid_to_uuid, mbr_uid_to_uuid, mbr_uuid_to_id, sg};
 
-use nix::unistd::{self, Gid, Uid};
+use nix::unistd;
 use std::fmt;
 use std::io;
 #[cfg(target_os = "macos")]
@@ -235,7 +235,7 @@ fn str_to_gid(name: &str) -> io::Result<gid_t> {
 
 /// Convert uid to user name.
 fn uid_to_str(uid: uid_t) -> String {
-    if let Ok(Some(user)) = unistd::User::from_uid(Uid::from_raw(uid)) {
+    if let Ok(Some(user)) = unistd::User::from_uid(unistd::Uid::from_raw(uid)) {
         user.name
     } else {
         uid.to_string()
@@ -244,7 +244,7 @@ fn uid_to_str(uid: uid_t) -> String {
 
 /// Convert gid to group name.
 fn gid_to_str(gid: gid_t) -> String {
-    if let Ok(Some(group)) = unistd::Group::from_gid(Gid::from_raw(gid)) {
+    if let Ok(Some(group)) = unistd::Group::from_gid(unistd::Gid::from_raw(gid)) {
         group.name
     } else {
         gid.to_string()
