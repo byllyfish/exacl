@@ -1,13 +1,17 @@
 //! Implements the `Qualifier` type for internal use
 
 use crate::failx::*;
-use crate::sys::{gid_t, uid_t};
+use crate::sys::{
+    getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, gid_t, group, passwd, size_t, uid_t,
+};
 #[cfg(target_os = "macos")]
 use crate::sys::{id_t, mbr_gid_to_uuid, mbr_uid_to_uuid, mbr_uuid_to_id, sg};
 
-use nix::unistd;
+use std::ffi::{CStr, CString};
 use std::fmt;
 use std::io;
+use std::mem;
+use std::ptr;
 #[cfg(target_os = "macos")]
 use uuid::Uuid;
 
@@ -205,9 +209,24 @@ impl fmt::Display for Qualifier {
 
 /// Convert user name to uid.
 fn str_to_uid(name: &str) -> io::Result<uid_t> {
-    // Lookup user by user name.
-    if let Ok(Some(user)) = unistd::User::from_name(name) {
-        return Ok(user.uid.as_raw());
+    let mut pwd = mem::MaybeUninit::<passwd>::uninit();
+    let mut buf = Vec::<i8>::with_capacity(4096);
+    let mut result = ptr::null_mut();
+
+    let cstr = CString::new(name)?;
+    let ret = unsafe {
+        getpwnam_r(
+            cstr.as_ptr(),
+            pwd.as_mut_ptr(),
+            buf.as_mut_ptr(),
+            buf.capacity() as size_t,
+            &mut result,
+        )
+    };
+
+    if ret == 0 && !result.is_null() {
+        let uid = unsafe { pwd.assume_init().pw_uid };
+        return Ok(uid);
     }
 
     // Try to parse name as a decimal user ID.
@@ -220,9 +239,24 @@ fn str_to_uid(name: &str) -> io::Result<uid_t> {
 
 /// Convert group name to gid.
 fn str_to_gid(name: &str) -> io::Result<gid_t> {
-    // Lookup group by group name.
-    if let Ok(Some(group)) = unistd::Group::from_name(name) {
-        return Ok(group.gid.as_raw());
+    let mut grp = mem::MaybeUninit::<group>::uninit();
+    let mut buf = Vec::<i8>::with_capacity(4096);
+    let mut result = ptr::null_mut();
+
+    let cstr = CString::new(name)?;
+    let ret = unsafe {
+        getgrnam_r(
+            cstr.as_ptr(),
+            grp.as_mut_ptr(),
+            buf.as_mut_ptr(),
+            buf.capacity() as size_t,
+            &mut result,
+        )
+    };
+
+    if ret == 0 && !result.is_null() {
+        let gid = unsafe { grp.assume_init().gr_gid };
+        return Ok(gid);
     }
 
     // Try to parse name as a decimal group ID.
@@ -235,8 +269,23 @@ fn str_to_gid(name: &str) -> io::Result<gid_t> {
 
 /// Convert uid to user name.
 fn uid_to_str(uid: uid_t) -> String {
-    if let Ok(Some(user)) = unistd::User::from_uid(unistd::Uid::from_raw(uid)) {
-        user.name
+    let mut pwd = mem::MaybeUninit::<passwd>::uninit();
+    let mut buf = Vec::<i8>::with_capacity(4096);
+    let mut result = ptr::null_mut();
+
+    let ret = unsafe {
+        getpwuid_r(
+            uid,
+            pwd.as_mut_ptr(),
+            buf.as_mut_ptr(),
+            buf.capacity() as size_t,
+            &mut result,
+        )
+    };
+
+    if ret == 0 && !result.is_null() {
+        let cstr = unsafe { CStr::from_ptr(pwd.assume_init().pw_name) };
+        cstr.to_string_lossy().into_owned()
     } else {
         uid.to_string()
     }
@@ -244,8 +293,23 @@ fn uid_to_str(uid: uid_t) -> String {
 
 /// Convert gid to group name.
 fn gid_to_str(gid: gid_t) -> String {
-    if let Ok(Some(group)) = unistd::Group::from_gid(unistd::Gid::from_raw(gid)) {
-        group.name
+    let mut grp = mem::MaybeUninit::<group>::uninit();
+    let mut buf = Vec::<i8>::with_capacity(4096);
+    let mut result = ptr::null_mut();
+
+    let ret = unsafe {
+        getgrgid_r(
+            gid,
+            grp.as_mut_ptr(),
+            buf.as_mut_ptr(),
+            buf.capacity() as size_t,
+            &mut result,
+        )
+    };
+
+    if ret == 0 && !result.is_null() {
+        let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
+        cstr.to_string_lossy().into_owned()
     } else {
         gid.to_string()
     }

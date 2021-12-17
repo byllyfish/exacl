@@ -9,4 +9,6 @@
 // Linux supplies non-standard ACL extensions in a different header.
 # include <acl/libacl.h>
 #endif
+#include <grp.h>
+#include <pwd.h>
 #include <unistd.h>
