@@ -68,11 +68,16 @@ pub const _PC_ACL_NFS4: u32 = 64;
 pub type __uint16_t = ::std::os::raw::c_ushort;
 pub type __uint32_t = ::std::os::raw::c_uint;
 pub type __int64_t = ::std::os::raw::c_long;
+pub type __uint64_t = ::std::os::raw::c_ulong;
+pub type __size_t = __uint64_t;
 pub type __ssize_t = __int64_t;
+pub type __time_t = __int64_t;
 pub type __gid_t = __uint32_t;
 pub type __uid_t = __uint32_t;
 pub type gid_t = __gid_t;
+pub type size_t = __size_t;
 pub type ssize_t = __ssize_t;
+pub type time_t = __time_t;
 pub type uid_t = __uid_t;
 pub type acl_tag_t = u32;
 pub type acl_perm_t = u32;
@@ -330,6 +335,241 @@ extern "C" {
 }
 extern "C" {
     pub fn acl_strip_np(_acl: acl_t, recalculate_mask: ::std::os::raw::c_int) -> acl_t;
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct group {
+    pub gr_name: *mut ::std::os::raw::c_char,
+    pub gr_passwd: *mut ::std::os::raw::c_char,
+    pub gr_gid: gid_t,
+    pub gr_mem: *mut *mut ::std::os::raw::c_char,
+}
+#[test]
+fn bindgen_test_layout_group() {
+    assert_eq!(
+        ::std::mem::size_of::<group>(),
+        32usize,
+        concat!("Size of: ", stringify!(group))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<group>(),
+        8usize,
+        concat!("Alignment of ", stringify!(group))
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<group>())).gr_name as *const _ as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(group),
+            "::",
+            stringify!(gr_name)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<group>())).gr_passwd as *const _ as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(group),
+            "::",
+            stringify!(gr_passwd)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<group>())).gr_gid as *const _ as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(group),
+            "::",
+            stringify!(gr_gid)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<group>())).gr_mem as *const _ as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(group),
+            "::",
+            stringify!(gr_mem)
+        )
+    );
+}
+extern "C" {
+    pub fn getgrgid_r(
+        arg1: gid_t,
+        arg2: *mut group,
+        arg3: *mut ::std::os::raw::c_char,
+        arg4: size_t,
+        arg5: *mut *mut group,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn getgrnam_r(
+        arg1: *const ::std::os::raw::c_char,
+        arg2: *mut group,
+        arg3: *mut ::std::os::raw::c_char,
+        arg4: size_t,
+        arg5: *mut *mut group,
+    ) -> ::std::os::raw::c_int;
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct passwd {
+    pub pw_name: *mut ::std::os::raw::c_char,
+    pub pw_passwd: *mut ::std::os::raw::c_char,
+    pub pw_uid: uid_t,
+    pub pw_gid: gid_t,
+    pub pw_change: time_t,
+    pub pw_class: *mut ::std::os::raw::c_char,
+    pub pw_gecos: *mut ::std::os::raw::c_char,
+    pub pw_dir: *mut ::std::os::raw::c_char,
+    pub pw_shell: *mut ::std::os::raw::c_char,
+    pub pw_expire: time_t,
+    pub pw_fields: ::std::os::raw::c_int,
+}
+#[test]
+fn bindgen_test_layout_passwd() {
+    assert_eq!(
+        ::std::mem::size_of::<passwd>(),
+        80usize,
+        concat!("Size of: ", stringify!(passwd))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<passwd>(),
+        8usize,
+        concat!("Alignment of ", stringify!(passwd))
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<passwd>())).pw_name as *const _ as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(passwd),
+            "::",
+            stringify!(pw_name)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<passwd>())).pw_passwd as *const _ as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(passwd),
+            "::",
+            stringify!(pw_passwd)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<passwd>())).pw_uid as *const _ as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(passwd),
+            "::",
+            stringify!(pw_uid)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<passwd>())).pw_gid as *const _ as usize },
+        20usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(passwd),
+            "::",
+            stringify!(pw_gid)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<passwd>())).pw_change as *const _ as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(passwd),
+            "::",
+            stringify!(pw_change)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<passwd>())).pw_class as *const _ as usize },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(passwd),
+            "::",
+            stringify!(pw_class)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<passwd>())).pw_gecos as *const _ as usize },
+        40usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(passwd),
+            "::",
+            stringify!(pw_gecos)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<passwd>())).pw_dir as *const _ as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(passwd),
+            "::",
+            stringify!(pw_dir)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<passwd>())).pw_shell as *const _ as usize },
+        56usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(passwd),
+            "::",
+            stringify!(pw_shell)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<passwd>())).pw_expire as *const _ as usize },
+        64usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(passwd),
+            "::",
+            stringify!(pw_expire)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<passwd>())).pw_fields as *const _ as usize },
+        72usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(passwd),
+            "::",
+            stringify!(pw_fields)
+        )
+    );
+}
+extern "C" {
+    pub fn getpwnam_r(
+        arg1: *const ::std::os::raw::c_char,
+        arg2: *mut passwd,
+        arg3: *mut ::std::os::raw::c_char,
+        arg4: size_t,
+        arg5: *mut *mut passwd,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn getpwuid_r(
+        arg1: uid_t,
+        arg2: *mut passwd,
+        arg3: *mut ::std::os::raw::c_char,
+        arg4: size_t,
+        arg5: *mut *mut passwd,
+    ) -> ::std::os::raw::c_int;
 }
 extern "C" {
     pub fn pathconf(
