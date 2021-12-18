@@ -57,7 +57,7 @@ impl Qualifier {
     /// Create qualifier object from a user name.
     #[cfg(target_os = "macos")]
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
-        match unix::str_to_uid(name) {
+        match unix::name_to_uid(name) {
             Ok(uid) => Ok(Qualifier::User(uid)),
             Err(err) => {
                 // Try to parse name as a GUID.
@@ -75,7 +75,7 @@ impl Qualifier {
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
         match name {
             OWNER_NAME => Ok(Qualifier::UserObj),
-            s => match unix::str_to_uid(s) {
+            s => match unix::name_to_uid(s) {
                 Ok(uid) => Ok(Qualifier::User(uid)),
                 Err(err) => Err(err),
             },
@@ -85,7 +85,7 @@ impl Qualifier {
     /// Create qualifier object from a group name.
     #[cfg(target_os = "macos")]
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
-        match unix::str_to_gid(name) {
+        match unix::name_to_gid(name) {
             Ok(gid) => Ok(Qualifier::Group(gid)),
             Err(err) => {
                 if let Ok(uuid) = Uuid::parse_str(name) {
@@ -102,7 +102,7 @@ impl Qualifier {
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
         match name {
             OWNER_NAME => Ok(Qualifier::GroupObj),
-            s => match unix::str_to_gid(s) {
+            s => match unix::name_to_gid(s) {
                 Ok(gid) => Ok(Qualifier::Group(gid)),
                 Err(err) => Err(err),
             },
@@ -150,8 +150,8 @@ impl Qualifier {
     /// Return the name of the user/group.
     pub fn name(&self) -> String {
         match self {
-            Qualifier::User(uid) => unix::uid_to_str(*uid),
-            Qualifier::Group(gid) => unix::gid_to_str(*gid),
+            Qualifier::User(uid) => unix::uid_to_name(*uid),
+            Qualifier::Group(gid) => unix::gid_to_name(*gid),
             #[cfg(target_os = "macos")]
             Qualifier::Guid(guid) => guid.to_string(),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]

@@ -16,7 +16,7 @@ use uuid::Uuid;
 pub use crate::sys::{gid_t, uid_t};
 
 /// Convert user name to uid.
-pub fn str_to_uid(name: &str) -> io::Result<uid_t> {
+pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
     let mut pwd = mem::MaybeUninit::<passwd>::uninit();
     let mut buf = Vec::<i8>::with_capacity(4096);
     let mut result = ptr::null_mut();
@@ -46,7 +46,7 @@ pub fn str_to_uid(name: &str) -> io::Result<uid_t> {
 }
 
 /// Convert group name to gid.
-pub fn str_to_gid(name: &str) -> io::Result<gid_t> {
+pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
     let mut grp = mem::MaybeUninit::<group>::uninit();
     let mut buf = Vec::<i8>::with_capacity(4096);
     let mut result = ptr::null_mut();
@@ -76,7 +76,7 @@ pub fn str_to_gid(name: &str) -> io::Result<gid_t> {
 }
 
 /// Convert uid to user name.
-pub fn uid_to_str(uid: uid_t) -> String {
+pub fn uid_to_name(uid: uid_t) -> String {
     let mut pwd = mem::MaybeUninit::<passwd>::uninit();
     let mut buf = Vec::<i8>::with_capacity(4096);
     let mut result = ptr::null_mut();
@@ -100,7 +100,7 @@ pub fn uid_to_str(uid: uid_t) -> String {
 }
 
 /// Convert gid to group name.
-pub fn gid_to_str(gid: gid_t) -> String {
+pub fn gid_to_name(gid: gid_t) -> String {
     let mut grp = mem::MaybeUninit::<group>::uninit();
     let mut buf = Vec::<i8>::with_capacity(4096);
     let mut result = ptr::null_mut();
@@ -193,59 +193,59 @@ mod unix_tests {
     use super::*;
 
     #[test]
-    fn test_str_to_uid() {
-        let msg = str_to_uid("").unwrap_err().to_string();
+    fn test_name_to_uid() {
+        let msg = name_to_uid("").unwrap_err().to_string();
         assert_eq!(msg, "unknown user name: \"\"");
 
-        let msg = str_to_uid("non_existant").unwrap_err().to_string();
+        let msg = name_to_uid("non_existant").unwrap_err().to_string();
         assert_eq!(msg, "unknown user name: \"non_existant\"");
 
-        assert_eq!(str_to_uid("500").ok(), Some(500));
+        assert_eq!(name_to_uid("500").ok(), Some(500));
 
         #[cfg(target_os = "macos")]
-        assert_eq!(str_to_uid("_spotlight").ok(), Some(89));
+        assert_eq!(name_to_uid("_spotlight").ok(), Some(89));
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(str_to_uid("daemon").ok(), Some(1));
+        assert_eq!(name_to_uid("daemon").ok(), Some(1));
     }
 
     #[test]
-    fn test_str_to_gid() {
-        let msg = str_to_gid("").unwrap_err().to_string();
+    fn test_name_to_gid() {
+        let msg = name_to_gid("").unwrap_err().to_string();
         assert_eq!(msg, "unknown group name: \"\"");
 
-        let msg = str_to_gid("non_existant").unwrap_err().to_string();
+        let msg = name_to_gid("non_existant").unwrap_err().to_string();
         assert_eq!(msg, "unknown group name: \"non_existant\"");
 
-        assert_eq!(str_to_gid("500").ok(), Some(500));
+        assert_eq!(name_to_gid("500").ok(), Some(500));
 
         #[cfg(target_os = "macos")]
-        assert_eq!(str_to_gid("_spotlight").ok(), Some(89));
+        assert_eq!(name_to_gid("_spotlight").ok(), Some(89));
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(str_to_gid("daemon").ok(), Some(1));
+        assert_eq!(name_to_gid("daemon").ok(), Some(1));
     }
 
     #[test]
-    fn test_uid_to_str() {
-        assert_eq!(uid_to_str(1500), "1500");
+    fn test_uid_to_name() {
+        assert_eq!(uid_to_name(1500), "1500");
 
         #[cfg(target_os = "macos")]
-        assert_eq!(uid_to_str(89), "_spotlight");
+        assert_eq!(uid_to_name(89), "_spotlight");
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(uid_to_str(1), "daemon");
+        assert_eq!(uid_to_name(1), "daemon");
     }
 
     #[test]
-    fn test_gid_to_str() {
-        assert_eq!(gid_to_str(1500), "1500");
+    fn test_gid_to_name() {
+        assert_eq!(gid_to_name(1500), "1500");
 
         #[cfg(target_os = "macos")]
-        assert_eq!(gid_to_str(89), "_spotlight");
+        assert_eq!(gid_to_name(89), "_spotlight");
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(gid_to_str(1), "daemon");
+        assert_eq!(gid_to_name(1), "daemon");
     }
 
     #[test]
