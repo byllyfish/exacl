@@ -1,9 +1,7 @@
 //! Implements utilities for converting user/group names to uid/gid.
 
 use crate::failx::*;
-use crate::sys::{
-    getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, gid_t, group, passwd, size_t, uid_t,
-};
+use crate::sys::{getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, group, passwd, size_t};
 #[cfg(target_os = "macos")]
 use crate::sys::{id_t, mbr_gid_to_uuid, mbr_uid_to_uuid, mbr_uuid_to_id, sg};
 
@@ -13,6 +11,9 @@ use std::mem;
 use std::ptr;
 #[cfg(target_os = "macos")]
 use uuid::Uuid;
+
+// Export uid_t and gid_t.
+pub use crate::sys::{gid_t, uid_t};
 
 /// Convert user name to uid.
 pub fn str_to_uid(name: &str) -> io::Result<uid_t> {
@@ -151,19 +152,38 @@ pub fn gid_to_guid(gid: gid_t) -> io::Result<Uuid> {
 }
 
 /// Convert GUID to uid/gid.
+///
+/// Returns a pair of options (Option[uid], Option[gid]). Either one option must
+/// be set or neither is set. If neither is set, the GUID was not found.
 #[cfg(target_os = "macos")]
-pub fn guid_to_id(guid: Uuid) -> io::Result<(id_t, i32)> {
+pub fn guid_to_id(guid: Uuid) -> io::Result<(Option<uid_t>, Option<gid_t>)> {
     let mut id_c: id_t = 0;
     let mut idtype: i32 = 0;
     let guid_ptr = guid.as_bytes().as_ptr() as *mut u8;
 
     // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
     let ret = unsafe { mbr_uuid_to_id(guid_ptr, &mut id_c, &mut idtype) };
+    if ret == sg::ENOENT {
+        // GUID was not found.
+        return Ok((None, None));
+    }
+
     if ret != 0 {
         return fail_from_err(ret, "mbr_uuid_to_id", guid);
     }
 
-    Ok((id_c, idtype))
+    let result = match idtype {
+        sg::ID_TYPE_UID => (Some(id_c), None),
+        sg::ID_TYPE_GID => (None, Some(id_c)),
+        _ => {
+            return fail_custom(&format!(
+                "mbr_uuid_to_id: Unknown idtype {:?} for guid {:?}",
+                idtype, guid
+            ))
+        }
+    };
+
+    Ok(result)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -265,31 +285,30 @@ mod unix_tests {
     #[cfg(target_os = "macos")]
     fn test_guid_to_id() {
         assert_eq!(
-            guid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap()).ok(),
-            Some((89, sg::ID_TYPE_UID))
+            guid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap()).unwrap(),
+            (Some(89), None)
         );
 
         assert_eq!(
-            guid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap()).ok(),
-            Some((1500, sg::ID_TYPE_UID))
+            guid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap()).unwrap(),
+            (Some(1500), None)
         );
 
         assert_eq!(
-            guid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap()).ok(),
-            Some((89, sg::ID_TYPE_GID))
+            guid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap()).unwrap(),
+            (None, Some(89))
         );
 
         assert_eq!(
-            guid_to_id(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap()).ok(),
-            Some((1500, sg::ID_TYPE_GID))
+            guid_to_id(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap()).unwrap(),
+            (None, Some(1500))
         );
 
         assert_eq!(
-            guid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap()).ok(),
-            Some((20, sg::ID_TYPE_GID))
+            guid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap()).unwrap(),
+            (None, Some(20))
         );
 
-        let err = guid_to_id(Uuid::nil()).unwrap_err();
-        assert_eq!(err.raw_os_error().unwrap(), sg::ENOENT);
+        assert_eq!(guid_to_id(Uuid::nil()).unwrap(), (None, None));
     }
 }

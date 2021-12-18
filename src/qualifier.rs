@@ -1,9 +1,6 @@
 //! Implements the `Qualifier` type for internal use
 
 use crate::failx::*;
-#[cfg(target_os = "macos")]
-use crate::sys::sg;
-use crate::sys::{gid_t, uid_t};
 use crate::unix;
 use std::fmt;
 use std::io;
@@ -23,8 +20,8 @@ const EVERYONE_NAME: &str = "";
 /// resource.
 #[derive(Debug, PartialEq)]
 pub enum Qualifier {
-    User(uid_t),
-    Group(gid_t),
+    User(unix::uid_t),
+    Group(unix::gid_t),
 
     #[cfg(target_os = "macos")]
     Guid(Uuid),
@@ -47,20 +44,11 @@ impl Qualifier {
     /// Create qualifier object from a GUID.
     #[cfg(target_os = "macos")]
     pub fn from_guid(guid: Uuid) -> io::Result<Qualifier> {
-        let (id_c, idtype) = match unix::guid_to_id(guid) {
-            Ok(info) => info,
-            Err(err) => {
-                if let Some(sg::ENOENT) = err.raw_os_error() {
-                    return Ok(Qualifier::Guid(guid));
-                }
-                return Err(err);
-            }
-        };
-
-        let qualifier = match idtype {
-            sg::ID_TYPE_UID => Qualifier::User(id_c),
-            sg::ID_TYPE_GID => Qualifier::Group(id_c),
-            _ => Qualifier::Unknown(guid.to_string()),
+        let qualifier = match unix::guid_to_id(guid)? {
+            (Some(uid), None) => Qualifier::User(uid),
+            (None, Some(gid)) => Qualifier::Group(gid),
+            (None, None) => Qualifier::Guid(guid),
+            _ => unreachable!("guid_to_id bug"),
         };
 
         Ok(qualifier)
