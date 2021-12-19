@@ -60,6 +60,7 @@ mod format;
 mod perm;
 mod qualifier;
 mod sys;
+mod unix;
 mod util;
 
 // Export Acl, AclOption, AclEntry, AclEntryKind, Flag and Perm.

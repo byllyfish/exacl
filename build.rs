@@ -49,6 +49,8 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
     let types = ["acl_.*", "uid_t", "gid_t"];
     let funcs = [
         "acl_.*",
+        "getpw(nam|uid)_r",
+        "getgr(nam|gid)_r",
         "mbr_uid_to_uuid",
         "mbr_gid_to_uuid",
         "mbr_uuid_to_id",
