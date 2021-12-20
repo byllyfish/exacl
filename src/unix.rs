@@ -115,7 +115,7 @@ pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
 }
 
 /// Convert uid to user name.
-pub fn uid_to_name(uid: uid_t) -> String {
+pub fn uid_to_name(uid: uid_t) -> io::Result<String> {
     let mut pwd = mem::MaybeUninit::<passwd>::uninit();
     let mut buf = Vec::<i8>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
@@ -140,16 +140,20 @@ pub fn uid_to_name(uid: uid_t) -> String {
         buf.reserve(4 * buf.capacity());
     }
 
-    if ret == 0 && !result.is_null() {
-        let cstr = unsafe { CStr::from_ptr(pwd.assume_init().pw_name) };
-        cstr.to_string_lossy().into_owned()
-    } else {
-        uid.to_string()
+    if ret != 0 {
+        return fail_err(ret, "getpwuid_r", uid);
     }
+
+    if !result.is_null() {
+        let cstr = unsafe { CStr::from_ptr(pwd.assume_init().pw_name) };
+        return Ok(cstr.to_string_lossy().into_owned());
+    }
+
+    Ok(uid.to_string())
 }
 
 /// Convert gid to group name.
-pub fn gid_to_name(gid: gid_t) -> String {
+pub fn gid_to_name(gid: gid_t) -> io::Result<String> {
     let mut grp = mem::MaybeUninit::<group>::uninit();
     let mut buf = Vec::<i8>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
@@ -174,12 +178,16 @@ pub fn gid_to_name(gid: gid_t) -> String {
         buf.reserve(4 * buf.capacity());
     }
 
-    if ret == 0 && !result.is_null() {
-        let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
-        cstr.to_string_lossy().into_owned()
-    } else {
-        gid.to_string()
+    if ret != 0 {
+        return fail_err(ret, "getgrgid_r", gid);
     }
+
+    if !result.is_null() {
+        let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
+        return Ok(cstr.to_string_lossy().into_owned());
+    }
+
+    Ok(gid.to_string())
 }
 
 /// Convert uid to GUID.
@@ -287,24 +295,24 @@ mod unix_tests {
 
     #[test]
     fn test_uid_to_name() {
-        assert_eq!(uid_to_name(1500), "1500");
+        assert_eq!(uid_to_name(1500).unwrap(), "1500");
 
         #[cfg(target_os = "macos")]
-        assert_eq!(uid_to_name(89), "_spotlight");
+        assert_eq!(uid_to_name(89).unwrap(), "_spotlight");
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(uid_to_name(1), "daemon");
+        assert_eq!(uid_to_name(1).unwrap(), "daemon");
     }
 
     #[test]
     fn test_gid_to_name() {
-        assert_eq!(gid_to_name(1500), "1500");
+        assert_eq!(gid_to_name(1500).unwrap(), "1500");
 
         #[cfg(target_os = "macos")]
-        assert_eq!(gid_to_name(89), "_spotlight");
+        assert_eq!(gid_to_name(89).unwrap(), "_spotlight");
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(gid_to_name(1), "daemon");
+        assert_eq!(gid_to_name(1).unwrap(), "daemon");
     }
 
     #[test]

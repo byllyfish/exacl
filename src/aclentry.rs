@@ -191,25 +191,25 @@ impl AclEntry {
             Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
 
             #[cfg(target_os = "macos")]
-            Qualifier::User(_) | Qualifier::Guid(_) => (AclEntryKind::User, qualifier.name()),
+            Qualifier::User(_) | Qualifier::Guid(_) => (AclEntryKind::User, qualifier.name()?),
 
             #[cfg(target_os = "macos")]
-            Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name()),
+            Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name()?),
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-            Qualifier::User(_) | Qualifier::UserObj => (AclEntryKind::User, qualifier.name()),
+            Qualifier::User(_) | Qualifier::UserObj => (AclEntryKind::User, qualifier.name()?),
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-            Qualifier::Group(_) | Qualifier::GroupObj => (AclEntryKind::Group, qualifier.name()),
+            Qualifier::Group(_) | Qualifier::GroupObj => (AclEntryKind::Group, qualifier.name()?),
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-            Qualifier::Mask => (AclEntryKind::Mask, qualifier.name()),
+            Qualifier::Mask => (AclEntryKind::Mask, qualifier.name()?),
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-            Qualifier::Other => (AclEntryKind::Other, qualifier.name()),
+            Qualifier::Other => (AclEntryKind::Other, qualifier.name()?),
 
             #[cfg(target_os = "freebsd")]
-            Qualifier::Everyone => (AclEntryKind::Everyone, qualifier.name()),
+            Qualifier::Everyone => (AclEntryKind::Everyone, qualifier.name()?),
         };
 
         Ok(AclEntry {

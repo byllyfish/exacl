@@ -531,7 +531,7 @@ mod util_freebsd_test {
         let entry_p = xacl_create_entry(&mut acl).unwrap();
 
         let (allow, qualifier) = xacl_get_tag_qualifier(acl, entry_p).unwrap();
-        assert_eq!(qualifier.name(), "@tag 0");
+        assert_eq!(qualifier.name().unwrap(), "@tag 0");
         // FreeBSD: Unbranded entry is treated as Posix.
         assert_eq!(allow, true);
 
