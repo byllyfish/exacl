@@ -1,12 +1,8 @@
 //! Rust bindings to system C API.
 
-#![allow(dead_code)]
-#![allow(non_camel_case_types)]
-#![allow(non_upper_case_globals)]
-#![allow(clippy::unseparated_literal_suffix)]
-#![allow(clippy::unreadable_literal)]
+#![allow(dead_code)] // constant is never used
 
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+pub use crate::bindings::*;
 
 // Demangle some MacOS constants. Linux provides these as-is.
 
