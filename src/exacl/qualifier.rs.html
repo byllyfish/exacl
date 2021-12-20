@@ -257,6 +257,8 @@
 <span id="255">255</span>
 <span id="256">256</span>
 <span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Implements the `Qualifier` type for internal use</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::failx</span>::<span class="kw-2">*</span>;
@@ -407,10 +409,10 @@
     }
 
     <span class="doccomment">/// Return the name of the user/group.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Qualifier::User</span>(<span class="ident">uid</span>) =&gt; <span class="ident">unix::uid_to_name</span>(<span class="kw-2">*</span><span class="ident">uid</span>),
-            <span class="ident">Qualifier::Group</span>(<span class="ident">gid</span>) =&gt; <span class="ident">unix::gid_to_name</span>(<span class="kw-2">*</span><span class="ident">gid</span>),
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">Qualifier::User</span>(<span class="ident">uid</span>) =&gt; <span class="ident">unix::uid_to_name</span>(<span class="kw-2">*</span><span class="ident">uid</span>)<span class="question-mark">?</span>,
+            <span class="ident">Qualifier::Group</span>(<span class="ident">gid</span>) =&gt; <span class="ident">unix::gid_to_name</span>(<span class="kw-2">*</span><span class="ident">gid</span>)<span class="question-mark">?</span>,
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
             <span class="ident">Qualifier::Guid</span>(<span class="ident">guid</span>) =&gt; <span class="ident">guid</span>.<span class="ident">to_string</span>(),
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
@@ -423,7 +425,9 @@
             <span class="ident">Qualifier::Everyone</span> =&gt; <span class="ident">EVERYONE_NAME</span>.<span class="ident">to_string</span>(),
 
             <span class="ident">Qualifier::Unknown</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>.<span class="ident">clone</span>(),
-        }
+        };
+
+        <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
     }
 }
 
@@ -515,5 +519,5 @@
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0-nightly (91a0600a5 2021-12-18)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0-nightly (e95e084a1 2021-12-19)" ></div>
 </body></html>
