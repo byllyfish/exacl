@@ -52,10 +52,8 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
 
         // acl_get_file et al. can return NULL (ENOENT) if the file exists, but
         // there is no ACL. If the path exists, return an *empty* ACL.
-        if let Some(sg::ENOENT) = err.raw_os_error() {
-            if path_exists(path, symlink_acl) {
-                return xacl_init(1);
-            }
+        if err.raw_os_error() == Some(sg::ENOENT) && path_exists(path, symlink_acl) {
+            return xacl_init(1);
         }
 
         return Err(err);
@@ -102,10 +100,8 @@ pub fn xacl_set_file(
 
         // acl_set_link_np() returns ENOTSUP for symlinks. Work-around this
         // by using acl_set_fd().
-        if let Some(sg::ENOTSUP) = err.raw_os_error() {
-            if symlink_acl {
-                return xacl_set_file_symlink_alt(&c_path, acl);
-            }
+        if err.raw_os_error() == Some(sg::ENOTSUP) && symlink_acl {
+            return xacl_set_file_symlink_alt(&c_path, acl);
         }
 
         return Err(err);

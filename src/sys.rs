@@ -1,6 +1,6 @@
 //! Rust bindings to system C API.
 
-#![allow(dead_code)] // constant is never used
+#![allow(dead_code, non_camel_case_types)] // constant is never used
 
 pub use crate::bindings::*;
 

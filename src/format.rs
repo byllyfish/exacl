@@ -6,6 +6,7 @@ use std::fmt;
 use std::io;
 
 /// Write value of a simple enum as a `serde` serialized string.
+#[allow(clippy::unnecessary_wraps)]
 pub fn write_enum<T: Serialize>(f: &mut fmt::Formatter, value: &T) -> fmt::Result {
     let mut serializer = EnumSerializer(f);
     value

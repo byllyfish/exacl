@@ -24,7 +24,7 @@ pub use crate::sys::{gid_t, uid_t};
 // and 4096 on macOS/FreeBSD. We start the initial buffer size at 4096 bytes.
 
 const INITIAL_BUFSIZE: usize = 4096; // 4KB
-const MAX_BUFSIZE: usize = 1048576; // 1MB
+const MAX_BUFSIZE: usize = 1_048_576; // 1MB
 
 /// Convert user name to uid.
 pub fn name_to_uid(name: &str) -> io::Result<uid_t> {

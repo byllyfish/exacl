@@ -6,7 +6,8 @@
     non_upper_case_globals,
     clippy::unseparated_literal_suffix,
     clippy::unreadable_literal,
-    deref_nullptr  // https://github.com/rust-lang/rust-bindgen/issues/1651
+    deref_nullptr,  // https://github.com/rust-lang/rust-bindgen/issues/1651
+    clippy::too_many_lines
 )]
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
