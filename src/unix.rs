@@ -1,9 +1,9 @@
 //! Implements utilities for converting user/group names to uid/gid.
 
 use crate::failx::*;
-use crate::sys::{getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, group, passwd, size_t};
+use crate::sys::{getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, group, passwd, sg, size_t};
 #[cfg(target_os = "macos")]
-use crate::sys::{id_t, mbr_gid_to_uuid, mbr_uid_to_uuid, mbr_uuid_to_id, sg};
+use crate::sys::{id_t, mbr_gid_to_uuid, mbr_uid_to_uuid, mbr_uuid_to_id};
 
 use std::ffi::{CStr, CString};
 use std::io;
