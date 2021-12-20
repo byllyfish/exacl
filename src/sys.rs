@@ -133,6 +133,7 @@ pub mod sg {
     pub const ENOTSUP: i32 = super::ENOTSUP as i32;
     pub const EINVAL: i32 = super::EINVAL as i32;
     pub const ENOMEM: i32 = super::ENOMEM as i32;
+    pub const ERANGE: i32 = super::ERANGE as i32;
     pub const ACL_MAX_ENTRIES: i32 = super::ACL_MAX_ENTRIES as i32;
 
     #[cfg(target_os = "macos")]

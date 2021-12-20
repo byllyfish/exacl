@@ -1,6 +1,7 @@
 pub const ENOENT: u32 = 2;
 pub const ENOMEM: u32 = 12;
 pub const EINVAL: u32 = 22;
+pub const ERANGE: u32 = 34;
 pub const ENOTSUP: u32 = 45;
 pub const ACL_MAX_ENTRIES: u32 = 254;
 pub const ACL_BRAND_UNKNOWN: u32 = 0;

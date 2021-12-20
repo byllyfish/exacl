@@ -1,6 +1,7 @@
 pub const ENOENT: u32 = 2;
 pub const ENOMEM: u32 = 12;
 pub const EINVAL: u32 = 22;
+pub const ERANGE: u32 = 34;
 pub const ENOTSUP: u32 = 95;
 pub const ACL_READ: u32 = 4;
 pub const ACL_WRITE: u32 = 2;

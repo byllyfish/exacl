@@ -1,9 +1,9 @@
 //! Implements utilities for converting user/group names to uid/gid.
 
 use crate::failx::*;
-use crate::sys::{getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, group, passwd, size_t};
+use crate::sys::{getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, group, passwd, sg, size_t};
 #[cfg(target_os = "macos")]
-use crate::sys::{id_t, mbr_gid_to_uuid, mbr_uid_to_uuid, mbr_uuid_to_id, sg};
+use crate::sys::{id_t, mbr_gid_to_uuid, mbr_uid_to_uuid, mbr_uuid_to_id};
 
 use std::ffi::{CStr, CString};
 use std::io;
@@ -15,24 +15,49 @@ use uuid::Uuid;
 // Export uid_t and gid_t.
 pub use crate::sys::{gid_t, uid_t};
 
+// Max buffer sizes for getpwnam_r, getgrnam_r, et al. are usually determined
+// by calling sysconf with SC_GETPW_R_SIZE_MAX or SC_GETGR_R_SIZE_MAX. Rather
+// than calling sysconf, this code hard-wires the default value and quadruples
+// the buffer size as needed, up to a maximum of 1MB.
+
+// SC_GETPW_R_SIZE_MAX/SC_GETGR_R_SIZE_MAX default to 1024 on vanilla Ubuntu
+// and 4096 on macOS/FreeBSD. We start the initial buffer size at 4096 bytes.
+
+const INITIAL_BUFSIZE: usize = 4096; // 4KB
+const MAX_BUFSIZE: usize = 1048576; // 1MB
+
 /// Convert user name to uid.
 pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
     let mut pwd = mem::MaybeUninit::<passwd>::uninit();
-    let mut buf = Vec::<i8>::with_capacity(4096);
+    let mut buf = Vec::<i8>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
-
     let cstr = CString::new(name)?;
-    let ret = unsafe {
-        getpwnam_r(
-            cstr.as_ptr(),
-            pwd.as_mut_ptr(),
-            buf.as_mut_ptr(),
-            buf.capacity() as size_t,
-            &mut result,
-        )
-    };
 
-    if ret == 0 && !result.is_null() {
+    let mut ret;
+    loop {
+        ret = unsafe {
+            getpwnam_r(
+                cstr.as_ptr(),
+                pwd.as_mut_ptr(),
+                buf.as_mut_ptr(),
+                buf.capacity() as size_t,
+                &mut result,
+            )
+        };
+
+        if ret == 0 || ret != sg::ERANGE || buf.capacity() >= MAX_BUFSIZE {
+            break;
+        }
+
+        // Quadruple buffer size and try again.
+        buf.reserve(4 * buf.capacity());
+    }
+
+    if ret != 0 {
+        return fail_err(ret, "getpwnam_r", name);
+    }
+
+    if !result.is_null() {
         let uid = unsafe { pwd.assume_init().pw_uid };
         return Ok(uid);
     }
@@ -48,21 +73,35 @@ pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
 /// Convert group name to gid.
 pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
     let mut grp = mem::MaybeUninit::<group>::uninit();
-    let mut buf = Vec::<i8>::with_capacity(4096);
+    let mut buf = Vec::<i8>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
-
     let cstr = CString::new(name)?;
-    let ret = unsafe {
-        getgrnam_r(
-            cstr.as_ptr(),
-            grp.as_mut_ptr(),
-            buf.as_mut_ptr(),
-            buf.capacity() as size_t,
-            &mut result,
-        )
-    };
 
-    if ret == 0 && !result.is_null() {
+    let mut ret;
+    loop {
+        ret = unsafe {
+            getgrnam_r(
+                cstr.as_ptr(),
+                grp.as_mut_ptr(),
+                buf.as_mut_ptr(),
+                buf.capacity() as size_t,
+                &mut result,
+            )
+        };
+
+        if ret == 0 || ret != sg::ERANGE || buf.capacity() >= MAX_BUFSIZE {
+            break;
+        }
+
+        // Quadruple buffer size and try again.
+        buf.reserve(4 * buf.capacity());
+    }
+
+    if ret != 0 {
+        return fail_err(ret, "getgrnam_r", name);
+    }
+
+    if !result.is_null() {
         let gid = unsafe { grp.assume_init().gr_gid };
         return Ok(gid);
     }
@@ -76,51 +115,79 @@ pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
 }
 
 /// Convert uid to user name.
-pub fn uid_to_name(uid: uid_t) -> String {
+pub fn uid_to_name(uid: uid_t) -> io::Result<String> {
     let mut pwd = mem::MaybeUninit::<passwd>::uninit();
-    let mut buf = Vec::<i8>::with_capacity(4096);
+    let mut buf = Vec::<i8>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
 
-    let ret = unsafe {
-        getpwuid_r(
-            uid,
-            pwd.as_mut_ptr(),
-            buf.as_mut_ptr(),
-            buf.capacity() as size_t,
-            &mut result,
-        )
-    };
+    let mut ret;
+    loop {
+        ret = unsafe {
+            getpwuid_r(
+                uid,
+                pwd.as_mut_ptr(),
+                buf.as_mut_ptr(),
+                buf.capacity() as size_t,
+                &mut result,
+            )
+        };
 
-    if ret == 0 && !result.is_null() {
-        let cstr = unsafe { CStr::from_ptr(pwd.assume_init().pw_name) };
-        cstr.to_string_lossy().into_owned()
-    } else {
-        uid.to_string()
+        if ret == 0 || ret != sg::ERANGE || buf.capacity() >= MAX_BUFSIZE {
+            break;
+        }
+
+        // Quadruple buffer size and try again.
+        buf.reserve(4 * buf.capacity());
     }
+
+    if ret != 0 {
+        return fail_err(ret, "getpwuid_r", uid);
+    }
+
+    if !result.is_null() {
+        let cstr = unsafe { CStr::from_ptr(pwd.assume_init().pw_name) };
+        return Ok(cstr.to_string_lossy().into_owned());
+    }
+
+    Ok(uid.to_string())
 }
 
 /// Convert gid to group name.
-pub fn gid_to_name(gid: gid_t) -> String {
+pub fn gid_to_name(gid: gid_t) -> io::Result<String> {
     let mut grp = mem::MaybeUninit::<group>::uninit();
-    let mut buf = Vec::<i8>::with_capacity(4096);
+    let mut buf = Vec::<i8>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
 
-    let ret = unsafe {
-        getgrgid_r(
-            gid,
-            grp.as_mut_ptr(),
-            buf.as_mut_ptr(),
-            buf.capacity() as size_t,
-            &mut result,
-        )
-    };
+    let mut ret;
+    loop {
+        ret = unsafe {
+            getgrgid_r(
+                gid,
+                grp.as_mut_ptr(),
+                buf.as_mut_ptr(),
+                buf.capacity() as size_t,
+                &mut result,
+            )
+        };
 
-    if ret == 0 && !result.is_null() {
-        let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
-        cstr.to_string_lossy().into_owned()
-    } else {
-        gid.to_string()
+        if ret == 0 || ret != sg::ERANGE || buf.capacity() >= MAX_BUFSIZE {
+            break;
+        }
+
+        // Quadruple buffer size and try again.
+        buf.reserve(4 * buf.capacity());
     }
+
+    if ret != 0 {
+        return fail_err(ret, "getgrgid_r", gid);
+    }
+
+    if !result.is_null() {
+        let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
+        return Ok(cstr.to_string_lossy().into_owned());
+    }
+
+    Ok(gid.to_string())
 }
 
 /// Convert uid to GUID.
@@ -228,24 +295,24 @@ mod unix_tests {
 
     #[test]
     fn test_uid_to_name() {
-        assert_eq!(uid_to_name(1500), "1500");
+        assert_eq!(uid_to_name(1500).unwrap(), "1500");
 
         #[cfg(target_os = "macos")]
-        assert_eq!(uid_to_name(89), "_spotlight");
+        assert_eq!(uid_to_name(89).unwrap(), "_spotlight");
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(uid_to_name(1), "daemon");
+        assert_eq!(uid_to_name(1).unwrap(), "daemon");
     }
 
     #[test]
     fn test_gid_to_name() {
-        assert_eq!(gid_to_name(1500), "1500");
+        assert_eq!(gid_to_name(1500).unwrap(), "1500");
 
         #[cfg(target_os = "macos")]
-        assert_eq!(gid_to_name(89), "_spotlight");
+        assert_eq!(gid_to_name(89).unwrap(), "_spotlight");
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(gid_to_name(1), "daemon");
+        assert_eq!(gid_to_name(1).unwrap(), "daemon");
     }
 
     #[test]

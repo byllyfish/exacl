@@ -148,10 +148,10 @@ impl Qualifier {
     }
 
     /// Return the name of the user/group.
-    pub fn name(&self) -> String {
-        match self {
-            Qualifier::User(uid) => unix::uid_to_name(*uid),
-            Qualifier::Group(gid) => unix::gid_to_name(*gid),
+    pub fn name(&self) -> io::Result<String> {
+        let result = match self {
+            Qualifier::User(uid) => unix::uid_to_name(*uid)?,
+            Qualifier::Group(gid) => unix::gid_to_name(*gid)?,
             #[cfg(target_os = "macos")]
             Qualifier::Guid(guid) => guid.to_string(),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
@@ -164,7 +164,9 @@ impl Qualifier {
             Qualifier::Everyone => EVERYONE_NAME.to_string(),
 
             Qualifier::Unknown(s) => s.clone(),
-        }
+        };
+
+        Ok(result)
     }
 }
 
