@@ -23,7 +23,7 @@ pub use crate::sys::{gid_t, uid_t};
 // SC_GETPW_R_SIZE_MAX/SC_GETGR_R_SIZE_MAX default to 1024 on vanilla Ubuntu
 // and 4096 on macOS/FreeBSD. We start the initial buffer size at 4096 bytes.
 
-const INITIAL_BUFSIZE: usize = 1; // FIXME: set to 1 for testing
+const INITIAL_BUFSIZE: usize = 4096; // 4KB
 const MAX_BUFSIZE: usize = 1048576; // 1MB
 
 /// Convert user name to uid.
