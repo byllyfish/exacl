@@ -70,6 +70,7 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
         "ENOTSUP",
         "EINVAL",
         "ENOMEM",
+        "ERANGE",
         #[cfg(target_os = "macos")]
         "O_SYMLINK",
         "ID_TYPE_UID",
