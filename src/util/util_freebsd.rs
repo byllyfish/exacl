@@ -41,7 +41,7 @@ fn xacl_get_link(path: &Path, default_acl: bool) -> io::Result<acl_t> {
     // `acl_get_link_np` returns EINVAL when the ACL type is not appropriate for
     // the file system object. Retry with NFSv4 type.
     // FIXME: `default_acl` setting is currently ignored!
-    if let Some(sg::EINVAL) = io::Error::last_os_error().raw_os_error() {
+    if io::Error::last_os_error().raw_os_error() == Some(sg::EINVAL) {
         acl_type = sg::ACL_TYPE_NFS4;
         let nfs_acl = unsafe { acl_get_link_np(c_path.as_ptr(), acl_type) };
         if !nfs_acl.is_null() {
@@ -57,7 +57,7 @@ fn xacl_get_link(path: &Path, default_acl: bool) -> io::Result<acl_t> {
         _ => "acl_get_link_np/?",
     };
 
-    return fail_err("null", func, &c_path);
+    fail_err("null", func, &c_path)
 }
 
 /// Get ACL from file path.
