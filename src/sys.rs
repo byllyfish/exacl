@@ -118,7 +118,7 @@ pub mod np {
 }
 
 // Convenience constants where the API expects a signed i32 type, but bindgen
-// provides u32.
+// provides u32. (FIXME: Replace with bindgen ParseCallbacks::int_macro?)
 
 pub mod sg {
     #![allow(clippy::cast_possible_wrap)]
