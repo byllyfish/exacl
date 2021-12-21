@@ -218,19 +218,11 @@
 <span id="216">216</span>
 <span id="217">217</span>
 <span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Rust bindings to system C API.</span>
 
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">non_upper_case_globals</span>)]</span>
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::unseparated_literal_suffix</span>)]</span>
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::unreadable_literal</span>)]</span>
+<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">dead_code</span>, <span class="ident">non_camel_case_types</span>)]</span> <span class="comment">// constant is never used</span>
 
-<span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/bindings.rs&quot;</span>));
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::bindings</span>::<span class="kw-2">*</span>;
 
 <span class="comment">// Demangle some MacOS constants. Linux provides these as-is.</span>
 
@@ -346,7 +338,7 @@
 }
 
 <span class="comment">// Convenience constants where the API expects a signed i32 type, but bindgen</span>
-<span class="comment">// provides u32.</span>
+<span class="comment">// provides u32. (FIXME: Replace with bindgen ParseCallbacks::int_macro?)</span>
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">sg</span> {
     <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::cast_possible_wrap</span>)]</span>
@@ -445,5 +437,5 @@
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0-nightly (e95e084a1 2021-12-19)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0-nightly (23f69235a 2021-12-20)" ></div>
 </body></html>
