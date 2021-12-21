@@ -53,6 +53,7 @@
 
 mod acl;
 mod aclentry;
+mod bindings;
 mod bititer;
 mod failx;
 mod flag;

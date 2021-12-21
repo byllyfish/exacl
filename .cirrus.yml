@@ -49,3 +49,6 @@ task:
     - export TMPDIR=/tmp
     - ./ci/bindgen.sh
 
+  lint_script:
+    - . $HOME/.cargo/env
+    - ./ci/lint.sh

@@ -1,12 +1,8 @@
 //! Rust bindings to system C API.
 
-#![allow(dead_code)]
-#![allow(non_camel_case_types)]
-#![allow(non_upper_case_globals)]
-#![allow(clippy::unseparated_literal_suffix)]
-#![allow(clippy::unreadable_literal)]
+#![allow(dead_code, non_camel_case_types)] // constant is never used
 
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+pub use crate::bindings::*;
 
 // Demangle some MacOS constants. Linux provides these as-is.
 
@@ -122,7 +118,7 @@ pub mod np {
 }
 
 // Convenience constants where the API expects a signed i32 type, but bindgen
-// provides u32.
+// provides u32. (FIXME: Replace with bindgen ParseCallbacks::int_macro?)
 
 pub mod sg {
     #![allow(clippy::cast_possible_wrap)]

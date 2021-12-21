@@ -16,12 +16,10 @@ done
 rustup component add clippy
 cargo clippy --version
 cargo clean
-# shellcheck disable=SC2086
 cargo clippy --all-targets --all-features -- -D clippy::all -W clippy::pedantic -W clippy::cargo -W clippy::nursery $allow
 
 # Check bash scripts with shellcheck.
-shellcheck --version
-export SHELLCHECK_OPTS="-e SC2086"
-shellcheck ci/*.sh tests/*.sh
+shellcheck --version || exit 0
+SHELLCHECK_OPTS="-e SC2086" shellcheck ci/*.sh tests/*.sh
 
 exit 0
