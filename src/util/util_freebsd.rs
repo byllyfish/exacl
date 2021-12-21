@@ -80,18 +80,18 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
 
     // `acl_get_file` returns EINVAL when the ACL type is not appropriate for
     // the file system object. Retry with NFSv4 type.
-    if io::Error::last_os_error().raw_os_error() == Some(sg::EINVAL) {
-        if xacl_is_nfs4(path, symlink_acl)? {
-            // NFSv4 does not support default ACL.
-            if default_acl {
-                return fail_custom("Default ACL not supported");
-            }
+    if io::Error::last_os_error().raw_os_error() == Some(sg::EINVAL)
+        && xacl_is_nfs4(path, symlink_acl)?
+    {
+        // NFSv4 does not support default ACL.
+        if default_acl {
+            return fail_custom("Default ACL not supported");
+        }
 
-            acl_type = sg::ACL_TYPE_NFS4;
-            let nfs_acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
-            if !nfs_acl.is_null() {
-                return Ok(nfs_acl);
-            }
+        acl_type = sg::ACL_TYPE_NFS4;
+        let nfs_acl = unsafe { acl_get_file(c_path.as_ptr(), acl_type) };
+        if !nfs_acl.is_null() {
+            return Ok(nfs_acl);
         }
     }
 
