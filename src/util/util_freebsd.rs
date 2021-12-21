@@ -80,7 +80,7 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
 
     // `acl_get_file` returns EINVAL when the ACL type is not appropriate for
     // the file system object. Retry with NFSv4 type.
-    if let Some(sg::EINVAL) = io::Error::last_os_error().raw_os_error() {
+    if io::Error::last_os_error().raw_os_error() == Some(sg::EINVAL) {
         if xacl_is_nfs4(path, symlink_acl)? {
             // NFSv4 does not support default ACL.
             if default_acl {
@@ -103,7 +103,7 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
         _ => "acl_get_file/?",
     };
 
-    return fail_err("null", func, &c_path);
+    fail_err("null", func, &c_path)
 }
 
 fn xacl_set_file_symlink(path: &Path, acl: acl_t, default_acl: bool) -> io::Result<()> {
@@ -195,7 +195,7 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     let tag = xacl_get_tag_type(entry)?;
 
     let id = if tag == sg::ACL_USER || tag == sg::ACL_GROUP {
-        let id_ptr = unsafe { acl_get_qualifier(entry) as *mut uid_t };
+        let id_ptr = unsafe { acl_get_qualifier(entry).cast::<uid_t>() };
         if id_ptr.is_null() {
             return fail_err("null", "acl_get_qualifier", ());
         }
@@ -285,7 +285,7 @@ pub fn xacl_get_entry(acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Quali
 pub fn xacl_set_qualifier(entry: acl_entry_t, mut id: uid_t) -> io::Result<()> {
     let id_ptr = &mut id as *mut uid_t;
 
-    let ret = unsafe { acl_set_qualifier(entry, id_ptr as *mut c_void) };
+    let ret = unsafe { acl_set_qualifier(entry, id_ptr.cast::<c_void>()) };
     if ret != 0 {
         return fail_err(ret, "acl_set_qualifier", ());
     }
@@ -416,7 +416,7 @@ fn xacl_get_brand(acl: acl_t) -> io::Result<i32> {
         return fail_err(ret, "acl_get_brand_np", ());
     }
 
-    return Ok(brand);
+    Ok(brand)
 }
 
 pub fn xacl_is_posix(acl: acl_t) -> bool {
@@ -533,7 +533,7 @@ mod util_freebsd_test {
         let (allow, qualifier) = xacl_get_tag_qualifier(acl, entry_p).unwrap();
         assert_eq!(qualifier.name().unwrap(), "@tag 0");
         // FreeBSD: Unbranded entry is treated as Posix.
-        assert_eq!(allow, true);
+        assert!(allow);
 
         let brand = xacl_get_brand(acl).unwrap();
         assert_eq!(brand, sg::ACL_BRAND_UNKNOWN);
