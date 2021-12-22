@@ -4,7 +4,9 @@ use std::io;
 
 #[test]
 fn test_string_format() -> io::Result<()> {
-    let acl = exacl::getfacl("/tmp", None)?;
+    let file = tempfile::NamedTempFile::new()?;
+
+    let acl = exacl::getfacl(&file, None)?;
     let result = exacl::to_string(&acl)?;
     println!("test_string_format: {:?}", result);
 
@@ -13,7 +15,9 @@ fn test_string_format() -> io::Result<()> {
 
 #[test]
 fn test_json_format() -> io::Result<()> {
-    let acl = exacl::getfacl("/tmp", None)?;
+    let file = tempfile::NamedTempFile::new()?;
+
+    let acl = exacl::getfacl(&file, None)?;
     let result = serde_json::to_string(&acl)?;
     println!("test_json_format: {:?}", result);
 
