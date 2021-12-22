@@ -1,6 +1,5 @@
 //! Test example code used in documentation.
 
-use exacl;
 use std::io;
 
 #[test]
@@ -31,7 +30,7 @@ fn test_linux_acl() -> io::Result<()> {
 
     assert_eq!(
         exacl::to_string(&acl)?,
-        "allow::user::read,write\nallow::group::read,write\nallow::user:fred:read,write\n"
+        "allow::user::read,write\nallow::group::read,write\nallow::other::\nallow::user:fred:read,write\n"
     );
     //exacl::setfacl(&["/tmp/file"], &acl, None)?;
 
@@ -57,7 +56,7 @@ fn test_linux_acl_default() -> io::Result<()> {
     }
     acl.append(&mut default_acl);
 
-    assert_eq!(exacl::to_string(&acl)?, "");
+    assert_eq!(exacl::to_string(&acl)?, "allow::user::read,write,execute\nallow::group::read,write,execute\nallow::other::\nallow::group:accounting:read,write,execute\nallow:default:user::read,write,execute\nallow:default:group::read,write,execute\nallow:default:other::\nallow:default:group:accounting:read,write,execute\n");
     //exacl::setfacl(&["./tmp/dir"], &acl, None)?;
 
     Ok(())
