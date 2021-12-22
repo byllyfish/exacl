@@ -403,3 +403,18 @@ pub fn to_string(entries: &[AclEntry]) -> io::Result<String> {
 pub fn from_str(s: &str) -> io::Result<Vec<AclEntry>> {
     from_reader(s.as_bytes())
 }
+
+/// Construct a default ACL from the traditional `mode` permission bits.
+///
+/// Returns a `Vec<AclEntry>` for a minimal ACL with three entries corresponding
+/// to the owner/group/other permission bits given in `mode`.
+///
+/// Extra bits beyond the mask 0o777 are ignored.
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+pub fn from_mode(mode: u32) -> Vec<AclEntry> {
+    vec![
+        AclEntry::allow_user("", Perm::from_bits((mode >> 6) & 7).unwrap(), None),
+        AclEntry::allow_group("", Perm::from_bits((mode >> 3) & 7).unwrap(), None),
+        AclEntry::allow_other(Perm::from_bits(mode & 7).unwrap(), None),
+    ]
+}
