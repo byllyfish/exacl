@@ -31,6 +31,13 @@ acl.push(AclEntry::allow_user("some_user", Perm::READ, None));
 setfacl(&["./tmp/foo"], &acl, None)?;
 ```
 
+## Benefits
+
+- Supports the Posix ACL's used by Linux and FreeBSD.
+- Supports the extended ACL's used by macOS and FreeBSD/NFSv4.
+- Supports reading/writing of ACL's as delimited text.
+- Supports serde for easy reading/writing of ACL's to JSON, YAML and other common formats.
+
 ## API
 
 This module provides two high level functions, `getfacl` and `setfacl`.
@@ -52,3 +59,53 @@ Both `getfacl` and `setfacl` work with a `Vec<AclEntry>`. The
 - flags : `Flag` - flags indicating whether an entry is inherited, etc.
 - allow : `bool` - true if entry is allowed; false means deny. Linux only
     supports allow=true.
+
+
+## More Examples
+
+Here are some more examples showing how to use the library.
+
+Get an ACL in common delimited string format:
+
+```rust
+    let acl = exacl::getfacl("/tmp/file", None)?;
+    let result = exacl::to_string(&acl)?;
+```
+
+Get an ACL in JSON format:
+
+```rust
+    let acl = exacl::getfacl("/tmp/file", None)?;
+    let result = serde_json::to_string(&acl)?;
+```
+
+Create a linux ACL for permissions that allow the owning user and group to read/write a file 
+but no one else except for "fred".
+
+```rust
+    let mut acl = exacl::from_mode(0o660);
+    acl.push(AclEntry::allow_user("fred", Perm::READ | Perm::WRITE, None));
+    exacl::setfacl(&["/tmp/file"], &acl, None)?;
+```
+
+Create a linux ACL for directory permissions that gives full access to the owning user and group
+and read-only access to members of the accounting group. Any sub-directories created should 
+automatically have the same ACL (via the default ACL).
+
+```rust
+    let mut acl = exacl::from_mode(0o770);
+    acl.push(AclEntry::allow_group(
+        "accounting",
+        Perm::READ | Perm::EXECUTE,
+        None,
+    ));
+
+    // Make default_acl a copy of access_acl with the DEFAULT flag set.
+    let mut default_acl: Vec<AclEntry> = acl.clone();
+    for entry in &mut default_acl {
+        entry.flags |= Flag::DEFAULT;
+    }
+    acl.append(&mut default_acl);
+    
+    exacl::setfacl(&["./tmp/dir"], &acl, None)?;
+```

@@ -408,4 +408,20 @@ mod perm_tests {
             assert_eq!(Perm::all(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync,read_data,write_data".parse().unwrap());
         }
     }
+
+    #[test]
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+    fn test_perm_unix_permission() {
+        // Test that READ, WRITE, EXECUTE constant correspond to the same bits
+        // as the permissions in unix mode.
+
+        assert_eq!(Perm::READ.bits, 0x04);
+        assert_eq!(Perm::WRITE.bits, 0x02);
+        assert_eq!(Perm::EXECUTE.bits, 0x01);
+
+        assert_eq!(
+            Perm::from_bits(0x07),
+            Some(Perm::READ | Perm::WRITE | Perm::EXECUTE)
+        );
+    }
 }

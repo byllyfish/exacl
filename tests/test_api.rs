@@ -469,3 +469,25 @@ fn test_exclusive_acloptions() {
         "File \"/tmp\": macOS does not support default ACL"
     );
 }
+
+#[test]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+fn test_from_mode() {
+    let acl_7777 = exacl::to_string(&exacl::from_mode(0o7777)).unwrap();
+    assert_eq!(acl_7777, "allow::user::read,write,execute\nallow::group::read,write,execute\nallow::other::read,write,execute\n");
+
+    let acl_000 = exacl::to_string(&exacl::from_mode(0o000)).unwrap();
+    assert_eq!(acl_000, "allow::user::\nallow::group::\nallow::other::\n");
+
+    let acl_123 = exacl::to_string(&exacl::from_mode(0o123)).unwrap();
+    assert_eq!(
+        acl_123,
+        "allow::user::execute\nallow::group::write\nallow::other::write,execute\n"
+    );
+
+    let acl_12345 = exacl::to_string(&exacl::from_mode(0o12345)).unwrap();
+    assert_eq!(
+        acl_12345,
+        "allow::user::write,execute\nallow::group::read\nallow::other::read,execute\n"
+    );
+}
