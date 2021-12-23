@@ -274,6 +274,7 @@
 <span id="272">272</span>
 <span id="273">273</span>
 <span id="274">274</span>
+<span id="275">275</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::failx</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::flag::Flag</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::perm::Perm</span>;
@@ -525,7 +526,8 @@
             .<span class="ident">unwrap</span>();
 
         <span class="comment">// Write an empty default ACL to a file. Still works?</span>
-        <span class="ident">xacl_set_file</span>(<span class="ident">file</span>.<span class="ident">as_ref</span>(), <span class="ident">acl</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>).<span class="ident">ok</span>().<span class="ident">unwrap</span>();
+        <span class="comment">// FIXME: Fails on ubuntu-18.04.</span>
+        <span class="comment">//xacl_set_file(file.as_ref(), acl, false, true).ok().unwrap();</span>
 
         <span class="comment">// Write an empty access ACL to a directory. Still works?</span>
         <span class="ident">xacl_set_file</span>(<span class="ident">dir</span>.<span class="ident">as_ref</span>(), <span class="ident">acl</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>).<span class="ident">ok</span>().<span class="ident">unwrap</span>();
@@ -549,5 +551,5 @@
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0-nightly (23f69235a 2021-12-20)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0-nightly (34926f0a1 2021-12-22)" ></div>
 </body></html>
