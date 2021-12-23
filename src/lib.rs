@@ -64,12 +64,13 @@ mod sys;
 mod unix;
 mod util;
 
-// Export Acl, AclOption, AclEntry, AclEntryKind, Flag and Perm.
-pub use acl::{Acl, AclOption};
+// Export AclOption, AclEntry, AclEntryKind, Flag and Perm.
+pub use acl::AclOption;
 pub use aclentry::{AclEntry, AclEntryKind};
 pub use flag::Flag;
 pub use perm::Perm;
 
+use acl::Acl;
 use failx::custom_err;
 use std::io::{self, BufRead};
 use std::path::Path;
