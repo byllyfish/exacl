@@ -45,14 +45,13 @@ fn test_getfacl_file() -> io::Result<()> {
     #[cfg(target_os = "freebsd")]
     {
         let result = getfacl(&file, AclOption::DEFAULT_ACL);
-        if Acl::is_nfs4(file.as_ref(), AclOption::empty())? {
-            assert!(result
-                .unwrap_err()
-                .to_string()
-                .contains("Default ACL not supported"));
-        } else {
-            assert!(result.unwrap_err().to_string().contains("Invalid argument"));
-        }
+        // If file is using NFSv4 ACL, the error message will be
+        // "Default ACL not supported", otherwise the error message will be
+        // "Invalid argument".
+        let errmsg = result.unwrap_err().to_string();
+        assert!(
+            errmsg.contains("Default ACL not supported") || errmsg.contains("Invalid argument")
+        );
     }
 
     Ok(())
