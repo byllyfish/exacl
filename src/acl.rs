@@ -339,6 +339,7 @@ impl Acl {
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
+    #[cfg(test)]
     pub fn to_string(&self) -> io::Result<String> {
         use std::io::Write;
         let mut buf = Vec::new();
@@ -356,7 +357,7 @@ impl Acl {
 
     /// Return true if ACL is a Posix.1e ACL on Linux or `FreeBSD`.
     #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
+    #[allow(clippy::missing_const_for_fn, dead_code)]
     pub fn is_posix(&self) -> bool {
         xacl_is_posix(self.acl)
     }
@@ -417,6 +418,10 @@ mod acl_tests {
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         assert_eq!(entries.len(), 3);
+
+        for entry in &entries {
+            debug!("{}", entry);
+        }
 
         Ok(())
     }

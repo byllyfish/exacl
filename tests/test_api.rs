@@ -1,7 +1,7 @@
 //! API Tests for exacl module.
 
 use ctor::ctor;
-use exacl::{getfacl, setfacl, AclEntry, AclOption, Flag, Perm};
+use exacl::{getfacl, setfacl, AclEntry, AclOption, Perm};
 use log::debug;
 use std::io;
 
@@ -20,6 +20,8 @@ fn test_getfacl_file() -> io::Result<()> {
 
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     assert_eq!(entries.len(), 3);
+
+    debug!("test_getfacl_file: {}", exacl::to_string(&entries)?);
 
     // Test default ACL on macOS (should fail).
     #[cfg(target_os = "macos")]
@@ -53,6 +55,17 @@ fn test_getfacl_file() -> io::Result<()> {
             errmsg.contains("Default ACL not supported") || errmsg.contains("Invalid argument")
         );
     }
+
+    Ok(())
+}
+
+#[test]
+fn test_setfacl_file() -> io::Result<()> {
+    let file = tempfile::NamedTempFile::new()?;
+    let mut entries = getfacl(&file, None)?;
+
+    entries.push(AclEntry::allow_user("500", Perm::READ, None));
+    setfacl(&[file], &entries, None)?;
 
     Ok(())
 }
