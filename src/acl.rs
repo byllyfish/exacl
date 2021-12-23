@@ -404,6 +404,7 @@ mod acl_tests {
     use super::*;
     use crate::flag::Flag;
     use crate::perm::Perm;
+    use log::debug;
 
     #[test]
     fn test_read_acl() -> io::Result<()> {
@@ -483,8 +484,6 @@ deny:file_inherit,directory_inherit:group:11504:read,write,execute
         entries.push(AclEntry::allow_group("", rwx, None));
         entries.push(AclEntry::allow_other(rwx, None));
         // We do not add a mask entry. One will be automatically added.
-
-        log_acl(&entries);
 
         let acl = Acl::from_entries(&entries)?;
         acl.write(file.as_ref(), AclOption::empty())?;
