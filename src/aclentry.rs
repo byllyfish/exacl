@@ -360,21 +360,23 @@ mod aclentry_tests {
             AclEntry::allow_group("d", Perm::EXECUTE, None),
             AclEntry::allow_user("z", Perm::READ, None),
             AclEntry::allow_group("z", Perm::READ, None),
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
             AclEntry::deny_user("a", Perm::READ, Flag::FILE_INHERIT),
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
             AclEntry::deny_user("c", Perm::READ, None),
         ];
 
         acl.sort();
 
         let acl_sorted = vec![
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
             AclEntry::deny_user("c", Perm::READ, None),
             AclEntry::allow_user("f", Perm::WRITE, None),
             AclEntry::allow_user("z", Perm::READ, None),
             AclEntry::allow_group("3", Perm::EXECUTE, None),
             AclEntry::allow_group("d", Perm::EXECUTE, None),
             AclEntry::allow_group("z", Perm::READ, None),
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
             AclEntry::deny_user("a", Perm::READ, Flag::FILE_INHERIT),
         ];
 

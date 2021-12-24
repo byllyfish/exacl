@@ -176,7 +176,7 @@ fn _getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
 ///
 /// ### macOS Example
 ///
-/// ```no_run
+/// ```ignore
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// use exacl::{setfacl, AclEntry, Flag, Perm};
 ///
