@@ -5,7 +5,7 @@
 [CI]: https://github.com/byllyfish/exacl/workflows/CI/badge.svg
 [actions]: https://github.com/byllyfish/exacl/actions?query=branch%3Amain
 [API]: https://docs.rs/exacl/badge.svg
-[docs]: https://docs.rs/exacl
+[docs]: https://byllyfish.github.io/exacl
 [BUILD]: https://api.cirrus-ci.com/github/byllyfish/exacl.svg
 [cirrus]: https://cirrus-ci.com/github/byllyfish/exacl
 
