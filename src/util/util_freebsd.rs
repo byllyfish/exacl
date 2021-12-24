@@ -171,6 +171,7 @@ pub fn xacl_set_file(
 
     if !xacl_is_posix(acl) || is_nfs4 {
         // Fix up the ACL to make sure that all entry types are set.
+        // FIXME: This mutates the acl, violating the immutable invariant.
         xacl_repair_nfs4(acl)?;
     }
 
