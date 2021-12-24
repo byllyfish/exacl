@@ -140,7 +140,8 @@ fn xacl_repair_nfs4(acl: acl_t) -> io::Result<()> {
             xacl_set_entry_type(entry, sg::ACL_ENTRY_TYPE_ALLOW)?;
         }
         // Translate READ -> READ_DATA and WRITE -> WRITE_DATA.
-        let perm = xacl_get_perm(entry)?;
+        let mut perm = xacl_get_perm(entry)?;
+        let orig_perm = perm;
         if perm.intersects(Perm::READ) {
             perm.remove(Perm::READ);
             perm.insert(Perm::READ_DATA);
@@ -148,6 +149,9 @@ fn xacl_repair_nfs4(acl: acl_t) -> io::Result<()> {
         if perm.intersects(Perm::WRITE) {
             perm.remove(Perm::WRITE);
             perm.insert(Perm::WRITE_DATA);
+        }
+        if perm != orig_perm {
+            xacl_set_perm(entry, perm)?;
         }
         Ok(())
     })
