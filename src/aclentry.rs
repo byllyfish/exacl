@@ -166,6 +166,8 @@ impl AclEntry {
     }
 
     /// Construct a DENY access control entry for a user.
+    #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
+    #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
     #[must_use]
     pub fn deny_user<F>(name: &str, perms: Perm, flags: F) -> AclEntry
     where
@@ -175,6 +177,8 @@ impl AclEntry {
     }
 
     /// Construct a DENY access control entry for a group.
+    #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
+    #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
     #[must_use]
     pub fn deny_group<F>(name: &str, perms: Perm, flags: F) -> AclEntry
     where
