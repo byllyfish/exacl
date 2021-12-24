@@ -9,7 +9,7 @@ underlying platform.</p>
 An entry may allow or deny access to a specific user or group.
 To specify inherited entries, use the provided <a href="struct.Flag.html" title="Flag">Flag</a> values.</p>
 <h4 id="macos-example" class="section-header"><a href="#macos-example">macOS Example</a></h4>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">exacl</span>::{<span class="ident">setfacl</span>, <span class="ident">AclEntry</span>, <span class="ident">Flag</span>, <span class="ident">Perm</span>};
+<div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="kw">use</span> <span class="ident">exacl</span>::{<span class="ident">setfacl</span>, <span class="ident">AclEntry</span>, <span class="ident">Flag</span>, <span class="ident">Perm</span>};
 
 <span class="kw">let</span> <span class="ident">entries</span> <span class="op">=</span> <span class="macro">vec!</span>[
     <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;some_user&quot;</span>, <span class="ident">Perm::READ</span> <span class="op">|</span> <span class="ident">Perm::WRITE</span>, <span class="prelude-val">None</span>),
