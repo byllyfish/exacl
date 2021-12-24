@@ -204,7 +204,6 @@ enum PermName {
 
 impl PermName {
     fn from_perm(perm: Perm) -> Option<PermName> {
-        use std::convert::TryFrom;
         PermName::try_from(perm.bits).ok()
     }
 

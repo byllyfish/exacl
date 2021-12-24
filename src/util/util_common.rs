@@ -59,8 +59,6 @@ pub fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
 ///
 /// Client must call `xacl_free` when done with result.
 pub fn xacl_init(capacity: usize) -> io::Result<acl_t> {
-    use std::convert::TryFrom;
-
     let size = match i32::try_from(capacity) {
         Ok(size) if size <= sg::ACL_MAX_ENTRIES => size,
         _ => return fail_custom("Too many ACL entries"),
