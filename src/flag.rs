@@ -15,27 +15,27 @@ bitflags! {
     pub struct Flag : acl_flag_t {
         /// ACL entry was inherited.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const INHERITED = np::ACL_ENTRY_INHERITED;
 
         /// Inherit to files.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const FILE_INHERIT = np::ACL_ENTRY_FILE_INHERIT;
 
         /// Inherit to directories.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const DIRECTORY_INHERIT = np::ACL_ENTRY_DIRECTORY_INHERIT;
 
         /// Clear the DIRECTORY_INHERIT flag in the ACL entry that is inherited.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const LIMIT_INHERIT = np::ACL_ENTRY_LIMIT_INHERIT;
 
         /// Don't consider this entry when processing the ACL. Just inherit it.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const ONLY_INHERIT = np::ACL_ENTRY_ONLY_INHERIT;
 
         /// Specifies a default ACL entry on Linux.

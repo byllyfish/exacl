@@ -166,6 +166,8 @@ impl AclEntry {
     }
 
     /// Construct a DENY access control entry for a user.
+    #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
+    #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
     #[must_use]
     pub fn deny_user<F>(name: &str, perms: Perm, flags: F) -> AclEntry
     where
@@ -175,6 +177,8 @@ impl AclEntry {
     }
 
     /// Construct a DENY access control entry for a group.
+    #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
+    #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
     #[must_use]
     pub fn deny_group<F>(name: &str, perms: Perm, flags: F) -> AclEntry
     where
@@ -356,21 +360,23 @@ mod aclentry_tests {
             AclEntry::allow_group("d", Perm::EXECUTE, None),
             AclEntry::allow_user("z", Perm::READ, None),
             AclEntry::allow_group("z", Perm::READ, None),
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
             AclEntry::deny_user("a", Perm::READ, Flag::FILE_INHERIT),
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
             AclEntry::deny_user("c", Perm::READ, None),
         ];
 
         acl.sort();
 
         let acl_sorted = vec![
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
             AclEntry::deny_user("c", Perm::READ, None),
             AclEntry::allow_user("f", Perm::WRITE, None),
             AclEntry::allow_user("z", Perm::READ, None),
             AclEntry::allow_group("3", Perm::EXECUTE, None),
             AclEntry::allow_group("d", Perm::EXECUTE, None),
             AclEntry::allow_group("z", Perm::READ, None),
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
             AclEntry::deny_user("a", Perm::READ, Flag::FILE_INHERIT),
         ];
 

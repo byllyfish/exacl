@@ -27,58 +27,58 @@ bitflags! {
 
         /// DELETE permission for a file.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const DELETE = np::ACL_DELETE;
 
         /// APPEND_DATA permission for a file.
         /// Same as ADD_SUBDIRECTORY permission for a directory.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const APPEND = np::ACL_APPEND_DATA;
 
         /// DELETE_CHILD permission for a directory.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const DELETE_CHILD = np::ACL_DELETE_CHILD;
 
         /// READ_ATTRIBUTES permission for file or directory.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const READATTR = np::ACL_READ_ATTRIBUTES;
 
         /// WRITE_ATTRIBUTES permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const WRITEATTR = np::ACL_WRITE_ATTRIBUTES;
 
         /// READ_EXTATTRIBUTES permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const READEXTATTR = np::ACL_READ_EXTATTRIBUTES;
 
         /// WRITE_EXTATTRIBUTES permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const WRITEEXTATTR = np::ACL_WRITE_EXTATTRIBUTES;
 
         /// READ_SECURITY permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const READSECURITY = np::ACL_READ_SECURITY;
 
         /// WRITE_SECURITY permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const WRITESECURITY = np::ACL_WRITE_SECURITY;
 
         /// CHANGE_OWNER permission for a file or directory.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const CHOWN = np::ACL_CHANGE_OWNER;
 
         /// SYNCHRONIZE permission (unsupported).
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = "macos", target_os = "freebsd"))))]
         const SYNC = np::ACL_SYNCHRONIZE;
 
         /// NFSv4 READ_DATA permission.
