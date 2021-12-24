@@ -139,6 +139,16 @@ fn xacl_repair_nfs4(acl: acl_t) -> io::Result<()> {
         if entry_type == 0 {
             xacl_set_entry_type(entry, sg::ACL_ENTRY_TYPE_ALLOW)?;
         }
+        // Translate READ -> READ_DATA and WRITE -> WRITE_DATA.
+        let perm = xacl_get_perm(entry)?;
+        if perm.intersects(Perm::READ) {
+            perm.remove(Perm::READ);
+            perm.insert(Perm::READ_DATA);
+        }
+        if perm.intersects(Perm::WRITE) {
+            perm.remove(Perm::WRITE);
+            perm.insert(Perm::WRITE_DATA);
+        }
         Ok(())
     })
 }
@@ -149,11 +159,13 @@ pub fn xacl_set_file(
     symlink_acl: bool,
     default_acl: bool,
 ) -> io::Result<()> {
-    if default_acl && xacl_is_nfs4(path, symlink_acl)? {
+    let is_nfs4 = xacl_is_nfs4(path, symlink_acl)?;
+
+    if default_acl && is_nfs4 {
         return fail_custom("Default ACL not supported");
     }
 
-    if !xacl_is_posix(acl) {
+    if !xacl_is_posix(acl) || is_nfs4 {
         // Fix up the ACL to make sure that all entry types are set.
         xacl_repair_nfs4(acl)?;
     }
