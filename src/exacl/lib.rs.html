@@ -427,6 +427,7 @@
 <span id="425">425</span>
 <span id="426">426</span>
 <span id="427">427</span>
+<span id="428">428</span>
 </pre><pre class="rust"><code><span class="doccomment">//! # exacl</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Manipulate file system access control lists (ACL) on `macOS`, `Linux`, and</span>
@@ -493,12 +494,13 @@
 <span class="kw">mod</span> <span class="ident">unix</span>;
 <span class="kw">mod</span> <span class="ident">util</span>;
 
-<span class="comment">// Export Acl, AclOption, AclEntry, AclEntryKind, Flag and Perm.</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">acl</span>::{<span class="ident">Acl</span>, <span class="ident">AclOption</span>};
+<span class="comment">// Export AclOption, AclEntry, AclEntryKind, Flag and Perm.</span>
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">acl::AclOption</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">aclentry</span>::{<span class="ident">AclEntry</span>, <span class="ident">AclEntryKind</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">flag::Flag</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">perm::Perm</span>;
 
+<span class="kw">use</span> <span class="ident">acl::Acl</span>;
 <span class="kw">use</span> <span class="ident">failx::custom_err</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">BufRead</span>};
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
@@ -855,5 +857,5 @@
     ]
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0-nightly (34926f0a1 2021-12-22)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0-nightly (c09a9529c 2021-12-23)" ></div>
 </body></html>
