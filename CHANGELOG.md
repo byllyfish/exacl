@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0] - 2021-12-25
+
+- Add the `from_mode` top level function.
+- Remove `Acl` (low level interface) from the public exported API.
+- Remove dependency on the `nix` crate.
+- Update version dependencies for bindgen and env_logger.
+- Update Rust edition from 2018 to 2021.
+
 ## [0.6.0] - 2021-06-20
 
 - Fix new rust clippy warnings.
