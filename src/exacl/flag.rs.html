@@ -328,7 +328,6 @@
 <span id="326">326</span>
 <span id="327">327</span>
 <span id="328">328</span>
-<span id="329">329</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Implements the inheritance flags.</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::bititer</span>::{<span class="ident">BitIter</span>, <span class="ident">BitIterable</span>};
@@ -432,7 +431,6 @@
 
 <span class="kw">impl</span> <span class="ident">FlagName</span> {
     <span class="kw">fn</span> <span class="ident">from_flag</span>(<span class="ident">flag</span>: <span class="ident">Flag</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FlagName</span><span class="op">&gt;</span> {
-        <span class="kw">use</span> <span class="ident">std::convert::TryFrom</span>;
         <span class="ident">FlagName::try_from</span>(<span class="ident">flag</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>).<span class="ident">ok</span>()
     }
 

@@ -426,7 +426,6 @@
 <span id="424">424</span>
 <span id="425">425</span>
 <span id="426">426</span>
-<span id="427">427</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Implements the permissions flags.</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::bititer</span>::{<span class="ident">BitIter</span>, <span class="ident">BitIterable</span>};
@@ -633,7 +632,6 @@
 
 <span class="kw">impl</span> <span class="ident">PermName</span> {
     <span class="kw">fn</span> <span class="ident">from_perm</span>(<span class="ident">perm</span>: <span class="ident">Perm</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PermName</span><span class="op">&gt;</span> {
-        <span class="kw">use</span> <span class="ident">std::convert::TryFrom</span>;
         <span class="ident">PermName::try_from</span>(<span class="ident">perm</span>.<span class="ident">bits</span>).<span class="ident">ok</span>()
     }
 
