@@ -101,7 +101,6 @@ enum FlagName {
 
 impl FlagName {
     fn from_flag(flag: Flag) -> Option<FlagName> {
-        use std::convert::TryFrom;
         FlagName::try_from(flag.bits as u32).ok()
     }
 
