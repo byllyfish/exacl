@@ -5,7 +5,6 @@ use crate::format;
 use crate::sys::*;
 
 use bitflags::bitflags;
-use num_enum::TryFromPrimitive;
 use serde::{de, ser, Deserialize, Serialize};
 use std::fmt;
 
@@ -152,7 +151,7 @@ impl BitIterable for Perm {
     }
 }
 
-#[derive(Deserialize, Serialize, TryFromPrimitive, Copy, Clone, Debug)]
+#[derive(Deserialize, Serialize, Copy, Clone, Debug)]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 enum PermName {
@@ -204,7 +203,54 @@ enum PermName {
 
 impl PermName {
     fn from_perm(perm: Perm) -> Option<PermName> {
-        PermName::try_from(perm.bits).ok()
+        match perm {
+            Perm::READ => Some(PermName::read),
+
+            Perm::WRITE => Some(PermName::write),
+
+            Perm::EXECUTE => Some(PermName::execute),
+
+            #[cfg(target_os = "freebsd")]
+            Perm::READ_DATA => Some(PermName::read_data),
+
+            #[cfg(target_os = "freebsd")]
+            Perm::WRITE_DATA => Some(PermName::write_data),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Perm::DELETE => Some(PermName::delete),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Perm::APPEND => Some(PermName::append),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Perm::DELETE_CHILD => Some(PermName::delete_child),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Perm::READATTR => Some(PermName::readattr),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Perm::WRITEATTR => Some(PermName::writeattr),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Perm::READEXTATTR => Some(PermName::readextattr),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Perm::WRITEEXTATTR => Some(PermName::writeextattr),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Perm::READSECURITY => Some(PermName::readsecurity),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Perm::WRITESECURITY => Some(PermName::writesecurity),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Perm::CHOWN => Some(PermName::chown),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Perm::SYNC => Some(PermName::sync),
+
+            _ => None,
+        }
     }
 
     const fn to_perm(self) -> Perm {

@@ -5,7 +5,6 @@ use crate::format;
 use crate::sys::*;
 
 use bitflags::bitflags;
-use num_enum::TryFromPrimitive;
 use serde::{de, ser, Deserialize, Serialize};
 use std::fmt;
 
@@ -76,7 +75,7 @@ impl BitIterable for Flag {
     }
 }
 
-#[derive(Deserialize, Serialize, TryFromPrimitive, Copy, Clone, Debug)]
+#[derive(Deserialize, Serialize, Copy, Clone, Debug)]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 enum FlagName {
@@ -101,7 +100,27 @@ enum FlagName {
 
 impl FlagName {
     fn from_flag(flag: Flag) -> Option<FlagName> {
-        FlagName::try_from(flag.bits as u32).ok()
+        match flag {
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Flag::INHERITED => Some(FlagName::inherited),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Flag::FILE_INHERIT => Some(FlagName::file_inherit),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Flag::DIRECTORY_INHERIT => Some(FlagName::directory_inherit),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Flag::LIMIT_INHERIT => Some(FlagName::limit_inherit),
+
+            #[cfg(any(target_os = "macos", target_os = "freebsd"))]
+            Flag::ONLY_INHERIT => Some(FlagName::only_inherit),
+
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+            Flag::DEFAULT => Some(FlagName::default),
+
+            _ => None,
+        }
     }
 
     const fn to_flag(self) -> Flag {
