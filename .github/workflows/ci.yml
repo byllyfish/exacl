@@ -34,9 +34,13 @@ jobs:
         sudo apt-get update
         sudo apt-get -y install libacl1-dev acl shunit2 valgrind shellcheck
       if: runner.os == 'Linux'
-    - name: Build
+    - name: Build (no-serde)
+      run: cargo build --no-default-features
+    - name: Build (serde)
       run: cargo build
-    - name: Run unit tests
+    - name: Unit Test (no-serde)
+      run: cargo test --no-default-features
+    - name: Unit Test (serde)
       run: cargo test
     - name: Run integration tests
       run: ./tests/run_tests.sh

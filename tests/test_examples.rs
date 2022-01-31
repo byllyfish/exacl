@@ -14,6 +14,7 @@ fn test_string_format() -> io::Result<()> {
 }
 
 #[test]
+#[cfg(feature = "serde")]
 fn test_json_format() -> io::Result<()> {
     let file = tempfile::NamedTempFile::new()?;
 

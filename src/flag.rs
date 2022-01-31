@@ -5,6 +5,7 @@ use crate::format;
 use crate::sys::*;
 
 use bitflags::bitflags;
+#[cfg(feature = "serde")]
 use serde::{de, ser, Deserialize, Serialize};
 use std::fmt;
 
@@ -75,10 +76,13 @@ impl BitIterable for Flag {
     }
 }
 
-#[derive(Deserialize, Serialize, Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-enum FlagName {
+pub enum FlagName {
+    // *N.B.* Update the corresponding table in format/format_no_serde.rs
+    // if any of these entries change.
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     inherited = Flag::INHERITED.bits as u32,
 
@@ -99,7 +103,7 @@ enum FlagName {
 }
 
 impl FlagName {
-    fn from_flag(flag: Flag) -> Option<FlagName> {
+    const fn from_flag(flag: Flag) -> Option<FlagName> {
         match flag {
             #[cfg(any(target_os = "macos", target_os = "freebsd"))]
             Flag::INHERITED => Some(FlagName::inherited),
@@ -132,7 +136,7 @@ impl FlagName {
 
 impl fmt::Display for FlagName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        format::write_enum(f, self)
+        format::write_flagname(f, *self)
     }
 }
 
@@ -170,7 +174,7 @@ impl std::str::FromStr for FlagName {
     type Err = format::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        format::read_enum(s)
+        format::read_flagname(s)
     }
 }
 
@@ -195,6 +199,7 @@ impl std::str::FromStr for Flag {
     }
 }
 
+#[cfg(feature = "serde")]
 impl ser::Serialize for Flag {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -211,6 +216,7 @@ impl ser::Serialize for Flag {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> de::Deserialize<'de> for Flag {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

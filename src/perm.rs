@@ -5,6 +5,7 @@ use crate::format;
 use crate::sys::*;
 
 use bitflags::bitflags;
+#[cfg(feature = "serde")]
 use serde::{de, ser, Deserialize, Serialize};
 use std::fmt;
 
@@ -151,10 +152,13 @@ impl BitIterable for Perm {
     }
 }
 
-#[derive(Deserialize, Serialize, Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-enum PermName {
+pub enum PermName {
+    // *N.B.* Update the corresponding table in format/format_no_serde.rs
+    // if any of these entries change.
     read = Perm::READ.bits,
 
     write = Perm::WRITE.bits,
@@ -202,7 +206,7 @@ enum PermName {
 }
 
 impl PermName {
-    fn from_perm(perm: Perm) -> Option<PermName> {
+    const fn from_perm(perm: Perm) -> Option<PermName> {
         match perm {
             Perm::READ => Some(PermName::read),
 
@@ -260,7 +264,7 @@ impl PermName {
 
 impl fmt::Display for PermName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        format::write_enum(f, self)
+        format::write_permname(f, *self)
     }
 }
 
@@ -303,7 +307,7 @@ impl std::str::FromStr for PermName {
     type Err = format::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        format::read_enum(s)
+        format::read_permname(s)
     }
 }
 
@@ -328,6 +332,7 @@ impl std::str::FromStr for Perm {
     }
 }
 
+#[cfg(feature = "serde")]
 impl ser::Serialize for Perm {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -344,6 +349,7 @@ impl ser::Serialize for Perm {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> de::Deserialize<'de> for Perm {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

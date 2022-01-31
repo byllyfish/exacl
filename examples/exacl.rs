@@ -113,9 +113,14 @@ fn dump_acl(path: &Path, options: AclOption, format: Format) -> io::Result<()> {
     let entries = getfacl(path, options)?;
 
     match format {
+        #[cfg(feature = "serde")]
         Format::Json => {
             serde_json::to_writer(io::stdout(), &entries)?;
             println!(); // add newline
+        }
+        #[cfg(not(feature = "serde"))]
+        Format::Json => {
+            panic!("serde not supported");
         }
         Format::Std => exacl::to_writer(io::stdout(), &entries)?,
     };
@@ -128,6 +133,7 @@ fn read_input(format: Format) -> Option<Vec<AclEntry>> {
 
     let entries: Vec<AclEntry> = match format {
         // Read JSON format.
+        #[cfg(feature = "serde")]
         Format::Json => match serde_json::from_reader(reader) {
             Ok(entries) => entries,
             Err(err) => {
@@ -135,6 +141,10 @@ fn read_input(format: Format) -> Option<Vec<AclEntry>> {
                 return None;
             }
         },
+        #[cfg(not(feature = "serde"))]
+        Format::Json => {
+            panic!("serde not supported");
+        }
         // Read Std format.
         Format::Std => match exacl::from_reader(reader) {
             Ok(entries) => entries,

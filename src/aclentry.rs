@@ -7,15 +7,19 @@ use crate::perm::Perm;
 use crate::qualifier::Qualifier;
 use crate::util::*;
 
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::fmt;
 use std::io;
 
 /// Kind of ACL entry (User, Group, Mask, Other, or Unknown).
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize, PartialOrd, Eq, Ord)]
-#[serde(rename_all = "lowercase")]
+#[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
 pub enum AclEntryKind {
+    // *N.B.* Update the corresponding table in format/format_no_serde.rs
+    // if any of these entries change.
     /// Entry represents a user.
     User,
 
@@ -46,8 +50,9 @@ pub enum AclEntryKind {
 /// ACL entries are ordered so sorting will automatically put the ACL in
 /// canonical order.
 ///
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq)]
-#[serde(deny_unknown_fields)]
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
 pub struct AclEntry {
     /// Kind of entry (User, Group, Other, Mask, Everyone, or Unknown).
     pub kind: AclEntryKind,
@@ -60,16 +65,17 @@ pub struct AclEntry {
     pub perms: Perm,
 
     /// Flags indicating whether an entry is inherited, etc.
-    #[serde(default)]
+    #[cfg_attr(feature = "serde", serde(default))]
     pub flags: Flag,
 
     /// True if entry is allowed; false means deny. Linux only supports
     /// allow=true.
-    #[serde(default = "default_allow")]
+    #[cfg_attr(feature = "serde", serde(default = "default_allow"))]
     pub allow: bool,
 }
 
 // Default value of allow; used for serde.
+#[cfg(feature = "serde")]
 const fn default_allow() -> bool {
     true
 }
@@ -253,7 +259,7 @@ impl AclEntry {
 
 impl fmt::Display for AclEntryKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        format::write_enum(f, self)
+        format::write_aclentrykind(f, *self)
     }
 }
 
@@ -268,7 +274,7 @@ impl std::str::FromStr for AclEntryKind {
             "o" => Ok(AclEntryKind::Other),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             "m" => Ok(AclEntryKind::Mask),
-            _ => format::read_enum(s),
+            _ => format::read_aclentrykind(s),
         }
     }
 }
@@ -545,5 +551,39 @@ mod aclentry_tests {
             let entry = input.parse::<AclEntry>().unwrap();
             assert_eq!(*expected, entry.to_string());
         }
+    }
+
+    #[test]
+    fn test_kind_fromstr() {
+        assert_eq!(AclEntryKind::User, "user".parse::<AclEntryKind>().unwrap());
+        assert_eq!(
+            AclEntryKind::Group,
+            "group".parse::<AclEntryKind>().unwrap()
+        );
+        assert_eq!(
+            AclEntryKind::Unknown,
+            "unknown".parse::<AclEntryKind>().unwrap()
+        );
+
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        assert_eq!(AclEntryKind::Mask, "mask".parse::<AclEntryKind>().unwrap());
+
+        #[cfg(target_os = "macos")]
+        assert_eq!(
+            "unknown variant `x`, expected one of `user`, `group`, `unknown`",
+            "x".parse::<AclEntryKind>().unwrap_err().to_string()
+        );
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(
+            "unknown variant `x`, expected one of `user`, `group`, `mask`, `other`, `unknown`",
+            "x".parse::<AclEntryKind>().unwrap_err().to_string()
+        );
+
+        #[cfg(target_os = "freebsd")]
+        assert_eq!(
+            "unknown variant `x`, expected one of `user`, `group`, `mask`, `other`, `everyone`, `unknown`",
+            "x".parse::<AclEntryKind>().unwrap_err().to_string()
+        );
     }
 }
