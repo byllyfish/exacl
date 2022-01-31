@@ -95,10 +95,13 @@ fn err_enum<T>(s: &str, table: &'static [(T, &'static str)]) -> Error {
         .collect::<Vec<String>>()
         .join(", ");
 
-    Error::Message(format!(
-        "unknown variant `{}`, expected one of {}",
-        s, variants
-    ))
+    let msg = if table.len() == 1 {
+        format!("unknown variant `{}`, expected {}", s, variants)
+    } else {
+        format!("unknown variant `{}`, expected one of {}", s, variants)
+    };
+
+    Error::Message(msg)
 }
 
 /// Write value of an AclEntryKind.
