@@ -81,6 +81,8 @@ impl BitIterable for Flag {
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 pub enum FlagName {
+    // *N.B.* Update the corresponding table in format/format_no_serde.rs
+    // if any of these entries change.
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     inherited = Flag::INHERITED.bits as u32,
 
@@ -101,7 +103,7 @@ pub enum FlagName {
 }
 
 impl FlagName {
-    fn from_flag(flag: Flag) -> Option<FlagName> {
+    const fn from_flag(flag: Flag) -> Option<FlagName> {
         match flag {
             #[cfg(any(target_os = "macos", target_os = "freebsd"))]
             Flag::INHERITED => Some(FlagName::inherited),
@@ -134,7 +136,7 @@ impl FlagName {
 
 impl fmt::Display for FlagName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        format::write_flagname(f, self)
+        format::write_flagname(f, *self)
     }
 }
 

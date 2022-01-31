@@ -18,6 +18,8 @@ use std::io;
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
 pub enum AclEntryKind {
+    // *N.B.* Update the corresponding table in format/format_no_serde.rs
+    // if any of these entries change.
     /// Entry represents a user.
     User,
 
@@ -257,7 +259,7 @@ impl AclEntry {
 
 impl fmt::Display for AclEntryKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        format::write_aclentrykind(f, self)
+        format::write_aclentrykind(f, *self)
     }
 }
 

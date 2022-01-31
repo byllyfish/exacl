@@ -157,6 +157,8 @@ impl BitIterable for Perm {
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 pub enum PermName {
+    // *N.B.* Update the corresponding table in format/format_no_serde.rs
+    // if any of these entries change.
     read = Perm::READ.bits,
 
     write = Perm::WRITE.bits,
@@ -204,7 +206,7 @@ pub enum PermName {
 }
 
 impl PermName {
-    fn from_perm(perm: Perm) -> Option<PermName> {
+    const fn from_perm(perm: Perm) -> Option<PermName> {
         match perm {
             Perm::READ => Some(PermName::read),
 
@@ -262,7 +264,7 @@ impl PermName {
 
 impl fmt::Display for PermName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        format::write_permname(f, self)
+        format::write_permname(f, *self)
     }
 }
 

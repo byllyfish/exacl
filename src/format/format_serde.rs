@@ -12,7 +12,7 @@ use crate::perm::PermName;
 
 /// Write value of a simple enum as a `serde` serialized string.
 #[allow(clippy::unnecessary_wraps)]
-fn write_enum<T: Serialize>(f: &mut fmt::Formatter, value: &T) -> fmt::Result {
+fn write_enum<T: Serialize>(f: &mut fmt::Formatter, value: T) -> fmt::Result {
     let mut serializer = EnumSerializer(f);
     value
         .serialize(&mut serializer)
@@ -29,32 +29,32 @@ where
     T::deserialize(&mut deserializer)
 }
 
-/// Write value of an AclEntryKind.
-pub fn write_aclentrykind(f: &mut fmt::Formatter, value: &AclEntryKind) -> fmt::Result {
+/// Write value of an `AclEntryKind`.
+pub fn write_aclentrykind(f: &mut fmt::Formatter, value: AclEntryKind) -> fmt::Result {
     write_enum(f, value)
 }
 
-// Read value of an AclEntryKind.
+// Read value of an `AclEntryKind`.
 pub fn read_aclentrykind(s: &str) -> Result<AclEntryKind> {
     read_enum(s)
 }
 
-/// Write value of a FlagName.
-pub fn write_flagname(f: &mut fmt::Formatter, value: &FlagName) -> fmt::Result {
+/// Write value of a `FlagName`.
+pub fn write_flagname(f: &mut fmt::Formatter, value: FlagName) -> fmt::Result {
     write_enum(f, value)
 }
 
-// Read value of a FlagName.
+// Read value of a `FlagName`.
 pub fn read_flagname(s: &str) -> Result<FlagName> {
     read_enum(s)
 }
 
-/// Write value of a PermName.
-pub fn write_permname(f: &mut fmt::Formatter, value: &PermName) -> fmt::Result {
+/// Write value of a `PermName`.
+pub fn write_permname(f: &mut fmt::Formatter, value: PermName) -> fmt::Result {
     write_enum(f, value)
 }
 
-// Read value of a PermName.
+// Read value of a `PermName`.
 pub fn read_permname(s: &str) -> Result<PermName> {
     read_enum(s)
 }
