@@ -257,7 +257,7 @@ impl AclEntry {
 
 impl fmt::Display for AclEntryKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        format::write_enum(f, self)
+        format::write_aclentrykind(f, self)
     }
 }
 
@@ -272,7 +272,7 @@ impl std::str::FromStr for AclEntryKind {
             "o" => Ok(AclEntryKind::Other),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             "m" => Ok(AclEntryKind::Mask),
-            _ => format::read_enum(s),
+            _ => format::read_aclentrykind(s),
         }
     }
 }
@@ -549,5 +549,39 @@ mod aclentry_tests {
             let entry = input.parse::<AclEntry>().unwrap();
             assert_eq!(*expected, entry.to_string());
         }
+    }
+
+    #[test]
+    fn test_kind_fromstr() {
+        assert_eq!(AclEntryKind::User, "user".parse::<AclEntryKind>().unwrap());
+        assert_eq!(
+            AclEntryKind::Group,
+            "group".parse::<AclEntryKind>().unwrap()
+        );
+        assert_eq!(
+            AclEntryKind::Unknown,
+            "unknown".parse::<AclEntryKind>().unwrap()
+        );
+
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        assert_eq!(AclEntryKind::Mask, "mask".parse::<AclEntryKind>().unwrap());
+
+        #[cfg(target_os = "macos")]
+        assert_eq!(
+            "unknown variant `x`, expected one of `user`, `group`, `unknown`",
+            "x".parse::<AclEntryKind>().unwrap_err().to_string()
+        );
+
+        #[cfg(target_os = "linux")]
+        assert_eq!(
+            "unknown variant `x`, expected one of `user`, `group`, `mask`, `other`, `unknown`",
+            "x".parse::<AclEntryKind>().unwrap_err().to_string()
+        );
+
+        #[cfg(target_os = "freebsd")]
+        assert_eq!(
+            "unknown variant `x`, expected one of `user`, `group`, `mask`, `other`, `everyone`, `unknown`",
+            "x".parse::<AclEntryKind>().unwrap_err().to_string()
+        );
     }
 }

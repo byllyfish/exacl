@@ -76,11 +76,11 @@ impl BitIterable for Flag {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-enum FlagName {
+pub enum FlagName {
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     inherited = Flag::INHERITED.bits as u32,
 
@@ -134,7 +134,7 @@ impl FlagName {
 
 impl fmt::Display for FlagName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        format::write_enum(f, self)
+        format::write_flagname(f, self)
     }
 }
 
@@ -172,7 +172,7 @@ impl std::str::FromStr for FlagName {
     type Err = format::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        format::read_enum(s)
+        format::read_flagname(s)
     }
 }
 

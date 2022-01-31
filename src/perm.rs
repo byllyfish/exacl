@@ -152,11 +152,11 @@ impl BitIterable for Perm {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-enum PermName {
+pub enum PermName {
     read = Perm::READ.bits,
 
     write = Perm::WRITE.bits,
@@ -262,7 +262,7 @@ impl PermName {
 
 impl fmt::Display for PermName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        format::write_enum(f, self)
+        format::write_permname(f, self)
     }
 }
 
@@ -305,7 +305,7 @@ impl std::str::FromStr for PermName {
     type Err = format::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        format::read_enum(s)
+        format::read_permname(s)
     }
 }
 
