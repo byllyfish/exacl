@@ -70,10 +70,10 @@ const PERMS: &'static [(PermName, &'static str)] = &[
 /// Write value of an enum as a string using the given (enum, str) table.
 fn write_enum<T: PartialEq>(
     f: &mut fmt::Formatter,
-    value: &T,
+    value: T,
     table: &'static [(T, &'static str)],
 ) -> fmt::Result {
-    match table.iter().find(|item| item.0 == *value) {
+    match table.iter().find(|item| item.0 == value) {
         Some((_, name)) => write!(f, "{}", name),
         None => write!(f, "!!"),
     }
@@ -102,7 +102,7 @@ fn err_enum<T>(s: &str, table: &'static [(T, &'static str)]) -> Error {
 }
 
 /// Write value of an AclEntryKind.
-pub fn write_aclentrykind(f: &mut fmt::Formatter, value: &AclEntryKind) -> fmt::Result {
+pub fn write_aclentrykind(f: &mut fmt::Formatter, value: AclEntryKind) -> fmt::Result {
     write_enum(f, value, ACLENTRYKINDS)
 }
 
@@ -112,7 +112,7 @@ pub fn read_aclentrykind(s: &str) -> Result<AclEntryKind> {
 }
 
 /// Write value of a FlagName.
-pub fn write_flagname(f: &mut fmt::Formatter, value: &FlagName) -> fmt::Result {
+pub fn write_flagname(f: &mut fmt::Formatter, value: FlagName) -> fmt::Result {
     write_enum(f, value, FLAGS)
 }
 
@@ -122,7 +122,7 @@ pub fn read_flagname(s: &str) -> Result<FlagName> {
 }
 
 /// Write value of a PermName.
-pub fn write_permname(f: &mut fmt::Formatter, value: &PermName) -> fmt::Result {
+pub fn write_permname(f: &mut fmt::Formatter, value: PermName) -> fmt::Result {
     write_enum(f, value, PERMS)
 }
 
