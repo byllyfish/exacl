@@ -5,6 +5,7 @@ use crate::format;
 use crate::sys::*;
 
 use bitflags::bitflags;
+#[cfg(feature = "serde")]
 use serde::{de, ser, Deserialize, Serialize};
 use std::fmt;
 
@@ -151,7 +152,8 @@ impl BitIterable for Perm {
     }
 }
 
-#[derive(Deserialize, Serialize, Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 enum PermName {
@@ -328,6 +330,7 @@ impl std::str::FromStr for Perm {
     }
 }
 
+#[cfg(feature = "serde")]
 impl ser::Serialize for Perm {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -344,6 +347,7 @@ impl ser::Serialize for Perm {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> de::Deserialize<'de> for Perm {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
