@@ -127,13 +127,13 @@ mod bititer_tests {
         }
 
         fn msb(self) -> Option<Self> {
-            #[allow(clippy::cast_possible_truncation)]
-            const MAX_BITS: u32 = 8 * std::mem::size_of::<TestBit>() as u32 - 1;
+            const MAX_BIT: u32 = u32::BITS - 1;
+
             if self.is_empty() {
                 return None;
             }
             Some(TestBit {
-                bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
+                bits: 1 << (MAX_BIT - self.bits.leading_zeros()),
             })
         }
     }

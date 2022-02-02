@@ -63,15 +63,13 @@ impl BitIterable for Flag {
     }
 
     fn msb(self) -> Option<Self> {
-        // FIXME: Replace computation with `BITS` once it lands in stable.
-        #[allow(clippy::cast_possible_truncation)]
-        const MAX_BITS: acl_flag_t = 8 * std::mem::size_of::<Flag>() as acl_flag_t - 1;
+        const MAX_BIT: acl_flag_t = acl_flag_t::BITS - 1;
 
         if self.is_empty() {
             return None;
         }
         Some(Flag {
-            bits: 1 << (MAX_BITS - self.bits.leading_zeros() as acl_flag_t),
+            bits: 1 << (MAX_BIT - self.bits.leading_zeros() as acl_flag_t),
         })
     }
 }
