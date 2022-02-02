@@ -13,7 +13,11 @@ categories = ["filesystem"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["serde"]
+# There are two optional features that you can enable:
+#  - serde
+#  - buildtime_bindgen
+
+default = []
 
 # Use bindgen to build OS-specific bindings.
 #

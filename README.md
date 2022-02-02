@@ -36,7 +36,7 @@ setfacl(&["./tmp/foo"], &acl, None)?;
 - Supports the Posix ACL's used by Linux and FreeBSD.
 - Supports the extended ACL's used by macOS and FreeBSD/NFSv4.
 - Supports reading/writing of ACL's as delimited text.
-- Supports serde for easy reading/writing of ACL's to JSON, YAML and other common formats.
+- Supports serde (optional) for easy reading/writing of ACL's to JSON, YAML and other common formats.
 
 ## API
 
