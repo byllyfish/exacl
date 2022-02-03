@@ -16,44 +16,42 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::process;
 
-use clap::arg_enum;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(name = "exacl", about = "Read or write a file's ACL.")]
+#[derive(clap::Parser)]
+#[clap(name = "exacl", about = "Read or write a file's ACL.")]
 #[allow(clippy::struct_excessive_bools)]
 struct Opt {
     /// Set file's ACL.
-    #[structopt(long)]
+    #[clap(long)]
     set: bool,
 
     /// Get or set the access ACL.
-    #[structopt(short = "a", long)]
+    #[clap(short = 'a', long)]
     access: bool,
 
     /// Get or set the default ACL.
-    #[structopt(short = "d", long)]
+    #[clap(short = 'd', long)]
     default: bool,
 
     /// Get or set the ACL of a symlink itself.
-    #[structopt(short = "s", long)]
+    #[clap(short = 's', long)]
     symlink: bool,
 
     /// Format of input or output.
-    #[structopt(short = "f", long, possible_values = &Format::variants(), case_insensitive = true, default_value = "Json")]
+    #[clap(short = 'f', long, arg_enum, default_value = "json")]
     format: Format,
 
     /// Input files
-    #[structopt(parse(from_os_str))]
+    #[clap(parse(from_os_str))]
     files: Vec<PathBuf>,
 }
 
-arg_enum! {
-    #[derive(Copy, Clone, Debug)]
-    enum Format {
-        Json,
-        Std,
-    }
+#[derive(Copy, Clone, Debug, clap::ArgEnum)]
+#[clap(rename_all = "lower")]
+enum Format {
+    Json,
+    Std,
 }
 
 const EXIT_SUCCESS: i32 = 0;
@@ -62,7 +60,7 @@ const EXIT_FAILURE: i32 = 1;
 fn main() {
     env_logger::init();
 
-    let opt = Opt::from_args();
+    let opt = Opt::parse();
 
     let mut options = AclOption::empty();
     if opt.access {
