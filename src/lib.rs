@@ -411,18 +411,13 @@ pub fn from_str(s: &str) -> io::Result<Vec<AclEntry>> {
 /// to the owner/group/other permission bits given in `mode`.
 ///
 /// Extra bits outside the mask 0o777 are ignored.
-///
-/// # Panics
-///
-/// Panics if used on a platform where the `rwx` bits don't correspond to
-/// defined `Perm` values (e.g. macOS).
 #[cfg(any(docsrs, target_os = "linux", target_os = "freebsd"))]
 #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
 #[must_use]
 pub fn from_mode(mode: u32) -> Vec<AclEntry> {
     vec![
-        AclEntry::allow_user("", Perm::from_bits((mode >> 6) & 7).unwrap(), None),
-        AclEntry::allow_group("", Perm::from_bits((mode >> 3) & 7).unwrap(), None),
-        AclEntry::allow_other(Perm::from_bits(mode & 7).unwrap(), None),
+        AclEntry::allow_user("", Perm::from_bits_truncate((mode >> 6) & 7), None),
+        AclEntry::allow_group("", Perm::from_bits_truncate((mode >> 3) & 7), None),
+        AclEntry::allow_other(Perm::from_bits_truncate(mode & 7), None),
     ]
 }

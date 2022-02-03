@@ -50,8 +50,8 @@ fi
 
 # Build & Test
 cargo +nightly clean
-cargo +nightly test
-cargo +nightly build
+cargo +nightly test --features serde
+cargo +nightly build --features serde
 ./tests/run_tests.sh
 
 if [ "$arg1" = "open" ]; then
