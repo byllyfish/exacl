@@ -38,13 +38,15 @@ task:
     - . $HOME/.cargo/env
     # Set up path for shunit2.
     - export PATH="$PATH:/tmp/bin"
-    - cargo build
-    - cargo test --no-run   # Compile only
+    - cargo fetch
+    - cargo build   # Build no-serde
+    - cargo build --features serde   # Build with serde
+    - cargo test --no-run --features serde  # Compile only
     # Run tests on our mem-based FS with acls.
     - export TMPDIR=/tmp/exacl_acls
-    - cargo test
+    - cargo test --features serde
     - export TMPDIR=/tmp/exacl_nfsv4acls
-    - cargo test
+    - cargo test --features serde
     - ./tests/run_tests.sh
     - export TMPDIR=/tmp
     - ./ci/bindgen.sh
