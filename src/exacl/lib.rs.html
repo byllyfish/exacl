@@ -426,11 +426,6 @@
 <span id="421">421</span>
 <span id="422">422</span>
 <span id="423">423</span>
-<span id="424">424</span>
-<span id="425">425</span>
-<span id="426">426</span>
-<span id="427">427</span>
-<span id="428">428</span>
 </pre><pre class="rust"><code><span class="doccomment">//! # exacl</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Manipulate file system access control lists (ACL) on `macOS`, `Linux`, and</span>
@@ -844,21 +839,16 @@
 <span class="doccomment">/// to the owner/group/other permission bits given in `mode`.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Extra bits outside the mask 0o777 are ignored.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Panics</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Panics if used on a platform where the `rwx` bits don&#39;t correspond to</span>
-<span class="doccomment">/// defined `Perm` values (e.g. macOS).</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))]</span>
 <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>))))]</span>
 <span class="attribute">#[<span class="ident">must_use</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_mode</span>(<span class="ident">mode</span>: <span class="ident">u32</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AclEntry</span><span class="op">&gt;</span> {
     <span class="macro">vec!</span>[
-        <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::from_bits</span>((<span class="ident">mode</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">6</span>) <span class="op">&amp;</span> <span class="number">7</span>).<span class="ident">unwrap</span>(), <span class="prelude-val">None</span>),
-        <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::from_bits</span>((<span class="ident">mode</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">3</span>) <span class="op">&amp;</span> <span class="number">7</span>).<span class="ident">unwrap</span>(), <span class="prelude-val">None</span>),
-        <span class="ident">AclEntry::allow_other</span>(<span class="ident">Perm::from_bits</span>(<span class="ident">mode</span> <span class="op">&amp;</span> <span class="number">7</span>).<span class="ident">unwrap</span>(), <span class="prelude-val">None</span>),
+        <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::from_bits_truncate</span>((<span class="ident">mode</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">6</span>) <span class="op">&amp;</span> <span class="number">7</span>), <span class="prelude-val">None</span>),
+        <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::from_bits_truncate</span>((<span class="ident">mode</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">3</span>) <span class="op">&amp;</span> <span class="number">7</span>), <span class="prelude-val">None</span>),
+        <span class="ident">AclEntry::allow_other</span>(<span class="ident">Perm::from_bits_truncate</span>(<span class="ident">mode</span> <span class="op">&amp;</span> <span class="number">7</span>), <span class="prelude-val">None</span>),
     ]
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (08df8b81d 2022-01-30)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (27f5d830e 2022-02-02)" ></div>
 </body></html>
