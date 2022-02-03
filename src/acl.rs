@@ -364,11 +364,14 @@ impl Acl {
 
     /// Return true if file uses an `NFSv4` ACL (`FreeBSD` only).
     ///
+    /// Only used in testing.
+    ///
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
     #[cfg(any(docsrs, target_os = "freebsd"))]
     #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
+    #[allow(dead_code)]
     pub fn is_nfs4(path: &Path, options: AclOption) -> io::Result<bool> {
         xacl_is_nfs4(path, options.contains(AclOption::SYMLINK_ACL))
     }
