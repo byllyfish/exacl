@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.0] - 2022-02-03
+
+- `serde` is now an optional dependency. Use `features = ["serde"]` to enable (Issue #95).
+- Remove the `num_enum` dependency (PR #94, contributed by bjorn3).
+- Update example code to use clap 3.
+
 ## [0.7.0] - 2021-12-25
 
 - Add the `from_mode` top level function.
