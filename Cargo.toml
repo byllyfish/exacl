@@ -1,6 +1,6 @@
 [package]
 name = "exacl"
-version = "0.7.0"
+version = "0.8.0"
 authors = ["Bill Fisher <william.w.fisher@gmail.com>"]
 description = "Manipulate file system access control lists (ACL) on macOS, Linux, and FreeBSD"
 repository = "https://github.com/byllyfish/exacl"
