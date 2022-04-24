@@ -42,9 +42,9 @@ if [ "$arg1" = "llvm-cov" ]; then
     export LLVM_PROFILE_FILE=/tmp/llvm_profile/profile-%p.profraw
     cargo +nightly install rustfilt
 else
-    export CARGO_INCREMENTAL=0
-    export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests"
-    export RUSTDOCFLAGS="-Cpanic=abort"
+    rustup component add llvm-tools-preview
+    export RUSTFLAGS="-Cinstrument-coverage"
+    export LLVM_PROFILE_FILE="exacl-%p-%m.profraw"
     cargo +nightly install grcov
 fi
 
@@ -56,17 +56,19 @@ cargo +nightly build --features serde
 
 if [ "$arg1" = "open" ]; then
     echo "Producing HTML Report locally"
+    grcov . --binary-path ./target/debug/ -s . -t html --branch --ignore-not-existing --ignore "/*" -o ./target/debug/coverage/
     # shellcheck disable=SC2046
-    zip -0 ccov$$.zip $(find . \( -name "exacl*.gc*" \) -print)
-    grcov ccov$$.zip -s . -t html --llvm --branch --ignore-not-existing --ignore "/*" --excl-br-line "$excl_br_line" -o ./target/debug/coverage/
-    rm ccov$$.zip
+    #zip -0 ccov$$.zip $(find . \( -name "exacl*.gc*" \) -print)
+    #grcov ccov$$.zip -s . -t html --llvm --branch --ignore-not-existing --ignore "/*" --excl-br-line "$excl_br_line" -o ./target/debug/coverage/
+    #rm ccov$$.zip
     open target/debug/coverage/index.html
 elif [ "$arg1" = "codecov" ]; then
     echo "Producing lcov report and uploading it to codecov.io"
+    grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
     # shellcheck disable=SC2046
-    zip -0 ccov$$.zip $(find . \( -name "exacl*.gc*" \) -print)
-    grcov ccov$$.zip -s . -t lcov --llvm --branch --ignore-not-existing --ignore "/*" --excl-br-line "$excl_br_line" -o lcov.info
-    rm ccov$$.zip
+    #zip -0 ccov$$.zip $(find . \( -name "exacl*.gc*" \) -print)
+    #grcov ccov$$.zip -s . -t lcov --llvm --branch --ignore-not-existing --ignore "/*" --excl-br-line "$excl_br_line" -o lcov.info
+    #rm ccov$$.zip
     bash <(curl -s https://codecov.io/bash) -f lcov.info -n "$os"
 elif [ "$arg1" = "llvm-cov" ]; then
     echo "Producing llvm-cov report in Terminal."
