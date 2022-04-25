@@ -1,4 +1,6 @@
-# Exacl &emsp; [![CRATE]][crates] [![API]][docs] [![CI]][actions] [![BUILD]][cirrus]
+# Exacl
+
+[![CRATE]][crates] [![API]][docs] [![CI]][actions] [![BUILD]][cirrus] [![COV]][codecov]
 
 [CRATE]: https://img.shields.io/crates/v/exacl
 [crates]: https://crates.io/crates/exacl
@@ -8,6 +10,8 @@
 [docs]: https://byllyfish.github.io/exacl
 [BUILD]: https://api.cirrus-ci.com/github/byllyfish/exacl.svg
 [cirrus]: https://cirrus-ci.com/github/byllyfish/exacl
+[COV]: https://codecov.io/gh/byllyfish/exacl/branch/main/graph/badge.svg?token=SWkSyVc1w6
+[codecov]: https://codecov.io/gh/byllyfish/exacl
 
 Rust library to manipulate file system access control lists (ACL) on `macOS`, `Linux`, and `FreeBSD`.
 
