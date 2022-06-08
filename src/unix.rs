@@ -8,6 +8,7 @@ use crate::sys::{id_t, mbr_gid_to_uuid, mbr_uid_to_uuid, mbr_uuid_to_id};
 use std::ffi::{CStr, CString};
 use std::io;
 use std::mem;
+use std::os::raw::c_char;
 use std::ptr;
 #[cfg(target_os = "macos")]
 use uuid::Uuid;
@@ -29,7 +30,7 @@ const MAX_BUFSIZE: usize = 1_048_576; // 1MB
 /// Convert user name to uid.
 pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
     let mut pwd = mem::MaybeUninit::<passwd>::uninit();
-    let mut buf = Vec::<i8>::with_capacity(INITIAL_BUFSIZE);
+    let mut buf = Vec::<c_char>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
     let cstr = CString::new(name)?;
 
@@ -73,7 +74,7 @@ pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
 /// Convert group name to gid.
 pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
     let mut grp = mem::MaybeUninit::<group>::uninit();
-    let mut buf = Vec::<i8>::with_capacity(INITIAL_BUFSIZE);
+    let mut buf = Vec::<c_char>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
     let cstr = CString::new(name)?;
 
@@ -117,7 +118,7 @@ pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
 /// Convert uid to user name.
 pub fn uid_to_name(uid: uid_t) -> io::Result<String> {
     let mut pwd = mem::MaybeUninit::<passwd>::uninit();
-    let mut buf = Vec::<i8>::with_capacity(INITIAL_BUFSIZE);
+    let mut buf = Vec::<c_char>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
 
     let mut ret;
@@ -155,7 +156,7 @@ pub fn uid_to_name(uid: uid_t) -> io::Result<String> {
 /// Convert gid to group name.
 pub fn gid_to_name(gid: gid_t) -> io::Result<String> {
     let mut grp = mem::MaybeUninit::<group>::uninit();
-    let mut buf = Vec::<i8>::with_capacity(INITIAL_BUFSIZE);
+    let mut buf = Vec::<c_char>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
 
     let mut ret;
