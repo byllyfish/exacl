@@ -38,7 +38,8 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
     let mut builder = bindgen::Builder::default()
         .header(wrapper)
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
-        .disable_header_comment();
+        .disable_header_comment()
+        .layout_tests(false);  // no layout tests for passwd/group structs.
 
     if cfg!(target_os = "macos") {
         // Pass output of `xcrun --sdk macosx --show-sdk-path`.
