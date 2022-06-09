@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.0] - 2022-06-08
+
+- Fix compilation on various Linux architectures where `c_char` is signed (Issue #107).
+- Disable `layout_tests` option in `bindgen`.
+- Update version dependencies for `bindgen` and `uuid`.
+- Improve code coverage CI script.
+- Fix clippy warnings.
+
 ## [0.8.0] - 2022-02-03
 
 - `serde` is now an optional dependency. Use `features = ["serde"]` to enable (Issue #95).
