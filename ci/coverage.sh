@@ -9,19 +9,22 @@ set -e
 arg1="$1"
 os=$(uname -s | tr '[:upper:]' '[:lower:]')
 
-# Install Rust nightly.
-rustup install nightly
+# To use nightly rust: NIGHTLY="+nightly"
+NIGHTLY=""
+
+if [ -n "$NIGHTLY" ]; then
+    rustup install nightly
+fi
 
 # Set up grcov.
-rustup component add llvm-tools-preview
 export RUSTFLAGS="-Cinstrument-coverage"
 export LLVM_PROFILE_FILE="exacl-%p-%m.profraw"
-cargo +nightly install grcov
+cargo $NIGHTLY install grcov
 
 # Build & Test
-cargo +nightly clean
-cargo +nightly test --features serde
-cargo +nightly build --features serde
+cargo $NIGHTLY clean
+cargo $NIGHTLY test --features serde
+cargo $NIGHTLY build --features serde
 ./tests/run_tests.sh
 
 if [ "$arg1" = "open" ]; then
