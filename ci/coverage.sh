@@ -17,6 +17,7 @@ if [ -n "$NIGHTLY" ]; then
 fi
 
 # Set up grcov.
+rustup component add llvm-tools-preview
 export RUSTFLAGS="-Cinstrument-coverage"
 export LLVM_PROFILE_FILE="exacl-%p-%m.profraw"
 cargo $NIGHTLY install grcov

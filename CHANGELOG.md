@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+- Fix code coverage CI script to address GHA build issue.
+- Include ubuntu-22.04 and macos-12 in CI build.
+
 ## [0.9.0] - 2022-06-08
 
 - Fix compilation on various Linux architectures where `c_char` is signed (Issue #107).
