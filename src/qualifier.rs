@@ -18,7 +18,7 @@ const EVERYONE_NAME: &str = "";
 
 /// A Qualifier specifies the principal that is allowed/denied access to a
 /// resource.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Qualifier {
     User(unix::uid_t),
     Group(unix::gid_t),
