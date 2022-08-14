@@ -63,7 +63,7 @@ pub fn read_permname(s: &str) -> Result<PermName> {
 
 // This is a simple serializer class for enums.
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Error {
     Message(String),
     NotImplemented,
