@@ -66,7 +66,7 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
 fn xacl_set_file_symlink_alt(c_path: &CString, acl: acl_t) -> io::Result<()> {
     let fd = unsafe { open(c_path.as_ptr(), sg::O_SYMLINK) };
     if fd < 0 {
-        return fail_err(fd, "open", &c_path);
+        return fail_err(fd, "open", c_path);
     }
     defer! { unsafe{ close(fd) }; }
 

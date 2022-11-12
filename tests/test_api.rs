@@ -129,7 +129,7 @@ allow::user:ccc:read,execute
 fn test_exclusive_acloptions() {
     let path = "/tmp";
 
-    let err1 = getfacl(&path, AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL).unwrap_err();
+    let err1 = getfacl(path, AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL).unwrap_err();
     assert_eq!(
         err1.to_string(),
         "ACCESS_ACL and DEFAULT_ACL are mutually exclusive options"
@@ -147,7 +147,7 @@ fn test_exclusive_acloptions() {
 fn test_exclusive_acloptions() {
     let path = "/tmp";
 
-    let err1 = getfacl(&path, AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL).unwrap_err();
+    let err1 = getfacl(path, AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL).unwrap_err();
     assert_eq!(
         err1.to_string(),
         "File \"/tmp\": macOS does not support default ACL"
