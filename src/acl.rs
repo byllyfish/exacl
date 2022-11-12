@@ -385,20 +385,13 @@ impl Drop for Acl {
 
 /// Return true if path exists and it's not a directory.
 fn is_non_directory(path: &Path, symlink: bool) -> bool {
-    if symlink {
-        let result = if let Ok(meta) = path.symlink_metadata() {
-            !meta.is_dir()
-        } else {
-            false
-        };
-        return result;
-    }
-
-    if let Ok(meta) = path.metadata() {
-        !meta.is_dir()
+    let result = if symlink {
+        path.symlink_metadata()
     } else {
-        false
-    }
+        path.metadata()
+    };
+
+    result.map_or(false, |meta| !meta.is_dir())
 }
 
 ////////////////////////////////////////////////////////////////////////////////
