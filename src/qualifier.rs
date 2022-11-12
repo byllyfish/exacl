@@ -61,11 +61,7 @@ impl Qualifier {
             Ok(uid) => Ok(Qualifier::User(uid)),
             Err(err) => {
                 // Try to parse name as a GUID.
-                if let Ok(uuid) = Uuid::parse_str(name) {
-                    Qualifier::from_guid(uuid)
-                } else {
-                    Err(err)
-                }
+                Uuid::parse_str(name).map_or(Err(err), Qualifier::from_guid)
             }
         }
     }
@@ -87,13 +83,7 @@ impl Qualifier {
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
         match unix::name_to_gid(name) {
             Ok(gid) => Ok(Qualifier::Group(gid)),
-            Err(err) => {
-                if let Ok(uuid) = Uuid::parse_str(name) {
-                    Qualifier::from_guid(uuid)
-                } else {
-                    Err(err)
-                }
-            }
+            Err(err) => Uuid::parse_str(name).map_or(Err(err), Qualifier::from_guid),
         }
     }
 
