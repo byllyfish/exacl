@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/flag.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>flag.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../exacl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../exacl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../exacl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/flag.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>flag.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-eabf764633b9d7be.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-777f3e9583f8c92d.css"><link rel="stylesheet" disabled href="../../static.files/dark-e2f4109f2e82e3af.css"><link rel="stylesheet" disabled href="../../static.files/ayu-c360e709a65bed99.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-c2d2a5dbaed13e6b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../exacl/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -351,157 +351,157 @@
 <span id="351">351</span>
 <span id="352">352</span>
 <span id="353">353</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Implements the inheritance flags.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Implements the inheritance flags.
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::bititer</span>::{<span class="ident">BitIter</span>, <span class="ident">BitIterable</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::format</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::sys</span>::<span class="kw-2">*</span>;
+</span><span class="kw">use </span><span class="kw">crate</span>::bititer::{BitIter, BitIterable};
+<span class="kw">use </span><span class="kw">crate</span>::format;
+<span class="kw">use </span><span class="kw">crate</span>::sys::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident">bitflags::bitflags</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;serde&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">de</span>, <span class="ident">ser</span>, <span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
+<span class="kw">use </span>bitflags::bitflags;
+<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+</span><span class="kw">use </span>serde::{de, ser, Deserialize, Serialize};
+<span class="kw">use </span>std::fmt;
 
-<span class="macro">bitflags!</span> {
-    <span class="doccomment">/// Represents ACL entry inheritance flags.</span>
-    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Flag</span> : <span class="ident">acl_flag_t</span> {
-        <span class="doccomment">/// ACL entry was inherited.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-        <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))))]</span>
-        <span class="kw">const</span> <span class="ident">INHERITED</span> = <span class="ident">np::ACL_ENTRY_INHERITED</span>;
+<span class="macro">bitflags! </span>{
+    <span class="doccomment">/// Represents ACL entry inheritance flags.
+    </span><span class="attr">#[derive(Default)]
+    </span><span class="kw">pub struct </span>Flag : acl_flag_t {
+        <span class="doccomment">/// ACL entry was inherited.
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="kw">const </span>INHERITED = np::ACL_ENTRY_INHERITED;
 
-        <span class="doccomment">/// Inherit to files.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-        <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))))]</span>
-        <span class="kw">const</span> <span class="ident">FILE_INHERIT</span> = <span class="ident">np::ACL_ENTRY_FILE_INHERIT</span>;
+        <span class="doccomment">/// Inherit to files.
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="kw">const </span>FILE_INHERIT = np::ACL_ENTRY_FILE_INHERIT;
 
-        <span class="doccomment">/// Inherit to directories.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-        <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))))]</span>
-        <span class="kw">const</span> <span class="ident">DIRECTORY_INHERIT</span> = <span class="ident">np::ACL_ENTRY_DIRECTORY_INHERIT</span>;
+        <span class="doccomment">/// Inherit to directories.
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="kw">const </span>DIRECTORY_INHERIT = np::ACL_ENTRY_DIRECTORY_INHERIT;
 
-        <span class="doccomment">/// Clear the DIRECTORY_INHERIT flag in the ACL entry that is inherited.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-        <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))))]</span>
-        <span class="kw">const</span> <span class="ident">LIMIT_INHERIT</span> = <span class="ident">np::ACL_ENTRY_LIMIT_INHERIT</span>;
+        <span class="doccomment">/// Clear the DIRECTORY_INHERIT flag in the ACL entry that is inherited.
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="kw">const </span>LIMIT_INHERIT = np::ACL_ENTRY_LIMIT_INHERIT;
 
-        <span class="doccomment">/// Don&#39;t consider this entry when processing the ACL. Just inherit it.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-        <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))))]</span>
-        <span class="kw">const</span> <span class="ident">ONLY_INHERIT</span> = <span class="ident">np::ACL_ENTRY_ONLY_INHERIT</span>;
+        <span class="doccomment">/// Don&#39;t consider this entry when processing the ACL. Just inherit it.
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="kw">const </span>ONLY_INHERIT = np::ACL_ENTRY_ONLY_INHERIT;
 
-        <span class="doccomment">/// Specifies a default ACL entry on Linux.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-        <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))))]</span>
-        <span class="kw">const</span> <span class="ident">DEFAULT</span> = <span class="number">1</span> &lt;&lt; <span class="number">13</span>;
+        <span class="doccomment">/// Specifies a default ACL entry on Linux.
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="kw">const </span>DEFAULT = <span class="number">1 </span>&lt;&lt; <span class="number">13</span>;
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-        <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>)))]</span>
-        <span class="doccomment">/// NFSv4 Specific Flags on FreeBSD.</span>
-        <span class="kw">const</span> <span class="ident">NFS4_SPECIFIC</span> = <span class="ident"><span class="self">Self</span>::INHERITED</span>.<span class="ident">bits</span> | <span class="ident"><span class="self">Self</span>::FILE_INHERIT</span>.<span class="ident">bits</span> | <span class="ident"><span class="self">Self</span>::DIRECTORY_INHERIT</span>.<span class="ident">bits</span> | <span class="ident"><span class="self">Self</span>::LIMIT_INHERIT</span>.<span class="ident">bits</span> | <span class="ident"><span class="self">Self</span>::ONLY_INHERIT</span>.<span class="ident">bits</span>;
+        <span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)))]
+        </span><span class="doccomment">/// NFSv4 Specific Flags on FreeBSD.
+        </span><span class="kw">const </span>NFS4_SPECIFIC = <span class="self">Self</span>::INHERITED.bits | <span class="self">Self</span>::FILE_INHERIT.bits | <span class="self">Self</span>::DIRECTORY_INHERIT.bits | <span class="self">Self</span>::LIMIT_INHERIT.bits | <span class="self">Self</span>::ONLY_INHERIT.bits;
     }
 }
 
-<span class="comment">// N.B. On FreeBSD, acl_flag_t is a u16. On Linux and macOS, acl_flag_t is a u32.</span>
+<span class="comment">// N.B. On FreeBSD, acl_flag_t is a u16. On Linux and macOS, acl_flag_t is a u32.
 
-<span class="kw">impl</span> <span class="ident">BitIterable</span> <span class="kw">for</span> <span class="ident">Flag</span> {
-    <span class="kw">fn</span> <span class="ident">lsb</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="prelude-val">None</span>;
+</span><span class="kw">impl </span>BitIterable <span class="kw">for </span>Flag {
+    <span class="kw">fn </span>lsb(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">if </span><span class="self">self</span>.is_empty() {
+            <span class="kw">return </span><span class="prelude-val">None</span>;
         }
-        <span class="prelude-val">Some</span>(<span class="ident">Flag</span> {
-            <span class="ident">bits</span>: <span class="number">1</span> &lt;&lt; <span class="self">self</span>.<span class="ident">bits</span>.<span class="ident">trailing_zeros</span>(),
+        <span class="prelude-val">Some</span>(Flag {
+            bits: <span class="number">1 </span>&lt;&lt; <span class="self">self</span>.bits.trailing_zeros(),
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">msb</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="comment">// FIXME: Replace computation with `BITS` once it lands in stable.</span>
-        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::cast_possible_truncation</span>)]</span>
-        <span class="kw">const</span> <span class="ident">MAX_BITS</span>: <span class="ident">acl_flag_t</span> = <span class="number">8</span> * <span class="ident">std::mem::size_of</span>::&lt;<span class="ident">Flag</span>&gt;() <span class="kw">as</span> <span class="ident">acl_flag_t</span> - <span class="number">1</span>;
+    <span class="kw">fn </span>msb(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="comment">// FIXME: Replace computation with `BITS` once it lands in stable.
+        </span><span class="attr">#[allow(clippy::cast_possible_truncation)]
+        </span><span class="kw">const </span>MAX_BITS: acl_flag_t = <span class="number">8 </span>* std::mem::size_of::&lt;Flag&gt;() <span class="kw">as </span>acl_flag_t - <span class="number">1</span>;
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="prelude-val">None</span>;
+        <span class="kw">if </span><span class="self">self</span>.is_empty() {
+            <span class="kw">return </span><span class="prelude-val">None</span>;
         }
-        <span class="prelude-val">Some</span>(<span class="ident">Flag</span> {
-            <span class="ident">bits</span>: <span class="number">1</span> &lt;&lt; (<span class="ident">MAX_BITS</span> - <span class="self">self</span>.<span class="ident">bits</span>.<span class="ident">leading_zeros</span>() <span class="kw">as</span> <span class="ident">acl_flag_t</span>),
+        <span class="prelude-val">Some</span>(Flag {
+            bits: <span class="number">1 </span>&lt;&lt; (MAX_BITS - <span class="self">self</span>.bits.leading_zeros() <span class="kw">as </span>acl_flag_t),
         })
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;serde&quot;</span>, <span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>))]</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">u32</span>)]</span>
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">FlagName</span> {
-    <span class="comment">// *N.B.* Update the corresponding table in format/format_no_serde.rs</span>
-    <span class="comment">// if any of these entries change.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="ident">inherited</span> = <span class="ident">Flag::INHERITED</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
+<span class="attr">#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = <span class="string">&quot;serde&quot;</span>, derive(Deserialize, Serialize))]
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+</span><span class="kw">pub enum </span>FlagName {
+    <span class="comment">// *N.B.* Update the corresponding table in format/format_no_serde.rs
+    // if any of these entries change.
+    </span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>inherited = Flag::INHERITED.bits <span class="kw">as </span>u32,
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="ident">file_inherit</span> = <span class="ident">Flag::FILE_INHERIT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>file_inherit = Flag::FILE_INHERIT.bits <span class="kw">as </span>u32,
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="ident">directory_inherit</span> = <span class="ident">Flag::DIRECTORY_INHERIT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>directory_inherit = Flag::DIRECTORY_INHERIT.bits <span class="kw">as </span>u32,
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="ident">limit_inherit</span> = <span class="ident">Flag::LIMIT_INHERIT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>limit_inherit = Flag::LIMIT_INHERIT.bits <span class="kw">as </span>u32,
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="ident">only_inherit</span> = <span class="ident">Flag::ONLY_INHERIT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>only_inherit = Flag::ONLY_INHERIT.bits <span class="kw">as </span>u32,
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="ident">default</span> = <span class="ident">Flag::DEFAULT</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">u32</span>,
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>default = Flag::DEFAULT.bits <span class="kw">as </span>u32,
 }
 
-<span class="kw">impl</span> <span class="ident">FlagName</span> {
-    <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">from_flag</span>(<span class="ident">flag</span>: <span class="ident">Flag</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">FlagName</span>&gt; {
-        <span class="kw">match</span> <span class="ident">flag</span> {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="ident">Flag::INHERITED</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">FlagName::inherited</span>),
+<span class="kw">impl </span>FlagName {
+    <span class="kw">const fn </span>from_flag(flag: Flag) -&gt; <span class="prelude-ty">Option</span>&lt;FlagName&gt; {
+        <span class="kw">match </span>flag {
+            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            </span>Flag::INHERITED =&gt; <span class="prelude-val">Some</span>(FlagName::inherited),
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="ident">Flag::FILE_INHERIT</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">FlagName::file_inherit</span>),
+            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            </span>Flag::FILE_INHERIT =&gt; <span class="prelude-val">Some</span>(FlagName::file_inherit),
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="ident">Flag::DIRECTORY_INHERIT</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">FlagName::directory_inherit</span>),
+            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            </span>Flag::DIRECTORY_INHERIT =&gt; <span class="prelude-val">Some</span>(FlagName::directory_inherit),
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="ident">Flag::LIMIT_INHERIT</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">FlagName::limit_inherit</span>),
+            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            </span>Flag::LIMIT_INHERIT =&gt; <span class="prelude-val">Some</span>(FlagName::limit_inherit),
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="ident">Flag::ONLY_INHERIT</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">FlagName::only_inherit</span>),
+            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            </span>Flag::ONLY_INHERIT =&gt; <span class="prelude-val">Some</span>(FlagName::only_inherit),
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="ident">Flag::DEFAULT</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">FlagName::default</span>),
+            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            </span>Flag::DEFAULT =&gt; <span class="prelude-val">Some</span>(FlagName::default),
 
-            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         }
     }
 
-    <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">to_flag</span>(<span class="self">self</span>) -&gt; <span class="ident">Flag</span> {
-        <span class="ident">Flag</span> {
-            <span class="ident">bits</span>: <span class="self">self</span> <span class="kw">as</span> <span class="ident">acl_flag_t</span>,
+    <span class="kw">const fn </span>to_flag(<span class="self">self</span>) -&gt; Flag {
+        Flag {
+            bits: <span class="self">self </span><span class="kw">as </span>acl_flag_t,
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">FlagName</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="ident">format::write_flagname</span>(<span class="ident">f</span>, <span class="kw-2">*</span><span class="self">self</span>)
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>FlagName {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
+        format::write_flagname(f, <span class="kw-2">*</span><span class="self">self</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Flag</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> = <span class="ident">BitIter</span>(<span class="kw-2">*</span><span class="self">self</span> &amp; <span class="ident">Flag::all</span>());
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>Flag {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="kw">let </span><span class="kw-2">mut </span>iter = BitIter(<span class="kw-2">*</span><span class="self">self </span>&amp; Flag::all());
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">flag</span>) = <span class="ident">iter</span>.<span class="ident">next</span>() {
-            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">FlagName::from_flag</span>(<span class="ident">flag</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(flag) = iter.next() {
+            <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, FlagName::from_flag(flag).unwrap())<span class="question-mark">?</span>;
 
-            <span class="kw">for</span> <span class="ident">flag</span> <span class="kw">in</span> <span class="ident">iter</span> {
-                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;,{}&quot;</span>, <span class="ident">FlagName::from_flag</span>(<span class="ident">flag</span>).<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
+            <span class="kw">for </span>flag <span class="kw">in </span>iter {
+                <span class="macro">write!</span>(f, <span class="string">&quot;,{}&quot;</span>, FlagName::from_flag(flag).unwrap())<span class="question-mark">?</span>;
             }
         }
 
@@ -509,200 +509,200 @@
     }
 }
 
-<span class="doccomment">/// Parse an abbreviated flag (&quot;d&quot;).</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-<span class="kw">fn</span> <span class="ident">parse_flag_abbreviation</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Flag</span>&gt; {
-    <span class="kw">match</span> <span class="ident">s</span> {
-        <span class="string">&quot;d&quot;</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">Flag::DEFAULT</span>),
-        <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+<span class="doccomment">/// Parse an abbreviated flag (&quot;d&quot;).
+</span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+</span><span class="kw">fn </span>parse_flag_abbreviation(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Flag&gt; {
+    <span class="kw">match </span>s {
+        <span class="string">&quot;d&quot; </span>=&gt; <span class="prelude-val">Some</span>(Flag::DEFAULT),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="kw">const</span> <span class="kw">fn</span> <span class="ident">parse_flag_abbreviation</span>(<span class="ident">_s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Flag</span>&gt; {
-    <span class="prelude-val">None</span>
-}
+<span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+</span><span class="kw">const fn </span>parse_flag_abbreviation(_s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Flag&gt; {
+    <span class="prelude-val">None
+</span>}
 
-<span class="kw">impl</span> <span class="ident">std::str::FromStr</span> <span class="kw">for</span> <span class="ident">FlagName</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> = <span class="ident">format::Error</span>;
+<span class="kw">impl </span>std::str::FromStr <span class="kw">for </span>FlagName {
+    <span class="kw">type </span><span class="prelude-val">Err </span>= format::Error;
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span>&gt; {
-        <span class="ident">format::read_flagname</span>(<span class="ident">s</span>)
+    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
+        format::read_flagname(s)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std::str::FromStr</span> <span class="kw">for</span> <span class="ident">Flag</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> = <span class="ident">format::Error</span>;
+<span class="kw">impl </span>std::str::FromStr <span class="kw">for </span>Flag {
+    <span class="kw">type </span><span class="prelude-val">Err </span>= format::Error;
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span>&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> = <span class="ident">Flag::empty</span>();
+    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>result = Flag::empty();
 
-        <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="ident">s</span>.<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>) {
-            <span class="kw">let</span> <span class="ident">word</span> = <span class="ident">item</span>.<span class="ident">trim</span>();
-            <span class="kw">if</span> !<span class="ident">word</span>.<span class="ident">is_empty</span>() {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">flag</span>) = <span class="ident">parse_flag_abbreviation</span>(<span class="ident">word</span>) {
-                    <span class="ident">result</span> |= <span class="ident">flag</span>;
-                } <span class="kw">else</span> {
-                    <span class="ident">result</span> |= <span class="ident">word</span>.<span class="ident">parse</span>::&lt;<span class="ident">FlagName</span>&gt;()<span class="question-mark">?</span>.<span class="ident">to_flag</span>();
+        <span class="kw">for </span>item <span class="kw">in </span>s.split(<span class="string">&#39;,&#39;</span>) {
+            <span class="kw">let </span>word = item.trim();
+            <span class="kw">if </span>!word.is_empty() {
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(flag) = parse_flag_abbreviation(word) {
+                    result |= flag;
+                } <span class="kw">else </span>{
+                    result |= word.parse::&lt;FlagName&gt;()<span class="question-mark">?</span>.to_flag();
                 }
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
+        <span class="prelude-val">Ok</span>(result)
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;serde&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">ser::Serialize</span> <span class="kw">for</span> <span class="ident">Flag</span> {
-    <span class="kw">fn</span> <span class="ident">serialize</span>&lt;<span class="ident">S</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S::Ok</span>, <span class="ident">S::Error</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="ident">ser::Serializer</span>,
+<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+</span><span class="kw">impl </span>ser::Serialize <span class="kw">for </span>Flag {
+    <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+    <span class="kw">where
+        </span>S: ser::Serializer,
     {
-        <span class="kw">use</span> <span class="ident">ser::SerializeSeq</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">seq</span> = <span class="ident">serializer</span>.<span class="ident">serialize_seq</span>(<span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+        <span class="kw">use </span>ser::SerializeSeq;
+        <span class="kw">let </span><span class="kw-2">mut </span>seq = serializer.serialize_seq(<span class="prelude-val">None</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">for</span> <span class="ident">flag</span> <span class="kw">in</span> <span class="ident">BitIter</span>(<span class="kw-2">*</span><span class="self">self</span>) {
-            <span class="ident">seq</span>.<span class="ident">serialize_element</span>(<span class="kw-2">&amp;</span><span class="ident">FlagName::from_flag</span>(<span class="ident">flag</span>))<span class="question-mark">?</span>;
+        <span class="kw">for </span>flag <span class="kw">in </span>BitIter(<span class="kw-2">*</span><span class="self">self</span>) {
+            seq.serialize_element(<span class="kw-2">&amp;</span>FlagName::from_flag(flag))<span class="question-mark">?</span>;
         }
 
-        <span class="ident">seq</span>.<span class="ident">end</span>()
+        seq.end()
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;serde&quot;</span>)]</span>
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; <span class="ident">de::Deserialize</span>&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for</span> <span class="ident">Flag</span> {
-    <span class="kw">fn</span> <span class="ident">deserialize</span>&lt;<span class="ident">D</span>&gt;(<span class="ident">deserializer</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident">D::Error</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">de::Deserializer</span>&lt;<span class="lifetime">&#39;de</span>&gt;,
+<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; de::Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>Flag {
+    <span class="kw">fn </span>deserialize&lt;D&gt;(deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
+    <span class="kw">where
+        </span>D: de::Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
     {
-        <span class="kw">struct</span> <span class="ident">FlagVisitor</span>;
+        <span class="kw">struct </span>FlagVisitor;
 
-        <span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; <span class="ident">de::Visitor</span>&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for</span> <span class="ident">FlagVisitor</span> {
-            <span class="kw">type</span> <span class="ident">Value</span> = <span class="ident">Flag</span>;
+        <span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; de::Visitor&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>FlagVisitor {
+            <span class="kw">type </span>Value = Flag;
 
-            <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-                <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;list of flags&quot;</span>)
+            <span class="kw">fn </span>expecting(<span class="kw-2">&amp;</span><span class="self">self</span>, formatter: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
+                formatter.write_str(<span class="string">&quot;list of flags&quot;</span>)
             }
 
-            <span class="kw">fn</span> <span class="ident">visit_seq</span>&lt;<span class="ident">A</span>&gt;(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">seq</span>: <span class="ident">A</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident"><span class="self">Self</span>::Value</span>, <span class="ident">A::Error</span>&gt;
-            <span class="kw">where</span>
-                <span class="ident">A</span>: <span class="ident">de::SeqAccess</span>&lt;<span class="lifetime">&#39;de</span>&gt;,
+            <span class="kw">fn </span>visit_seq&lt;A&gt;(<span class="self">self</span>, <span class="kw-2">mut </span>seq: A) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Value, A::Error&gt;
+            <span class="kw">where
+                </span>A: de::SeqAccess&lt;<span class="lifetime">&#39;de</span>&gt;,
             {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">flags</span>: <span class="ident">Flag</span> = <span class="ident">Flag::empty</span>();
+                <span class="kw">let </span><span class="kw-2">mut </span>flags: Flag = Flag::empty();
 
-                <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>) = <span class="ident">seq</span>.<span class="ident">next_element</span>()<span class="question-mark">?</span> {
-                    <span class="kw">let</span> <span class="ident">name</span>: <span class="ident">FlagName</span> = <span class="ident">value</span>;
-                    <span class="ident">flags</span> |= <span class="ident">name</span>.<span class="ident">to_flag</span>();
+                <span class="kw">while let </span><span class="prelude-val">Some</span>(value) = seq.next_element()<span class="question-mark">? </span>{
+                    <span class="kw">let </span>name: FlagName = value;
+                    flags |= name.to_flag();
                 }
 
-                <span class="prelude-val">Ok</span>(<span class="ident">flags</span>)
+                <span class="prelude-val">Ok</span>(flags)
             }
         }
 
-        <span class="ident">deserializer</span>.<span class="ident">deserialize_seq</span>(<span class="ident">FlagVisitor</span>)
+        deserializer.deserialize_seq(FlagVisitor)
     }
 }
 
-<span class="comment">////////////////////////////////////////////////////////////////////////////////</span>
+<span class="comment">////////////////////////////////////////////////////////////////////////////////
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">flag_tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+</span><span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>flag_tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_flag_display</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">Flag::empty</span>().<span class="ident">to_string</span>(), <span class="string">&quot;&quot;</span>);
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_flag_display() {
+        <span class="macro">assert_eq!</span>(Flag::empty().to_string(), <span class="string">&quot;&quot;</span>);
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>)]</span>
-        {
-            <span class="kw">let</span> <span class="ident">flags</span> = <span class="ident">Flag::INHERITED</span> | <span class="ident">Flag::FILE_INHERIT</span>;
-            <span class="macro">assert_eq!</span>(<span class="ident">flags</span>.<span class="ident">to_string</span>(), <span class="string">&quot;inherited,file_inherit&quot;</span>);
+        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+        </span>{
+            <span class="kw">let </span>flags = Flag::INHERITED | Flag::FILE_INHERIT;
+            <span class="macro">assert_eq!</span>(flags.to_string(), <span class="string">&quot;inherited,file_inherit&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">bad_flag</span> = <span class="ident">Flag</span> { <span class="ident">bits</span>: <span class="number">0x0080_0000</span> } | <span class="ident">Flag::INHERITED</span>;
-            <span class="macro">assert_eq!</span>(<span class="ident">bad_flag</span>.<span class="ident">to_string</span>(), <span class="string">&quot;inherited&quot;</span>);
-
-            <span class="macro">assert_eq!</span>(
-                <span class="ident">Flag::all</span>().<span class="ident">to_string</span>(),
-                <span class="string">&quot;inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;</span>
-            );
-        }
-
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>)]</span>
-        {
-            <span class="kw">let</span> <span class="ident">flags</span> = <span class="ident">Flag::DEFAULT</span>;
-            <span class="macro">assert_eq!</span>(<span class="ident">flags</span>.<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
-
-            <span class="kw">let</span> <span class="ident">bad_flag</span> = <span class="ident">Flag</span> { <span class="ident">bits</span>: <span class="number">0x8000</span> } | <span class="ident">Flag::DEFAULT</span>;
-            <span class="macro">assert_eq!</span>(<span class="ident">bad_flag</span>.<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
-
-            <span class="macro">assert_eq!</span>(<span class="ident">Flag::all</span>().<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
-        }
-
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>)]</span>
-        {
-            <span class="kw">let</span> <span class="ident">flags</span> = <span class="ident">Flag::DEFAULT</span>;
-            <span class="macro">assert_eq!</span>(<span class="ident">flags</span>.<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
-
-            <span class="kw">let</span> <span class="ident">bad_flag</span> = <span class="ident">Flag</span> { <span class="ident">bits</span>: <span class="number">0x8000</span> } | <span class="ident">Flag::DEFAULT</span>;
-            <span class="macro">assert_eq!</span>(<span class="ident">bad_flag</span>.<span class="ident">to_string</span>(), <span class="string">&quot;default&quot;</span>);
+            <span class="kw">let </span>bad_flag = Flag { bits: <span class="number">0x0080_0000 </span>} | Flag::INHERITED;
+            <span class="macro">assert_eq!</span>(bad_flag.to_string(), <span class="string">&quot;inherited&quot;</span>);
 
             <span class="macro">assert_eq!</span>(
-                <span class="ident">Flag::all</span>().<span class="ident">to_string</span>(),
-                <span class="string">&quot;file_inherit,directory_inherit,limit_inherit,only_inherit,inherited,default&quot;</span>
-            );
+                Flag::all().to_string(),
+                <span class="string">&quot;inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;
+            </span>);
+        }
+
+        <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+        </span>{
+            <span class="kw">let </span>flags = Flag::DEFAULT;
+            <span class="macro">assert_eq!</span>(flags.to_string(), <span class="string">&quot;default&quot;</span>);
+
+            <span class="kw">let </span>bad_flag = Flag { bits: <span class="number">0x8000 </span>} | Flag::DEFAULT;
+            <span class="macro">assert_eq!</span>(bad_flag.to_string(), <span class="string">&quot;default&quot;</span>);
+
+            <span class="macro">assert_eq!</span>(Flag::all().to_string(), <span class="string">&quot;default&quot;</span>);
+        }
+
+        <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+        </span>{
+            <span class="kw">let </span>flags = Flag::DEFAULT;
+            <span class="macro">assert_eq!</span>(flags.to_string(), <span class="string">&quot;default&quot;</span>);
+
+            <span class="kw">let </span>bad_flag = Flag { bits: <span class="number">0x8000 </span>} | Flag::DEFAULT;
+            <span class="macro">assert_eq!</span>(bad_flag.to_string(), <span class="string">&quot;default&quot;</span>);
+
+            <span class="macro">assert_eq!</span>(
+                Flag::all().to_string(),
+                <span class="string">&quot;file_inherit,directory_inherit,limit_inherit,only_inherit,inherited,default&quot;
+            </span>);
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_flag_fromstr</span>() {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>)]</span>
-        {
-            <span class="macro">assert_eq!</span>(<span class="ident">Flag::empty</span>(), <span class="string">&quot;&quot;</span>.<span class="ident">parse</span>::&lt;<span class="ident">Flag</span>&gt;().<span class="ident">unwrap</span>());
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_flag_fromstr() {
+        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+        </span>{
+            <span class="macro">assert_eq!</span>(Flag::empty(), <span class="string">&quot;&quot;</span>.parse::&lt;Flag&gt;().unwrap());
 
-            <span class="kw">let</span> <span class="ident">flags</span> = <span class="ident">Flag::INHERITED</span> | <span class="ident">Flag::FILE_INHERIT</span>;
-            <span class="macro">assert_eq!</span>(<span class="ident">flags</span>, <span class="string">&quot;inherited,file_inherit&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
+            <span class="kw">let </span>flags = Flag::INHERITED | Flag::FILE_INHERIT;
+            <span class="macro">assert_eq!</span>(flags, <span class="string">&quot;inherited,file_inherit&quot;</span>.parse().unwrap());
 
             <span class="macro">assert_eq!</span>(
-                <span class="ident">Flag::all</span>(),
-                <span class="string">&quot;inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;</span>
-                    .<span class="ident">parse</span>()
-                    .<span class="ident">unwrap</span>()
+                Flag::all(),
+                <span class="string">&quot;inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;
+                    </span>.parse()
+                    .unwrap()
             );
 
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`&quot;</span>, <span class="string">&quot;bad_flag&quot;</span>.<span class="ident">parse</span>::&lt;<span class="ident">Flag</span>&gt;().<span class="ident">unwrap_err</span>().<span class="ident">to_string</span>());
+            <span class="macro">assert_eq!</span>(<span class="string">&quot;unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`&quot;</span>, <span class="string">&quot;bad_flag&quot;</span>.parse::&lt;Flag&gt;().unwrap_err().to_string());
         }
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>)]</span>
-        {
-            <span class="macro">assert_eq!</span>(<span class="ident">Flag::empty</span>(), <span class="string">&quot;&quot;</span>.<span class="ident">parse</span>::&lt;<span class="ident">Flag</span>&gt;().<span class="ident">unwrap</span>());
+        <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+        </span>{
+            <span class="macro">assert_eq!</span>(Flag::empty(), <span class="string">&quot;&quot;</span>.parse::&lt;Flag&gt;().unwrap());
 
-            <span class="macro">assert_eq!</span>(<span class="ident">Flag::DEFAULT</span>, <span class="string">&quot;d&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
-            <span class="macro">assert_eq!</span>(<span class="ident">Flag::all</span>(), <span class="string">&quot;default&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
+            <span class="macro">assert_eq!</span>(Flag::DEFAULT, <span class="string">&quot;d&quot;</span>.parse().unwrap());
+            <span class="macro">assert_eq!</span>(Flag::all(), <span class="string">&quot;default&quot;</span>.parse().unwrap());
 
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;unknown variant `bad_flag`, expected `default`&quot;</span>,
-                <span class="string">&quot;bad_flag&quot;</span>.<span class="ident">parse</span>::&lt;<span class="ident">Flag</span>&gt;().<span class="ident">unwrap_err</span>().<span class="ident">to_string</span>()
+                <span class="string">&quot;bad_flag&quot;</span>.parse::&lt;Flag&gt;().unwrap_err().to_string()
             );
         }
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>)]</span>
-        {
-            <span class="macro">assert_eq!</span>(<span class="ident">Flag::empty</span>(), <span class="string">&quot;&quot;</span>.<span class="ident">parse</span>::&lt;<span class="ident">Flag</span>&gt;().<span class="ident">unwrap</span>());
+        <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+        </span>{
+            <span class="macro">assert_eq!</span>(Flag::empty(), <span class="string">&quot;&quot;</span>.parse::&lt;Flag&gt;().unwrap());
 
-            <span class="macro">assert_eq!</span>(<span class="ident">Flag::DEFAULT</span>, <span class="string">&quot;d&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
+            <span class="macro">assert_eq!</span>(Flag::DEFAULT, <span class="string">&quot;d&quot;</span>.parse().unwrap());
             <span class="macro">assert_eq!</span>(
-                <span class="ident">Flag::all</span>(),
-                <span class="string">&quot;default,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;</span>
-                    .<span class="ident">parse</span>()
-                    .<span class="ident">unwrap</span>()
+                Flag::all(),
+                <span class="string">&quot;default,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;
+                    </span>.parse()
+                    .unwrap()
             );
 
             <span class="macro">assert_eq!</span>(
                 <span class="string">&quot;unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`, `default`&quot;</span>,
-                <span class="string">&quot;bad_flag&quot;</span>.<span class="ident">parse</span>::&lt;<span class="ident">Flag</span>&gt;().<span class="ident">unwrap_err</span>().<span class="ident">to_string</span>()
+                <span class="string">&quot;bad_flag&quot;</span>.parse::&lt;Flag&gt;().unwrap_err().to_string()
             );
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (42325c525 2022-11-11)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>

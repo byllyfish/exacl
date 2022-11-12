@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/format/format_no_serde.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>format_no_serde.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../exacl/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../exacl/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../exacl/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/format/format_no_serde.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>format_no_serde.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-eabf764633b9d7be.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-777f3e9583f8c92d.css"><link rel="stylesheet" disabled href="../../../static.files/dark-e2f4109f2e82e3af.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-c360e709a65bed99.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-c2d2a5dbaed13e6b.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../exacl/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -160,167 +160,167 @@
 <span id="160">160</span>
 <span id="161">161</span>
 <span id="162">162</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Implements helper functions for the built-in `AclEntry` format.</span>
-<span class="doccomment">//! These are used when `serde` is not available</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Implements helper functions for the built-in `AclEntry` format.
+//! These are used when `serde` is not available
 
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>;
+</span><span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::io;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::aclentry::AclEntryKind</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::flag::FlagName</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::perm::PermName</span>;
+<span class="kw">use </span><span class="kw">crate</span>::aclentry::AclEntryKind;
+<span class="kw">use </span><span class="kw">crate</span>::flag::FlagName;
+<span class="kw">use </span><span class="kw">crate</span>::perm::PermName;
 
-<span class="kw">const</span> <span class="ident">ACLENTRYKINDS</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<span class="ident">AclEntryKind</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>)] = <span class="kw-2">&amp;</span>[
-    (<span class="ident">AclEntryKind::User</span>, <span class="string">&quot;user&quot;</span>),
-    (<span class="ident">AclEntryKind::Group</span>, <span class="string">&quot;group&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">AclEntryKind::Mask</span>, <span class="string">&quot;mask&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">AclEntryKind::Other</span>, <span class="string">&quot;other&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>)]</span>
-    (<span class="ident">AclEntryKind::Everyone</span>, <span class="string">&quot;everyone&quot;</span>),
-    (<span class="ident">AclEntryKind::Unknown</span>, <span class="string">&quot;unknown&quot;</span>),
+<span class="kw">const </span>ACLENTRYKINDS: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(AclEntryKind, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str)] = <span class="kw-2">&amp;</span>[
+    (AclEntryKind::User, <span class="string">&quot;user&quot;</span>),
+    (AclEntryKind::Group, <span class="string">&quot;group&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(AclEntryKind::Mask, <span class="string">&quot;mask&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(AclEntryKind::Other, <span class="string">&quot;other&quot;</span>),
+    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    </span>(AclEntryKind::Everyone, <span class="string">&quot;everyone&quot;</span>),
+    (AclEntryKind::Unknown, <span class="string">&quot;unknown&quot;</span>),
 ];
 
-<span class="kw">const</span> <span class="ident">FLAGS</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<span class="ident">FlagName</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>)] = <span class="kw-2">&amp;</span>[
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">FlagName::inherited</span>, <span class="string">&quot;inherited&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">FlagName::file_inherit</span>, <span class="string">&quot;file_inherit&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">FlagName::directory_inherit</span>, <span class="string">&quot;directory_inherit&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">FlagName::limit_inherit</span>, <span class="string">&quot;limit_inherit&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">FlagName::only_inherit</span>, <span class="string">&quot;only_inherit&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">FlagName::default</span>, <span class="string">&quot;default&quot;</span>),
+<span class="kw">const </span>FLAGS: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(FlagName, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str)] = <span class="kw-2">&amp;</span>[
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(FlagName::inherited, <span class="string">&quot;inherited&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(FlagName::file_inherit, <span class="string">&quot;file_inherit&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(FlagName::directory_inherit, <span class="string">&quot;directory_inherit&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(FlagName::limit_inherit, <span class="string">&quot;limit_inherit&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(FlagName::only_inherit, <span class="string">&quot;only_inherit&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(FlagName::default, <span class="string">&quot;default&quot;</span>),
 ];
 
-<span class="kw">const</span> <span class="ident">PERMS</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<span class="ident">PermName</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>)] = <span class="kw-2">&amp;</span>[
-    (<span class="ident">PermName::read</span>, <span class="string">&quot;read&quot;</span>),
-    (<span class="ident">PermName::write</span>, <span class="string">&quot;write&quot;</span>),
-    (<span class="ident">PermName::execute</span>, <span class="string">&quot;execute&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>)]</span>
-    (<span class="ident">PermName::read_data</span>, <span class="string">&quot;read_data&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>)]</span>
-    (<span class="ident">PermName::write_data</span>, <span class="string">&quot;write_data&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">PermName::delete</span>, <span class="string">&quot;delete&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">PermName::append</span>, <span class="string">&quot;append&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">PermName::delete_child</span>, <span class="string">&quot;delete_child&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">PermName::readattr</span>, <span class="string">&quot;readattr&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">PermName::writeattr</span>, <span class="string">&quot;writeattr&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">PermName::readextattr</span>, <span class="string">&quot;readextattr&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">PermName::writeextattr</span>, <span class="string">&quot;writeextattr&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">PermName::readsecurity</span>, <span class="string">&quot;readsecurity&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">PermName::writesecurity</span>, <span class="string">&quot;writesecurity&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">PermName::chown</span>, <span class="string">&quot;chown&quot;</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    (<span class="ident">PermName::sync</span>, <span class="string">&quot;sync&quot;</span>),
+<span class="kw">const </span>PERMS: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(PermName, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str)] = <span class="kw-2">&amp;</span>[
+    (PermName::read, <span class="string">&quot;read&quot;</span>),
+    (PermName::write, <span class="string">&quot;write&quot;</span>),
+    (PermName::execute, <span class="string">&quot;execute&quot;</span>),
+    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    </span>(PermName::read_data, <span class="string">&quot;read_data&quot;</span>),
+    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    </span>(PermName::write_data, <span class="string">&quot;write_data&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(PermName::delete, <span class="string">&quot;delete&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(PermName::append, <span class="string">&quot;append&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(PermName::delete_child, <span class="string">&quot;delete_child&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(PermName::readattr, <span class="string">&quot;readattr&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(PermName::writeattr, <span class="string">&quot;writeattr&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(PermName::readextattr, <span class="string">&quot;readextattr&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(PermName::writeextattr, <span class="string">&quot;writeextattr&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(PermName::readsecurity, <span class="string">&quot;readsecurity&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(PermName::writesecurity, <span class="string">&quot;writesecurity&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(PermName::chown, <span class="string">&quot;chown&quot;</span>),
+    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>(PermName::sync, <span class="string">&quot;sync&quot;</span>),
 ];
 
-<span class="doccomment">/// Write value of an enum as a string using the given (enum, str) table.</span>
-<span class="kw">fn</span> <span class="ident">write_enum</span>&lt;<span class="ident">T</span>: <span class="ident">PartialEq</span>&gt;(
-    <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>,
-    <span class="ident">value</span>: <span class="ident">T</span>,
-    <span class="ident">table</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<span class="ident">T</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>)],
-) -&gt; <span class="ident">fmt::Result</span> {
-    <span class="kw">match</span> <span class="ident">table</span>.<span class="ident">iter</span>().<span class="ident">find</span>(|<span class="ident">item</span>| <span class="ident">item</span>.<span class="number">0</span> == <span class="ident">value</span>) {
-        <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">name</span>)) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">name</span>),
-        <span class="prelude-val">None</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;!!&quot;</span>),
+<span class="doccomment">/// Write value of an enum as a string using the given (enum, str) table.
+</span><span class="kw">fn </span>write_enum&lt;T: PartialEq&gt;(
+    f: <span class="kw-2">&amp;mut </span>fmt::Formatter,
+    value: T,
+    table: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(T, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str)],
+) -&gt; fmt::Result {
+    <span class="kw">match </span>table.iter().find(|item| item.<span class="number">0 </span>== value) {
+        <span class="prelude-val">Some</span>((<span class="kw">_</span>, name)) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, name),
+        <span class="prelude-val">None </span>=&gt; <span class="macro">write!</span>(f, <span class="string">&quot;!!&quot;</span>),
     }
 }
 
-<span class="doccomment">/// Read value of an enum from a string using the given (enum, str) table.</span>
-<span class="kw">fn</span> <span class="ident">read_enum</span>&lt;<span class="ident">T</span>: <span class="ident">Copy</span>&gt;(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">table</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<span class="ident">T</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>)]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>&gt; {
-    <span class="kw">match</span> <span class="ident">table</span>.<span class="ident">iter</span>().<span class="ident">find</span>(|<span class="ident">item</span>| <span class="ident">item</span>.<span class="number">1</span> == <span class="ident">s</span>) {
-        <span class="prelude-val">Some</span>((<span class="ident">value</span>, <span class="kw">_</span>)) =&gt; <span class="prelude-val">Ok</span>(<span class="kw-2">*</span><span class="ident">value</span>),
-        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">err_enum</span>(<span class="ident">s</span>, <span class="ident">table</span>)),
+<span class="doccomment">/// Read value of an enum from a string using the given (enum, str) table.
+</span><span class="kw">fn </span>read_enum&lt;T: Copy&gt;(s: <span class="kw-2">&amp;</span>str, table: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(T, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str)]) -&gt; <span class="prelude-ty">Result</span>&lt;T&gt; {
+    <span class="kw">match </span>table.iter().find(|item| item.<span class="number">1 </span>== s) {
+        <span class="prelude-val">Some</span>((value, <span class="kw">_</span>)) =&gt; <span class="prelude-val">Ok</span>(<span class="kw-2">*</span>value),
+        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(err_enum(s, table)),
     }
 }
 
-<span class="doccomment">/// Produce the error message when the variant can&#39;t be found.</span>
-<span class="kw">fn</span> <span class="ident">err_enum</span>&lt;<span class="ident">T</span>&gt;(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">table</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<span class="ident">T</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>)]) -&gt; <span class="ident">Error</span> {
-    <span class="kw">let</span> <span class="ident">variants</span> = <span class="ident">table</span>
-        .<span class="ident">iter</span>()
-        .<span class="ident">map</span>(|<span class="ident">item</span>| <span class="macro">format!</span>(<span class="string">&quot;`{}`&quot;</span>, <span class="ident">item</span>.<span class="number">1</span>))
-        .<span class="ident">collect</span>::&lt;<span class="ident">Vec</span>&lt;<span class="ident">String</span>&gt;&gt;()
-        .<span class="ident">join</span>(<span class="string">&quot;, &quot;</span>);
+<span class="doccomment">/// Produce the error message when the variant can&#39;t be found.
+</span><span class="kw">fn </span>err_enum&lt;T&gt;(s: <span class="kw-2">&amp;</span>str, table: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(T, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str)]) -&gt; Error {
+    <span class="kw">let </span>variants = table
+        .iter()
+        .map(|item| <span class="macro">format!</span>(<span class="string">&quot;`{}`&quot;</span>, item.<span class="number">1</span>))
+        .collect::&lt;Vec&lt;String&gt;&gt;()
+        .join(<span class="string">&quot;, &quot;</span>);
 
-    <span class="kw">let</span> <span class="ident">msg</span> = <span class="kw">if</span> <span class="ident">table</span>.<span class="ident">len</span>() == <span class="number">1</span> {
-        <span class="macro">format!</span>(<span class="string">&quot;unknown variant `{}`, expected {}&quot;</span>, <span class="ident">s</span>, <span class="ident">variants</span>)
-    } <span class="kw">else</span> {
-        <span class="macro">format!</span>(<span class="string">&quot;unknown variant `{}`, expected one of {}&quot;</span>, <span class="ident">s</span>, <span class="ident">variants</span>)
+    <span class="kw">let </span>msg = <span class="kw">if </span>table.len() == <span class="number">1 </span>{
+        <span class="macro">format!</span>(<span class="string">&quot;unknown variant `{}`, expected {}&quot;</span>, s, variants)
+    } <span class="kw">else </span>{
+        <span class="macro">format!</span>(<span class="string">&quot;unknown variant `{}`, expected one of {}&quot;</span>, s, variants)
     };
 
-    <span class="ident">Error::Message</span>(<span class="ident">msg</span>)
+    Error::Message(msg)
 }
 
-<span class="doccomment">/// Write value of an AclEntryKind.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_aclentrykind</span>(<span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>, <span class="ident">value</span>: <span class="ident">AclEntryKind</span>) -&gt; <span class="ident">fmt::Result</span> {
-    <span class="ident">write_enum</span>(<span class="ident">f</span>, <span class="ident">value</span>, <span class="ident">ACLENTRYKINDS</span>)
+<span class="doccomment">/// Write value of an AclEntryKind.
+</span><span class="kw">pub fn </span>write_aclentrykind(f: <span class="kw-2">&amp;mut </span>fmt::Formatter, value: AclEntryKind) -&gt; fmt::Result {
+    write_enum(f, value, ACLENTRYKINDS)
 }
 
-<span class="comment">// Read value of an AclEntryKind.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_aclentrykind</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">AclEntryKind</span>&gt; {
-    <span class="ident">read_enum</span>(<span class="ident">s</span>, <span class="ident">ACLENTRYKINDS</span>)
+<span class="comment">// Read value of an AclEntryKind.
+</span><span class="kw">pub fn </span>read_aclentrykind(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;AclEntryKind&gt; {
+    read_enum(s, ACLENTRYKINDS)
 }
 
-<span class="doccomment">/// Write value of a FlagName.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_flagname</span>(<span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>, <span class="ident">value</span>: <span class="ident">FlagName</span>) -&gt; <span class="ident">fmt::Result</span> {
-    <span class="ident">write_enum</span>(<span class="ident">f</span>, <span class="ident">value</span>, <span class="ident">FLAGS</span>)
+<span class="doccomment">/// Write value of a FlagName.
+</span><span class="kw">pub fn </span>write_flagname(f: <span class="kw-2">&amp;mut </span>fmt::Formatter, value: FlagName) -&gt; fmt::Result {
+    write_enum(f, value, FLAGS)
 }
 
-<span class="comment">// Read value of a FlagName.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_flagname</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">FlagName</span>&gt; {
-    <span class="ident">read_enum</span>(<span class="ident">s</span>, <span class="ident">FLAGS</span>)
+<span class="comment">// Read value of a FlagName.
+</span><span class="kw">pub fn </span>read_flagname(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;FlagName&gt; {
+    read_enum(s, FLAGS)
 }
 
-<span class="doccomment">/// Write value of a PermName.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_permname</span>(<span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>, <span class="ident">value</span>: <span class="ident">PermName</span>) -&gt; <span class="ident">fmt::Result</span> {
-    <span class="ident">write_enum</span>(<span class="ident">f</span>, <span class="ident">value</span>, <span class="ident">PERMS</span>)
+<span class="doccomment">/// Write value of a PermName.
+</span><span class="kw">pub fn </span>write_permname(f: <span class="kw-2">&amp;mut </span>fmt::Formatter, value: PermName) -&gt; fmt::Result {
+    write_enum(f, value, PERMS)
 }
 
-<span class="comment">// Read value of a PermName.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_permname</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">PermName</span>&gt; {
-    <span class="ident">read_enum</span>(<span class="ident">s</span>, <span class="ident">PERMS</span>)
+<span class="comment">// Read value of a PermName.
+</span><span class="kw">pub fn </span>read_permname(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;PermName&gt; {
+    read_enum(s, PERMS)
 }
 
-<span class="comment">////////////////////////////////////////////////////////////////////////////////</span>
+<span class="comment">////////////////////////////////////////////////////////////////////////////////
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Error</span> {
-    <span class="ident">Message</span>(<span class="ident">String</span>),
-    <span class="ident">NotImplemented</span>,
+</span><span class="attr">#[derive(Clone, Debug, PartialEq)]
+</span><span class="kw">pub enum </span>Error {
+    Message(String),
+    NotImplemented,
 }
 
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">Error</span>&gt; <span class="kw">for</span> <span class="ident">io::Error</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">Error</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::InvalidInput</span>, <span class="ident">err</span>)
+<span class="kw">impl </span>From&lt;Error&gt; <span class="kw">for </span>io::Error {
+    <span class="kw">fn </span>from(err: Error) -&gt; <span class="self">Self </span>{
+        io::Error::new(io::ErrorKind::InvalidInput, err)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Error::Message</span>(<span class="ident">msg</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">msg</span>),
-            <span class="ident">Error::NotImplemented</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Not implemented&quot;</span>),
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>Error {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
+        <span class="kw">match </span><span class="self">self </span>{
+            Error::Message(msg) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, msg),
+            Error::NotImplemented =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Not implemented&quot;</span>),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std::error::Error</span> <span class="kw">for</span> <span class="ident">Error</span> {}
+<span class="kw">impl </span>std::error::Error <span class="kw">for </span>Error {}
 
-<span class="kw">type</span> <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>&gt; = <span class="ident">std::result::Result</span>&lt;<span class="ident">T</span>, <span class="ident">Error</span>&gt;;
+<span class="kw">type </span><span class="prelude-ty">Result</span>&lt;T&gt; = std::result::Result&lt;T, Error&gt;;
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (42325c525 2022-11-11)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>

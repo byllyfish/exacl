@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/acl.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>acl.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../exacl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../exacl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../exacl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/acl.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>acl.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-eabf764633b9d7be.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-777f3e9583f8c92d.css"><link rel="stylesheet" disabled href="../../static.files/dark-e2f4109f2e82e3af.css"><link rel="stylesheet" disabled href="../../static.files/ayu-c360e709a65bed99.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-c2d2a5dbaed13e6b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../exacl/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -706,513 +706,499 @@
 <span id="706">706</span>
 <span id="707">707</span>
 <span id="708">708</span>
-<span id="709">709</span>
-<span id="710">710</span>
-<span id="711">711</span>
-<span id="712">712</span>
-<span id="713">713</span>
-<span id="714">714</span>
-<span id="715">715</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Provides `Acl` and `AclOption` implementation.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Provides `Acl` and `AclOption` implementation.
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::aclentry::AclEntry</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::aclentry::AclEntryKind</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::failx</span>::{<span class="ident">fail_custom</span>, <span class="ident">path_err</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::flag::Flag</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::perm::Perm</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util</span>::<span class="kw-2">*</span>;
+</span><span class="kw">use </span><span class="kw">crate</span>::aclentry::AclEntry;
+<span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+</span><span class="kw">use </span><span class="kw">crate</span>::aclentry::AclEntryKind;
+<span class="kw">use </span><span class="kw">crate</span>::failx::{fail_custom, path_err};
+<span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+</span><span class="kw">use </span><span class="kw">crate</span>::flag::Flag;
+<span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+</span><span class="kw">use </span><span class="kw">crate</span>::perm::Perm;
+<span class="kw">use </span><span class="kw">crate</span>::util::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident">bitflags::bitflags</span>;
-<span class="kw">use</span> <span class="ident">scopeguard</span>::{<span class="self">self</span>, <span class="ident">ScopeGuard</span>};
-<span class="kw">use</span> <span class="ident">std::io</span>;
-<span class="kw">use</span> <span class="ident">std::path::Path</span>;
+<span class="kw">use </span>bitflags::bitflags;
+<span class="kw">use </span>scopeguard::{<span class="self">self</span>, ScopeGuard};
+<span class="kw">use </span>std::io;
+<span class="kw">use </span>std::path::Path;
 
-<span class="macro">bitflags!</span> {
-    <span class="doccomment">/// Controls how ACL&#39;s are accessed.</span>
-    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AclOption</span> : <span class="ident">u32</span> {
-        <span class="doccomment">/// Get/set the access ACL only (Linux and FreeBSD only).</span>
-        <span class="kw">const</span> <span class="ident">ACCESS_ACL</span> = <span class="number">0b0001</span>;
+<span class="macro">bitflags! </span>{
+    <span class="doccomment">/// Controls how ACL&#39;s are accessed.
+    </span><span class="attr">#[derive(Default)]
+    </span><span class="kw">pub struct </span>AclOption : u32 {
+        <span class="doccomment">/// Get/set the access ACL only (Linux and FreeBSD only).
+        </span><span class="kw">const </span>ACCESS_ACL = <span class="number">0b0001</span>;
 
-        <span class="doccomment">/// Get/set the default ACL only (Linux and FreeBSD only).</span>
-        <span class="kw">const</span> <span class="ident">DEFAULT_ACL</span> = <span class="number">0b0010</span>;
+        <span class="doccomment">/// Get/set the default ACL only (Linux and FreeBSD only).
+        </span><span class="kw">const </span>DEFAULT_ACL = <span class="number">0b0010</span>;
 
-        <span class="doccomment">/// Get/set the ACL of the symlink itself (macOS only).</span>
-        <span class="kw">const</span> <span class="ident">SYMLINK_ACL</span> = <span class="number">0b0100</span>;
+        <span class="doccomment">/// Get/set the ACL of the symlink itself (macOS only).
+        </span><span class="kw">const </span>SYMLINK_ACL = <span class="number">0b0100</span>;
 
-        <span class="doccomment">/// Ignore expected error when using DEFAULT_ACL on a file.</span>
-        <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-        <span class="kw">const</span> <span class="ident">IGNORE_EXPECTED_FILE_ERR</span> = <span class="number">0b10000</span>;
+        <span class="doccomment">/// Ignore expected error when using DEFAULT_ACL on a file.
+        </span><span class="attr">#[doc(hidden)]
+        </span><span class="kw">const </span>IGNORE_EXPECTED_FILE_ERR = <span class="number">0b10000</span>;
     }
 }
 
-<span class="doccomment">/// Access Control List native object wrapper.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Each [`Acl`] is immutable once constructed. To manipulate its contents, you</span>
-<span class="doccomment">/// can retrieve a mutable vector of [`AclEntry`], modify the vector&#39;s contents,</span>
-<span class="doccomment">/// then create a new [`Acl`].</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Acl</span> {
-    <span class="doccomment">/// Native acl.</span>
-    <span class="ident">acl</span>: <span class="ident">acl_t</span>,
+<span class="doccomment">/// Access Control List native object wrapper.
+///
+/// Each [`Acl`] is immutable once constructed. To manipulate its contents, you
+/// can retrieve a mutable vector of [`AclEntry`], modify the vector&#39;s contents,
+/// then create a new [`Acl`].
+</span><span class="kw">pub struct </span>Acl {
+    <span class="doccomment">/// Native acl.
+    </span>acl: acl_t,
 
-    <span class="doccomment">/// Set to true if `acl` was set from the default ACL for a directory</span>
-    <span class="doccomment">/// using DEFAULT_ACL option. Used to return entries with the `DEFAULT`</span>
-    <span class="doccomment">/// flag set.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="ident">default_acl</span>: <span class="ident">bool</span>,
+    <span class="doccomment">/// Set to true if `acl` was set from the default ACL for a directory
+    /// using DEFAULT_ACL option. Used to return entries with the `DEFAULT`
+    /// flag set.
+    </span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span>default_acl: bool,
 }
 
-<span class="kw">impl</span> <span class="ident">Acl</span> {
-    <span class="doccomment">/// Convenience function to construct an `Acl`.</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_variables</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">acl</span>: <span class="ident">acl_t</span>, <span class="ident">default_acl</span>: <span class="ident">bool</span>) -&gt; <span class="ident">Acl</span> {
-        <span class="macro">assert!</span>(!<span class="ident">acl</span>.<span class="ident">is_null</span>());
-        <span class="ident">Acl</span> {
-            <span class="ident">acl</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-            <span class="ident">default_acl</span>,
+<span class="kw">impl </span>Acl {
+    <span class="doccomment">/// Convenience function to construct an `Acl`.
+    </span><span class="attr">#[allow(unused_variables)]
+    </span><span class="kw">fn </span>new(acl: acl_t, default_acl: bool) -&gt; Acl {
+        <span class="macro">assert!</span>(!acl.is_null());
+        Acl {
+            acl,
+            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            </span>default_acl,
         }
     }
 
-    <span class="doccomment">/// Read ACL for the specified file.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Returns an [`io::Error`] on failure.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">options</span>: <span class="ident">AclOption</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">Acl</span>&gt; {
-        <span class="kw">let</span> <span class="ident">symlink_acl</span> = <span class="ident">options</span>.<span class="ident">contains</span>(<span class="ident">AclOption::SYMLINK_ACL</span>);
-        <span class="kw">let</span> <span class="ident">default_acl</span> = <span class="ident">options</span>.<span class="ident">contains</span>(<span class="ident">AclOption::DEFAULT_ACL</span>);
+    <span class="doccomment">/// Read ACL for the specified file.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    </span><span class="kw">pub fn </span>read(path: <span class="kw-2">&amp;</span>Path, options: AclOption) -&gt; io::Result&lt;Acl&gt; {
+        <span class="kw">let </span>symlink_acl = options.contains(AclOption::SYMLINK_ACL);
+        <span class="kw">let </span>default_acl = options.contains(AclOption::DEFAULT_ACL);
 
-        <span class="kw">let</span> <span class="ident">result</span> = <span class="ident">xacl_get_file</span>(<span class="ident">path</span>, <span class="ident">symlink_acl</span>, <span class="ident">default_acl</span>);
-        <span class="kw">match</span> <span class="ident">result</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">acl</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Acl::new</span>(<span class="ident">acl</span>, <span class="ident">default_acl</span>)),
-            <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
-                <span class="comment">// Trying to access the default ACL of a non-directory on Linux</span>
-                <span class="comment">// will return an error. We can catch this error and return an</span>
-                <span class="comment">// empty ACL instead; only if `IGNORE_EXPECTED_FILE_ERR` is set.</span>
-                <span class="comment">// (Linux returns permission denied. FreeBSD returns invalid</span>
-                <span class="comment">// argument.)</span>
-                <span class="kw">if</span> <span class="ident">default_acl</span>
-                    &amp;&amp; (<span class="ident">err</span>.<span class="ident">kind</span>() == <span class="ident">io::ErrorKind::PermissionDenied</span>
-                        || <span class="ident">err</span>.<span class="ident">kind</span>() == <span class="ident">io::ErrorKind::InvalidInput</span>)
-                    &amp;&amp; <span class="ident">options</span>.<span class="ident">contains</span>(<span class="ident">AclOption::IGNORE_EXPECTED_FILE_ERR</span>)
-                    &amp;&amp; <span class="ident">is_non_directory</span>(<span class="ident">path</span>, <span class="ident">symlink_acl</span>)
+        <span class="kw">let </span>result = xacl_get_file(path, symlink_acl, default_acl);
+        <span class="kw">match </span>result {
+            <span class="prelude-val">Ok</span>(acl) =&gt; <span class="prelude-val">Ok</span>(Acl::new(acl, default_acl)),
+            <span class="prelude-val">Err</span>(err) =&gt; {
+                <span class="comment">// Trying to access the default ACL of a non-directory on Linux
+                // will return an error. We can catch this error and return an
+                // empty ACL instead; only if `IGNORE_EXPECTED_FILE_ERR` is set.
+                // (Linux returns permission denied. FreeBSD returns invalid
+                // argument.)
+                </span><span class="kw">if </span>default_acl
+                    &amp;&amp; (err.kind() == io::ErrorKind::PermissionDenied
+                        || err.kind() == io::ErrorKind::InvalidInput)
+                    &amp;&amp; options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR)
+                    &amp;&amp; is_non_directory(path, symlink_acl)
                 {
-                    <span class="comment">// Return an empty acl.</span>
-                    <span class="prelude-val">Ok</span>(<span class="ident">Acl::new</span>(<span class="ident">xacl_init</span>(<span class="number">1</span>)<span class="question-mark">?</span>, <span class="ident">default_acl</span>))
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">Err</span>(<span class="ident">path_err</span>(<span class="ident">path</span>, <span class="kw-2">&amp;</span><span class="ident">err</span>))
+                    <span class="comment">// Return an empty acl.
+                    </span><span class="prelude-val">Ok</span>(Acl::new(xacl_init(<span class="number">1</span>)<span class="question-mark">?</span>, default_acl))
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">Err</span>(path_err(path, <span class="kw-2">&amp;</span>err))
                 }
             }
         }
     }
 
-    <span class="doccomment">/// Write ACL for the specified file.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Returns an [`io::Error`] on failure.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">options</span>: <span class="ident">AclOption</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">symlink_acl</span> = <span class="ident">options</span>.<span class="ident">contains</span>(<span class="ident">AclOption::SYMLINK_ACL</span>);
-        <span class="kw">let</span> <span class="ident">default_acl</span> = <span class="ident">options</span>.<span class="ident">contains</span>(<span class="ident">AclOption::DEFAULT_ACL</span>);
+    <span class="doccomment">/// Write ACL for the specified file.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    </span><span class="kw">pub fn </span>write(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>Path, options: AclOption) -&gt; io::Result&lt;()&gt; {
+        <span class="kw">let </span>symlink_acl = options.contains(AclOption::SYMLINK_ACL);
+        <span class="kw">let </span>default_acl = options.contains(AclOption::DEFAULT_ACL);
 
-        <span class="comment">// If we&#39;re writing a default ACL to a non-directory, and we</span>
-        <span class="comment">// specify the `IGNORE_EXPECTED_FILE_ERR` option, this function is a</span>
-        <span class="comment">// no-op if the ACL is empty.</span>
-        <span class="kw">if</span> <span class="ident">default_acl</span> &amp;&amp; <span class="ident">is_non_directory</span>(<span class="ident">path</span>, <span class="ident">symlink_acl</span>) {
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_empty</span>() &amp;&amp; <span class="ident">options</span>.<span class="ident">contains</span>(<span class="ident">AclOption::IGNORE_EXPECTED_FILE_ERR</span>) {
-                <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+        <span class="comment">// If we&#39;re writing a default ACL to a non-directory, and we
+        // specify the `IGNORE_EXPECTED_FILE_ERR` option, this function is a
+        // no-op if the ACL is empty.
+        </span><span class="kw">if </span>default_acl &amp;&amp; is_non_directory(path, symlink_acl) {
+            <span class="kw">if </span><span class="self">self</span>.is_empty() &amp;&amp; options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR) {
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(());
             }
 
-            <span class="kw">return</span> <span class="ident">fail_custom</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+            <span class="kw">return </span>fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
                 <span class="string">&quot;File {:?}: Non-directory does not have default ACL&quot;</span>,
-                <span class="ident">path</span>
+                path
             ));
         }
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) = <span class="ident">xacl_set_file</span>(<span class="ident">path</span>, <span class="self">self</span>.<span class="ident">acl</span>, <span class="ident">symlink_acl</span>, <span class="ident">default_acl</span>) {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">path_err</span>(<span class="ident">path</span>, <span class="kw-2">&amp;</span><span class="ident">err</span>));
+        <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = xacl_set_file(path, <span class="self">self</span>.acl, symlink_acl, default_acl) {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(path_err(path, <span class="kw-2">&amp;</span>err));
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Compute mask.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">compute_mask_perms</span>(<span class="ident">entries</span>: <span class="kw-2">&amp;</span>[<span class="ident">AclEntry</span>], <span class="ident">filter</span>: (<span class="ident">Flag</span>, <span class="ident">Flag</span>)) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Perm</span>&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">perms</span> = <span class="ident">Perm::empty</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">need_mask</span> = <span class="bool-val">false</span>;
+    <span class="doccomment">/// Compute mask.
+    </span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span><span class="kw">fn </span>compute_mask_perms(entries: <span class="kw-2">&amp;</span>[AclEntry], filter: (Flag, Flag)) -&gt; <span class="prelude-ty">Option</span>&lt;Perm&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>perms = Perm::empty();
+        <span class="kw">let </span><span class="kw-2">mut </span>need_mask = <span class="bool-val">false</span>;
 
-        <span class="kw">for</span> <span class="ident">entry</span> <span class="kw">in</span> <span class="ident">entries</span> {
-            <span class="comment">// Skip over undesired entries in a unified ACL.</span>
-            <span class="kw">if</span> (<span class="ident">entry</span>.<span class="ident">flags</span> &amp; <span class="ident">filter</span>.<span class="number">1</span>) != <span class="ident">filter</span>.<span class="number">0</span> {
+        <span class="kw">for </span>entry <span class="kw">in </span>entries {
+            <span class="comment">// Skip over undesired entries in a unified ACL.
+            </span><span class="kw">if </span>(entry.flags &amp; filter.<span class="number">1</span>) != filter.<span class="number">0 </span>{
                 <span class="kw">continue</span>;
             }
 
-            <span class="kw">match</span> <span class="ident">entry</span>.<span class="ident">kind</span> {
-                <span class="ident">AclEntryKind::Mask</span> =&gt; <span class="kw">return</span> <span class="prelude-val">None</span>,
-                <span class="ident">AclEntryKind::User</span> | <span class="ident">AclEntryKind::Group</span> <span class="kw">if</span> !<span class="ident">entry</span>.<span class="ident">name</span>.<span class="ident">is_empty</span>() =&gt; {
-                    <span class="ident">perms</span> |= <span class="ident">entry</span>.<span class="ident">perms</span>;
-                    <span class="ident">need_mask</span> = <span class="bool-val">true</span>;
+            <span class="kw">match </span>entry.kind {
+                AclEntryKind::Mask =&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
+                AclEntryKind::User | AclEntryKind::Group <span class="kw">if </span>!entry.name.is_empty() =&gt; {
+                    perms |= entry.perms;
+                    need_mask = <span class="bool-val">true</span>;
                 }
-                <span class="ident">AclEntryKind::Group</span> =&gt; <span class="ident">perms</span> |= <span class="ident">entry</span>.<span class="ident">perms</span>,
-                <span class="kw">_</span> =&gt; (),
+                AclEntryKind::Group =&gt; perms |= entry.perms,
+                <span class="kw">_ </span>=&gt; (),
             }
         }
 
-        <span class="kw">if</span> !<span class="ident">need_mask</span> {
-            <span class="kw">return</span> <span class="prelude-val">None</span>;
+        <span class="kw">if </span>!need_mask {
+            <span class="kw">return </span><span class="prelude-val">None</span>;
         }
 
-        <span class="prelude-val">Some</span>(<span class="ident">perms</span>)
+        <span class="prelude-val">Some</span>(perms)
     }
 
-    <span class="doccomment">/// Check for required entries that are missing.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// It is valid for there to be zero entries.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">find_missing_entries</span>(<span class="ident">entries</span>: <span class="kw-2">&amp;</span>[<span class="ident">AclEntry</span>], <span class="ident">filter</span>: (<span class="ident">Flag</span>, <span class="ident">Flag</span>)) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">AclEntryKind</span>&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">miss_user</span> = <span class="bool-val">true</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">miss_group</span> = <span class="bool-val">true</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">miss_other</span> = <span class="bool-val">true</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">is_empty</span> = <span class="bool-val">true</span>;
+    <span class="doccomment">/// Check for required entries that are missing.
+    ///
+    /// It is valid for there to be zero entries.
+    </span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span><span class="kw">fn </span>find_missing_entries(entries: <span class="kw-2">&amp;</span>[AclEntry], filter: (Flag, Flag)) -&gt; <span class="prelude-ty">Option</span>&lt;AclEntryKind&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>miss_user = <span class="bool-val">true</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>miss_group = <span class="bool-val">true</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>miss_other = <span class="bool-val">true</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>is_empty = <span class="bool-val">true</span>;
 
-        <span class="kw">for</span> <span class="ident">entry</span> <span class="kw">in</span> <span class="ident">entries</span> {
-            <span class="comment">// Skip over undesired entries in a unified ACL.</span>
-            <span class="kw">if</span> (<span class="ident">entry</span>.<span class="ident">flags</span> &amp; <span class="ident">filter</span>.<span class="number">1</span>) != <span class="ident">filter</span>.<span class="number">0</span> {
+        <span class="kw">for </span>entry <span class="kw">in </span>entries {
+            <span class="comment">// Skip over undesired entries in a unified ACL.
+            </span><span class="kw">if </span>(entry.flags &amp; filter.<span class="number">1</span>) != filter.<span class="number">0 </span>{
                 <span class="kw">continue</span>;
             }
 
-            <span class="ident">is_empty</span> = <span class="bool-val">false</span>;
-            <span class="kw">match</span> <span class="ident">entry</span>.<span class="ident">kind</span> {
-                <span class="ident">AclEntryKind::User</span> <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">name</span>.<span class="ident">is_empty</span>() =&gt; <span class="ident">miss_user</span> = <span class="bool-val">false</span>,
-                <span class="ident">AclEntryKind::Group</span> <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">name</span>.<span class="ident">is_empty</span>() =&gt; <span class="ident">miss_group</span> = <span class="bool-val">false</span>,
-                <span class="ident">AclEntryKind::Other</span> =&gt; <span class="ident">miss_other</span> = <span class="bool-val">false</span>,
-                <span class="kw">_</span> =&gt; (),
+            is_empty = <span class="bool-val">false</span>;
+            <span class="kw">match </span>entry.kind {
+                AclEntryKind::User <span class="kw">if </span>entry.name.is_empty() =&gt; miss_user = <span class="bool-val">false</span>,
+                AclEntryKind::Group <span class="kw">if </span>entry.name.is_empty() =&gt; miss_group = <span class="bool-val">false</span>,
+                AclEntryKind::Other =&gt; miss_other = <span class="bool-val">false</span>,
+                <span class="kw">_ </span>=&gt; (),
             }
         }
 
-        <span class="kw">if</span> <span class="ident">is_empty</span> {
-            <span class="prelude-val">None</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">miss_user</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">AclEntryKind::User</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">miss_group</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">AclEntryKind::Group</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">miss_other</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">AclEntryKind::Other</span>)
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
+        <span class="kw">if </span>is_empty {
+            <span class="prelude-val">None
+        </span>} <span class="kw">else if </span>miss_user {
+            <span class="prelude-val">Some</span>(AclEntryKind::User)
+        } <span class="kw">else if </span>miss_group {
+            <span class="prelude-val">Some</span>(AclEntryKind::Group)
+        } <span class="kw">else if </span>miss_other {
+            <span class="prelude-val">Some</span>(AclEntryKind::Other)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 
-    <span class="doccomment">/// Return an ACL from a slice of [`AclEntry`].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// On Linux, if there is no mask `AclEntry`, one will be computed and</span>
-    <span class="doccomment">/// added, if needed.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Returns an [`io::Error`] on failure.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_entries</span>(<span class="ident">entries</span>: <span class="kw-2">&amp;</span>[<span class="ident">AclEntry</span>]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">Acl</span>&gt; {
-        <span class="kw">let</span> <span class="ident">new_acl</span> = <span class="ident">xacl_init</span>(<span class="ident">entries</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
+    <span class="doccomment">/// Return an ACL from a slice of [`AclEntry`].
+    ///
+    /// On Linux, if there is no mask `AclEntry`, one will be computed and
+    /// added, if needed.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    </span><span class="kw">pub fn </span>from_entries(entries: <span class="kw-2">&amp;</span>[AclEntry]) -&gt; io::Result&lt;Acl&gt; {
+        <span class="kw">let </span>new_acl = xacl_init(entries.len())<span class="question-mark">?</span>;
 
-        <span class="comment">// Use the smart pointer form of scopeguard; `acl_p` can change value</span>
-        <span class="comment">// when we create entries in it.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">acl_p</span> = <span class="ident">scopeguard::guard</span>(<span class="ident">new_acl</span>, |<span class="ident">a</span>| {
-            <span class="ident">xacl_free</span>(<span class="ident">a</span>);
+        <span class="comment">// Use the smart pointer form of scopeguard; `acl_p` can change value
+        // when we create entries in it.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>acl_p = scopeguard::guard(new_acl, |a| {
+            xacl_free(a);
         });
 
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">entry</span>) <span class="kw">in</span> <span class="ident">entries</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) = <span class="ident">entry</span>.<span class="ident">add_to_acl</span>(<span class="kw-2">&amp;mut</span> <span class="ident">acl_p</span>) {
-                <span class="kw">return</span> <span class="ident">fail_custom</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;entry {}: {}&quot;</span>, <span class="ident">i</span>, <span class="ident">err</span>));
+        <span class="kw">for </span>(i, entry) <span class="kw">in </span>entries.iter().enumerate() {
+            <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = entry.add_to_acl(<span class="kw-2">&amp;mut </span>acl_p) {
+                <span class="kw">return </span>fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;entry {}: {}&quot;</span>, i, err));
             }
         }
 
-        <span class="comment">// Check for missing required entries.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">kind</span>) = <span class="ident">Acl::find_missing_entries</span>(<span class="ident">entries</span>, (<span class="ident">Flag::empty</span>(), <span class="ident">Flag::empty</span>())) {
-            <span class="kw">return</span> <span class="ident">fail_custom</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;missing required entry \&quot;{}\&quot;&quot;</span>, <span class="ident">kind</span>));
+        <span class="comment">// Check for missing required entries.
+        </span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(kind) = Acl::find_missing_entries(entries, (Flag::empty(), Flag::empty())) {
+            <span class="kw">return </span>fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;missing required entry \&quot;{}\&quot;&quot;</span>, kind));
         }
 
-        <span class="comment">// Check if we need to add a mask entry.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">mask_perms</span>) = <span class="ident">Acl::compute_mask_perms</span>(<span class="ident">entries</span>, (<span class="ident">Flag::empty</span>(), <span class="ident">Flag::empty</span>())) {
-            <span class="kw">let</span> <span class="ident">mask</span> = <span class="ident">AclEntry::allow_mask</span>(<span class="ident">mask_perms</span>, <span class="prelude-val">None</span>);
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) = <span class="ident">mask</span>.<span class="ident">add_to_acl</span>(<span class="kw-2">&amp;mut</span> <span class="ident">acl_p</span>) {
-                <span class="kw">return</span> <span class="ident">fail_custom</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;entry {}: {}&quot;</span>, -<span class="number">1</span>, <span class="ident">err</span>));
+        <span class="comment">// Check if we need to add a mask entry.
+        </span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::empty())) {
+            <span class="kw">let </span>mask = AclEntry::allow_mask(mask_perms, <span class="prelude-val">None</span>);
+            <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = mask.add_to_acl(<span class="kw-2">&amp;mut </span>acl_p) {
+                <span class="kw">return </span>fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;entry {}: {}&quot;</span>, -<span class="number">1</span>, err));
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">Acl::new</span>(<span class="ident">ScopeGuard::into_inner</span>(<span class="ident">acl_p</span>), <span class="bool-val">false</span>))
+        <span class="prelude-val">Ok</span>(Acl::new(ScopeGuard::into_inner(acl_p), <span class="bool-val">false</span>))
     }
 
-    <span class="doccomment">/// Return pair of ACL&#39;s from slice of [`AclEntry`]. This method separates</span>
-    <span class="doccomment">/// regular access entries from default entries and returns two ACL&#39;s, an</span>
-    <span class="doccomment">/// access ACL and default ACL. Either may be empty.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If there is no mask `AclEntry` in an ACL, one will be computed and</span>
-    <span class="doccomment">/// added, if needed.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Returns an [`io::Error`] on failure.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))))]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_unified_entries</span>(<span class="ident">entries</span>: <span class="kw-2">&amp;</span>[<span class="ident">AclEntry</span>]) -&gt; <span class="ident">io::Result</span>&lt;(<span class="ident">Acl</span>, <span class="ident">Acl</span>)&gt; {
-        <span class="kw">let</span> <span class="ident">new_access</span> = <span class="ident">xacl_init</span>(<span class="ident">entries</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">new_default</span> = <span class="ident">xacl_init</span>(<span class="ident">entries</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
+    <span class="doccomment">/// Return pair of ACL&#39;s from slice of [`AclEntry`]. This method separates
+    /// regular access entries from default entries and returns two ACL&#39;s, an
+    /// access ACL and default ACL. Either may be empty.
+    ///
+    /// If there is no mask `AclEntry` in an ACL, one will be computed and
+    /// added, if needed.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+    </span><span class="kw">pub fn </span>from_unified_entries(entries: <span class="kw-2">&amp;</span>[AclEntry]) -&gt; io::Result&lt;(Acl, Acl)&gt; {
+        <span class="kw">let </span>new_access = xacl_init(entries.len())<span class="question-mark">?</span>;
+        <span class="kw">let </span>new_default = xacl_init(entries.len())<span class="question-mark">?</span>;
 
-        <span class="comment">// Use the smart pointer form of scopeguard; acls can change value when</span>
-        <span class="comment">// we create entries in them.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">access_p</span> = <span class="ident">scopeguard::guard</span>(<span class="ident">new_access</span>, |<span class="ident">a</span>| {
-            <span class="ident">xacl_free</span>(<span class="ident">a</span>);
+        <span class="comment">// Use the smart pointer form of scopeguard; acls can change value when
+        // we create entries in them.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>access_p = scopeguard::guard(new_access, |a| {
+            xacl_free(a);
         });
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">default_p</span> = <span class="ident">scopeguard::guard</span>(<span class="ident">new_default</span>, |<span class="ident">a</span>| {
-            <span class="ident">xacl_free</span>(<span class="ident">a</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>default_p = scopeguard::guard(new_default, |a| {
+            xacl_free(a);
         });
 
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">entry</span>) <span class="kw">in</span> <span class="ident">entries</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> <span class="ident">result</span> = <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">flags</span>.<span class="ident">contains</span>(<span class="ident">Flag::DEFAULT</span>) {
-                <span class="ident">entry</span>.<span class="ident">add_to_acl</span>(<span class="kw-2">&amp;mut</span> <span class="ident">default_p</span>)
-            } <span class="kw">else</span> {
-                <span class="ident">entry</span>.<span class="ident">add_to_acl</span>(<span class="kw-2">&amp;mut</span> <span class="ident">access_p</span>)
+        <span class="kw">for </span>(i, entry) <span class="kw">in </span>entries.iter().enumerate() {
+            <span class="kw">let </span>result = <span class="kw">if </span>entry.flags.contains(Flag::DEFAULT) {
+                entry.add_to_acl(<span class="kw-2">&amp;mut </span>default_p)
+            } <span class="kw">else </span>{
+                entry.add_to_acl(<span class="kw-2">&amp;mut </span>access_p)
             };
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) = <span class="ident">result</span> {
-                <span class="kw">return</span> <span class="ident">fail_custom</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;entry {}: {}&quot;</span>, <span class="ident">i</span>, <span class="ident">err</span>));
+            <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = result {
+                <span class="kw">return </span>fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;entry {}: {}&quot;</span>, i, err));
             }
         }
 
-        <span class="kw">if</span> <span class="ident">xacl_is_posix</span>(<span class="kw-2">*</span><span class="ident">access_p</span>) {
-            <span class="comment">// Check for missing entries in both access and default entries.</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">kind</span>) = <span class="ident">Acl::find_missing_entries</span>(<span class="ident">entries</span>, (<span class="ident">Flag::empty</span>(), <span class="ident">Flag::DEFAULT</span>)) {
-                <span class="kw">return</span> <span class="ident">fail_custom</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;missing required entry \&quot;{}\&quot;&quot;</span>, <span class="ident">kind</span>));
+        <span class="kw">if </span>xacl_is_posix(<span class="kw-2">*</span>access_p) {
+            <span class="comment">// Check for missing entries in both access and default entries.
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(kind) = Acl::find_missing_entries(entries, (Flag::empty(), Flag::DEFAULT)) {
+                <span class="kw">return </span>fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;missing required entry \&quot;{}\&quot;&quot;</span>, kind));
             }
 
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">kind</span>) = <span class="ident">Acl::find_missing_entries</span>(<span class="ident">entries</span>, (<span class="ident">Flag::DEFAULT</span>, <span class="ident">Flag::DEFAULT</span>)) {
-                <span class="kw">return</span> <span class="ident">fail_custom</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;missing required default entry \&quot;{}\&quot;&quot;</span>, <span class="ident">kind</span>));
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(kind) = Acl::find_missing_entries(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
+                <span class="kw">return </span>fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;missing required default entry \&quot;{}\&quot;&quot;</span>, kind));
             }
 
-            <span class="comment">// Check if we need to add a mask entry.</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">mask_perms</span>) =
-                <span class="ident">Acl::compute_mask_perms</span>(<span class="ident">entries</span>, (<span class="ident">Flag::empty</span>(), <span class="ident">Flag::DEFAULT</span>))
+            <span class="comment">// Check if we need to add a mask entry.
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(mask_perms) =
+                Acl::compute_mask_perms(entries, (Flag::empty(), Flag::DEFAULT))
             {
-                <span class="kw">let</span> <span class="ident">mask</span> = <span class="ident">AclEntry::allow_mask</span>(<span class="ident">mask_perms</span>, <span class="prelude-val">None</span>);
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) = <span class="ident">mask</span>.<span class="ident">add_to_acl</span>(<span class="kw-2">&amp;mut</span> <span class="ident">access_p</span>) {
-                    <span class="kw">return</span> <span class="ident">fail_custom</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;mask entry: {}&quot;</span>, <span class="ident">err</span>));
+                <span class="kw">let </span>mask = AclEntry::allow_mask(mask_perms, <span class="prelude-val">None</span>);
+                <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = mask.add_to_acl(<span class="kw-2">&amp;mut </span>access_p) {
+                    <span class="kw">return </span>fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;mask entry: {}&quot;</span>, err));
                 }
             }
 
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">mask_perms</span>) =
-                <span class="ident">Acl::compute_mask_perms</span>(<span class="ident">entries</span>, (<span class="ident">Flag::DEFAULT</span>, <span class="ident">Flag::DEFAULT</span>))
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(mask_perms) =
+                Acl::compute_mask_perms(entries, (Flag::DEFAULT, Flag::DEFAULT))
             {
-                <span class="kw">let</span> <span class="ident">mask</span> = <span class="ident">AclEntry::allow_mask</span>(<span class="ident">mask_perms</span>, <span class="ident">Flag::DEFAULT</span>);
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) = <span class="ident">mask</span>.<span class="ident">add_to_acl</span>(<span class="kw-2">&amp;mut</span> <span class="ident">default_p</span>) {
-                    <span class="kw">return</span> <span class="ident">fail_custom</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;default mask entry: {}&quot;</span>, <span class="ident">err</span>));
+                <span class="kw">let </span>mask = AclEntry::allow_mask(mask_perms, Flag::DEFAULT);
+                <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = mask.add_to_acl(<span class="kw-2">&amp;mut </span>default_p) {
+                    <span class="kw">return </span>fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;default mask entry: {}&quot;</span>, err));
                 }
             }
         }
 
-        <span class="kw">let</span> <span class="ident">access_acl</span> = <span class="ident">ScopeGuard::into_inner</span>(<span class="ident">access_p</span>);
-        <span class="kw">let</span> <span class="ident">default_acl</span> = <span class="ident">ScopeGuard::into_inner</span>(<span class="ident">default_p</span>);
+        <span class="kw">let </span>access_acl = ScopeGuard::into_inner(access_p);
+        <span class="kw">let </span>default_acl = ScopeGuard::into_inner(default_p);
 
-        <span class="prelude-val">Ok</span>((<span class="ident">Acl::new</span>(<span class="ident">access_acl</span>, <span class="bool-val">false</span>), <span class="ident">Acl::new</span>(<span class="ident">default_acl</span>, <span class="bool-val">true</span>)))
+        <span class="prelude-val">Ok</span>((Acl::new(access_acl, <span class="bool-val">false</span>), Acl::new(default_acl, <span class="bool-val">true</span>)))
     }
 
-    <span class="doccomment">/// Return ACL as a vector of [`AclEntry`].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Returns an [`io::Error`] on failure.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">entries</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">AclEntry</span>&gt;&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span> = <span class="ident">Vec</span>::&lt;<span class="ident">AclEntry</span>&gt;<span class="ident">::with_capacity</span>(<span class="number">8</span>);
+    <span class="doccomment">/// Return ACL as a vector of [`AclEntry`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    </span><span class="kw">pub fn </span>entries(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; io::Result&lt;Vec&lt;AclEntry&gt;&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>entries = Vec::&lt;AclEntry&gt;::with_capacity(<span class="number">8</span>);
 
-        <span class="ident">xacl_foreach</span>(<span class="self">self</span>.<span class="ident">acl</span>, |<span class="ident">entry_p</span>| {
-            <span class="kw">let</span> <span class="ident">entry</span> = <span class="ident">AclEntry::from_raw</span>(<span class="ident">entry_p</span>, <span class="self">self</span>.<span class="ident">acl</span>)<span class="question-mark">?</span>;
-            <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">entry</span>);
+        xacl_foreach(<span class="self">self</span>.acl, |entry_p| {
+            <span class="kw">let </span>entry = AclEntry::from_raw(entry_p, <span class="self">self</span>.acl)<span class="question-mark">?</span>;
+            entries.push(entry);
             <span class="prelude-val">Ok</span>(())
         })<span class="question-mark">?</span>;
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">default_acl</span> {
-            <span class="comment">// Set DEFAULT flag on each entry.</span>
-            <span class="kw">for</span> <span class="ident">entry</span> <span class="kw">in</span> <span class="kw-2">&amp;mut</span> <span class="ident">entries</span> {
-                <span class="ident">entry</span>.<span class="ident">flags</span> |= <span class="ident">Flag::DEFAULT</span>;
+        <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        </span><span class="kw">if </span><span class="self">self</span>.default_acl {
+            <span class="comment">// Set DEFAULT flag on each entry.
+            </span><span class="kw">for </span>entry <span class="kw">in </span><span class="kw-2">&amp;mut </span>entries {
+                entry.flags |= Flag::DEFAULT;
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">entries</span>)
+        <span class="prelude-val">Ok</span>(entries)
     }
 
-    <span class="doccomment">/// Return ACL as a string.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method is provided as a tracing/debugging aid.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Returns an [`io::Error`] on failure.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">String</span>&gt; {
-        <span class="kw">use</span> <span class="ident">std::io::Write</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> = <span class="ident">Vec::new</span>();
-        <span class="kw">for</span> <span class="ident">entry</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">entries</span>()<span class="question-mark">?</span> {
-            <span class="macro">writeln!</span>(<span class="ident">buf</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">entry</span>)<span class="question-mark">?</span>;
+    <span class="doccomment">/// Return ACL as a string.
+    ///
+    /// This method is provided as a tracing/debugging aid.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    </span><span class="attr">#[cfg(test)]
+    </span><span class="kw">pub fn </span>to_string(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; io::Result&lt;String&gt; {
+        <span class="kw">use </span>std::io::Write;
+        <span class="kw">let </span><span class="kw-2">mut </span>buf = Vec::new();
+        <span class="kw">for </span>entry <span class="kw">in </span><span class="self">self</span>.entries()<span class="question-mark">? </span>{
+            <span class="macro">writeln!</span>(buf, <span class="string">&quot;{}&quot;</span>, entry)<span class="question-mark">?</span>;
         }
-        <span class="ident">String::from_utf8</span>(<span class="ident">buf</span>).<span class="ident">map_err</span>(|<span class="ident">err</span>| <span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::Other</span>, <span class="ident">err</span>))
+        String::from_utf8(buf).map_err(|err| io::Error::new(io::ErrorKind::Other, err))
     }
 
-    <span class="doccomment">/// Return true if ACL is empty.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="ident">xacl_is_empty</span>(<span class="self">self</span>.<span class="ident">acl</span>)
+    <span class="doccomment">/// Return true if ACL is empty.
+    </span><span class="attr">#[must_use]
+    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        xacl_is_empty(<span class="self">self</span>.acl)
     }
 
-    <span class="doccomment">/// Return true if ACL is a Posix.1e ACL on Linux or `FreeBSD`.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::missing_const_for_fn</span>, <span class="ident">dead_code</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_posix</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="ident">xacl_is_posix</span>(<span class="self">self</span>.<span class="ident">acl</span>)
+    <span class="doccomment">/// Return true if ACL is a Posix.1e ACL on Linux or `FreeBSD`.
+    </span><span class="attr">#[must_use]
+    #[allow(clippy::missing_const_for_fn, dead_code)]
+    </span><span class="kw">pub fn </span>is_posix(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        xacl_is_posix(<span class="self">self</span>.acl)
     }
 
-    <span class="doccomment">/// Return true if file uses an `NFSv4` ACL (`FreeBSD` only).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Only used in testing.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Returns an [`io::Error`] on failure.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">docsrs</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>)))]</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_nfs4</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">options</span>: <span class="ident">AclOption</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">bool</span>&gt; {
-        <span class="ident">xacl_is_nfs4</span>(<span class="ident">path</span>, <span class="ident">options</span>.<span class="ident">contains</span>(<span class="ident">AclOption::SYMLINK_ACL</span>))
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Acl</span> {
-    <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="ident">xacl_free</span>(<span class="self">self</span>.<span class="ident">acl</span>);
+    <span class="doccomment">/// Return true if file uses an `NFSv4` ACL (`FreeBSD` only).
+    ///
+    /// Only used in testing.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    #[cfg_attr(docsrs, doc(cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)))]
+    #[allow(dead_code)]
+    </span><span class="kw">pub fn </span>is_nfs4(path: <span class="kw-2">&amp;</span>Path, options: AclOption) -&gt; io::Result&lt;bool&gt; {
+        xacl_is_nfs4(path, options.contains(AclOption::SYMLINK_ACL))
     }
 }
 
-<span class="doccomment">/// Return true if path exists and it&#39;s not a directory.</span>
-<span class="kw">fn</span> <span class="ident">is_non_directory</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">symlink</span>: <span class="ident">bool</span>) -&gt; <span class="ident">bool</span> {
-    <span class="kw">if</span> <span class="ident">symlink</span> {
-        <span class="kw">let</span> <span class="ident">result</span> = <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">meta</span>) = <span class="ident">path</span>.<span class="ident">symlink_metadata</span>() {
-            !<span class="ident">meta</span>.<span class="ident">is_dir</span>()
-        } <span class="kw">else</span> {
-            <span class="bool-val">false</span>
-        };
-        <span class="kw">return</span> <span class="ident">result</span>;
-    }
-
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">meta</span>) = <span class="ident">path</span>.<span class="ident">metadata</span>() {
-        !<span class="ident">meta</span>.<span class="ident">is_dir</span>()
-    } <span class="kw">else</span> {
-        <span class="bool-val">false</span>
+<span class="kw">impl </span>Drop <span class="kw">for </span>Acl {
+    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        xacl_free(<span class="self">self</span>.acl);
     }
 }
 
-<span class="comment">////////////////////////////////////////////////////////////////////////////////</span>
+<span class="doccomment">/// Return true if path exists and it&#39;s not a directory.
+</span><span class="kw">fn </span>is_non_directory(path: <span class="kw-2">&amp;</span>Path, symlink: bool) -&gt; bool {
+    <span class="kw">let </span>result = <span class="kw">if </span>symlink {
+        path.symlink_metadata()
+    } <span class="kw">else </span>{
+        path.metadata()
+    };
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">acl_tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::flag::Flag</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::perm::Perm</span>;
-    <span class="kw">use</span> <span class="ident">log::debug</span>;
+    result.map_or(<span class="bool-val">false</span>, |meta| !meta.is_dir())
+}
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_read_acl</span>() -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">file</span> = <span class="ident">tempfile::NamedTempFile::new</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">acl</span> = <span class="ident">Acl::read</span>(<span class="ident">file</span>.<span class="ident">as_ref</span>(), <span class="ident">AclOption::empty</span>())<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">entries</span> = <span class="ident">acl</span>.<span class="ident">entries</span>()<span class="question-mark">?</span>;
+<span class="comment">////////////////////////////////////////////////////////////////////////////////
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>)]</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">entries</span>.<span class="ident">len</span>(), <span class="number">0</span>);
+</span><span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>acl_tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::flag::Flag;
+    <span class="kw">use </span><span class="kw">crate</span>::perm::Perm;
+    <span class="kw">use </span>log::debug;
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">entries</span>.<span class="ident">len</span>(), <span class="number">3</span>);
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_read_acl() -&gt; io::Result&lt;()&gt; {
+        <span class="kw">let </span>file = tempfile::NamedTempFile::new()<span class="question-mark">?</span>;
+        <span class="kw">let </span>acl = Acl::read(file.as_ref(), AclOption::empty())<span class="question-mark">?</span>;
+        <span class="kw">let </span>entries = acl.entries()<span class="question-mark">?</span>;
 
-        <span class="kw">for</span> <span class="ident">entry</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">entries</span> {
-            <span class="macro">debug!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">entry</span>);
+        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+        </span><span class="macro">assert_eq!</span>(entries.len(), <span class="number">0</span>);
+
+        <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        </span><span class="macro">assert_eq!</span>(entries.len(), <span class="number">3</span>);
+
+        <span class="kw">for </span>entry <span class="kw">in </span><span class="kw-2">&amp;</span>entries {
+            <span class="macro">debug!</span>(<span class="string">&quot;{}&quot;</span>, entry);
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">test_write_acl_macos</span>() -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span> = <span class="ident">Vec</span>::&lt;<span class="ident">AclEntry</span>&gt;<span class="ident">::new</span>();
-        <span class="kw">let</span> <span class="ident">rwx</span> = <span class="ident">Perm::READ</span> | <span class="ident">Perm::WRITE</span> | <span class="ident">Perm::EXECUTE</span>;
+    <span class="attr">#[test]
+    #[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    </span><span class="kw">fn </span>test_write_acl_macos() -&gt; io::Result&lt;()&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>entries = Vec::&lt;AclEntry&gt;::new();
+        <span class="kw">let </span>rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;_spotlight&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;11501&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;11502&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;11503&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::deny_group</span>(
+        entries.push(AclEntry::allow_group(<span class="string">&quot;_spotlight&quot;</span>, rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_user(<span class="string">&quot;11501&quot;</span>, rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_user(<span class="string">&quot;11502&quot;</span>, rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_user(<span class="string">&quot;11503&quot;</span>, rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::deny_group(
             <span class="string">&quot;11504&quot;</span>,
-            <span class="ident">rwx</span>,
-            <span class="ident">Flag::FILE_INHERIT</span> | <span class="ident">Flag::DIRECTORY_INHERIT</span>,
+            rwx,
+            Flag::FILE_INHERIT | Flag::DIRECTORY_INHERIT,
         ));
 
-        <span class="kw">let</span> <span class="ident">file</span> = <span class="ident">tempfile::NamedTempFile::new</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">acl</span> = <span class="ident">Acl::from_entries</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>)<span class="question-mark">?</span>;
-        <span class="macro">assert!</span>(!<span class="ident">acl</span>.<span class="ident">is_empty</span>());
-        <span class="ident">acl</span>.<span class="ident">write</span>(<span class="ident">file</span>.<span class="ident">as_ref</span>(), <span class="ident">AclOption::empty</span>())<span class="question-mark">?</span>;
+        <span class="kw">let </span>file = tempfile::NamedTempFile::new()<span class="question-mark">?</span>;
+        <span class="kw">let </span>acl = Acl::from_entries(<span class="kw-2">&amp;</span>entries)<span class="question-mark">?</span>;
+        <span class="macro">assert!</span>(!acl.is_empty());
+        acl.write(file.as_ref(), AclOption::empty())<span class="question-mark">?</span>;
 
-        <span class="comment">// Even though the last entry is a group, the `acl_to_text` representation</span>
-        <span class="comment">// displays it as `user`.</span>
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">acl</span>.<span class="ident">to_string</span>()<span class="question-mark">?</span>,
+        <span class="comment">// Even though the last entry is a group, the `acl_to_text` representation
+        // displays it as `user`.
+        </span><span class="macro">assert_eq!</span>(
+            acl.to_string()<span class="question-mark">?</span>,
             <span class="string">r#&quot;allow::group:_spotlight:read,write,execute
 allow::user:11501:read,write,execute
 allow::user:11502:read,write,execute
 allow::user:11503:read,write,execute
 deny:file_inherit,directory_inherit:group:11504:read,write,execute
-&quot;#</span>
-        );
+&quot;#
+        </span>);
 
-        <span class="kw">let</span> <span class="ident">acl2</span> = <span class="ident">Acl::read</span>(<span class="ident">file</span>.<span class="ident">as_ref</span>(), <span class="ident">AclOption::empty</span>())<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">entries2</span> = <span class="ident">acl2</span>.<span class="ident">entries</span>()<span class="question-mark">?</span>;
+        <span class="kw">let </span>acl2 = Acl::read(file.as_ref(), AclOption::empty())<span class="question-mark">?</span>;
+        <span class="kw">let </span>entries2 = acl2.entries()<span class="question-mark">?</span>;
 
-        <span class="macro">assert_eq!</span>(<span class="ident">entries2</span>, <span class="ident">entries</span>);
+        <span class="macro">assert_eq!</span>(entries2, entries);
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">test_write_acl_posix</span>() -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">file</span> = <span class="ident">tempfile::NamedTempFile::new</span>()<span class="question-mark">?</span>;
+    <span class="attr">#[test]
+    #[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span><span class="kw">fn </span>test_write_acl_posix() -&gt; io::Result&lt;()&gt; {
+        <span class="kw">let </span>file = tempfile::NamedTempFile::new()<span class="question-mark">?</span>;
 
-        <span class="comment">// Skip the rest of the test if file uses NFSv4 ACL (FIXME).</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>)]</span>
-        <span class="kw">if</span> <span class="ident">Acl::is_nfs4</span>(<span class="ident">file</span>.<span class="ident">as_ref</span>(), <span class="ident">AclOption::empty</span>())<span class="question-mark">?</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+        <span class="comment">// Skip the rest of the test if file uses NFSv4 ACL (FIXME).
+        </span><span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+        </span><span class="kw">if </span>Acl::is_nfs4(file.as_ref(), AclOption::empty())<span class="question-mark">? </span>{
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span> = <span class="ident">Vec</span>::&lt;<span class="ident">AclEntry</span>&gt;<span class="ident">::new</span>();
-        <span class="kw">let</span> <span class="ident">rwx</span> = <span class="ident">Perm::READ</span> | <span class="ident">Perm::WRITE</span> | <span class="ident">Perm::EXECUTE</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>entries = Vec::&lt;AclEntry&gt;::new();
+        <span class="kw">let </span>rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;bin&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;11501&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;11502&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;11503&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_other</span>(<span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="comment">// We do not add a mask entry. One will be automatically added.</span>
+        entries.push(AclEntry::allow_group(<span class="string">&quot;bin&quot;</span>, rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_user(<span class="string">&quot;11501&quot;</span>, rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_user(<span class="string">&quot;11502&quot;</span>, rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_user(<span class="string">&quot;11503&quot;</span>, rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_user(<span class="string">&quot;&quot;</span>, rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_group(<span class="string">&quot;&quot;</span>, rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_other(rwx, <span class="prelude-val">None</span>));
+        <span class="comment">// We do not add a mask entry. One will be automatically added.
 
-        <span class="kw">let</span> <span class="ident">acl</span> = <span class="ident">Acl::from_entries</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>)<span class="question-mark">?</span>;
-        <span class="ident">acl</span>.<span class="ident">write</span>(<span class="ident">file</span>.<span class="ident">as_ref</span>(), <span class="ident">AclOption::empty</span>())<span class="question-mark">?</span>;
+        </span><span class="kw">let </span>acl = Acl::from_entries(<span class="kw-2">&amp;</span>entries)<span class="question-mark">?</span>;
+        acl.write(file.as_ref(), AclOption::empty())<span class="question-mark">?</span>;
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">acl</span>.<span class="ident">to_string</span>()<span class="question-mark">?</span>,
+            acl.to_string()<span class="question-mark">?</span>,
             <span class="string">r#&quot;allow::user::read,write,execute
 allow::user:11501:read,write,execute
 allow::user:11502:read,write,execute
@@ -1221,212 +1207,212 @@ allow::group::read,write,execute
 allow::group:bin:read,write,execute
 allow::mask::read,write,execute
 allow::other::read,write,execute
-&quot;#</span>
-        );
+&quot;#
+        </span>);
 
-        <span class="kw">let</span> <span class="ident">acl2</span> = <span class="ident">Acl::read</span>(<span class="ident">file</span>.<span class="ident">as_ref</span>(), <span class="ident">AclOption::empty</span>())<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries2</span> = <span class="ident">acl2</span>.<span class="ident">entries</span>()<span class="question-mark">?</span>;
+        <span class="kw">let </span>acl2 = Acl::read(file.as_ref(), AclOption::empty())<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>entries2 = acl2.entries()<span class="question-mark">?</span>;
 
-        <span class="comment">// Before doing the comparison, add the mask entry.</span>
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_mask</span>(<span class="ident">rwx</span>, <span class="prelude-val">None</span>));
+        <span class="comment">// Before doing the comparison, add the mask entry.
+        </span>entries.push(AclEntry::allow_mask(rwx, <span class="prelude-val">None</span>));
 
-        <span class="ident">entries</span>.<span class="ident">sort</span>();
-        <span class="ident">entries2</span>.<span class="ident">sort</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">entries2</span>, <span class="ident">entries</span>);
-
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">test_write_acl_big</span>() -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span> = <span class="ident">Vec</span>::&lt;<span class="ident">AclEntry</span>&gt;<span class="ident">::new</span>();
-        <span class="kw">let</span> <span class="ident">rwx</span> = <span class="ident">Perm::READ</span> | <span class="ident">Perm::WRITE</span> | <span class="ident">Perm::EXECUTE</span>;
-
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">128</span> {
-            <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;11501&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        }
-
-        <span class="kw">let</span> <span class="ident">file</span> = <span class="ident">tempfile::NamedTempFile::new</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">acl</span> = <span class="ident">Acl::from_entries</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>)<span class="question-mark">?</span>;
-        <span class="ident">acl</span>.<span class="ident">write</span>(<span class="ident">file</span>.<span class="ident">as_ref</span>(), <span class="ident">AclOption::empty</span>())<span class="question-mark">?</span>;
-
-        <span class="kw">let</span> <span class="ident">acl2</span> = <span class="ident">Acl::read</span>(<span class="ident">file</span>.<span class="ident">as_ref</span>(), <span class="ident">AclOption::empty</span>())<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">entries2</span> = <span class="ident">acl2</span>.<span class="ident">entries</span>()<span class="question-mark">?</span>;
-
-        <span class="macro">assert_eq!</span>(<span class="ident">entries2</span>, <span class="ident">entries</span>);
+        entries.sort();
+        entries2.sort();
+        <span class="macro">assert_eq!</span>(entries2, entries);
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">test_write_acl_too_big</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span> = <span class="ident">Vec</span>::&lt;<span class="ident">AclEntry</span>&gt;<span class="ident">::new</span>();
-        <span class="kw">let</span> <span class="ident">rwx</span> = <span class="ident">Perm::READ</span> | <span class="ident">Perm::WRITE</span> | <span class="ident">Perm::EXECUTE</span>;
+    <span class="attr">#[test]
+    #[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    </span><span class="kw">fn </span>test_write_acl_big() -&gt; io::Result&lt;()&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>entries = Vec::&lt;AclEntry&gt;::new();
+        <span class="kw">let </span>rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">129</span> {
-            <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;11501&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
+        <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">128 </span>{
+            entries.push(AclEntry::allow_user(<span class="string">&quot;11501&quot;</span>, rwx, <span class="prelude-val">None</span>));
         }
 
-        <span class="kw">let</span> <span class="ident">err</span> = <span class="ident">Acl::from_entries</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>).<span class="ident">err</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;Too many ACL entries&quot;</span>);
-    }
+        <span class="kw">let </span>file = tempfile::NamedTempFile::new()<span class="question-mark">?</span>;
+        <span class="kw">let </span>acl = Acl::from_entries(<span class="kw-2">&amp;</span>entries)<span class="question-mark">?</span>;
+        acl.write(file.as_ref(), AclOption::empty())<span class="question-mark">?</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">test_read_default_acl</span>() -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">dir</span> = <span class="ident">tempfile::tempdir</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">default_acl</span> = <span class="ident">Acl::read</span>(<span class="ident">dir</span>.<span class="ident">as_ref</span>(), <span class="ident">AclOption::DEFAULT_ACL</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>acl2 = Acl::read(file.as_ref(), AclOption::empty())<span class="question-mark">?</span>;
+        <span class="kw">let </span>entries2 = acl2.entries()<span class="question-mark">?</span>;
 
-        <span class="macro">assert!</span>(<span class="ident">default_acl</span>.<span class="ident">is_empty</span>());
+        <span class="macro">assert_eq!</span>(entries2, entries);
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">test_write_default_acl</span>() -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">dir</span> = <span class="ident">tempfile::tempdir</span>()<span class="question-mark">?</span>;
+    <span class="attr">#[test]
+    #[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    </span><span class="kw">fn </span>test_write_acl_too_big() {
+        <span class="kw">let </span><span class="kw-2">mut </span>entries = Vec::&lt;AclEntry&gt;::new();
+        <span class="kw">let </span>rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
 
-        <span class="comment">// Skip the rest of the test if file uses NFSv4 ACL (FIXME).</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>)]</span>
-        <span class="kw">if</span> <span class="ident">Acl::is_nfs4</span>(<span class="ident">dir</span>.<span class="ident">as_ref</span>(), <span class="ident">AclOption::empty</span>())<span class="question-mark">?</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+        <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">129 </span>{
+            entries.push(AclEntry::allow_user(<span class="string">&quot;11501&quot;</span>, rwx, <span class="prelude-val">None</span>));
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span> = <span class="ident">Vec</span>::&lt;<span class="ident">AclEntry</span>&gt;<span class="ident">::new</span>();
-        <span class="kw">let</span> <span class="ident">rwx</span> = <span class="ident">Perm::READ</span> | <span class="ident">Perm::WRITE</span> | <span class="ident">Perm::EXECUTE</span>;
+        <span class="kw">let </span>err = Acl::from_entries(<span class="kw-2">&amp;</span>entries).err().unwrap();
+        <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;Too many ACL entries&quot;</span>);
+    }
 
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_other</span>(<span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;bin&quot;</span>, <span class="ident">rwx</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_mask</span>(<span class="ident">rwx</span>, <span class="prelude-val">None</span>));
+    <span class="attr">#[test]
+    #[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+    </span><span class="kw">fn </span>test_read_default_acl() -&gt; io::Result&lt;()&gt; {
+        <span class="kw">let </span>dir = tempfile::tempdir()<span class="question-mark">?</span>;
+        <span class="kw">let </span>default_acl = Acl::read(dir.as_ref(), AclOption::DEFAULT_ACL)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">path</span> = <span class="ident">dir</span>.<span class="ident">as_ref</span>();
-        <span class="kw">let</span> <span class="ident">acl</span> = <span class="ident">Acl::from_entries</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>)<span class="question-mark">?</span>;
-        <span class="ident">acl</span>.<span class="ident">write</span>(<span class="ident">path</span>, <span class="ident">AclOption::DEFAULT_ACL</span>)<span class="question-mark">?</span>;
-
-        <span class="kw">let</span> <span class="ident">acl2</span> = <span class="ident">Acl::read</span>(<span class="ident">path</span>, <span class="ident">AclOption::empty</span>())<span class="question-mark">?</span>;
-        <span class="macro">assert_ne!</span>(<span class="ident">acl</span>.<span class="ident">to_string</span>()<span class="question-mark">?</span>, <span class="ident">acl2</span>.<span class="ident">to_string</span>()<span class="question-mark">?</span>);
-
-        <span class="kw">let</span> <span class="ident">default_acl</span> = <span class="ident">Acl::read</span>(<span class="ident">path</span>, <span class="ident">AclOption::DEFAULT_ACL</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">default_entries</span> = <span class="ident">default_acl</span>.<span class="ident">entries</span>()<span class="question-mark">?</span>;
-        <span class="kw">for</span> <span class="ident">entry</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">default_entries</span> {
-            <span class="macro">assert_eq!</span>(<span class="ident">entry</span>.<span class="ident">flags</span>, <span class="ident">Flag::DEFAULT</span>);
-        }
-
-        <span class="comment">// Test deleting a default ACL by passing an empty acl.</span>
-        <span class="macro">debug!</span>(<span class="string">&quot;Test deleting a default ACL&quot;</span>);
-        <span class="kw">let</span> <span class="ident">empty_acl</span> = <span class="ident">Acl::from_entries</span>(<span class="kw-2">&amp;</span>[])<span class="question-mark">?</span>;
-        <span class="ident">empty_acl</span>.<span class="ident">write</span>(<span class="ident">path</span>, <span class="ident">AclOption::DEFAULT_ACL</span>)<span class="question-mark">?</span>;
-        <span class="macro">assert!</span>(<span class="ident">Acl::read</span>(<span class="ident">path</span>, <span class="ident">AclOption::DEFAULT_ACL</span>)<span class="question-mark">?</span>.<span class="ident">is_empty</span>());
+        <span class="macro">assert!</span>(default_acl.is_empty());
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_from_entries</span>() {
-        <span class="comment">// 0 entries should result in empty acl.</span>
-        <span class="kw">let</span> <span class="ident">acl</span> = <span class="ident">Acl::from_entries</span>(<span class="kw-2">&amp;</span>[]).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="ident">acl</span>.<span class="ident">is_empty</span>());
+    <span class="attr">#[test]
+    #[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span><span class="kw">fn </span>test_write_default_acl() -&gt; io::Result&lt;()&gt; {
+        <span class="kw">let </span>dir = tempfile::tempdir()<span class="question-mark">?</span>;
 
-        <span class="comment">// Test named user on MacOS.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>)]</span>
-        {
-            <span class="kw">let</span> <span class="ident">entries</span> = <span class="macro">vec!</span>[<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;500&quot;</span>, <span class="ident">Perm::EXECUTE</span>, <span class="prelude-val">None</span>)];
-            <span class="kw">let</span> <span class="ident">acl</span> = <span class="ident">Acl::from_entries</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">acl</span>.<span class="ident">to_string</span>().<span class="ident">unwrap</span>(), <span class="string">&quot;allow::user:500:execute\n&quot;</span>);
+        <span class="comment">// Skip the rest of the test if file uses NFSv4 ACL (FIXME).
+        </span><span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+        </span><span class="kw">if </span>Acl::is_nfs4(dir.as_ref(), AclOption::empty())<span class="question-mark">? </span>{
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
 
-        <span class="comment">// Test named user on Linux. It should add correct mask.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-        {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span> = <span class="macro">vec!</span>[
-                <span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
-                <span class="ident">AclEntry::allow_other</span>(<span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>),
-                <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;500&quot;</span>, <span class="ident">Perm::EXECUTE</span>, <span class="prelude-val">None</span>),
+        <span class="kw">let </span><span class="kw-2">mut </span>entries = Vec::&lt;AclEntry&gt;::new();
+        <span class="kw">let </span>rwx = Perm::READ | Perm::WRITE | Perm::EXECUTE;
+
+        entries.push(AclEntry::allow_user(<span class="string">&quot;&quot;</span>, rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_group(<span class="string">&quot;&quot;</span>, rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_other(rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_group(<span class="string">&quot;bin&quot;</span>, rwx, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_mask(rwx, <span class="prelude-val">None</span>));
+
+        <span class="kw">let </span>path = dir.as_ref();
+        <span class="kw">let </span>acl = Acl::from_entries(<span class="kw-2">&amp;</span>entries)<span class="question-mark">?</span>;
+        acl.write(path, AclOption::DEFAULT_ACL)<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>acl2 = Acl::read(path, AclOption::empty())<span class="question-mark">?</span>;
+        <span class="macro">assert_ne!</span>(acl.to_string()<span class="question-mark">?</span>, acl2.to_string()<span class="question-mark">?</span>);
+
+        <span class="kw">let </span>default_acl = Acl::read(path, AclOption::DEFAULT_ACL)<span class="question-mark">?</span>;
+        <span class="kw">let </span>default_entries = default_acl.entries()<span class="question-mark">?</span>;
+        <span class="kw">for </span>entry <span class="kw">in </span><span class="kw-2">&amp;</span>default_entries {
+            <span class="macro">assert_eq!</span>(entry.flags, Flag::DEFAULT);
+        }
+
+        <span class="comment">// Test deleting a default ACL by passing an empty acl.
+        </span><span class="macro">debug!</span>(<span class="string">&quot;Test deleting a default ACL&quot;</span>);
+        <span class="kw">let </span>empty_acl = Acl::from_entries(<span class="kw-2">&amp;</span>[])<span class="question-mark">?</span>;
+        empty_acl.write(path, AclOption::DEFAULT_ACL)<span class="question-mark">?</span>;
+        <span class="macro">assert!</span>(Acl::read(path, AclOption::DEFAULT_ACL)<span class="question-mark">?</span>.is_empty());
+
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_from_entries() {
+        <span class="comment">// 0 entries should result in empty acl.
+        </span><span class="kw">let </span>acl = Acl::from_entries(<span class="kw-2">&amp;</span>[]).unwrap();
+        <span class="macro">assert!</span>(acl.is_empty());
+
+        <span class="comment">// Test named user on MacOS.
+        </span><span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+        </span>{
+            <span class="kw">let </span>entries = <span class="macro">vec!</span>[AclEntry::allow_user(<span class="string">&quot;500&quot;</span>, Perm::EXECUTE, <span class="prelude-val">None</span>)];
+            <span class="kw">let </span>acl = Acl::from_entries(<span class="kw-2">&amp;</span>entries).unwrap();
+            <span class="macro">assert_eq!</span>(acl.to_string().unwrap(), <span class="string">&quot;allow::user:500:execute\n&quot;</span>);
+        }
+
+        <span class="comment">// Test named user on Linux. It should add correct mask.
+        </span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        </span>{
+            <span class="kw">let </span><span class="kw-2">mut </span>entries = <span class="macro">vec!</span>[
+                AclEntry::allow_group(<span class="string">&quot;&quot;</span>, Perm::READ, <span class="prelude-val">None</span>),
+                AclEntry::allow_other(Perm::READ, <span class="prelude-val">None</span>),
+                AclEntry::allow_user(<span class="string">&quot;500&quot;</span>, Perm::EXECUTE, <span class="prelude-val">None</span>),
             ];
 
-            <span class="kw">let</span> <span class="ident">err</span> = <span class="ident">Acl::from_entries</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>).<span class="ident">err</span>().<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;missing required entry \&quot;user\&quot;&quot;</span>);
+            <span class="kw">let </span>err = Acl::from_entries(<span class="kw-2">&amp;</span>entries).err().unwrap();
+            <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;missing required entry \&quot;user\&quot;&quot;</span>);
 
-            <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>));
-            <span class="kw">let</span> <span class="ident">acl</span> = <span class="ident">Acl::from_entries</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>).<span class="ident">unwrap</span>();
+            entries.push(AclEntry::allow_user(<span class="string">&quot;&quot;</span>, Perm::READ, <span class="prelude-val">None</span>));
+            <span class="kw">let </span>acl = Acl::from_entries(<span class="kw-2">&amp;</span>entries).unwrap();
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>)]</span>
-            <span class="kw">let</span> <span class="ident">expected</span> =
+            <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+            </span><span class="kw">let </span>expected =
                 <span class="string">&quot;allow::user::read\nallow::user:500:execute\nallow::group::read\nallow::mask::read,execute\nallow::other::read\n&quot;</span>;
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>)]</span>
-            <span class="kw">let</span> <span class="ident">expected</span> =
+            <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+            </span><span class="kw">let </span>expected =
                 <span class="string">&quot;allow::group::read\nallow::other::read\nallow::user:500:execute\nallow::user::read\nallow::mask::read,execute\n&quot;</span>;
-            <span class="macro">assert_eq!</span>(<span class="ident">acl</span>.<span class="ident">to_string</span>().<span class="ident">unwrap</span>(), <span class="ident">expected</span>);
+            <span class="macro">assert_eq!</span>(acl.to_string().unwrap(), expected);
 
-            <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::WRITE</span>, <span class="prelude-val">None</span>));
-            <span class="kw">let</span> <span class="ident">err</span> = <span class="ident">Acl::from_entries</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>).<span class="ident">err</span>().<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;entry 4: duplicate entry for \&quot;group\&quot;&quot;</span>);
+            entries.push(AclEntry::allow_group(<span class="string">&quot;&quot;</span>, Perm::WRITE, <span class="prelude-val">None</span>));
+            <span class="kw">let </span>err = Acl::from_entries(<span class="kw-2">&amp;</span>entries).err().unwrap();
+            <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;entry 4: duplicate entry for \&quot;group\&quot;&quot;</span>);
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">test_from_unified_entries</span>() {
-        <span class="comment">// 0 entries should result in empty acls.</span>
-        <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">d</span>) = <span class="ident">Acl::from_unified_entries</span>(<span class="kw-2">&amp;</span>[]).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="ident">a</span>.<span class="ident">is_empty</span>());
-        <span class="macro">assert!</span>(<span class="ident">d</span>.<span class="ident">is_empty</span>());
+    <span class="attr">#[test]
+    #[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span><span class="kw">fn </span>test_from_unified_entries() {
+        <span class="comment">// 0 entries should result in empty acls.
+        </span><span class="kw">let </span>(a, d) = Acl::from_unified_entries(<span class="kw-2">&amp;</span>[]).unwrap();
+        <span class="macro">assert!</span>(a.is_empty());
+        <span class="macro">assert!</span>(d.is_empty());
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span> = <span class="macro">vec!</span>[
-            <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;500&quot;</span>, <span class="ident">Perm::EXECUTE</span>, <span class="prelude-val">None</span>),
-            <span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;501&quot;</span>, <span class="ident">Perm::EXECUTE</span>, <span class="ident">Flag::DEFAULT</span>),
+        <span class="kw">let </span><span class="kw-2">mut </span>entries = <span class="macro">vec!</span>[
+            AclEntry::allow_user(<span class="string">&quot;500&quot;</span>, Perm::EXECUTE, <span class="prelude-val">None</span>),
+            AclEntry::allow_user(<span class="string">&quot;501&quot;</span>, Perm::EXECUTE, Flag::DEFAULT),
         ];
 
-        <span class="comment">// Missing required entries.</span>
-        <span class="kw">let</span> <span class="ident">err</span> = <span class="ident">Acl::from_unified_entries</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>).<span class="ident">err</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;missing required entry \&quot;user\&quot;&quot;</span>);
+        <span class="comment">// Missing required entries.
+        </span><span class="kw">let </span>err = Acl::from_unified_entries(<span class="kw-2">&amp;</span>entries).err().unwrap();
+        <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;missing required entry \&quot;user\&quot;&quot;</span>);
 
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::WRITE</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::READ</span>, <span class="prelude-val">None</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_other</span>(<span class="ident">Perm::empty</span>(), <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_group(<span class="string">&quot;&quot;</span>, Perm::WRITE, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_user(<span class="string">&quot;&quot;</span>, Perm::READ, <span class="prelude-val">None</span>));
+        entries.push(AclEntry::allow_other(Perm::empty(), <span class="prelude-val">None</span>));
 
-        <span class="comment">// Missing required default entries.</span>
-        <span class="kw">let</span> <span class="ident">err</span> = <span class="ident">Acl::from_unified_entries</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>).<span class="ident">err</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">err</span>.<span class="ident">to_string</span>(), <span class="string">&quot;missing required default entry \&quot;user\&quot;&quot;</span>);
+        <span class="comment">// Missing required default entries.
+        </span><span class="kw">let </span>err = Acl::from_unified_entries(<span class="kw-2">&amp;</span>entries).err().unwrap();
+        <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;missing required default entry \&quot;user\&quot;&quot;</span>);
 
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::WRITE</span>, <span class="ident">Flag::DEFAULT</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_user</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::READ</span>, <span class="ident">Flag::DEFAULT</span>));
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_other</span>(<span class="ident">Perm::empty</span>(), <span class="ident">Flag::DEFAULT</span>));
+        entries.push(AclEntry::allow_group(<span class="string">&quot;&quot;</span>, Perm::WRITE, Flag::DEFAULT));
+        entries.push(AclEntry::allow_user(<span class="string">&quot;&quot;</span>, Perm::READ, Flag::DEFAULT));
+        entries.push(AclEntry::allow_other(Perm::empty(), Flag::DEFAULT));
 
-        <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">d</span>) = <span class="ident">Acl::from_unified_entries</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>(a, d) = Acl::from_unified_entries(<span class="kw-2">&amp;</span>entries).unwrap();
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>)]</span>
-        <span class="kw">let</span> <span class="ident">expected1</span> = <span class="string">&quot;allow::user::read\nallow::user:500:execute\nallow::group::write\nallow::mask::write,execute\nallow::other::\n&quot;</span>;
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>)]</span>
-        <span class="kw">let</span> <span class="ident">expected1</span> = <span class="string">&quot;allow::user:500:execute\nallow::group::write\nallow::user::read\nallow::other::\nallow::mask::write,execute\n&quot;</span>;
-        <span class="macro">assert_eq!</span>(<span class="ident">a</span>.<span class="ident">to_string</span>().<span class="ident">unwrap</span>(), <span class="ident">expected1</span>);
+        <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+        </span><span class="kw">let </span>expected1 = <span class="string">&quot;allow::user::read\nallow::user:500:execute\nallow::group::write\nallow::mask::write,execute\nallow::other::\n&quot;</span>;
+        <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+        </span><span class="kw">let </span>expected1 = <span class="string">&quot;allow::user:500:execute\nallow::group::write\nallow::user::read\nallow::other::\nallow::mask::write,execute\n&quot;</span>;
+        <span class="macro">assert_eq!</span>(a.to_string().unwrap(), expected1);
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>)]</span>
-        <span class="kw">let</span> <span class="ident">expected2</span> = <span class="string">&quot;allow:default:user::read\nallow:default:user:501:execute\nallow:default:group::write\nallow:default:mask::write,execute\nallow:default:other::\n&quot;</span>;
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> = <span class="string">&quot;freebsd&quot;</span>)]</span>
-        <span class="kw">let</span> <span class="ident">expected2</span> = <span class="string">&quot;allow:default:user:501:execute\nallow:default:group::write\nallow:default:user::read\nallow:default:other::\nallow:default:mask::write,execute\n&quot;</span>;
-        <span class="macro">assert_eq!</span>(<span class="ident">d</span>.<span class="ident">to_string</span>().<span class="ident">unwrap</span>(), <span class="ident">expected2</span>);
+        <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+        </span><span class="kw">let </span>expected2 = <span class="string">&quot;allow:default:user::read\nallow:default:user:501:execute\nallow:default:group::write\nallow:default:mask::write,execute\nallow:default:other::\n&quot;</span>;
+        <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+        </span><span class="kw">let </span>expected2 = <span class="string">&quot;allow:default:user:501:execute\nallow:default:group::write\nallow:default:user::read\nallow:default:other::\nallow:default:mask::write,execute\n&quot;</span>;
+        <span class="macro">assert_eq!</span>(d.to_string().unwrap(), expected2);
 
-        <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">AclEntry::allow_group</span>(<span class="string">&quot;&quot;</span>, <span class="ident">Perm::WRITE</span>, <span class="ident">Flag::DEFAULT</span>));
+        entries.push(AclEntry::allow_group(<span class="string">&quot;&quot;</span>, Perm::WRITE, Flag::DEFAULT));
 
-        <span class="kw">let</span> <span class="ident">err</span> = <span class="ident">Acl::from_unified_entries</span>(<span class="kw-2">&amp;</span><span class="ident">entries</span>).<span class="ident">err</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let </span>err = Acl::from_unified_entries(<span class="kw-2">&amp;</span>entries).err().unwrap();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">err</span>.<span class="ident">to_string</span>(),
-            <span class="string">&quot;entry 8: duplicate default entry for \&quot;group\&quot;&quot;</span>
-        );
+            err.to_string(),
+            <span class="string">&quot;entry 8: duplicate default entry for \&quot;group\&quot;&quot;
+        </span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_empty_acl</span>() -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">acl</span> = <span class="ident">Acl::from_entries</span>(<span class="kw-2">&amp;</span>[])<span class="question-mark">?</span>;
-        <span class="macro">assert!</span>(<span class="ident">acl</span>.<span class="ident">is_empty</span>());
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_empty_acl() -&gt; io::Result&lt;()&gt; {
+        <span class="kw">let </span>acl = Acl::from_entries(<span class="kw-2">&amp;</span>[])<span class="question-mark">?</span>;
+        <span class="macro">assert!</span>(acl.is_empty());
         <span class="prelude-val">Ok</span>(())
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="exacl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (42325c525 2022-11-11)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>
