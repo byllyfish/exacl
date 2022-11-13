@@ -70,14 +70,10 @@ pub type __uint16_t = ::std::os::raw::c_ushort;
 pub type __uint32_t = ::std::os::raw::c_uint;
 pub type __int64_t = ::std::os::raw::c_long;
 pub type __uint64_t = ::std::os::raw::c_ulong;
-pub type __size_t = __uint64_t;
-pub type __ssize_t = __int64_t;
 pub type __time_t = __int64_t;
 pub type __gid_t = __uint32_t;
 pub type __uid_t = __uint32_t;
 pub type gid_t = __gid_t;
-pub type size_t = __size_t;
-pub type ssize_t = __ssize_t;
 pub type time_t = __time_t;
 pub type uid_t = __uid_t;
 pub type acl_tag_t = u32;
@@ -108,11 +104,7 @@ extern "C" {
     pub fn acl_copy_entry(_dest_d: acl_entry_t, _src_d: acl_entry_t) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    pub fn acl_copy_ext(
-        _buf_p: *mut ::std::os::raw::c_void,
-        _acl: acl_t,
-        _size: ssize_t,
-    ) -> ssize_t;
+    pub fn acl_copy_ext(_buf_p: *mut ::std::os::raw::c_void, _acl: acl_t, _size: isize) -> isize;
 }
 extern "C" {
     pub fn acl_copy_int(_buf_p: *const ::std::os::raw::c_void) -> acl_t;
@@ -292,15 +284,15 @@ extern "C" {
     pub fn acl_set_tag_type(_entry_d: acl_entry_t, _tag_type: acl_tag_t) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    pub fn acl_size(_acl: acl_t) -> ssize_t;
+    pub fn acl_size(_acl: acl_t) -> isize;
 }
 extern "C" {
-    pub fn acl_to_text(_acl: acl_t, _len_p: *mut ssize_t) -> *mut ::std::os::raw::c_char;
+    pub fn acl_to_text(_acl: acl_t, _len_p: *mut isize) -> *mut ::std::os::raw::c_char;
 }
 extern "C" {
     pub fn acl_to_text_np(
         _acl: acl_t,
-        _len_p: *mut ssize_t,
+        _len_p: *mut isize,
         _flags: ::std::os::raw::c_int,
     ) -> *mut ::std::os::raw::c_char;
 }
@@ -350,7 +342,7 @@ extern "C" {
         arg1: gid_t,
         arg2: *mut group,
         arg3: *mut ::std::os::raw::c_char,
-        arg4: size_t,
+        arg4: usize,
         arg5: *mut *mut group,
     ) -> ::std::os::raw::c_int;
 }
@@ -359,7 +351,7 @@ extern "C" {
         arg1: *const ::std::os::raw::c_char,
         arg2: *mut group,
         arg3: *mut ::std::os::raw::c_char,
-        arg4: size_t,
+        arg4: usize,
         arg5: *mut *mut group,
     ) -> ::std::os::raw::c_int;
 }
@@ -383,7 +375,7 @@ extern "C" {
         arg1: *const ::std::os::raw::c_char,
         arg2: *mut passwd,
         arg3: *mut ::std::os::raw::c_char,
-        arg4: size_t,
+        arg4: usize,
         arg5: *mut *mut passwd,
     ) -> ::std::os::raw::c_int;
 }
@@ -392,7 +384,7 @@ extern "C" {
         arg1: uid_t,
         arg2: *mut passwd,
         arg3: *mut ::std::os::raw::c_char,
-        arg4: size_t,
+        arg4: usize,
         arg5: *mut *mut passwd,
     ) -> ::std::os::raw::c_int;
 }

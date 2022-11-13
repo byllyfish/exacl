@@ -1,7 +1,7 @@
 //! Implements utilities for converting user/group names to uid/gid.
 
 use crate::failx::*;
-use crate::sys::{getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, group, passwd, sg, size_t};
+use crate::sys::{getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, group, passwd, sg};
 #[cfg(target_os = "macos")]
 use crate::sys::{id_t, mbr_gid_to_uuid, mbr_uid_to_uuid, mbr_uuid_to_id};
 
@@ -41,7 +41,7 @@ pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
                 cstr.as_ptr(),
                 pwd.as_mut_ptr(),
                 buf.as_mut_ptr(),
-                buf.capacity() as size_t,
+                buf.capacity(),
                 &mut result,
             )
         };
@@ -85,7 +85,7 @@ pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
                 cstr.as_ptr(),
                 grp.as_mut_ptr(),
                 buf.as_mut_ptr(),
-                buf.capacity() as size_t,
+                buf.capacity(),
                 &mut result,
             )
         };
@@ -128,7 +128,7 @@ pub fn uid_to_name(uid: uid_t) -> io::Result<String> {
                 uid,
                 pwd.as_mut_ptr(),
                 buf.as_mut_ptr(),
-                buf.capacity() as size_t,
+                buf.capacity(),
                 &mut result,
             )
         };
@@ -166,7 +166,7 @@ pub fn gid_to_name(gid: gid_t) -> io::Result<String> {
                 gid,
                 grp.as_mut_ptr(),
                 buf.as_mut_ptr(),
-                buf.capacity() as size_t,
+                buf.capacity(),
                 &mut result,
             )
         };

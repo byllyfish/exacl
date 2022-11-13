@@ -24,12 +24,9 @@ pub const ACL_ENTRY_ERROR: u32 = 16384;
 pub type __uid_t = ::std::os::raw::c_uint;
 pub type __gid_t = ::std::os::raw::c_uint;
 pub type __mode_t = ::std::os::raw::c_uint;
-pub type __ssize_t = ::std::os::raw::c_long;
 pub type gid_t = __gid_t;
 pub type mode_t = __mode_t;
 pub type uid_t = __uid_t;
-pub type ssize_t = __ssize_t;
-pub type size_t = ::std::os::raw::c_ulong;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct __acl_ext {
@@ -120,7 +117,7 @@ extern "C" {
     pub fn acl_set_tag_type(entry_d: acl_entry_t, tag_type: acl_tag_t) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    pub fn acl_copy_ext(buf_p: *mut ::std::os::raw::c_void, acl: acl_t, size: ssize_t) -> ssize_t;
+    pub fn acl_copy_ext(buf_p: *mut ::std::os::raw::c_void, acl: acl_t, size: isize) -> isize;
 }
 extern "C" {
     pub fn acl_copy_int(buf_p: *const ::std::os::raw::c_void) -> acl_t;
@@ -129,10 +126,10 @@ extern "C" {
     pub fn acl_from_text(buf_p: *const ::std::os::raw::c_char) -> acl_t;
 }
 extern "C" {
-    pub fn acl_size(acl: acl_t) -> ssize_t;
+    pub fn acl_size(acl: acl_t) -> isize;
 }
 extern "C" {
-    pub fn acl_to_text(acl: acl_t, len_p: *mut ssize_t) -> *mut ::std::os::raw::c_char;
+    pub fn acl_to_text(acl: acl_t, len_p: *mut isize) -> *mut ::std::os::raw::c_char;
 }
 extern "C" {
     pub fn acl_delete_def_file(path_p: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
@@ -206,7 +203,7 @@ extern "C" {
         __gid: __gid_t,
         __resultbuf: *mut group,
         __buffer: *mut ::std::os::raw::c_char,
-        __buflen: size_t,
+        __buflen: usize,
         __result: *mut *mut group,
     ) -> ::std::os::raw::c_int;
 }
@@ -215,7 +212,7 @@ extern "C" {
         __name: *const ::std::os::raw::c_char,
         __resultbuf: *mut group,
         __buffer: *mut ::std::os::raw::c_char,
-        __buflen: size_t,
+        __buflen: usize,
         __result: *mut *mut group,
     ) -> ::std::os::raw::c_int;
 }
@@ -235,7 +232,7 @@ extern "C" {
         __uid: __uid_t,
         __resultbuf: *mut passwd,
         __buffer: *mut ::std::os::raw::c_char,
-        __buflen: size_t,
+        __buflen: usize,
         __result: *mut *mut passwd,
     ) -> ::std::os::raw::c_int;
 }
@@ -244,7 +241,7 @@ extern "C" {
         __name: *const ::std::os::raw::c_char,
         __resultbuf: *mut passwd,
         __buffer: *mut ::std::os::raw::c_char,
-        __buflen: size_t,
+        __buflen: usize,
         __result: *mut *mut passwd,
     ) -> ::std::os::raw::c_int;
 }
