@@ -8,8 +8,6 @@ pub const O_SYMLINK: u32 = 2097152;
 pub const ID_TYPE_UID: u32 = 0;
 pub const ID_TYPE_GID: u32 = 1;
 pub type __uint32_t = ::std::os::raw::c_uint;
-pub type __darwin_size_t = ::std::os::raw::c_ulong;
-pub type __darwin_ssize_t = ::std::os::raw::c_long;
 pub type __darwin_time_t = ::std::os::raw::c_long;
 pub type u_int64_t = ::std::os::raw::c_ulonglong;
 pub type __darwin_gid_t = __uint32_t;
@@ -19,8 +17,6 @@ pub type __darwin_uuid_t = [::std::os::raw::c_uchar; 16usize];
 pub type gid_t = __darwin_gid_t;
 pub type id_t = __darwin_id_t;
 pub type uid_t = __darwin_uid_t;
-pub type size_t = __darwin_size_t;
-pub type ssize_t = __darwin_ssize_t;
 pub const acl_perm_t_ACL_READ_DATA: acl_perm_t = 2;
 pub const acl_perm_t_ACL_LIST_DIRECTORY: acl_perm_t = 2;
 pub const acl_perm_t_ACL_WRITE_DATA: acl_perm_t = 4;
@@ -267,14 +263,14 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    pub fn acl_copy_ext(buf_p: *mut ::std::os::raw::c_void, acl: acl_t, size: ssize_t) -> ssize_t;
+    pub fn acl_copy_ext(buf_p: *mut ::std::os::raw::c_void, acl: acl_t, size: isize) -> isize;
 }
 extern "C" {
     pub fn acl_copy_ext_native(
         buf_p: *mut ::std::os::raw::c_void,
         acl: acl_t,
-        size: ssize_t,
-    ) -> ssize_t;
+        size: isize,
+    ) -> isize;
 }
 extern "C" {
     pub fn acl_copy_int(buf_p: *const ::std::os::raw::c_void) -> acl_t;
@@ -286,10 +282,10 @@ extern "C" {
     pub fn acl_from_text(buf_p: *const ::std::os::raw::c_char) -> acl_t;
 }
 extern "C" {
-    pub fn acl_size(acl: acl_t) -> ssize_t;
+    pub fn acl_size(acl: acl_t) -> isize;
 }
 extern "C" {
-    pub fn acl_to_text(acl: acl_t, len_p: *mut ssize_t) -> *mut ::std::os::raw::c_char;
+    pub fn acl_to_text(acl: acl_t, len_p: *mut isize) -> *mut ::std::os::raw::c_char;
 }
 extern "C" {
     pub fn open(
@@ -325,7 +321,7 @@ extern "C" {
         arg1: gid_t,
         arg2: *mut group,
         arg3: *mut ::std::os::raw::c_char,
-        arg4: size_t,
+        arg4: usize,
         arg5: *mut *mut group,
     ) -> ::std::os::raw::c_int;
 }
@@ -334,7 +330,7 @@ extern "C" {
         arg1: *const ::std::os::raw::c_char,
         arg2: *mut group,
         arg3: *mut ::std::os::raw::c_char,
-        arg4: size_t,
+        arg4: usize,
         arg5: *mut *mut group,
     ) -> ::std::os::raw::c_int;
 }
@@ -357,7 +353,7 @@ extern "C" {
         arg1: uid_t,
         arg2: *mut passwd,
         arg3: *mut ::std::os::raw::c_char,
-        arg4: size_t,
+        arg4: usize,
         arg5: *mut *mut passwd,
     ) -> ::std::os::raw::c_int;
 }
@@ -366,7 +362,7 @@ extern "C" {
         arg1: *const ::std::os::raw::c_char,
         arg2: *mut passwd,
         arg3: *mut ::std::os::raw::c_char,
-        arg4: size_t,
+        arg4: usize,
         arg5: *mut *mut passwd,
     ) -> ::std::os::raw::c_int;
 }

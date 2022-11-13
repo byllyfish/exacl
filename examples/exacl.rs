@@ -19,36 +19,36 @@ use std::process;
 use clap::Parser;
 
 #[derive(clap::Parser)]
-#[clap(name = "exacl", about = "Read or write a file's ACL.")]
+#[command(name = "exacl", about = "Read or write a file's ACL.")]
 #[allow(clippy::struct_excessive_bools)]
 struct Opt {
     /// Set file's ACL.
-    #[clap(long)]
+    #[arg(long)]
     set: bool,
 
     /// Get or set the access ACL.
-    #[clap(short = 'a', long)]
+    #[arg(short = 'a', long)]
     access: bool,
 
     /// Get or set the default ACL.
-    #[clap(short = 'd', long)]
+    #[arg(short = 'd', long)]
     default: bool,
 
     /// Get or set the ACL of a symlink itself.
-    #[clap(short = 's', long)]
+    #[arg(short = 's', long)]
     symlink: bool,
 
     /// Format of input or output.
-    #[clap(short = 'f', long, arg_enum, default_value = "json")]
+    #[arg(value_enum, short = 'f', long, default_value = "json")]
     format: Format,
 
     /// Input files
-    #[clap(parse(from_os_str))]
+    #[arg()]
     files: Vec<PathBuf>,
 }
 
-#[derive(Copy, Clone, Debug, clap::ArgEnum)]
-#[clap(rename_all = "lower")]
+#[derive(Copy, Clone, Debug, clap::ValueEnum)]
+#[value(rename_all = "lower")]
 enum Format {
     Json,
     Std,
