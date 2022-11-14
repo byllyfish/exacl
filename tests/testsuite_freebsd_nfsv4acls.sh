@@ -595,5 +595,29 @@ testDuplicateEntry() {
         "${msg//\`/}"
 }
 
+testMixedPerms() {
+    input=$(quotifyJson "[{kind:user,name:,perms:[read_data,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:false}]")
+    msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
+    assertEquals "check set acl" 0 $?
+    assertEquals \
+        "" \
+        "${msg//\"/}"
+
+    # Check ACL again.
+    msg=$($EXACL $FILE1)
+    assertEquals "check acl" 0 $?
+    assertEquals \
+        "[{kind:user,name:,perms:[read_data,write_data],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:false}]" \
+        "${msg//\"/}"
+
+    # Check ACL with getfacl.
+    msg=$(getfacl -q $FILE1 2>/dev/null | sed -e 's/ *//')
+    assertEquals "check acl getfacl" 0 $?
+    assertEquals \
+        "owner@:rw------------:-------:allow
+group@:--------------:-------:deny" \
+        "${msg}"
+}
+
 # shellcheck disable=SC1091
 . shunit2
