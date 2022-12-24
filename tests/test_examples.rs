@@ -8,7 +8,7 @@ fn test_string_format() -> io::Result<()> {
 
     let acl = exacl::getfacl(&file, None)?;
     let result = exacl::to_string(&acl)?;
-    println!("test_string_format: {:?}", result);
+    println!("test_string_format: {result:?}");
 
     Ok(())
 }
@@ -20,7 +20,7 @@ fn test_json_format() -> io::Result<()> {
 
     let acl = exacl::getfacl(&file, None)?;
     let result = serde_json::to_string(&acl)?;
-    println!("test_json_format: {:?}", result);
+    println!("test_json_format: {result:?}");
 
     Ok(())
 }

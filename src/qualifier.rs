@@ -104,7 +104,7 @@ impl Qualifier {
     pub fn mask_named(name: &str) -> io::Result<Qualifier> {
         match name {
             MASK_NAME => Ok(Qualifier::Mask),
-            s => fail_custom(&format!("unknown mask name: {:?}", s)),
+            s => fail_custom(&format!("unknown mask name: {s:?}")),
         }
     }
 
@@ -113,7 +113,7 @@ impl Qualifier {
     pub fn other_named(name: &str) -> io::Result<Qualifier> {
         match name {
             OTHER_NAME => Ok(Qualifier::Other),
-            s => fail_custom(&format!("unknown other name: {:?}", s)),
+            s => fail_custom(&format!("unknown other name: {s:?}")),
         }
     }
 
@@ -122,7 +122,7 @@ impl Qualifier {
     pub fn everyone_named(name: &str) -> io::Result<Qualifier> {
         match name {
             EVERYONE_NAME => Ok(Qualifier::Everyone),
-            s => fail_custom(&format!("unknown everyone name: {:?}", s)),
+            s => fail_custom(&format!("unknown everyone name: {s:?}")),
         }
     }
 
