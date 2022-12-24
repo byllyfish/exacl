@@ -22,7 +22,7 @@ fn main() {
     println!("cargo:rustc-link-lib=acl");
 
     // Tell cargo to invalidate the built crate whenever the wrapper changes
-    println!("cargo:rerun-if-changed={}", wrapper);
+    println!("cargo:rerun-if-changed={wrapper}");
 
     #[cfg(feature = "buildtime_bindgen")]
     bindgen_bindings(wrapper, &out_path);
@@ -109,7 +109,7 @@ fn prebuilt_bindings(out_path: &Path) {
         s => panic!("Unsupported target OS: {}", s),
     };
 
-    let bindings_path = format!("bindgen/bindings_{}.rs", target);
+    let bindings_path = format!("bindgen/bindings_{target}.rs");
     if let Err(err) = std::fs::copy(&bindings_path, out_path) {
         panic!("Can't copy {:?} to {:?}: {}", bindings_path, out_path, err);
     }

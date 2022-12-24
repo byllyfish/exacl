@@ -90,7 +90,7 @@ impl From<Error> for io::Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Error::Message(msg) => write!(f, "{}", msg),
+            Error::Message(msg) => write!(f, "{msg}"),
             Error::NotImplemented => write!(f, "Not implemented"),
         }
     }
@@ -411,7 +411,7 @@ mod serialize_tests {
 
         let u = E::Unit;
         let expected = "Unit";
-        assert_eq!(format!("{}", u), expected);
+        assert_eq!(format!("{u}"), expected);
     }
 }
 

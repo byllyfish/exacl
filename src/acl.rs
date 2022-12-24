@@ -212,14 +212,14 @@ impl Acl {
 
         for (i, entry) in entries.iter().enumerate() {
             if let Err(err) = entry.add_to_acl(&mut acl_p) {
-                return fail_custom(&format!("entry {}: {}", i, err));
+                return fail_custom(&format!("entry {i}: {err}"));
             }
         }
 
         // Check for missing required entries.
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         if let Some(kind) = Acl::find_missing_entries(entries, (Flag::empty(), Flag::empty())) {
-            return fail_custom(&format!("missing required entry \"{}\"", kind));
+            return fail_custom(&format!("missing required entry \"{kind}\""));
         }
 
         // Check if we need to add a mask entry.
@@ -227,7 +227,7 @@ impl Acl {
         if let Some(mask_perms) = Acl::compute_mask_perms(entries, (Flag::empty(), Flag::empty())) {
             let mask = AclEntry::allow_mask(mask_perms, None);
             if let Err(err) = mask.add_to_acl(&mut acl_p) {
-                return fail_custom(&format!("entry {}: {}", -1, err));
+                return fail_custom(&format!("entry -1: {err}"));
             }
         }
 
@@ -267,18 +267,18 @@ impl Acl {
                 entry.add_to_acl(&mut access_p)
             };
             if let Err(err) = result {
-                return fail_custom(&format!("entry {}: {}", i, err));
+                return fail_custom(&format!("entry {i}: {err}"));
             }
         }
 
         if xacl_is_posix(*access_p) {
             // Check for missing entries in both access and default entries.
             if let Some(kind) = Acl::find_missing_entries(entries, (Flag::empty(), Flag::DEFAULT)) {
-                return fail_custom(&format!("missing required entry \"{}\"", kind));
+                return fail_custom(&format!("missing required entry \"{kind}\""));
             }
 
             if let Some(kind) = Acl::find_missing_entries(entries, (Flag::DEFAULT, Flag::DEFAULT)) {
-                return fail_custom(&format!("missing required default entry \"{}\"", kind));
+                return fail_custom(&format!("missing required default entry \"{kind}\""));
             }
 
             // Check if we need to add a mask entry.
@@ -287,7 +287,7 @@ impl Acl {
             {
                 let mask = AclEntry::allow_mask(mask_perms, None);
                 if let Err(err) = mask.add_to_acl(&mut access_p) {
-                    return fail_custom(&format!("mask entry: {}", err));
+                    return fail_custom(&format!("mask entry: {err}"));
                 }
             }
 
@@ -296,7 +296,7 @@ impl Acl {
             {
                 let mask = AclEntry::allow_mask(mask_perms, Flag::DEFAULT);
                 if let Err(err) = mask.add_to_acl(&mut default_p) {
-                    return fail_custom(&format!("default mask entry: {}", err));
+                    return fail_custom(&format!("default mask entry: {err}"));
                 }
             }
         }
@@ -344,7 +344,7 @@ impl Acl {
         use std::io::Write;
         let mut buf = Vec::new();
         for entry in self.entries()? {
-            writeln!(buf, "{}", entry)?;
+            writeln!(buf, "{entry}")?;
         }
         String::from_utf8(buf).map_err(|err| io::Error::new(io::ErrorKind::Other, err))
     }

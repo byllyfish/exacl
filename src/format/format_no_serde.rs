@@ -74,7 +74,7 @@ fn write_enum<T: PartialEq>(
     table: &'static [(T, &'static str)],
 ) -> fmt::Result {
     match table.iter().find(|item| item.0 == value) {
-        Some((_, name)) => write!(f, "{}", name),
+        Some((_, name)) => write!(f, "{name}"),
         None => write!(f, "!!"),
     }
 }
@@ -96,9 +96,9 @@ fn err_enum<T>(s: &str, table: &'static [(T, &'static str)]) -> Error {
         .join(", ");
 
     let msg = if table.len() == 1 {
-        format!("unknown variant `{}`, expected {}", s, variants)
+        format!("unknown variant `{s}`, expected {variants}")
     } else {
-        format!("unknown variant `{}`, expected one of {}", s, variants)
+        format!("unknown variant `{s}`, expected one of {variants}")
     };
 
     Error::Message(msg)
@@ -151,7 +151,7 @@ impl From<Error> for io::Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Error::Message(msg) => write!(f, "{}", msg),
+            Error::Message(msg) => write!(f, "{msg}"),
             Error::NotImplemented => write!(f, "Not implemented"),
         }
     }

@@ -68,7 +68,7 @@ pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
         return Ok(num);
     }
 
-    fail_custom(&format!("unknown user name: {:?}", name))
+    fail_custom(&format!("unknown user name: {name:?}"))
 }
 
 /// Convert group name to gid.
@@ -112,7 +112,7 @@ pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
         return Ok(num);
     }
 
-    fail_custom(&format!("unknown group name: {:?}", name))
+    fail_custom(&format!("unknown group name: {name:?}"))
 }
 
 /// Convert uid to user name.

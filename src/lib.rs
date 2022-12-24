@@ -14,7 +14,7 @@
 //!
 //! // Print the contents of the ACL.
 //! for entry in &acl {
-//!     println!("{}", entry);
+//!     println!("{entry}");
 //! }
 //!
 //! // Add an ACL entry to the end.
@@ -317,7 +317,7 @@ where
 /// Returns an [`io::Error`] on failure.
 pub fn to_writer<W: io::Write>(mut writer: W, entries: &[AclEntry]) -> io::Result<()> {
     for entry in entries {
-        writeln!(writer, "{}", entry)?;
+        writeln!(writer, "{entry}")?;
     }
 
     Ok(())

@@ -133,7 +133,7 @@ impl Qualifier {
             Qualifier::User(uid) => unix::uid_to_guid(*uid),
             Qualifier::Group(gid) => unix::gid_to_guid(*gid),
             Qualifier::Guid(guid) => Ok(*guid),
-            Qualifier::Unknown(tag) => fail_custom(&format!("unknown tag: {:?}", tag)),
+            Qualifier::Unknown(tag) => fail_custom(&format!("unknown tag: {tag:?}")),
         }
     }
 
@@ -163,10 +163,10 @@ impl Qualifier {
 impl fmt::Display for Qualifier {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Qualifier::User(uid) => write!(f, "user:{}", uid),
-            Qualifier::Group(gid) => write!(f, "group:{}", gid),
+            Qualifier::User(uid) => write!(f, "user:{uid}"),
+            Qualifier::Group(gid) => write!(f, "group:{gid}"),
             #[cfg(target_os = "macos")]
-            Qualifier::Guid(guid) => write!(f, "guid:{}", guid),
+            Qualifier::Guid(guid) => write!(f, "guid:{guid}"),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::UserObj => write!(f, "user"),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
@@ -177,7 +177,7 @@ impl fmt::Display for Qualifier {
             Qualifier::Mask => write!(f, "mask"),
             #[cfg(target_os = "freebsd")]
             Qualifier::Everyone => write!(f, "everyone"),
-            Qualifier::Unknown(s) => write!(f, "unknown:{}", s),
+            Qualifier::Unknown(s) => write!(f, "unknown:{s}"),
         }
     }
 }
