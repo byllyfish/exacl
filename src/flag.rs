@@ -50,7 +50,14 @@ bitflags! {
     }
 }
 
-// N.B. On FreeBSD, acl_flag_t is a u16. On Linux and macOS, acl_flag_t is a u32.
+impl Flag {
+    // On FreeBSD, acl_flag_t is a u16. On Linux and macOS, acl_flag_t is a u32.
+    // To appease the linter, provide a helper function to cast Flag to u32.
+    const fn as_u32(self) -> u32 {
+        #[allow(clippy::unnecessary_cast)]
+        return self.bits as u32;
+    }
+}
 
 impl BitIterable for Flag {
     fn lsb(self) -> Option<Self> {
@@ -84,22 +91,22 @@ pub enum FlagName {
     // *N.B.* Update the corresponding table in format/format_no_serde.rs
     // if any of these entries change.
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    inherited = Flag::INHERITED.bits as u32,
+    inherited = Flag::INHERITED.as_u32(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    file_inherit = Flag::FILE_INHERIT.bits as u32,
+    file_inherit = Flag::FILE_INHERIT.as_u32(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    directory_inherit = Flag::DIRECTORY_INHERIT.bits as u32,
+    directory_inherit = Flag::DIRECTORY_INHERIT.as_u32(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    limit_inherit = Flag::LIMIT_INHERIT.bits as u32,
+    limit_inherit = Flag::LIMIT_INHERIT.as_u32(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    only_inherit = Flag::ONLY_INHERIT.bits as u32,
+    only_inherit = Flag::ONLY_INHERIT.as_u32(),
 
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-    default = Flag::DEFAULT.bits as u32,
+    default = Flag::DEFAULT.as_u32(),
 }
 
 impl FlagName {
