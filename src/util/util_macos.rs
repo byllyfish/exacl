@@ -131,7 +131,7 @@ fn xacl_get_tag_qualifier(_acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, 
     let result = match tag {
         sg::ACL_EXTENDED_ALLOW => (true, xacl_get_qualifier(entry)?),
         sg::ACL_EXTENDED_DENY => (false, xacl_get_qualifier(entry)?),
-        _ => (false, Qualifier::Unknown(format!("@tag {}", tag))),
+        _ => (false, Qualifier::Unknown(format!("@tag {tag}"))),
     };
 
     Ok(result)

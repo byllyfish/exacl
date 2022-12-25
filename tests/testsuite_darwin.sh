@@ -20,6 +20,7 @@ isReadable() {
 # Return true if file is writable (tries to overwrite file).
 isWritable() {
     echo "x" 2>/dev/null >"$1"
+    # shellcheck disable=SC2320
     return $?
 }
 

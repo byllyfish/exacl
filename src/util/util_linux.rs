@@ -90,7 +90,7 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
         sg::ACL_GROUP_OBJ => Qualifier::GroupObj,
         sg::ACL_OTHER => Qualifier::Other,
         sg::ACL_MASK => Qualifier::Mask,
-        tag => Qualifier::Unknown(format!("@tag {}", tag)),
+        tag => Qualifier::Unknown(format!("@tag {tag}")),
     };
 
     Ok(result)
@@ -156,7 +156,7 @@ pub fn xacl_set_tag_qualifier(
             xacl_set_tag_type(entry, sg::ACL_MASK)?;
         }
         Qualifier::Unknown(tag) => {
-            return fail_custom(&format!("unknown tag: {}", tag));
+            return fail_custom(&format!("unknown tag: {tag}"));
         }
     }
 
@@ -184,7 +184,7 @@ pub fn xacl_add_entry(
             } else {
                 ""
             };
-            fail_custom(&format!("duplicate {}entry for \"{}\"", default, prev))?;
+            fail_custom(&format!("duplicate {default}entry for \"{prev}\""))?;
         }
         Ok(())
     })?;

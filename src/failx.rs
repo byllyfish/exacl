@@ -53,10 +53,10 @@ pub fn fail_custom<U>(msg: &str) -> io::Result<U> {
 
 /// Return a custom [`io::Error`] that prefixes the given error.
 pub fn custom_err(msg: &str, err: &io::Error) -> io::Error {
-    io::Error::new(err.kind(), format!("{}: {}", msg, err))
+    io::Error::new(err.kind(), format!("{msg}: {err}"))
 }
 
 /// Return a custom [`io::Error`] that prefixes the given error with filename.
 pub fn path_err(path: &Path, err: &io::Error) -> io::Error {
-    io::Error::new(err.kind(), format!("File {:?}: {}", path, err))
+    io::Error::new(err.kind(), format!("File {path:?}: {err}"))
 }

@@ -298,8 +298,7 @@ fn parse_allow(value: &str) -> Result<bool, format::Error> {
         "deny" => false,
         s => {
             return Err(format::Error::Message(format!(
-                "Unknown variant `{}`, expected one of `allow`, `deny`",
-                s
+                "Unknown variant `{s}`, expected one of `allow`, `deny`"
             )))
         }
     };
@@ -340,12 +339,7 @@ impl std::str::FromStr for AclEntry {
                 let perms = fields[2].parse::<Perm>()?;
                 AclEntry::new(kind, name, perms, Some(flags), allow)
             }
-            _ => {
-                return Err(format::Error::Message(format!(
-                    "Unknown ACL format: `{}`",
-                    s
-                )))
-            }
+            _ => return Err(format::Error::Message(format!("Unknown ACL format: `{s}`"))),
         };
 
         Ok(entry)
@@ -437,7 +431,7 @@ mod aclentry_tests {
         let entry = AclEntry::allow_user("x", perms, flags);
 
         assert_eq!(
-            format!("{}", entry),
+            format!("{entry}"),
             "allow:inherited,file_inherit:user:x:read,execute"
         );
     }
@@ -449,7 +443,7 @@ mod aclentry_tests {
         let flags = Flag::DEFAULT;
 
         let entry = AclEntry::allow_user("x", perms, flags);
-        assert_eq!(format!("{}", entry), "allow:default:user:x:read,execute");
+        assert_eq!(format!("{entry}"), "allow:default:user:x:read,execute");
     }
 
     #[test]
@@ -458,7 +452,7 @@ mod aclentry_tests {
 
         // FIXME: Need to have colons in user names escaped on output!
         let entry = AclEntry::allow_user("x:y", perms, None);
-        assert_eq!(format!("{}", entry), "allow::user:x:y:read");
+        assert_eq!(format!("{entry}"), "allow::user:x:y:read");
     }
 
     #[test]

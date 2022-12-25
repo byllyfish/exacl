@@ -25,7 +25,7 @@ let mut acl = getfacl("./tmp/foo", None)?;
 
 // Print the contents of the ACL.
 for entry in &acl {
-    println!("{}", entry);
+    println!("{entry}");
 }
 
 // Add an ACL entry to the end.

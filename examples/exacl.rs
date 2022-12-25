@@ -85,7 +85,7 @@ fn main() {
 fn get_acl(paths: &[PathBuf], options: AclOption, format: Format) -> i32 {
     for path in paths {
         if let Err(err) = dump_acl(path, options, format) {
-            eprintln!("{}", err);
+            eprintln!("{err}");
             return EXIT_FAILURE;
         }
     }
@@ -100,7 +100,7 @@ fn set_acl(paths: &[PathBuf], options: AclOption, format: Format) -> i32 {
     };
 
     if let Err(err) = setfacl(paths, &entries, options) {
-        eprintln!("{}", err);
+        eprintln!("{err}");
         return EXIT_FAILURE;
     }
 
@@ -135,7 +135,7 @@ fn read_input(format: Format) -> Option<Vec<AclEntry>> {
         Format::Json => match serde_json::from_reader(reader) {
             Ok(entries) => entries,
             Err(err) => {
-                eprintln!("JSON parser error: {}", err);
+                eprintln!("JSON parser error: {err}");
                 return None;
             }
         },
@@ -147,7 +147,7 @@ fn read_input(format: Format) -> Option<Vec<AclEntry>> {
         Format::Std => match exacl::from_reader(reader) {
             Ok(entries) => entries,
             Err(err) => {
-                eprintln!("Std parser error: {}", err);
+                eprintln!("Std parser error: {err}");
                 return None;
             }
         },
