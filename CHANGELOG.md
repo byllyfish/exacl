@@ -2,8 +2,10 @@
 
 ## [Unreleased]
 
+- Update version dependencies for `bindgen`, `clap`, and `env_logger`.
+- Include ubuntu-22.04, macos-12, and freebsd-13.1 in CI build.
 - Fix code coverage CI script to address GHA build issue.
-- Include ubuntu-22.04 and macos-12 in CI build.
+- Fix clippy warnings.
 
 ## [0.9.0] - 2022-06-08
 
