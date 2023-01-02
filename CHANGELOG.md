@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.10.0] - 2023-01-02
 
 - Update version dependencies for `bindgen`, `clap`, and `env_logger`.
 - Include ubuntu-22.04, macos-12, and freebsd-13.1 in CI build.
