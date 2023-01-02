@@ -178,9 +178,9 @@ pub fn xacl_get_entry(acl: acl_t, entry: acl_entry_t) -> io::Result<(bool, Quali
 /// Used in test.
 pub fn xacl_set_qualifier(entry: acl_entry_t, qualifier: &Qualifier) -> io::Result<()> {
     // Translate qualifier User/Group to guid.
-    let guid = qualifier.guid()?;
+    let mut bytes = qualifier.guid()?.into_bytes();
 
-    let ret = unsafe { acl_set_qualifier(entry, guid.as_bytes().as_ptr() as *mut c_void) };
+    let ret = unsafe { acl_set_qualifier(entry, bytes.as_mut_ptr().cast::<c_void>()) };
     if ret != 0 {
         return fail_err(ret, "acl_set_qualifier", ());
     }

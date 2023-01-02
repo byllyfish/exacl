@@ -194,29 +194,29 @@ pub fn gid_to_name(gid: gid_t) -> io::Result<String> {
 /// Convert uid to GUID.
 #[cfg(target_os = "macos")]
 pub fn uid_to_guid(uid: uid_t) -> io::Result<Uuid> {
-    let guid = Uuid::nil();
+    let mut bytes = [0u8; 16];
 
     // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
-    let ret = unsafe { mbr_uid_to_uuid(uid, guid.as_bytes().as_ptr() as *mut u8) };
+    let ret = unsafe { mbr_uid_to_uuid(uid, bytes.as_mut_ptr()) };
     if ret != 0 {
         return fail_from_err(ret, "mbr_uid_to_uuid", uid);
     }
 
-    Ok(guid)
+    Ok(Uuid::from_bytes(bytes))
 }
 
 /// Convert gid to GUID.
 #[cfg(target_os = "macos")]
 pub fn gid_to_guid(gid: gid_t) -> io::Result<Uuid> {
-    let guid = Uuid::nil();
+    let mut bytes = [0u8; 16];
 
     // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
-    let ret = unsafe { mbr_gid_to_uuid(gid, guid.as_bytes().as_ptr() as *mut u8) };
+    let ret = unsafe { mbr_gid_to_uuid(gid, bytes.as_mut_ptr()) };
     if ret != 0 {
         return fail_from_err(ret, "mbr_gid_to_uuid", gid);
     }
 
-    Ok(guid)
+    Ok(Uuid::from_bytes(bytes))
 }
 
 /// Convert GUID to uid/gid.
@@ -227,10 +227,10 @@ pub fn gid_to_guid(gid: gid_t) -> io::Result<Uuid> {
 pub fn guid_to_id(guid: Uuid) -> io::Result<(Option<uid_t>, Option<gid_t>)> {
     let mut id_c: id_t = 0;
     let mut idtype: i32 = 0;
-    let guid_ptr = guid.as_bytes().as_ptr() as *mut u8;
+    let mut bytes = guid.into_bytes();
 
     // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
-    let ret = unsafe { mbr_uuid_to_id(guid_ptr, &mut id_c, &mut idtype) };
+    let ret = unsafe { mbr_uuid_to_id(bytes.as_mut_ptr(), &mut id_c, &mut idtype) };
     if ret == sg::ENOENT {
         // GUID was not found.
         return Ok((None, None));
