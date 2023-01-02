@@ -106,7 +106,7 @@ testUnknownKind() {
 
 testInvalidPerm() {
     input=$(quotifyJson "[{kind:user,name:501,perms:[whatever],flags:[],allow:true}]")
-    msg=$(echo "$input" | $EXACL --set non_existant 2>&1 | sed -E -e 's/\`//g')
+    msg=$(echo "$input" | $EXACL --set non_existant 2>&1 | sed -e 's/`//g')
     assertEquals 1 $?
 
     if [ "$CURRENT_OS" = "Darwin" ]; then
@@ -124,7 +124,7 @@ testInvalidPerm() {
 
 testInvalidFlag() {
     input=$(quotifyJson "[{kind:user,name:501,perms:[execute],flags:[whatever],allow:true}]")
-    msg=$(echo "$input" | $EXACL --set non_existant 2>&1 | sed -E -e 's/\`//g')
+    msg=$(echo "$input" | $EXACL --set non_existant 2>&1 | sed -e 's/`//g')
     assertEquals 1 $?
 
     if [ "$CURRENT_OS" = "Darwin" ]; then

@@ -1,13 +1,17 @@
 # Config file for cirrus-ci.org
-
-freebsd_instance:
-  image_family: freebsd-12-2
-
 # Adapted from https://github.com/Stebalien/xattr
 
 task:
-  name: CI / build (freebsd-acls)
-  
+  name: CI / build (freebsd)
+
+  matrix:
+    - name: CI / build (freebsd-13.1)
+      freebsd_instance:
+        image_family: freebsd-13-1
+    - name: CI / build (freebsd-12.2)
+      freebsd_instance:
+        image_family: freebsd-12-2
+
   sysinfo_script:
     # Record info about the test environment.
     - mount
