@@ -113,8 +113,7 @@ impl Acl {
             }
 
             return fail_custom(&format!(
-                "File {:?}: Non-directory does not have default ACL",
-                path
+                "File {path:?}: Non-directory does not have default ACL"
             ));
         }
 

@@ -245,8 +245,7 @@ pub fn guid_to_id(guid: Uuid) -> io::Result<(Option<uid_t>, Option<gid_t>)> {
         sg::ID_TYPE_GID => (None, Some(id_c)),
         _ => {
             return fail_custom(&format!(
-                "mbr_uuid_to_id: Unknown idtype {:?} for guid {:?}",
-                idtype, guid
+                "mbr_uuid_to_id: Unknown idtype {idtype:?} for guid {guid:?}"
             ))
         }
     };
