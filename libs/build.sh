@@ -3,6 +3,8 @@
 set -eux
 
 # Remove old builds
+cd "$1" || exit 1
+
 rm -rf acl
 
 # Clone the repo and switch to latest version
