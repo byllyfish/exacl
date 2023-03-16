@@ -1,5 +1,6 @@
 //! API Tests for exacl module.
 
+use std::collections::HashMap;
 use ctor::ctor;
 use exacl::{getfacl, setfacl, AclEntry, AclOption, Perm};
 use log::debug;
@@ -73,33 +74,79 @@ fn test_setfacl_file() -> io::Result<()> {
 #[test]
 #[cfg(target_os = "linux")]
 fn test_too_many_entries() -> io::Result<()> {
+    let path = "/tmp";
+    let df = std::process::Command::new("df")
+        .arg("-Th")
+        .arg(path)
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .expect("Df is a valid unix command");
+    let sed = std::process::Command::new("sed")
+        .arg("1d")
+        .stdin(df.stdout.unwrap())
+        .stdout(std::process::Stdio::piped())
+        // .output()
+        .spawn()
+        .expect("Sed is a valid unix command");
+    let tr = std::process::Command::new("tr")
+        .arg("-s")
+        .arg(" ")
+        .stdin(sed.stdout.unwrap())
+        .stdout(std::process::Stdio::piped())
+        // .output()
+        .spawn()
+        .expect("Sed is a valid unix command");
+    let cut = std::process::Command::new("cut")
+        .arg("-d")
+        .arg(" ")
+        .arg("-f2")
+        .stdin(tr.stdout.unwrap())
+        .output()
+        .expect("Cut is a valid unix command");
+    let fs = String::from_utf8(cut.stdout).expect("FS should be valid utf8").trim_end().to_string();
+    debug!("Running on filesystem: {{{}}}", fs);
+    let supported_fs = HashMap::from(
+        [
+            ("brtfs", u32::MAX),
+            ("xfs", 5461), // actually limited by 1<<16 https://elixir.bootlin.com/linux/latest/source/fs/xfs/libxfs/xfs_format.h#L1809
+            ("tmpfs", 8191),
+            ("ext2", 507),
+            ("ext3", 507),
+            ("ext4", 507),
+            ("gpfs", u32::MAX),
+            ("nss", u32::MAX),
+        ]
+    );
+    assert!(supported_fs.contains_key(fs.as_str()), "Not a supported fs {}", fs);
+    let max_entries = supported_fs.get(fs.as_str()).unwrap();
     use exacl::setfacl;
 
-    // This test depends on the type of file system. With ext* systems, we
-    // expect ACL's with 508 entries to fail.
     let mut entries = vec![
         AclEntry::allow_user("", Perm::READ, None),
         AclEntry::allow_group("", Perm::READ, None),
         AclEntry::allow_other(Perm::empty(), None),
         AclEntry::allow_mask(Perm::READ, None),
     ];
+    let max_entries = max_entries.saturating_sub(entries.len() as u32);
 
-    for i in 500..1003 {
-        entries.push(AclEntry::allow_user(&i.to_string(), Perm::READ, None));
+    let files = [tempfile::NamedTempFile::new_in(path)?];
+    let offset = 500;
+    for i in 0..max_entries {
+        entries.push(AclEntry::allow_user(&(offset + i as usize).to_string(), Perm::READ, None));
     }
-
-    let files = [tempfile::NamedTempFile::new()?];
-
-    // 507 entries are okay.
     setfacl(&files, &entries, None)?;
-    debug!("{} entries is okay", entries.len());
+    debug!("{} entries were added and it is okay", entries.len());
 
-    // Add 508th entry.
-    entries.push(AclEntry::allow_user("1500", Perm::READ, None));
+    // Add last entry.
+    entries.push(AclEntry::allow_user((u32::MAX - 1).to_string().as_str(), Perm::READ, None));
 
-    // 508th entry is one too many.
+    // last entry is one too many.
     let err = setfacl(&files, &entries, None).unwrap_err();
-    assert!(err.to_string().contains("No space left on device"));
+    debug!("Got error as expected: {}",err);
+    assert!(
+        err.to_string().contains("No space left on device") ||
+            err.to_string().contains("Argument list too long")
+    );
 
     Ok(())
 }

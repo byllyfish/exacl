@@ -196,6 +196,8 @@ impl fmt::Display for Qualifier {
 
 #[cfg(test)]
 mod qualifier_tests {
+    use std::ffi::CString;
+    use std::str::FromStr;
     use super::*;
 
     #[test]
@@ -231,8 +233,14 @@ mod qualifier_tests {
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
+            let daemon = std::process::Command::new("getent").arg("passwd").arg("daemon").output().expect("Valid Unix command");
+            let s = unsafe { CString::from_vec_unchecked(daemon.stdout) }.into_string().expect("Valid utf8");
+            let s = s.split(":").collect::<Vec<_>>();
+            assert_eq!(s.get(0).unwrap(), &"daemon");
+            let user_id = u32::from_str(s.get(2).expect("uid is there")).expect("UIDs are valid u32");
+
             let user = Qualifier::user_named("daemon").ok();
-            assert_eq!(user, Some(Qualifier::User(1)));
+            assert_eq!(user, Some(Qualifier::User(user_id)));
         }
     }
 
@@ -252,8 +260,14 @@ mod qualifier_tests {
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
+            let daemon = std::process::Command::new("getent").arg("passwd").arg("daemon").output().expect("Valid Unix command");
+            let s = unsafe { CString::from_vec_unchecked(daemon.stdout) }.into_string().expect("Valid utf8");
+            let s = s.split(":").collect::<Vec<_>>();
+            assert_eq!(s.get(0).unwrap(), &"daemon");
+            let group_id = u32::from_str(s.get(3).expect("gid is there")).expect("GIDs are valid u32");
+
             let group = Qualifier::group_named("daemon").ok();
-            assert_eq!(group, Some(Qualifier::Group(1)));
+            assert_eq!(group, Some(Qualifier::Group(group_id)));
         }
     }
 }
