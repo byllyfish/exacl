@@ -1,9 +1,9 @@
 //! API Tests for exacl module.
 
-use std::collections::HashMap;
 use ctor::ctor;
 use exacl::{getfacl, setfacl, AclEntry, AclOption, Perm};
 use log::debug;
+use std::collections::HashMap;
 use std::io;
 
 #[ctor]
@@ -103,21 +103,26 @@ fn test_too_many_entries() -> io::Result<()> {
         .stdin(tr.stdout.unwrap())
         .output()
         .expect("Cut is a valid unix command");
-    let fs = String::from_utf8(cut.stdout).expect("FS should be valid utf8").trim_end().to_string();
+    let fs = String::from_utf8(cut.stdout)
+        .expect("FS should be valid utf8")
+        .trim_end()
+        .to_string();
     debug!("Running on filesystem: {{{}}}", fs);
-    let supported_fs = HashMap::from(
-        [
-            ("brtfs", u32::MAX),
-            ("xfs", 5461), // actually limited by 1<<16 https://elixir.bootlin.com/linux/latest/source/fs/xfs/libxfs/xfs_format.h#L1809
-            ("tmpfs", 8191),
-            ("ext2", 507),
-            ("ext3", 507),
-            ("ext4", 507),
-            ("gpfs", u32::MAX),
-            ("nss", u32::MAX),
-        ]
+    let supported_fs = HashMap::from([
+        ("brtfs", u32::MAX),
+        ("xfs", 5461), // actually limited by 1<<16 https://elixir.bootlin.com/linux/latest/source/fs/xfs/libxfs/xfs_format.h#L1809
+        ("tmpfs", 8191),
+        ("ext2", 507),
+        ("ext3", 507),
+        ("ext4", 507),
+        ("gpfs", u32::MAX),
+        ("nss", u32::MAX),
+    ]);
+    assert!(
+        supported_fs.contains_key(fs.as_str()),
+        "Not a supported fs {}",
+        fs
     );
-    assert!(supported_fs.contains_key(fs.as_str()), "Not a supported fs {}", fs);
     let max_entries = supported_fs.get(fs.as_str()).unwrap();
     use exacl::setfacl;
 
@@ -132,20 +137,28 @@ fn test_too_many_entries() -> io::Result<()> {
     let files = [tempfile::NamedTempFile::new_in(path)?];
     let offset = 500;
     for i in 0..max_entries {
-        entries.push(AclEntry::allow_user(&(offset + i as usize).to_string(), Perm::READ, None));
+        entries.push(AclEntry::allow_user(
+            &(offset + i as usize).to_string(),
+            Perm::READ,
+            None,
+        ));
     }
     setfacl(&files, &entries, None)?;
     debug!("{} entries were added and it is okay", entries.len());
 
     // Add last entry.
-    entries.push(AclEntry::allow_user((u32::MAX - 1).to_string().as_str(), Perm::READ, None));
+    entries.push(AclEntry::allow_user(
+        (u32::MAX - 1).to_string().as_str(),
+        Perm::READ,
+        None,
+    ));
 
     // last entry is one too many.
     let err = setfacl(&files, &entries, None).unwrap_err();
-    debug!("Got error as expected: {}",err);
+    debug!("Got error as expected: {}", err);
     assert!(
-        err.to_string().contains("No space left on device") ||
-            err.to_string().contains("Argument list too long")
+        err.to_string().contains("No space left on device")
+            || err.to_string().contains("Argument list too long")
     );
 
     Ok(())
