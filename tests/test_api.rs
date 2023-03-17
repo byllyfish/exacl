@@ -70,12 +70,9 @@ fn test_setfacl_file() -> io::Result<()> {
     Ok(())
 }
 
-#[test]
+/// Get the type of filesystem from `df -Th` command output.
 #[cfg(target_os = "linux")]
-fn test_too_many_entries() -> io::Result<()> {
-    use std::collections::HashMap;
-
-    let path = "/tmp";
+fn get_filesystem(path: &str) -> String {
     let df = std::process::Command::new("df")
         .arg("-Th")
         .arg(path)
@@ -86,7 +83,6 @@ fn test_too_many_entries() -> io::Result<()> {
         .arg("1d")
         .stdin(df.stdout.unwrap())
         .stdout(std::process::Stdio::piped())
-        // .output()
         .spawn()
         .expect("sed is a valid unix command");
     let tr = std::process::Command::new("tr")
@@ -94,7 +90,6 @@ fn test_too_many_entries() -> io::Result<()> {
         .arg(" ")
         .stdin(sed.stdout.unwrap())
         .stdout(std::process::Stdio::piped())
-        // .output()
         .spawn()
         .expect("tr is a valid unix command");
     let cut = std::process::Command::new("cut")
@@ -104,11 +99,21 @@ fn test_too_many_entries() -> io::Result<()> {
         .stdin(tr.stdout.unwrap())
         .output()
         .expect("cut is a valid unix command");
-    let fs = String::from_utf8(cut.stdout)
+    String::from_utf8(cut.stdout)
         .expect("FS should be valid utf8")
         .trim_end()
-        .to_string();
+        .to_string()
+}
+
+#[test]
+#[cfg(target_os = "linux")]
+fn test_too_many_entries() -> io::Result<()> {
+    use std::collections::HashMap;
+
+    let path = "/tmp";
+    let fs = get_filesystem(path);
     debug!("Running on filesystem: {{{}}}", fs);
+
     let supported_fs = HashMap::from([
         ("brtfs", u32::MAX),
         ("xfs", 5461), // actually limited by 1<<16 https://elixir.bootlin.com/linux/latest/source/fs/xfs/libxfs/xfs_format.h#L1809
