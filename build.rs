@@ -14,12 +14,27 @@ https://github.com/byllyfish/exacl/issues
 
 fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
+    #[cfg(target_os = "linux")]
+    {
+        // Tell cargo to tell rustc to build libacl and link to libacl.a, only on Linux.
+        let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+        let libs_path = Path::new(manifest_dir.as_str()).join("libs");
+        assert!(libs_path.exists(), "Missing libs path");
+        if !Path::new(out_dir.as_str()).join("usr").exists() {
+            let exit = std::process::Command::new("./build.sh")
+                .arg(out_dir.as_str())
+                .current_dir(libs_path.as_path())
+                .spawn()
+                .expect("Command is valid")
+                .wait()
+                .expect("Script did not fail");
+            assert!(exit.success(), "Build command failed with {:?}", exit.code());
+        }
+        println!("cargo:rustc-link-search={}/usr/lib", out_dir.as_str());
+        println!("cargo:rustc-link-lib=static=acl");
+    }
     let out_path = Path::new(&out_dir).join("bindings.rs");
     let wrapper = "bindgen/wrapper.h";
-
-    // Tell cargo to tell rustc to link libacl.so, only on Linux.
-    #[cfg(target_os = "linux")]
-    println!("cargo:rustc-link-lib=acl");
 
     // Tell cargo to invalidate the built crate whenever the wrapper changes
     println!("cargo:rerun-if-changed={wrapper}");
@@ -46,6 +61,11 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
         builder = builder.clang_arg("-isysroot/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk");
     }
 
+    if cfg!(target_os = "linux") {
+        let out_dir = env::var("OUT_DIR").unwrap();
+        builder = builder.clang_arg(format!("-I{}/usr/include", out_dir));
+    }
+
     // Specify the types, functions, and constants we want to include.
     let types = ["acl_.*", "uid_t", "gid_t"];
     let funcs = [
@@ -56,13 +76,13 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
         "mbr_gid_to_uuid",
         "mbr_uuid_to_id",
         #[cfg(target_os = "macos")]
-        "open",
+            "open",
         #[cfg(target_os = "macos")]
-        "close",
+            "close",
         #[cfg(target_os = "freebsd")]
-        "pathconf",
+            "pathconf",
         #[cfg(target_os = "freebsd")]
-        "lpathconf",
+            "lpathconf",
     ];
     let vars = [
         "ACL_.*",
@@ -73,7 +93,7 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
         "ENOMEM",
         "ERANGE",
         #[cfg(target_os = "macos")]
-        "O_SYMLINK",
+            "O_SYMLINK",
         "ID_TYPE_UID",
         "ID_TYPE_GID",
     ];

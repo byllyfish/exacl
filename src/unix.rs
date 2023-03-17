@@ -273,7 +273,15 @@ mod unix_tests {
         assert_eq!(name_to_uid("_spotlight").ok(), Some(89));
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(name_to_uid("daemon").ok(), Some(1));
+        {
+            let daemon = std::process::Command::new("getent").arg("passwd").arg("daemon").output().expect("Valid Unix command");
+            let s = unsafe { CString::from_vec_unchecked(daemon.stdout) }.into_string().expect("Valid utf8");
+            let s = s.split(':').collect::<Vec<_>>();
+            assert_eq!(s.first().unwrap(), &"daemon");
+            let user_id:u32 = std::str::FromStr::from_str(s.get(2).expect("uid is there")).expect("UIDs are valid u32");
+
+            assert_eq!(name_to_uid("daemon").ok(), Some(user_id));
+        }
     }
 
     #[test]
@@ -290,7 +298,15 @@ mod unix_tests {
         assert_eq!(name_to_gid("_spotlight").ok(), Some(89));
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(name_to_gid("daemon").ok(), Some(1));
+        {
+            let daemon = std::process::Command::new("getent").arg("passwd").arg("daemon").output().expect("Valid Unix command");
+            let s = unsafe { CString::from_vec_unchecked(daemon.stdout) }.into_string().expect("Valid utf8");
+            let s = s.split(':').collect::<Vec<_>>();
+            assert_eq!(s.first().unwrap(), &"daemon");
+            let group_id:u32 = std::str::FromStr::from_str(s.get(3).expect("gid is there")).expect("GIDs are valid u32");
+
+            assert_eq!(name_to_gid("daemon").ok(), Some(group_id));
+        }
     }
 
     #[test]
@@ -301,7 +317,15 @@ mod unix_tests {
         assert_eq!(uid_to_name(89).unwrap(), "_spotlight");
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(uid_to_name(1).unwrap(), "daemon");
+        {
+            let daemon = std::process::Command::new("getent").arg("passwd").arg("daemon").output().expect("Valid Unix command");
+            let s = unsafe { CString::from_vec_unchecked(daemon.stdout) }.into_string().expect("Valid utf8");
+            let s = s.split(':').collect::<Vec<_>>();
+            assert_eq!(s.first().unwrap(), &"daemon");
+            let user_id:u32 = std::str::FromStr::from_str(s.get(2).expect("uid is there")).expect("UIDs are valid u32");
+
+            assert_eq!(uid_to_name(user_id).unwrap(), "daemon");
+        }
     }
 
     #[test]
@@ -312,7 +336,15 @@ mod unix_tests {
         assert_eq!(gid_to_name(89).unwrap(), "_spotlight");
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(gid_to_name(1).unwrap(), "daemon");
+        {
+            let daemon = std::process::Command::new("getent").arg("passwd").arg("daemon").output().expect("Valid Unix command");
+            let s = unsafe { CString::from_vec_unchecked(daemon.stdout) }.into_string().expect("Valid utf8");
+            let s = s.split(':').collect::<Vec<_>>();
+            assert_eq!(s.first().unwrap(), &"daemon");
+            let group_id:u32 = std::str::FromStr::from_str(s.get(3).expect("gid is there")).expect("GIDs are valid u32");
+
+            assert_eq!(gid_to_name(group_id).unwrap(), "daemon");
+        }
     }
 
     #[test]
