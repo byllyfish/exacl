@@ -3,7 +3,6 @@
 use ctor::ctor;
 use exacl::{getfacl, setfacl, AclEntry, AclOption, Perm};
 use log::debug;
-use std::collections::HashMap;
 use std::io;
 
 #[ctor]
@@ -74,20 +73,22 @@ fn test_setfacl_file() -> io::Result<()> {
 #[test]
 #[cfg(target_os = "linux")]
 fn test_too_many_entries() -> io::Result<()> {
+    use std::collections::HashMap;
+
     let path = "/tmp";
     let df = std::process::Command::new("df")
         .arg("-Th")
         .arg(path)
         .stdout(std::process::Stdio::piped())
         .spawn()
-        .expect("Df is a valid unix command");
+        .expect("df is a valid unix command");
     let sed = std::process::Command::new("sed")
         .arg("1d")
         .stdin(df.stdout.unwrap())
         .stdout(std::process::Stdio::piped())
         // .output()
         .spawn()
-        .expect("Sed is a valid unix command");
+        .expect("sed is a valid unix command");
     let tr = std::process::Command::new("tr")
         .arg("-s")
         .arg(" ")
@@ -95,14 +96,14 @@ fn test_too_many_entries() -> io::Result<()> {
         .stdout(std::process::Stdio::piped())
         // .output()
         .spawn()
-        .expect("Sed is a valid unix command");
+        .expect("tr is a valid unix command");
     let cut = std::process::Command::new("cut")
         .arg("-d")
         .arg(" ")
         .arg("-f2")
         .stdin(tr.stdout.unwrap())
         .output()
-        .expect("Cut is a valid unix command");
+        .expect("cut is a valid unix command");
     let fs = String::from_utf8(cut.stdout)
         .expect("FS should be valid utf8")
         .trim_end()
@@ -124,7 +125,6 @@ fn test_too_many_entries() -> io::Result<()> {
         fs
     );
     let max_entries = supported_fs.get(fs.as_str()).unwrap();
-    use exacl::setfacl;
 
     let mut entries = vec![
         AclEntry::allow_user("", Perm::READ, None),
