@@ -114,22 +114,23 @@ fn test_too_many_entries() -> io::Result<()> {
     let fs = get_filesystem(path);
     debug!("Running on filesystem: {{{}}}", fs);
 
+    const UNTESTED: u32 = 65535;
     let supported_fs = HashMap::from([
-        ("brtfs", u32::MAX),
-        ("xfs", 5461), // actually limited by 1<<16 https://elixir.bootlin.com/linux/latest/source/fs/xfs/libxfs/xfs_format.h#L1809
+        ("brtfs", UNTESTED),
+        ("xfs", 5461), // max ext attr size = 64KB
         ("tmpfs", 8191),
         ("ext2", 507),
         ("ext3", 507),
         ("ext4", 507),
-        ("gpfs", u32::MAX),
-        ("nss", u32::MAX),
+        ("gpfs", UNTESTED),
+        ("nss", UNTESTED),
     ]);
     assert!(
         supported_fs.contains_key(fs.as_str()),
-        "Not a supported fs {}",
+        "Not a supported filesystem: {}",
         fs
     );
-    let max_entries = supported_fs.get(fs.as_str()).unwrap();
+    let max_entries = supported_fs[fs.as_str()];
 
     let mut entries = vec![
         AclEntry::allow_user("", Perm::READ, None),
@@ -139,7 +140,6 @@ fn test_too_many_entries() -> io::Result<()> {
     ];
     let max_entries = max_entries.saturating_sub(entries.len() as u32);
 
-    let files = [tempfile::NamedTempFile::new_in(path)?];
     let offset = 500;
     for i in 0..max_entries {
         entries.push(AclEntry::allow_user(
@@ -148,6 +148,9 @@ fn test_too_many_entries() -> io::Result<()> {
             None,
         ));
     }
+
+    let files = [tempfile::NamedTempFile::new_in(path)?];
+    debug!("Call setfacl with {} entries...", entries.len());
     setfacl(&files, &entries, None)?;
     debug!("{} entries were added and it is okay", entries.len());
 

@@ -53,6 +53,12 @@ quotifyJson() {
 
 # Called by shunit2 before all tests run.
 oneTimeSetUp() {
+    # Check that getfacl is installed.
+    if ! hash getfacl; then
+        echo "FAILURE: Linux tests require the getfacl and setfacl commands. Please install the acl package."
+        exit 1
+    fi
+
     # Use temp directory managed by shunit2.
     DIR="$SHUNIT_TMPDIR"
     FILE1="$DIR/file1"
