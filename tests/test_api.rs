@@ -2,7 +2,7 @@
 
 use ctor::ctor;
 use exacl::{getfacl, setfacl, AclEntry, AclOption, Perm};
-use log::{debug, warn};
+use log::debug;
 use std::io;
 
 #[ctor]
@@ -133,7 +133,7 @@ fn test_too_many_entries() -> io::Result<()> {
     );
     let max_entries = supported_fs[fs.as_str()];
     if max_entries == UNTESTED {
-        warn!("Filesystem {} is not tested!", fs);
+        debug!("Filesystem {} is not tested!", fs);
     }
 
     let mut entries = vec![
