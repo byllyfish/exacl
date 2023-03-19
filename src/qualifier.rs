@@ -188,6 +188,26 @@ impl fmt::Display for Qualifier {
 mod qualifier_tests {
     use super::*;
 
+    /// Retrieve `user_id` and `group_id` of unix entity with specified name.
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+    fn getent(name: &str) -> (u32, u32) {
+        use std::str::FromStr;
+
+        let cmd = std::process::Command::new("getent")
+            .arg("passwd")
+            .arg(name)
+            .output()
+            .expect("Valid command");
+        let out = String::from_utf8(cmd.stdout).expect("Valid utf8");
+        let tokens = out.split(':').collect::<Vec<_>>();
+        assert_eq!(tokens[0], name);
+
+        let user_id = u32::from_str(tokens[2]).expect("Valid uid");
+        let group_id = u32::from_str(tokens[3]).expect("Valid gid");
+
+        (user_id, group_id)
+    }
+
     #[test]
     #[cfg(target_os = "macos")]
     fn test_from_guid() {
@@ -221,8 +241,9 @@ mod qualifier_tests {
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
+            let (user_id, _) = getent("daemon");
             let user = Qualifier::user_named("daemon").ok();
-            assert_eq!(user, Some(Qualifier::User(1)));
+            assert_eq!(user, Some(Qualifier::User(user_id)));
         }
     }
 
@@ -242,8 +263,9 @@ mod qualifier_tests {
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
+            let (_, group_id) = getent("daemon");
             let group = Qualifier::group_named("daemon").ok();
-            assert_eq!(group, Some(Qualifier::Group(1)));
+            assert_eq!(group, Some(Qualifier::Group(group_id)));
         }
     }
 }

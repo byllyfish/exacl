@@ -94,9 +94,8 @@ fn get_acl(paths: &[PathBuf], options: AclOption, format: Format) -> i32 {
 }
 
 fn set_acl(paths: &[PathBuf], options: AclOption, format: Format) -> i32 {
-    let entries = match read_input(format) {
-        Some(entries) => entries,
-        None => return EXIT_FAILURE,
+    let Some(entries) = read_input(format) else {
+        return EXIT_FAILURE
     };
 
     if let Err(err) = setfacl(paths, &entries, options) {
