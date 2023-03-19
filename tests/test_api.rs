@@ -2,7 +2,7 @@
 
 use ctor::ctor;
 use exacl::{getfacl, setfacl, AclEntry, AclOption, Perm};
-use log::debug;
+use log::{debug, warn};
 use std::io;
 
 #[ctor]
@@ -72,7 +72,7 @@ fn test_setfacl_file() -> io::Result<()> {
 
 /// Get the type of filesystem from `df -Th` command output.
 #[cfg(target_os = "linux")]
-fn get_filesystem(path: &str) -> String {
+fn get_filesystem(path: &std::path::PathBuf) -> String {
     let df = std::process::Command::new("df")
         .arg("-Th")
         .arg(path)
@@ -110,13 +110,15 @@ fn get_filesystem(path: &str) -> String {
 fn test_too_many_entries() -> io::Result<()> {
     use std::collections::HashMap;
 
-    let path = "/tmp";
-    let fs = get_filesystem(path);
-    debug!("Running on filesystem: {{{}}}", fs);
+    let path = std::env::temp_dir();
+    let fs = get_filesystem(&path);
+    debug!("Running on filesystem: {{{}}} TMPDIR={:?}", fs, path);
 
     const UNTESTED: u32 = 65535;
     let supported_fs = HashMap::from([
         ("brtfs", UNTESTED),
+        // FIXME: xfs is not tested. -wwf
+        // https://elixir.bootlin.com/linux/latest/source/fs/xfs/libxfs/xfs_format.h#L1809
         ("xfs", 5461), // max ext attr size = 64KB
         ("tmpfs", 8191),
         ("ext2", 507),
@@ -131,6 +133,9 @@ fn test_too_many_entries() -> io::Result<()> {
         fs
     );
     let max_entries = supported_fs[fs.as_str()];
+    if max_entries == UNTESTED {
+        warn!("Filesystem {} is not tested!", fs);
+    }
 
     let mut entries = vec![
         AclEntry::allow_user("", Perm::READ, None),
@@ -161,7 +166,7 @@ fn test_too_many_entries() -> io::Result<()> {
         None,
     ));
 
-    // last entry is one too many.
+    // Last entry is one too many.
     let err = setfacl(&files, &entries, None).unwrap_err();
     debug!("Got error as expected: {}", err);
     assert!(
