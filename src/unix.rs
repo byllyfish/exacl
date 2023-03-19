@@ -259,7 +259,7 @@ pub fn guid_to_id(guid: Uuid) -> io::Result<(Option<uid_t>, Option<gid_t>)> {
 mod unix_tests {
     use super::*;
 
-    /// Retrieve user_id and group_id of unix entity with specified name.
+    /// Retrieve `user_id` and `group_id` of unix entity with specified name.
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     fn getent(name: &str) -> (u32, u32) {
         use std::str::FromStr;

@@ -188,7 +188,7 @@ impl fmt::Display for Qualifier {
 mod qualifier_tests {
     use super::*;
 
-    /// Retrieve user_id and group_id of unix entity with specified name.
+    /// Retrieve `user_id` and `group_id` of unix entity with specified name.
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     fn getent(name: &str) -> (u32, u32) {
         use std::str::FromStr;

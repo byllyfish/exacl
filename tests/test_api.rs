@@ -109,12 +109,12 @@ fn get_filesystem(path: &std::path::PathBuf) -> String {
 #[cfg(target_os = "linux")]
 fn test_too_many_entries() -> io::Result<()> {
     use std::collections::HashMap;
+    const UNTESTED: u32 = 65535;
 
     let path = std::env::temp_dir();
     let fs = get_filesystem(&path);
     debug!("Running on filesystem: {{{}}} TMPDIR={:?}", fs, path);
 
-    const UNTESTED: u32 = 65535;
     let supported_fs = HashMap::from([
         ("brtfs", UNTESTED),
         // FIXME: xfs is not tested. -wwf
@@ -129,8 +129,7 @@ fn test_too_many_entries() -> io::Result<()> {
     ]);
     assert!(
         supported_fs.contains_key(fs.as_str()),
-        "Not a supported filesystem: {}",
-        fs
+        "Not a supported filesystem: {fs}"
     );
     let max_entries = supported_fs[fs.as_str()];
     if max_entries == UNTESTED {
@@ -143,7 +142,7 @@ fn test_too_many_entries() -> io::Result<()> {
         AclEntry::allow_other(Perm::empty(), None),
         AclEntry::allow_mask(Perm::READ, None),
     ];
-    let max_entries = max_entries.saturating_sub(entries.len() as u32);
+    let max_entries = max_entries.saturating_sub(u32::try_from(entries.len()).unwrap());
 
     let offset = 500;
     for i in 0..max_entries {
