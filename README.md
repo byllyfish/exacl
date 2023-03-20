@@ -113,3 +113,28 @@ automatically have the same ACL (via the default ACL).
     
     exacl::setfacl(&["./tmp/dir"], &acl, None)?;
 ```
+
+## Build and Test
+
+On Linux, you must install the `libacl1-dev` package to build exacl. The integration tests 
+require `shunit2` which can be installed via apt or homebrew. 
+
+```
+sudo apt install libacl1-dev shunit2
+```
+
+To run the unit tests with debug logging, type: `RUST_LOG=debug cargo test`
+
+To run the integration tests, type:
+
+```
+cargo test --features serde; ./tests/run_tests.sh
+```
+
+### Bindgen Feature
+
+If there is a problem building exacl on your system, try enabling the bindgen feature.
+
+```
+cargo test --features bindgen
+```
