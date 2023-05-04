@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-12, ubuntu-20.04, macos-11, ubuntu-18.04]
+        os: [ubuntu-22.04, macos-12, ubuntu-20.04, macos-11]
 
     steps:
     - name: Checkout
@@ -48,7 +48,7 @@ jobs:
       run: ./tests/run_tests.sh
     - name: Run memory tests (Linux)
       run: ./tests/run_tests.sh memcheck
-      if: runner.os == 'Linux' && matrix.os != 'ubuntu-18.04'
+      if: runner.os == 'Linux'
     - name: Run TMPFS tests (Linux)
       run: |
         mkdir /run/user/$UID/exacl
