@@ -125,7 +125,7 @@ use failx::fail_custom;
 /// # Errors
 ///
 /// Returns an [`io::Error`] on failure.
-
+///
 pub fn getfacl<P, O>(path: P, options: O) -> io::Result<Vec<AclEntry>>
 where
     P: AsRef<Path>,
@@ -227,7 +227,7 @@ fn _getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
 /// # Errors
 ///
 /// Returns an [`io::Error`] on failure.
-
+///
 pub fn setfacl<P, O>(paths: &[P], entries: &[AclEntry], options: O) -> io::Result<()>
 where
     P: AsRef<Path>,

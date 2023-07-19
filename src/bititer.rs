@@ -84,7 +84,7 @@ mod bititer_tests {
 
     #[test]
     fn test_bititer_u32_rev() {
-        assert!(BitIter(0).rev().next().is_none());
+        assert!(BitIter(0).next_back().is_none());
 
         let v = BitIter(1).rev().collect::<Vec<u32>>();
         assert_eq!(v, vec![1]);
