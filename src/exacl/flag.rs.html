@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/flag.rs`."><title>flag.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (e4133ba9b 2023-09-22)" data-channel="nightly" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../exacl/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/flag.rs`."><title>flag.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (13e6f24b9 2023-09-23)" data-channel="nightly" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../exacl/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -354,10 +354,6 @@
 <a href="#354" id="354">354</a>
 <a href="#355" id="355">355</a>
 <a href="#356" id="356">356</a>
-<a href="#357" id="357">357</a>
-<a href="#358" id="358">358</a>
-<a href="#359" id="359">359</a>
-<a href="#360" id="360">360</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Implements the inheritance flags.
 
 </span><span class="kw">use </span><span class="kw">crate</span>::bititer::{BitIter, BitIterable};
@@ -371,7 +367,7 @@
 
 <span class="macro">bitflags! </span>{
     <span class="doccomment">/// Represents ACL entry inheritance flags.
-    </span><span class="attr">#[derive(Default)]
+    </span><span class="attr">#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Default)]
     </span><span class="kw">pub struct </span>Flag : acl_flag_t {
         <span class="doccomment">/// ACL entry was inherited.
         </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
@@ -406,7 +402,7 @@
         <span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;freebsd&quot;</span>))]
         #[cfg_attr(docsrs, doc(cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)))]
         </span><span class="doccomment">/// NFSv4 Specific Flags on FreeBSD.
-        </span><span class="kw">const </span>NFS4_SPECIFIC = <span class="self">Self</span>::INHERITED.bits | <span class="self">Self</span>::FILE_INHERIT.bits | <span class="self">Self</span>::DIRECTORY_INHERIT.bits | <span class="self">Self</span>::LIMIT_INHERIT.bits | <span class="self">Self</span>::ONLY_INHERIT.bits;
+        </span><span class="kw">const </span>NFS4_SPECIFIC = <span class="self">Self</span>::INHERITED.bits() | <span class="self">Self</span>::FILE_INHERIT.bits() | <span class="self">Self</span>::DIRECTORY_INHERIT.bits() | <span class="self">Self</span>::LIMIT_INHERIT.bits() | <span class="self">Self</span>::ONLY_INHERIT.bits();
     }
 }
 
@@ -415,7 +411,7 @@
     // To appease the linter, provide a helper function to cast Flag to u32.
     </span><span class="kw">const fn </span>as_u32(<span class="self">self</span>) -&gt; u32 {
         <span class="attr">#[allow(clippy::unnecessary_cast)]
-        </span><span class="kw">return </span><span class="self">self</span>.bits <span class="kw">as </span>u32;
+        </span><span class="kw">return </span><span class="self">self</span>.bits() <span class="kw">as </span>u32;
     }
 }
 
@@ -424,22 +420,20 @@
         <span class="kw">if </span><span class="self">self</span>.is_empty() {
             <span class="kw">return </span><span class="prelude-val">None</span>;
         }
-        <span class="prelude-val">Some</span>(Flag {
-            bits: <span class="number">1 </span>&lt;&lt; <span class="self">self</span>.bits.trailing_zeros(),
-        })
+        <span class="kw">let </span>low_bit = <span class="number">1u32 </span>&lt;&lt; <span class="self">self</span>.bits().trailing_zeros();
+        <span class="prelude-val">Some</span>(Flag::from_bits_retain(low_bit <span class="kw">as </span>acl_flag_t))
     }
 
     <span class="kw">fn </span>msb(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
         <span class="comment">// FIXME: Replace computation with `BITS` once it lands in stable.
         </span><span class="attr">#[allow(clippy::cast_possible_truncation)]
-        </span><span class="kw">const </span>MAX_BITS: acl_flag_t = <span class="number">8 </span>* std::mem::size_of::&lt;Flag&gt;() <span class="kw">as </span>acl_flag_t - <span class="number">1</span>;
+        </span><span class="kw">const </span>MAX_BITS: u32 = <span class="number">8 </span>* std::mem::size_of::&lt;Flag&gt;() <span class="kw">as </span>u32 - <span class="number">1</span>;
 
         <span class="kw">if </span><span class="self">self</span>.is_empty() {
             <span class="kw">return </span><span class="prelude-val">None</span>;
         }
-        <span class="prelude-val">Some</span>(Flag {
-            bits: <span class="number">1 </span>&lt;&lt; (MAX_BITS - <span class="self">self</span>.bits.leading_zeros() <span class="kw">as </span>acl_flag_t),
-        })
+        <span class="kw">let </span>high_bit = <span class="number">1u32 </span>&lt;&lt; (MAX_BITS - <span class="self">self</span>.bits().leading_zeros());
+        <span class="prelude-val">Some</span>(Flag::from_bits_retain(high_bit <span class="kw">as </span>acl_flag_t))
     }
 }
 
@@ -495,9 +489,7 @@
     }
 
     <span class="kw">const fn </span>to_flag(<span class="self">self</span>) -&gt; Flag {
-        Flag {
-            bits: <span class="self">self </span><span class="kw">as </span>acl_flag_t,
-        }
+        Flag::from_bits_retain(<span class="self">self </span><span class="kw">as </span>acl_flag_t)
     }
 }
 
@@ -632,7 +624,7 @@
             <span class="kw">let </span>flags = Flag::INHERITED | Flag::FILE_INHERIT;
             <span class="macro">assert_eq!</span>(flags.to_string(), <span class="string">&quot;inherited,file_inherit&quot;</span>);
 
-            <span class="kw">let </span>bad_flag = Flag { bits: <span class="number">0x0080_0000 </span>} | Flag::INHERITED;
+            <span class="kw">let </span>bad_flag = Flag::from_bits_retain(<span class="number">0x0080_0000</span>) | Flag::INHERITED;
             <span class="macro">assert_eq!</span>(bad_flag.to_string(), <span class="string">&quot;inherited&quot;</span>);
 
             <span class="macro">assert_eq!</span>(
@@ -646,7 +638,7 @@
             <span class="kw">let </span>flags = Flag::DEFAULT;
             <span class="macro">assert_eq!</span>(flags.to_string(), <span class="string">&quot;default&quot;</span>);
 
-            <span class="kw">let </span>bad_flag = Flag { bits: <span class="number">0x8000 </span>} | Flag::DEFAULT;
+            <span class="kw">let </span>bad_flag = Flag::from_bits_retain(<span class="number">0x8000</span>) | Flag::DEFAULT;
             <span class="macro">assert_eq!</span>(bad_flag.to_string(), <span class="string">&quot;default&quot;</span>);
 
             <span class="macro">assert_eq!</span>(Flag::all().to_string(), <span class="string">&quot;default&quot;</span>);
@@ -657,7 +649,7 @@
             <span class="kw">let </span>flags = Flag::DEFAULT;
             <span class="macro">assert_eq!</span>(flags.to_string(), <span class="string">&quot;default&quot;</span>);
 
-            <span class="kw">let </span>bad_flag = Flag { bits: <span class="number">0x8000 </span>} | Flag::DEFAULT;
+            <span class="kw">let </span>bad_flag = Flag::from_bits_retain(<span class="number">0x8000</span>) | Flag::DEFAULT;
             <span class="macro">assert_eq!</span>(bad_flag.to_string(), <span class="string">&quot;default&quot;</span>);
 
             <span class="macro">assert_eq!</span>(
