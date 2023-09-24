@@ -108,7 +108,7 @@ mod bititer_tests {
     }
 
     bitflags! {
-        #[derive(Default)]
+        #[derive(Copy, Clone, Debug, Default, PartialEq)]
         struct TestBit: u32 {
             const BIT1 = 1 << 0;
             const BIT2 = 1 << 1;
@@ -121,9 +121,8 @@ mod bititer_tests {
             if self.is_empty() {
                 return None;
             }
-            Some(TestBit {
-                bits: 1 << self.bits.trailing_zeros(),
-            })
+            let low_bit = 1 << self.bits().trailing_zeros();
+            Some(TestBit::from_bits_retain(low_bit))
         }
 
         fn msb(self) -> Option<Self> {
@@ -132,9 +131,8 @@ mod bititer_tests {
             if self.is_empty() {
                 return None;
             }
-            Some(TestBit {
-                bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
-            })
+            let high_bit = 1 << (MAX_BITS - self.bits().leading_zeros());
+            Some(TestBit::from_bits_retain(high_bit))
         }
     }
 
@@ -145,16 +143,16 @@ mod bititer_tests {
         let v = BitIter(TestBit::empty()).collect::<Vec<TestBit>>();
         assert_eq!(v, vec![]);
 
-        let v = BitIter(bits.bits).collect::<Vec<u32>>();
+        let v = BitIter(bits.bits()).collect::<Vec<u32>>();
         assert_eq!(v, vec![1, 2, 32]);
 
         let v = BitIter(bits).collect::<Vec<TestBit>>();
         assert_eq!(
             v,
             vec![
-                TestBit { bits: 1 },
-                TestBit { bits: 2 },
-                TestBit { bits: 32 }
+                TestBit::from_bits_retain(1),
+                TestBit::from_bits_retain(2),
+                TestBit::from_bits_retain(32)
             ]
         );
     }
@@ -166,16 +164,16 @@ mod bititer_tests {
         let v = BitIter(TestBit::empty()).rev().collect::<Vec<TestBit>>();
         assert_eq!(v, vec![]);
 
-        let v = BitIter(bits.bits).rev().collect::<Vec<u32>>();
+        let v = BitIter(bits.bits()).rev().collect::<Vec<u32>>();
         assert_eq!(v, vec![32, 2, 1]);
 
         let v = BitIter(bits).rev().collect::<Vec<TestBit>>();
         assert_eq!(
             v,
             vec![
-                TestBit { bits: 32 },
-                TestBit { bits: 2 },
-                TestBit { bits: 1 }
+                TestBit::from_bits_retain(32),
+                TestBit::from_bits_retain(2),
+                TestBit::from_bits_retain(1)
             ]
         );
     }

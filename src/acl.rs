@@ -17,7 +17,7 @@ use std::path::Path;
 
 bitflags! {
     /// Controls how ACL's are accessed.
-    #[derive(Default)]
+    #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Default)]
     pub struct AclOption : u32 {
         /// Get/set the access ACL only (Linux and FreeBSD only).
         const ACCESS_ACL = 0b0001;
