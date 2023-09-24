@@ -94,16 +94,16 @@ bitflags! {
         /// Posix specific permissions.
         #[cfg(any(docsrs, target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
-        const POSIX_SPECIFIC = Self::READ.bits | Self::WRITE.bits | Self::EXECUTE.bits;
+        const POSIX_SPECIFIC = Self::READ.bits() | Self::WRITE.bits() | Self::EXECUTE.bits();
 
         /// All NFSv4 specific permissions.
         #[cfg(any(docsrs, target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
-        const NFS4_SPECIFIC = Self::READ_DATA.bits | Self::WRITE_DATA.bits
-            | Self::DELETE.bits | Self::APPEND.bits | Self::DELETE_CHILD.bits
-            | Self::READATTR.bits | Self::WRITEATTR.bits | Self::READEXTATTR.bits
-            | Self::WRITEEXTATTR.bits | Self::READSECURITY.bits
-            | Self::WRITESECURITY.bits | Self::CHOWN.bits | Self::SYNC.bits;
+        const NFS4_SPECIFIC = Self::READ_DATA.bits() | Self::WRITE_DATA.bits()
+            | Self::DELETE.bits() | Self::APPEND.bits() | Self::DELETE_CHILD.bits()
+            | Self::READATTR.bits() | Self::WRITEATTR.bits() | Self::READEXTATTR.bits()
+            | Self::WRITEEXTATTR.bits() | Self::READSECURITY.bits()
+            | Self::WRITESECURITY.bits() | Self::CHOWN.bits() | Self::SYNC.bits();
     }
 }
 
@@ -465,9 +465,9 @@ mod perm_tests {
         // Test that READ, WRITE, EXECUTE constant correspond to the same bits
         // as the permissions in unix mode.
 
-        assert_eq!(Perm::READ.bits, 0x04);
-        assert_eq!(Perm::WRITE.bits, 0x02);
-        assert_eq!(Perm::EXECUTE.bits, 0x01);
+        assert_eq!(Perm::READ(), 0x04);
+        assert_eq!(Perm::WRITE.bits(), 0x02);
+        assert_eq!(Perm::EXECUTE.bits(), 0x01);
 
         assert_eq!(
             Perm::from_bits(0x07),

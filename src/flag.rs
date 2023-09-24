@@ -46,7 +46,7 @@ bitflags! {
         #[cfg(any(docsrs, target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
         /// NFSv4 Specific Flags on FreeBSD.
-        const NFS4_SPECIFIC = Self::INHERITED.bits | Self::FILE_INHERIT.bits | Self::DIRECTORY_INHERIT.bits | Self::LIMIT_INHERIT.bits | Self::ONLY_INHERIT.bits;
+        const NFS4_SPECIFIC = Self::INHERITED.bits() | Self::FILE_INHERIT.bits() | Self::DIRECTORY_INHERIT.bits() | Self::LIMIT_INHERIT.bits() | Self::ONLY_INHERIT.bits();
     }
 }
 
