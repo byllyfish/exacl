@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Fix clippy warnings (uninlined-format-args).
+- Upgrade `bitflags` to 2.4.0 from 1.x. `bitflags` is used to implement the Perm, Flag and AclOption API's.
+- Tests should support systems where daemon uid/gid is other than 1/1.
+- Tests should accommodate varying limits on ext, tmpfs, xfs file systems.
+- Update version dependencies for `bindgen`, `ctor`.
+- Fix clippy warnings.
 
 ## [0.10.0] - 2023-01-02
 
