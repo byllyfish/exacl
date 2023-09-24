@@ -413,6 +413,58 @@ mod serialize_tests {
         let expected = "Unit";
         assert_eq!(format!("{u}"), expected);
     }
+
+    #[test]
+    fn test_enum_serializer_unimplemented_methods() {
+        struct Test;
+
+        impl fmt::Debug for Test {
+            // Implement Debug for an empty "Test" class just to get a quick
+            // `fmt::Formatter`. To test `EnumSerializer`, it needs to be
+            // constructed using a dummy `fmt::Formatter` argument.
+
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                use ser::Serializer;
+                let mut es = EnumSerializer(f);
+                let not_impl = Err(Error::NotImplemented);
+
+                // Test that unimplemented EnumSerializer methods are
+                // actually returning `NotImplemented` (code coverage).
+                assert_eq!(es.serialize_unit(), not_impl);
+                assert_eq!(es.serialize_bool(true), not_impl);
+                assert_eq!(es.serialize_char('x'), not_impl);
+                assert_eq!(es.serialize_str(""), not_impl);
+                assert_eq!(es.serialize_bytes(&[]), not_impl);
+                assert_eq!(es.serialize_u8(0), not_impl);
+                assert_eq!(es.serialize_u16(0), not_impl);
+                assert_eq!(es.serialize_u32(0), not_impl);
+                assert_eq!(es.serialize_u64(0), not_impl);
+                assert_eq!(es.serialize_i8(0), not_impl);
+                assert_eq!(es.serialize_i16(0), not_impl);
+                assert_eq!(es.serialize_i32(0), not_impl);
+                assert_eq!(es.serialize_i64(0), not_impl);
+                assert_eq!(es.serialize_f32(0.0), not_impl);
+                assert_eq!(es.serialize_f64(0.0), not_impl);
+
+                assert_eq!(es.serialize_none(), not_impl);
+                assert_eq!(es.serialize_some(&0), not_impl);
+
+                assert_eq!(es.serialize_unit_struct(""), not_impl);
+                assert_eq!(es.serialize_newtype_struct("", &0), not_impl);
+                assert_eq!(es.serialize_newtype_variant("", 0, "", &0), not_impl);
+
+                assert_eq!(
+                    es.serialize_u128(0),
+                    Err(Error::Message("u128 is not supported".to_string()))
+                );
+
+                f.write_str("Done.")
+            }
+        }
+
+        // Run the tests above...
+        assert_eq!(format!("{:?}", Test {}), "Done.");
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
