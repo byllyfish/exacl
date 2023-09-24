@@ -281,7 +281,7 @@ impl std::str::FromStr for AclEntryKind {
 
 impl fmt::Display for AclEntry {
     /// Format an `AclEntry` 5-tuple:
-    ///   <allow>:<flags>:<kind>:<name>:<perms>
+    ///   `<allow>:<flags>:<kind>:<name>:<perms>`
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let allow = if self.allow { "allow" } else { "deny" };
         write!(
