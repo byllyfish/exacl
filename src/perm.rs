@@ -11,7 +11,7 @@ use std::fmt;
 
 bitflags! {
     /// Represents file access permissions.
-    #[derive(Default)]
+    #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Default)]
     pub struct Perm : acl_perm_t {
         /// READ_DATA permission for a file.
         /// Same as LIST_DIRECTORY permission for a directory.
@@ -94,35 +94,36 @@ bitflags! {
         /// Posix specific permissions.
         #[cfg(any(docsrs, target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
-        const POSIX_SPECIFIC = Self::READ.bits | Self::WRITE.bits | Self::EXECUTE.bits;
+        const POSIX_SPECIFIC = Self::READ.bits() | Self::WRITE.bits() | Self::EXECUTE.bits();
 
         /// All NFSv4 specific permissions.
         #[cfg(any(docsrs, target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
-        const NFS4_SPECIFIC = Self::READ_DATA.bits | Self::WRITE_DATA.bits
-            | Self::DELETE.bits | Self::APPEND.bits | Self::DELETE_CHILD.bits
-            | Self::READATTR.bits | Self::WRITEATTR.bits | Self::READEXTATTR.bits
-            | Self::WRITEEXTATTR.bits | Self::READSECURITY.bits
-            | Self::WRITESECURITY.bits | Self::CHOWN.bits | Self::SYNC.bits;
+        const NFS4_SPECIFIC = Self::READ_DATA.bits() | Self::WRITE_DATA.bits()
+            | Self::DELETE.bits() | Self::APPEND.bits() | Self::DELETE_CHILD.bits()
+            | Self::READATTR.bits() | Self::WRITEATTR.bits() | Self::READEXTATTR.bits()
+            | Self::WRITEEXTATTR.bits() | Self::READSECURITY.bits()
+            | Self::WRITESECURITY.bits() | Self::CHOWN.bits() | Self::SYNC.bits();
     }
 }
 
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 type RevPermIter = std::iter::Rev<BitIter<Perm>>;
 
+// `perm_iter` returns a platform-specific iterator over the permission bits.
 impl Perm {
     #[cfg(target_os = "macos")]
-    fn iter(self) -> BitIter<Perm> {
+    fn perm_iter(self) -> BitIter<Perm> {
         BitIter(self & Perm::all())
     }
 
     #[cfg(target_os = "linux")]
-    fn iter(self) -> RevPermIter {
+    fn perm_iter(self) -> RevPermIter {
         BitIter(self & Perm::all()).rev()
     }
 
     #[cfg(target_os = "freebsd")]
-    fn iter(self) -> std::iter::Chain<RevPermIter, BitIter<Perm>> {
+    fn perm_iter(self) -> std::iter::Chain<RevPermIter, BitIter<Perm>> {
         BitIter(self & Perm::POSIX_SPECIFIC)
             .rev()
             .chain(BitIter(self & Perm::NFS4_SPECIFIC))
@@ -134,9 +135,8 @@ impl BitIterable for Perm {
         if self.is_empty() {
             return None;
         }
-        Some(Perm {
-            bits: 1 << self.bits.trailing_zeros(),
-        })
+        let low_bit = 1u32 << self.bits().trailing_zeros();
+        Some(Perm::from_bits_retain(low_bit))
     }
 
     fn msb(self) -> Option<Self> {
@@ -146,9 +146,8 @@ impl BitIterable for Perm {
         if self.is_empty() {
             return None;
         }
-        Some(Perm {
-            bits: 1 << (MAX_BITS - self.bits.leading_zeros()),
-        })
+        let high_bit = 1u32 << (MAX_BITS - self.bits().leading_zeros());
+        Some(Perm::from_bits_retain(high_bit))
     }
 }
 
@@ -159,50 +158,50 @@ impl BitIterable for Perm {
 pub enum PermName {
     // *N.B.* Update the corresponding table in format/format_no_serde.rs
     // if any of these entries change.
-    read = Perm::READ.bits,
+    read = Perm::READ.bits(),
 
-    write = Perm::WRITE.bits,
+    write = Perm::WRITE.bits(),
 
-    execute = Perm::EXECUTE.bits,
-
-    #[cfg(target_os = "freebsd")]
-    read_data = Perm::READ_DATA.bits,
+    execute = Perm::EXECUTE.bits(),
 
     #[cfg(target_os = "freebsd")]
-    write_data = Perm::WRITE_DATA.bits,
+    read_data = Perm::READ_DATA.bits(),
+
+    #[cfg(target_os = "freebsd")]
+    write_data = Perm::WRITE_DATA.bits(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    delete = Perm::DELETE.bits,
+    delete = Perm::DELETE.bits(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    append = Perm::APPEND.bits,
+    append = Perm::APPEND.bits(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    delete_child = Perm::DELETE_CHILD.bits,
+    delete_child = Perm::DELETE_CHILD.bits(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    readattr = Perm::READATTR.bits,
+    readattr = Perm::READATTR.bits(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    writeattr = Perm::WRITEATTR.bits,
+    writeattr = Perm::WRITEATTR.bits(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    readextattr = Perm::READEXTATTR.bits,
+    readextattr = Perm::READEXTATTR.bits(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    writeextattr = Perm::WRITEEXTATTR.bits,
+    writeextattr = Perm::WRITEEXTATTR.bits(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    readsecurity = Perm::READSECURITY.bits,
+    readsecurity = Perm::READSECURITY.bits(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    writesecurity = Perm::WRITESECURITY.bits,
+    writesecurity = Perm::WRITESECURITY.bits(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    chown = Perm::CHOWN.bits,
+    chown = Perm::CHOWN.bits(),
 
     #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-    sync = Perm::SYNC.bits,
+    sync = Perm::SYNC.bits(),
 }
 
 impl PermName {
@@ -258,7 +257,7 @@ impl PermName {
     }
 
     const fn to_perm(self) -> Perm {
-        Perm { bits: self as u32 }
+        Perm::from_bits_retain(self as u32)
     }
 }
 
@@ -270,7 +269,7 @@ impl fmt::Display for PermName {
 
 impl fmt::Display for Perm {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut iter = self.iter();
+        let mut iter = self.perm_iter();
 
         if let Some(perm) = iter.next() {
             write!(f, "{}", PermName::from_perm(perm).unwrap())?;
@@ -341,7 +340,7 @@ impl ser::Serialize for Perm {
         use ser::SerializeSeq;
         let mut seq = serializer.serialize_seq(None)?;
 
-        for perm in self.iter() {
+        for perm in self.perm_iter() {
             seq.serialize_element(&PermName::from_perm(perm))?;
         }
 
@@ -405,7 +404,7 @@ mod perm_tests {
         let perms = Perm::READ | Perm::EXECUTE;
         assert_eq!(perms.to_string(), "read,execute");
 
-        let bad_perm = Perm { bits: 0x0080_0000 } | Perm::READ;
+        let bad_perm = Perm::from_bits_retain(0x0080_0000) | Perm::READ;
         assert_eq!(bad_perm.to_string(), "read");
 
         #[cfg(target_os = "macos")]
@@ -466,9 +465,9 @@ mod perm_tests {
         // Test that READ, WRITE, EXECUTE constant correspond to the same bits
         // as the permissions in unix mode.
 
-        assert_eq!(Perm::READ.bits, 0x04);
-        assert_eq!(Perm::WRITE.bits, 0x02);
-        assert_eq!(Perm::EXECUTE.bits, 0x01);
+        assert_eq!(Perm::READ.bits(), 0x04);
+        assert_eq!(Perm::WRITE.bits(), 0x02);
+        assert_eq!(Perm::EXECUTE.bits(), 0x01);
 
         assert_eq!(
             Perm::from_bits(0x07),

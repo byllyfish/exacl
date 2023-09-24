@@ -11,7 +11,7 @@ use std::fmt;
 
 bitflags! {
     /// Represents ACL entry inheritance flags.
-    #[derive(Default)]
+    #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Default)]
     pub struct Flag : acl_flag_t {
         /// ACL entry was inherited.
         #[cfg(any(docsrs, target_os = "macos", target_os = "freebsd"))]
@@ -46,7 +46,7 @@ bitflags! {
         #[cfg(any(docsrs, target_os = "freebsd"))]
         #[cfg_attr(docsrs, doc(cfg(target_os = "freebsd")))]
         /// NFSv4 Specific Flags on FreeBSD.
-        const NFS4_SPECIFIC = Self::INHERITED.bits | Self::FILE_INHERIT.bits | Self::DIRECTORY_INHERIT.bits | Self::LIMIT_INHERIT.bits | Self::ONLY_INHERIT.bits;
+        const NFS4_SPECIFIC = Self::INHERITED.bits() | Self::FILE_INHERIT.bits() | Self::DIRECTORY_INHERIT.bits() | Self::LIMIT_INHERIT.bits() | Self::ONLY_INHERIT.bits();
     }
 }
 
@@ -55,7 +55,7 @@ impl Flag {
     // To appease the linter, provide a helper function to cast Flag to u32.
     const fn as_u32(self) -> u32 {
         #[allow(clippy::unnecessary_cast)]
-        return self.bits as u32;
+        return self.bits() as u32;
     }
 }
 
@@ -64,22 +64,20 @@ impl BitIterable for Flag {
         if self.is_empty() {
             return None;
         }
-        Some(Flag {
-            bits: 1 << self.bits.trailing_zeros(),
-        })
+        let low_bit = 1u32 << self.bits().trailing_zeros();
+        Some(Flag::from_bits_retain(low_bit as acl_flag_t))
     }
 
     fn msb(self) -> Option<Self> {
         // FIXME: Replace computation with `BITS` once it lands in stable.
         #[allow(clippy::cast_possible_truncation)]
-        const MAX_BITS: acl_flag_t = 8 * std::mem::size_of::<Flag>() as acl_flag_t - 1;
+        const MAX_BITS: u32 = 8 * std::mem::size_of::<Flag>() as u32 - 1;
 
         if self.is_empty() {
             return None;
         }
-        Some(Flag {
-            bits: 1 << (MAX_BITS - self.bits.leading_zeros() as acl_flag_t),
-        })
+        let high_bit = 1u32 << (MAX_BITS - self.bits().leading_zeros());
+        Some(Flag::from_bits_retain(high_bit as acl_flag_t))
     }
 }
 
@@ -135,9 +133,7 @@ impl FlagName {
     }
 
     const fn to_flag(self) -> Flag {
-        Flag {
-            bits: self as acl_flag_t,
-        }
+        Flag::from_bits_retain(self as acl_flag_t)
     }
 }
 
@@ -272,7 +268,7 @@ mod flag_tests {
             let flags = Flag::INHERITED | Flag::FILE_INHERIT;
             assert_eq!(flags.to_string(), "inherited,file_inherit");
 
-            let bad_flag = Flag { bits: 0x0080_0000 } | Flag::INHERITED;
+            let bad_flag = Flag::from_bits_retain(0x0080_0000) | Flag::INHERITED;
             assert_eq!(bad_flag.to_string(), "inherited");
 
             assert_eq!(
@@ -286,7 +282,7 @@ mod flag_tests {
             let flags = Flag::DEFAULT;
             assert_eq!(flags.to_string(), "default");
 
-            let bad_flag = Flag { bits: 0x8000 } | Flag::DEFAULT;
+            let bad_flag = Flag::from_bits_retain(0x8000) | Flag::DEFAULT;
             assert_eq!(bad_flag.to_string(), "default");
 
             assert_eq!(Flag::all().to_string(), "default");
@@ -297,7 +293,7 @@ mod flag_tests {
             let flags = Flag::DEFAULT;
             assert_eq!(flags.to_string(), "default");
 
-            let bad_flag = Flag { bits: 0x8000 } | Flag::DEFAULT;
+            let bad_flag = Flag::from_bits_retain(0x8000) | Flag::DEFAULT;
             assert_eq!(bad_flag.to_string(), "default");
 
             assert_eq!(

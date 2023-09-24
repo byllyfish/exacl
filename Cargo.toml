@@ -27,7 +27,7 @@ default = []
 buildtime_bindgen = ["bindgen"]
 
 [dependencies]
-bitflags = "1.2.1"
+bitflags = "2.4.0"
 log = "0.4.11"
 uuid = "1.1.1"
 scopeguard = "1.1.0"
