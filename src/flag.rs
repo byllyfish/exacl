@@ -65,19 +65,19 @@ impl BitIterable for Flag {
             return None;
         }
         let low_bit = 1u32 << self.bits().trailing_zeros();
-        Some(Flag::from_bits_retain(low_bit))
+        Some(Flag::from_bits_retain(low_bit as acl_flag_t))
     }
 
     fn msb(self) -> Option<Self> {
         // FIXME: Replace computation with `BITS` once it lands in stable.
         #[allow(clippy::cast_possible_truncation)]
-        const MAX_BITS: acl_flag_t = 8 * std::mem::size_of::<Flag>() as acl_flag_t - 1;
+        const MAX_BITS: u32 = 8 * std::mem::size_of::<Flag>() as u32 - 1;
 
         if self.is_empty() {
             return None;
         }
         let high_bit = 1u32 << (MAX_BITS - self.bits().leading_zeros());
-        Some(Flag::from_bits_retain(high_bit))
+        Some(Flag::from_bits_retain(high_bit as acl_flag_t))
     }
 }
 
@@ -282,7 +282,7 @@ mod flag_tests {
             let flags = Flag::DEFAULT;
             assert_eq!(flags.to_string(), "default");
 
-            let bad_flag = Flag { bits: 0x8000 } | Flag::DEFAULT;
+            let bad_flag = Flag::from_bits_retain(0x8000) | Flag::DEFAULT;
             assert_eq!(bad_flag.to_string(), "default");
 
             assert_eq!(Flag::all().to_string(), "default");
@@ -293,7 +293,7 @@ mod flag_tests {
             let flags = Flag::DEFAULT;
             assert_eq!(flags.to_string(), "default");
 
-            let bad_flag = Flag { bits: 0x8000 } | Flag::DEFAULT;
+            let bad_flag = Flag::from_bits_retain(0x8000) | Flag::DEFAULT;
             assert_eq!(bad_flag.to_string(), "default");
 
             assert_eq!(
