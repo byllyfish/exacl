@@ -57,6 +57,8 @@ jobs:
         ./tests/run_tests.sh
       if: runner.os == 'Linux'
     - name: Code coverage
+      env:
+        CODECOV_TOKEN: ${{ secrets.EXACL_CODECOV_TOKEN }}
       run: ./ci/coverage.sh codecov
     - name: Lint Check
       run: ./ci/lint.sh
