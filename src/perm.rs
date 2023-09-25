@@ -482,11 +482,11 @@ mod perm_tests {
         assert!(Perm::READ != Perm::WRITE);
         assert!(Perm::EXECUTE >= Perm::EXECUTE);
 
-        #[cfg(any(target_os = "macos"))]
+        #[cfg(target_os = "macos")]
         assert!(Perm::READ < Perm::WRITE);
-        #[cfg(any(target_os = "linux"))]
+        #[cfg(target_os = "linux")]
         assert!(Perm::READ > Perm::WRITE);
-        #[cfg(any(target_os = "freebsd"))]
+        #[cfg(target_os = "freebsd")]
         assert!(Perm::READ > Perm::WRITE);
     }
 }

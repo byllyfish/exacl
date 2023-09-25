@@ -429,6 +429,7 @@ mod serialize_tests {
             // `fmt::Formatter`. To test `EnumSerializer`, it needs to be
             // constructed using a dummy `fmt::Formatter` argument.
 
+            #[allow(clippy::cognitive_complexity)]
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 use ser::Serializer;
 
