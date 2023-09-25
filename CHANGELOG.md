@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.11.0] - 2023-09-25
 
 - Upgrade `bitflags` to 2.4.0 from 1.x. `bitflags` is used to implement the Perm, Flag and AclOption API's.
 - Tests should support systems where daemon uid/gid is other than 1/1.
