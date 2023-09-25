@@ -480,7 +480,13 @@ mod perm_tests {
         // Test that Perm has backward-compatible Ord/PartialOrd traits.
         assert!(Perm::READ == Perm::READ);
         assert!(Perm::READ != Perm::WRITE);
-        assert!(Perm::READ > Perm::WRITE || Perm::READ < Perm::WRITE);
         assert!(Perm::EXECUTE >= Perm::EXECUTE);
+
+        #[cfg(any(target_os = "macos"))]
+        assert!(Perm::READ < Perm::WRITE);
+        #[cfg(any(target_os = "linux"))]
+        assert!(Perm::READ > Perm::WRITE);
+        #[cfg(any(target_os = "freebsd"))]
+        assert!(Perm::READ > Perm::WRITE);
     }
 }
