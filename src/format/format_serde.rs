@@ -426,32 +426,49 @@ mod serialize_tests {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 use ser::Serializer;
                 let mut es = EnumSerializer(f);
-                let not_impl = Err(Error::NotImplemented);
+                let not_impl = Error::NotImplemented;
 
                 // Test that unimplemented EnumSerializer methods are
                 // actually returning `NotImplemented` (code coverage).
-                assert_eq!(es.serialize_unit(), not_impl);
-                assert_eq!(es.serialize_bool(true), not_impl);
-                assert_eq!(es.serialize_char('x'), not_impl);
-                assert_eq!(es.serialize_str(""), not_impl);
-                assert_eq!(es.serialize_bytes(&[]), not_impl);
-                assert_eq!(es.serialize_u8(0), not_impl);
-                assert_eq!(es.serialize_u16(0), not_impl);
-                assert_eq!(es.serialize_u32(0), not_impl);
-                assert_eq!(es.serialize_u64(0), not_impl);
-                assert_eq!(es.serialize_i8(0), not_impl);
-                assert_eq!(es.serialize_i16(0), not_impl);
-                assert_eq!(es.serialize_i32(0), not_impl);
-                assert_eq!(es.serialize_i64(0), not_impl);
-                assert_eq!(es.serialize_f32(0.0), not_impl);
-                assert_eq!(es.serialize_f64(0.0), not_impl);
+                assert_eq!(es.serialize_unit().err().unwrap(), not_impl);
+                assert_eq!(es.serialize_bool(true).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_char('x').err().unwrap(), not_impl);
+                assert_eq!(es.serialize_str("").err().unwrap(), not_impl);
+                assert_eq!(es.serialize_bytes(&[]).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_u8(0).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_u16(0).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_u32(0).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_u64(0).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_i8(0).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_i16(0).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_i32(0).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_i64(0).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_f32(0.0).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_f64(0.0).err().unwrap(), not_impl);
 
-                assert_eq!(es.serialize_none(), not_impl);
-                assert_eq!(es.serialize_some(&0), not_impl);
+                assert_eq!(es.serialize_none().err().unwrap(), not_impl);
+                assert_eq!(es.serialize_some(&0).err().unwrap(), not_impl);
 
-                assert_eq!(es.serialize_unit_struct(""), not_impl);
-                assert_eq!(es.serialize_newtype_struct("", &0), not_impl);
-                assert_eq!(es.serialize_newtype_variant("", 0, "", &0), not_impl);
+                assert_eq!(es.serialize_unit_struct("").err().unwrap(), not_impl);
+                assert_eq!(es.serialize_newtype_struct("", &0).err().unwrap(), not_impl);
+                assert_eq!(
+                    es.serialize_newtype_variant("", 0, "", &0).err().unwrap(),
+                    not_impl
+                );
+
+                assert_eq!(es.serialize_seq(None).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_tuple(0).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_tuple_struct("", 0).err().unwrap(), not_impl);
+                assert_eq!(
+                    es.serialize_tuple_variant("", 0, "", 0).err().unwrap(),
+                    not_impl
+                );
+                assert_eq!(es.serialize_map(None).err().unwrap(), not_impl);
+                assert_eq!(es.serialize_struct("", 0).err().unwrap(), not_impl);
+                assert_eq!(
+                    es.serialize_struct_variant("", 0, "", 0).err().unwrap(),
+                    not_impl
+                );
 
                 assert_eq!(
                     es.serialize_u128(0),

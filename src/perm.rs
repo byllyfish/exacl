@@ -474,4 +474,13 @@ mod perm_tests {
             Some(Perm::READ | Perm::WRITE | Perm::EXECUTE)
         );
     }
+
+    #[test]
+    fn test_perm_comparisons() {
+        // Test that Perm has backward-compatible Ord/PartialOrd traits.
+        assert!(Perm::READ == Perm::READ);
+        assert!(Perm::READ != Perm::WRITE);
+        assert!(Perm::READ > Perm::WRITE || Perm::READ < Perm::WRITE);
+        assert!(Perm::EXECUTE >= Perm::EXECUTE);
+    }
 }
