@@ -26,4 +26,6 @@ jobs:
     - name: Install dependencies (Linux)
       run: sudo apt-get -y install libacl1-dev
     - name: Publish Crate
-      run: cargo publish --token ${{ secrets.CRATES_TOKEN }}
+      env:
+        CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_TOKEN }}
+      run: cargo publish
