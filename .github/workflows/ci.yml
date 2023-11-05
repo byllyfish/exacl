@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-12, ubuntu-20.04, macos-11]
+        os: [ubuntu-22.04, macos-13, ubuntu-20.04, macos-12]
 
     steps:
     - name: Harden Runner
