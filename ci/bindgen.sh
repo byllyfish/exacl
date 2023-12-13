@@ -36,7 +36,7 @@ diff_out="$(mktemp)"
 echo "$diff_out"
 trap '{ rm -f -- "$diff_out"; }' EXIT
 
-if diff "$bindings" "$prebuilt_bindings" > "$diff_out"; then
+if diff "$bindings" "$prebuilt_bindings" >"$diff_out"; then
     echo "Success."
     rm "$diff_out"
     exit 0
