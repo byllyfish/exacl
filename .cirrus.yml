@@ -5,12 +5,12 @@ task:
   name: CI / build (freebsd)
 
   matrix:
-    - name: CI / build (freebsd-13.1)
+    - name: CI / build (freebsd-13.2)
       freebsd_instance:
-        image_family: freebsd-13-1
-    - name: CI / build (freebsd-12.2)
+        image_family: freebsd-13-2
+    - name: CI / build (freebsd-14.0)
       freebsd_instance:
-        image_family: freebsd-12-2
+        image_family: freebsd-14-0
 
   sysinfo_script:
     # Record info about the test environment.

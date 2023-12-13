@@ -31,6 +31,29 @@ prebuilt_bindings="./bindgen/bindings_$target.rs"
 bindings=$(find ./target/debug/build -name "bindings.rs")
 
 echo "Comparing $bindings and $prebuilt_bindings"
-diff "$bindings" "$prebuilt_bindings"
 
-exit 0
+diff_out="$(mktemp)"
+trap '{ rm -f -- "$diff_out"; }' EXIT
+
+if diff "$bindings" "$prebuilt_bindings" >"$diff_out"; then
+    echo "Success."
+    rm "$diff_out"
+    exit 0
+fi
+
+echo "Differences exist."
+
+# FreeBSD 14 includes several additional ACL API's that are not used.
+# Check the diff output against the approved diff output.
+freebsd_diff="./bindgen/bindings_freebsd14.diff"
+
+if [ "$target" = "freebsd" ]; then
+    echo "Comparing diff output ($diff_out) and $freebsd_diff"
+    diff "$diff_out" "$freebsd_diff"
+    echo "Success."
+    exit 0
+else
+    cat "$diff_out"
+fi
+
+exit 1
