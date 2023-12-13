@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0-nightly (fee5518cd 2023-11-05)" data-channel="nightly" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e883e87179a81222.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0-nightly (3340d49d2 2023-12-12)" data-channel="nightly" data-search-js="search-cca444cbb68c36e9.js" data-settings-js="settings-fe03fdc259827cd2.js" ><script src="../../static.files/storage-bc37acceda91d44a.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-77dede896d6ac08e.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -432,19 +432,19 @@
 //! # fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 //! use exacl::{getfacl, setfacl, AclEntry, Perm};
 //!
-//! // Get the ACL from &quot;./tmp/foo&quot;.
-//! let mut acl = getfacl(&quot;./tmp/foo&quot;, None)?;
+//! // Get the ACL from "./tmp/foo".
+//! let mut acl = getfacl("./tmp/foo", None)?;
 //!
 //! // Print the contents of the ACL.
 //! for entry in &amp;acl {
-//!     println!(&quot;{entry}&quot;);
+//!     println!("{entry}");
 //! }
 //!
 //! // Add an ACL entry to the end.
-//! acl.push(AclEntry::allow_user(&quot;some_user&quot;, Perm::READ, None));
+//! acl.push(AclEntry::allow_user("some_user", Perm::READ, None));
 //!
-//! // Set the ACL for &quot;./tmp/foo&quot;.
-//! setfacl(&amp;[&quot;./tmp/foo&quot;], &amp;acl, None)?;
+//! // Set the ACL for "./tmp/foo".
+//! setfacl(&amp;["./tmp/foo"], &amp;acl, None)?;
 //!
 //! # Ok(()) }
 //! ```
@@ -498,7 +498,7 @@
 <span class="kw">use </span>std::io::{<span class="self">self</span>, BufRead};
 <span class="kw">use </span>std::path::Path;
 
-<span class="attr">#[cfg(not(target_os = <span class="string">&quot;macos&quot;</span>))]
+<span class="attr">#[cfg(not(target_os = <span class="string">"macos"</span>))]
 </span><span class="kw">use </span>failx::fail_custom;
 
 <span class="doccomment">/// Get access control list (ACL) for a file or directory.
@@ -511,7 +511,7 @@
 ///
 /// The ACL only includes the extended entries beyond the normal permssion mode
 /// of the file. macOS provides several ACL entry flags to specify how entries
-/// may be inherited by directory sub-items. If there&#39;s no extended ACL for a
+/// may be inherited by directory sub-items. If there's no extended ACL for a
 /// file, this function may return zero entries.
 ///
 /// If `path` points to a symlink, `getfacl` returns the ACL of the file pointed
@@ -523,7 +523,7 @@
 /// # Linux
 ///
 /// The ACL includes entries related to the permission mode of the file. These
-/// are marked with empty names (&quot;&quot;).
+/// are marked with empty names ("").
 ///
 /// Both the access ACL and the default ACL are returned in one list, with
 /// the default ACL entries indicated by a [`Flag::DEFAULT`] flag.
@@ -541,7 +541,7 @@
 /// # fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 /// use exacl::getfacl;
 ///
-/// let entries = getfacl(&quot;./tmp/foo&quot;, None)?;
+/// let entries = getfacl("./tmp/foo", None)?;
 /// # Ok(()) }
 /// ```
 ///
@@ -557,15 +557,15 @@
     _getfacl(path.as_ref(), options.into().unwrap_or_default())
 }
 
-<span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+<span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
 </span><span class="kw">fn </span>_getfacl(path: <span class="kw-2">&amp;</span>Path, options: AclOption) -&gt; io::Result&lt;Vec&lt;AclEntry&gt;&gt; {
     Acl::read(path, options)<span class="question-mark">?</span>.entries()
 }
 
-<span class="attr">#[cfg(not(target_os = <span class="string">&quot;macos&quot;</span>))]
+<span class="attr">#[cfg(not(target_os = <span class="string">"macos"</span>))]
 </span><span class="kw">fn </span>_getfacl(path: <span class="kw-2">&amp;</span>Path, options: AclOption) -&gt; io::Result&lt;Vec&lt;AclEntry&gt;&gt; {
     <span class="kw">if </span>options.contains(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
-        fail_custom(<span class="string">&quot;ACCESS_ACL and DEFAULT_ACL are mutually exclusive options&quot;</span>)
+        fail_custom(<span class="string">"ACCESS_ACL and DEFAULT_ACL are mutually exclusive options"</span>)
     } <span class="kw">else if </span>options.intersects(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
         Acl::read(path, options)<span class="question-mark">?</span>.entries()
     } <span class="kw">else </span>{
@@ -604,11 +604,11 @@
 /// use exacl::{setfacl, AclEntry, Flag, Perm};
 ///
 /// let entries = vec![
-///     AclEntry::allow_user(&quot;some_user&quot;, Perm::READ | Perm::WRITE, None),
-///     AclEntry::deny_group(&quot;some_group&quot;, Perm::WRITE, None)
+///     AclEntry::allow_user("some_user", Perm::READ | Perm::WRITE, None),
+///     AclEntry::deny_group("some_group", Perm::WRITE, None)
 /// ];
 ///
-/// setfacl(&amp;[&quot;./tmp/foo&quot;], &amp;entries, None)?;
+/// setfacl(&amp;["./tmp/foo"], &amp;entries, None)?;
 /// # Ok(()) }
 /// ```
 ///
@@ -619,7 +619,7 @@
 ///
 /// The ACL *must* contain entries for the permssion modes of the file. Use
 /// the [`AclEntry::allow_other`] and [`AclEntry::allow_mask`] functions to
-/// specify the mode&#39;s other and mask permissions. Use &quot;&quot; as the name for the
+/// specify the mode's other and mask permissions. Use "" as the name for the
 /// file owner and group owner.
 ///
 /// If an ACL contains a named user or group, there should be a
@@ -637,13 +637,13 @@
 /// use exacl::{setfacl, AclEntry, Flag, Perm};
 ///
 /// let entries = vec![
-///     AclEntry::allow_user(&quot;&quot;, Perm::READ | Perm::WRITE, None),
-///     AclEntry::allow_group(&quot;&quot;, Perm::READ, None),
+///     AclEntry::allow_user("", Perm::READ | Perm::WRITE, None),
+///     AclEntry::allow_group("", Perm::READ, None),
 ///     AclEntry::allow_other(Perm::empty(), None),
-///     AclEntry::allow_user(&quot;some_user&quot;, Perm::READ | Perm::WRITE, None),
+///     AclEntry::allow_user("some_user", Perm::READ | Perm::WRITE, None),
 /// ];
 ///
-/// setfacl(&amp;[&quot;./tmp/foo&quot;], &amp;entries, None)?;
+/// setfacl(&amp;["./tmp/foo"], &amp;entries, None)?;
 /// # Ok(()) }
 /// ```
 ///
@@ -659,12 +659,12 @@
     _setfacl(paths, entries, options.into().unwrap_or_default())
 }
 
-<span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+<span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
 </span><span class="kw">fn </span>_setfacl&lt;P&gt;(paths: <span class="kw-2">&amp;</span>[P], entries: <span class="kw-2">&amp;</span>[AclEntry], options: AclOption) -&gt; io::Result&lt;()&gt;
 <span class="kw">where
     </span>P: AsRef&lt;Path&gt;,
 {
-    <span class="kw">let </span>acl = Acl::from_entries(entries).map_err(|err| custom_err(<span class="string">&quot;Invalid ACL&quot;</span>, <span class="kw-2">&amp;</span>err))<span class="question-mark">?</span>;
+    <span class="kw">let </span>acl = Acl::from_entries(entries).map_err(|err| custom_err(<span class="string">"Invalid ACL"</span>, <span class="kw-2">&amp;</span>err))<span class="question-mark">?</span>;
     <span class="kw">for </span>path <span class="kw">in </span>paths {
         acl.write(path.as_ref(), options)<span class="question-mark">?</span>;
     }
@@ -672,25 +672,25 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attr">#[cfg(not(target_os = <span class="string">&quot;macos&quot;</span>))]
+<span class="attr">#[cfg(not(target_os = <span class="string">"macos"</span>))]
 </span><span class="kw">fn </span>_setfacl&lt;P&gt;(paths: <span class="kw-2">&amp;</span>[P], entries: <span class="kw-2">&amp;</span>[AclEntry], options: AclOption) -&gt; io::Result&lt;()&gt;
 <span class="kw">where
     </span>P: AsRef&lt;Path&gt;,
 {
     <span class="kw">if </span>options.contains(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
-        fail_custom(<span class="string">&quot;ACCESS_ACL and DEFAULT_ACL are mutually exclusive options&quot;</span>)<span class="question-mark">?</span>;
+        fail_custom(<span class="string">"ACCESS_ACL and DEFAULT_ACL are mutually exclusive options"</span>)<span class="question-mark">?</span>;
     } <span class="kw">else if </span>options.intersects(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
-        <span class="kw">let </span>acl = Acl::from_entries(entries).map_err(|err| custom_err(<span class="string">&quot;Invalid ACL&quot;</span>, <span class="kw-2">&amp;</span>err))<span class="question-mark">?</span>;
+        <span class="kw">let </span>acl = Acl::from_entries(entries).map_err(|err| custom_err(<span class="string">"Invalid ACL"</span>, <span class="kw-2">&amp;</span>err))<span class="question-mark">?</span>;
 
         <span class="kw">for </span>path <span class="kw">in </span>paths {
             acl.write(path.as_ref(), options)<span class="question-mark">?</span>;
         }
     } <span class="kw">else </span>{
         <span class="kw">let </span>(access_acl, default_acl) =
-            Acl::from_unified_entries(entries).map_err(|err| custom_err(<span class="string">&quot;Invalid ACL&quot;</span>, <span class="kw-2">&amp;</span>err))<span class="question-mark">?</span>;
+            Acl::from_unified_entries(entries).map_err(|err| custom_err(<span class="string">"Invalid ACL"</span>, <span class="kw-2">&amp;</span>err))<span class="question-mark">?</span>;
 
         <span class="kw">if </span>access_acl.is_empty() {
-            fail_custom(<span class="string">&quot;Invalid ACL: missing required entries&quot;</span>)<span class="question-mark">?</span>;
+            fail_custom(<span class="string">"Invalid ACL: missing required entries"</span>)<span class="question-mark">?</span>;
         }
 
         <span class="kw">for </span>path <span class="kw">in </span>paths {
@@ -698,7 +698,7 @@
             <span class="kw">if </span>access_acl.is_posix() {
                 <span class="comment">// Try to set default acl first. This will fail if path is not
                 // a directory and default_acl is non-empty. This ordering
-                // avoids leaving the file&#39;s ACL in a partially changed state
+                // avoids leaving the file's ACL in a partially changed state
                 // after an error (simply because it was a non-directory).
                 </span>default_acl.write(
                     path,
@@ -720,9 +720,9 @@
 /// ```text
 ///   &lt;allow&gt;:&lt;flags&gt;:&lt;kind&gt;:&lt;name&gt;:&lt;perms&gt;
 ///
-///   &lt;allow&gt; - one of &quot;allow&quot; or &quot;deny&quot;
+///   &lt;allow&gt; - one of "allow" or "deny"
 ///   &lt;flags&gt; - comma-separated list of flags
-///   &lt;kind&gt;  - one of &quot;user&quot;, &quot;group&quot;, &quot;other&quot;, &quot;mask&quot;, &quot;unknown&quot;
+///   &lt;kind&gt;  - one of "user", "group", "other", "mask", "unknown"
 ///   &lt;name&gt;  - user/group name (or decimal id if not known)
 ///   &lt;perms&gt; - comma-separated list of permissions
 /// ```
@@ -740,7 +740,7 @@
 /// Returns an [`io::Error`] on failure.
 </span><span class="kw">pub fn </span>to_writer&lt;W: io::Write&gt;(<span class="kw-2">mut </span>writer: W, entries: <span class="kw-2">&amp;</span>[AclEntry]) -&gt; io::Result&lt;()&gt; {
     <span class="kw">for </span>entry <span class="kw">in </span>entries {
-        <span class="macro">writeln!</span>(writer, <span class="string">&quot;{entry}&quot;</span>)<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(writer, <span class="string">"{entry}"</span>)<span class="question-mark">?</span>;
     }
 
     <span class="prelude-val">Ok</span>(())
@@ -759,9 +759,9 @@
 ///   &lt;flags&gt;:&lt;kind&gt;:&lt;name&gt;:&lt;perms&gt;
 ///   &lt;kind&gt;:&lt;name&gt;:&lt;perms&gt;
 ///
-///   &lt;allow&gt; - one of &quot;allow&quot; or &quot;deny&quot;
+///   &lt;allow&gt; - one of "allow" or "deny"
 ///   &lt;flags&gt; - comma-separated list of flags
-///   &lt;kind&gt;  - one of &quot;user&quot;, &quot;group&quot;, &quot;other&quot;, &quot;mask&quot;, &quot;unknown&quot;
+///   &lt;kind&gt;  - one of "user", "group", "other", "mask", "unknown"
 ///   &lt;name&gt;  - user/group name (decimal id accepted)
 ///   &lt;perms&gt; - comma-separated list of permissions
 /// ```
@@ -801,7 +801,7 @@
 
 <span class="doccomment">/// Return line with end of line comment removed.
 </span><span class="kw">fn </span>trim_comment(line: <span class="kw-2">&amp;</span>str) -&gt; <span class="kw-2">&amp;</span>str {
-    line.find(<span class="string">&#39;#&#39;</span>).map_or(line, |n| <span class="kw-2">&amp;</span>line[<span class="number">0</span>..n])
+    line.find(<span class="string">'#'</span>).map_or(line, |n| <span class="kw-2">&amp;</span>line[<span class="number">0</span>..n])
 }
 
 <span class="doccomment">/// Write ACL entries to text.
@@ -834,13 +834,13 @@
 /// to the owner/group/other permission bits given in `mode`.
 ///
 /// Extra bits outside the mask 0o777 are ignored.
-</span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-#[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+</span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
+#[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))))]
 #[must_use]
 </span><span class="kw">pub fn </span>from_mode(mode: u32) -&gt; Vec&lt;AclEntry&gt; {
     <span class="macro">vec!</span>[
-        AclEntry::allow_user(<span class="string">&quot;&quot;</span>, Perm::from_bits_truncate((mode &gt;&gt; <span class="number">6</span>) &amp; <span class="number">7</span>), <span class="prelude-val">None</span>),
-        AclEntry::allow_group(<span class="string">&quot;&quot;</span>, Perm::from_bits_truncate((mode &gt;&gt; <span class="number">3</span>) &amp; <span class="number">7</span>), <span class="prelude-val">None</span>),
+        AclEntry::allow_user(<span class="string">""</span>, Perm::from_bits_truncate((mode &gt;&gt; <span class="number">6</span>) &amp; <span class="number">7</span>), <span class="prelude-val">None</span>),
+        AclEntry::allow_group(<span class="string">""</span>, Perm::from_bits_truncate((mode &gt;&gt; <span class="number">3</span>) &amp; <span class="number">7</span>), <span class="prelude-val">None</span>),
         AclEntry::allow_other(Perm::from_bits_truncate(mode &amp; <span class="number">7</span>), <span class="prelude-val">None</span>),
     ]
 }

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/flag.rs`."><title>flag.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0-nightly (fee5518cd 2023-11-05)" data-channel="nightly" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/flag.rs`."><title>flag.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e883e87179a81222.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0-nightly (3340d49d2 2023-12-12)" data-channel="nightly" data-search-js="search-cca444cbb68c36e9.js" data-settings-js="settings-fe03fdc259827cd2.js" ><script src="../../static.files/storage-bc37acceda91d44a.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-77dede896d6ac08e.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -361,7 +361,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::sys::<span class="kw-2">*</span>;
 
 <span class="kw">use </span>bitflags::bitflags;
-<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
 </span><span class="kw">use </span>serde::{de, ser, Deserialize, Serialize};
 <span class="kw">use </span>std::fmt;
 
@@ -370,37 +370,37 @@
     </span><span class="attr">#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Default)]
     </span><span class="kw">pub struct </span>Flag : acl_flag_t {
         <span class="doccomment">/// ACL entry was inherited.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>INHERITED = np::ACL_ENTRY_INHERITED;
 
         <span class="doccomment">/// Inherit to files.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>FILE_INHERIT = np::ACL_ENTRY_FILE_INHERIT;
 
         <span class="doccomment">/// Inherit to directories.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>DIRECTORY_INHERIT = np::ACL_ENTRY_DIRECTORY_INHERIT;
 
         <span class="doccomment">/// Clear the DIRECTORY_INHERIT flag in the ACL entry that is inherited.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>LIMIT_INHERIT = np::ACL_ENTRY_LIMIT_INHERIT;
 
-        <span class="doccomment">/// Don&#39;t consider this entry when processing the ACL. Just inherit it.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        <span class="doccomment">/// Don't consider this entry when processing the ACL. Just inherit it.
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>ONLY_INHERIT = np::ACL_ENTRY_ONLY_INHERIT;
 
         <span class="doccomment">/// Specifies a default ACL entry on Linux.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>DEFAULT = <span class="number">1 </span>&lt;&lt; <span class="number">13</span>;
 
-        <span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)))]
+        <span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = <span class="string">"freebsd"</span>)))]
         </span><span class="doccomment">/// NFSv4 Specific Flags on FreeBSD.
         </span><span class="kw">const </span>NFS4_SPECIFIC = <span class="self">Self</span>::INHERITED.bits() | <span class="self">Self</span>::FILE_INHERIT.bits() | <span class="self">Self</span>::DIRECTORY_INHERIT.bits() | <span class="self">Self</span>::LIMIT_INHERIT.bits() | <span class="self">Self</span>::ONLY_INHERIT.bits();
     }
@@ -438,50 +438,50 @@
 }
 
 <span class="attr">#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = <span class="string">&quot;serde&quot;</span>, derive(Deserialize, Serialize))]
+#[cfg_attr(feature = <span class="string">"serde"</span>, derive(Deserialize, Serialize))]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 </span><span class="kw">pub enum </span>FlagName {
     <span class="comment">// *N.B.* Update the corresponding table in format/format_no_serde.rs
     // if any of these entries change.
-    </span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span><span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>inherited = Flag::INHERITED.as_u32(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>file_inherit = Flag::FILE_INHERIT.as_u32(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>directory_inherit = Flag::DIRECTORY_INHERIT.as_u32(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>limit_inherit = Flag::LIMIT_INHERIT.as_u32(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>only_inherit = Flag::ONLY_INHERIT.as_u32(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>default = Flag::DEFAULT.as_u32(),
 }
 
 <span class="kw">impl </span>FlagName {
     <span class="kw">const fn </span>from_flag(flag: Flag) -&gt; <span class="prelude-ty">Option</span>&lt;FlagName&gt; {
         <span class="kw">match </span>flag {
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Flag::INHERITED =&gt; <span class="prelude-val">Some</span>(FlagName::inherited),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Flag::FILE_INHERIT =&gt; <span class="prelude-val">Some</span>(FlagName::file_inherit),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Flag::DIRECTORY_INHERIT =&gt; <span class="prelude-val">Some</span>(FlagName::directory_inherit),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Flag::LIMIT_INHERIT =&gt; <span class="prelude-val">Some</span>(FlagName::limit_inherit),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Flag::ONLY_INHERIT =&gt; <span class="prelude-val">Some</span>(FlagName::only_inherit),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Flag::DEFAULT =&gt; <span class="prelude-val">Some</span>(FlagName::default),
 
             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
@@ -500,14 +500,14 @@
 }
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>Flag {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
         <span class="kw">let </span><span class="kw-2">mut </span>iter = BitIter(<span class="kw-2">*</span><span class="self">self </span>&amp; Flag::all());
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(flag) = iter.next() {
-            <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, FlagName::from_flag(flag).unwrap())<span class="question-mark">?</span>;
+            <span class="macro">write!</span>(f, <span class="string">"{}"</span>, FlagName::from_flag(flag).unwrap())<span class="question-mark">?</span>;
 
             <span class="kw">for </span>flag <span class="kw">in </span>iter {
-                <span class="macro">write!</span>(f, <span class="string">&quot;,{}&quot;</span>, FlagName::from_flag(flag).unwrap())<span class="question-mark">?</span>;
+                <span class="macro">write!</span>(f, <span class="string">",{}"</span>, FlagName::from_flag(flag).unwrap())<span class="question-mark">?</span>;
             }
         }
 
@@ -515,16 +515,16 @@
     }
 }
 
-<span class="doccomment">/// Parse an abbreviated flag (&quot;d&quot;).
-</span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+<span class="doccomment">/// Parse an abbreviated flag ("d").
+</span><span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
 </span><span class="kw">fn </span>parse_flag_abbreviation(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Flag&gt; {
     <span class="kw">match </span>s {
-        <span class="string">&quot;d&quot; </span>=&gt; <span class="prelude-val">Some</span>(Flag::DEFAULT),
+        <span class="string">"d" </span>=&gt; <span class="prelude-val">Some</span>(Flag::DEFAULT),
         <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
     }
 }
 
-<span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+<span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
 </span><span class="kw">const fn </span>parse_flag_abbreviation(_s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Flag&gt; {
     <span class="prelude-val">None
 </span>}
@@ -543,7 +543,7 @@
     <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>result = Flag::empty();
 
-        <span class="kw">for </span>item <span class="kw">in </span>s.split(<span class="string">&#39;,&#39;</span>) {
+        <span class="kw">for </span>item <span class="kw">in </span>s.split(<span class="string">','</span>) {
             <span class="kw">let </span>word = item.trim();
             <span class="kw">if </span>!word.is_empty() {
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(flag) = parse_flag_abbreviation(word) {
@@ -558,7 +558,7 @@
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
 </span><span class="kw">impl </span>ser::Serialize <span class="kw">for </span>Flag {
     <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
     <span class="kw">where
@@ -575,24 +575,24 @@
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
-</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; de::Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>Flag {
+<span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
+</span><span class="kw">impl</span>&lt;<span class="lifetime">'de</span>&gt; de::Deserialize&lt;<span class="lifetime">'de</span>&gt; <span class="kw">for </span>Flag {
     <span class="kw">fn </span>deserialize&lt;D&gt;(deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
     <span class="kw">where
-        </span>D: de::Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
+        </span>D: de::Deserializer&lt;<span class="lifetime">'de</span>&gt;,
     {
         <span class="kw">struct </span>FlagVisitor;
 
-        <span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; de::Visitor&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>FlagVisitor {
+        <span class="kw">impl</span>&lt;<span class="lifetime">'de</span>&gt; de::Visitor&lt;<span class="lifetime">'de</span>&gt; <span class="kw">for </span>FlagVisitor {
             <span class="kw">type </span>Value = Flag;
 
             <span class="kw">fn </span>expecting(<span class="kw-2">&amp;</span><span class="self">self</span>, formatter: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
-                formatter.write_str(<span class="string">&quot;list of flags&quot;</span>)
+                formatter.write_str(<span class="string">"list of flags"</span>)
             }
 
             <span class="kw">fn </span>visit_seq&lt;A&gt;(<span class="self">self</span>, <span class="kw-2">mut </span>seq: A) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Value, A::Error&gt;
             <span class="kw">where
-                </span>A: de::SeqAccess&lt;<span class="lifetime">&#39;de</span>&gt;,
+                </span>A: de::SeqAccess&lt;<span class="lifetime">'de</span>&gt;,
             {
                 <span class="kw">let </span><span class="kw-2">mut </span>flags: Flag = Flag::empty();
 
@@ -617,95 +617,95 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_flag_display() {
-        <span class="macro">assert_eq!</span>(Flag::empty().to_string(), <span class="string">&quot;&quot;</span>);
+        <span class="macro">assert_eq!</span>(Flag::empty().to_string(), <span class="string">""</span>);
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
         </span>{
             <span class="kw">let </span>flags = Flag::INHERITED | Flag::FILE_INHERIT;
-            <span class="macro">assert_eq!</span>(flags.to_string(), <span class="string">&quot;inherited,file_inherit&quot;</span>);
+            <span class="macro">assert_eq!</span>(flags.to_string(), <span class="string">"inherited,file_inherit"</span>);
 
             <span class="kw">let </span>bad_flag = Flag::from_bits_retain(<span class="number">0x0080_0000</span>) | Flag::INHERITED;
-            <span class="macro">assert_eq!</span>(bad_flag.to_string(), <span class="string">&quot;inherited&quot;</span>);
+            <span class="macro">assert_eq!</span>(bad_flag.to_string(), <span class="string">"inherited"</span>);
 
             <span class="macro">assert_eq!</span>(
                 Flag::all().to_string(),
-                <span class="string">&quot;inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;
+                <span class="string">"inherited,file_inherit,directory_inherit,limit_inherit,only_inherit"
             </span>);
         }
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"linux"</span>)]
         </span>{
             <span class="kw">let </span>flags = Flag::DEFAULT;
-            <span class="macro">assert_eq!</span>(flags.to_string(), <span class="string">&quot;default&quot;</span>);
+            <span class="macro">assert_eq!</span>(flags.to_string(), <span class="string">"default"</span>);
 
             <span class="kw">let </span>bad_flag = Flag::from_bits_retain(<span class="number">0x8000</span>) | Flag::DEFAULT;
-            <span class="macro">assert_eq!</span>(bad_flag.to_string(), <span class="string">&quot;default&quot;</span>);
+            <span class="macro">assert_eq!</span>(bad_flag.to_string(), <span class="string">"default"</span>);
 
-            <span class="macro">assert_eq!</span>(Flag::all().to_string(), <span class="string">&quot;default&quot;</span>);
+            <span class="macro">assert_eq!</span>(Flag::all().to_string(), <span class="string">"default"</span>);
         }
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
         </span>{
             <span class="kw">let </span>flags = Flag::DEFAULT;
-            <span class="macro">assert_eq!</span>(flags.to_string(), <span class="string">&quot;default&quot;</span>);
+            <span class="macro">assert_eq!</span>(flags.to_string(), <span class="string">"default"</span>);
 
             <span class="kw">let </span>bad_flag = Flag::from_bits_retain(<span class="number">0x8000</span>) | Flag::DEFAULT;
-            <span class="macro">assert_eq!</span>(bad_flag.to_string(), <span class="string">&quot;default&quot;</span>);
+            <span class="macro">assert_eq!</span>(bad_flag.to_string(), <span class="string">"default"</span>);
 
             <span class="macro">assert_eq!</span>(
                 Flag::all().to_string(),
-                <span class="string">&quot;file_inherit,directory_inherit,limit_inherit,only_inherit,inherited,default&quot;
+                <span class="string">"file_inherit,directory_inherit,limit_inherit,only_inherit,inherited,default"
             </span>);
         }
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_flag_fromstr() {
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
         </span>{
-            <span class="macro">assert_eq!</span>(Flag::empty(), <span class="string">&quot;&quot;</span>.parse::&lt;Flag&gt;().unwrap());
+            <span class="macro">assert_eq!</span>(Flag::empty(), <span class="string">""</span>.parse::&lt;Flag&gt;().unwrap());
 
             <span class="kw">let </span>flags = Flag::INHERITED | Flag::FILE_INHERIT;
-            <span class="macro">assert_eq!</span>(flags, <span class="string">&quot;inherited,file_inherit&quot;</span>.parse().unwrap());
+            <span class="macro">assert_eq!</span>(flags, <span class="string">"inherited,file_inherit"</span>.parse().unwrap());
 
             <span class="macro">assert_eq!</span>(
                 Flag::all(),
-                <span class="string">&quot;inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;
+                <span class="string">"inherited,file_inherit,directory_inherit,limit_inherit,only_inherit"
                     </span>.parse()
                     .unwrap()
             );
 
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`&quot;</span>, <span class="string">&quot;bad_flag&quot;</span>.parse::&lt;Flag&gt;().unwrap_err().to_string());
+            <span class="macro">assert_eq!</span>(<span class="string">"unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`"</span>, <span class="string">"bad_flag"</span>.parse::&lt;Flag&gt;().unwrap_err().to_string());
         }
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"linux"</span>)]
         </span>{
-            <span class="macro">assert_eq!</span>(Flag::empty(), <span class="string">&quot;&quot;</span>.parse::&lt;Flag&gt;().unwrap());
+            <span class="macro">assert_eq!</span>(Flag::empty(), <span class="string">""</span>.parse::&lt;Flag&gt;().unwrap());
 
-            <span class="macro">assert_eq!</span>(Flag::DEFAULT, <span class="string">&quot;d&quot;</span>.parse().unwrap());
-            <span class="macro">assert_eq!</span>(Flag::all(), <span class="string">&quot;default&quot;</span>.parse().unwrap());
+            <span class="macro">assert_eq!</span>(Flag::DEFAULT, <span class="string">"d"</span>.parse().unwrap());
+            <span class="macro">assert_eq!</span>(Flag::all(), <span class="string">"default"</span>.parse().unwrap());
 
             <span class="macro">assert_eq!</span>(
-                <span class="string">&quot;unknown variant `bad_flag`, expected `default`&quot;</span>,
-                <span class="string">&quot;bad_flag&quot;</span>.parse::&lt;Flag&gt;().unwrap_err().to_string()
+                <span class="string">"unknown variant `bad_flag`, expected `default`"</span>,
+                <span class="string">"bad_flag"</span>.parse::&lt;Flag&gt;().unwrap_err().to_string()
             );
         }
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
         </span>{
-            <span class="macro">assert_eq!</span>(Flag::empty(), <span class="string">&quot;&quot;</span>.parse::&lt;Flag&gt;().unwrap());
+            <span class="macro">assert_eq!</span>(Flag::empty(), <span class="string">""</span>.parse::&lt;Flag&gt;().unwrap());
 
-            <span class="macro">assert_eq!</span>(Flag::DEFAULT, <span class="string">&quot;d&quot;</span>.parse().unwrap());
+            <span class="macro">assert_eq!</span>(Flag::DEFAULT, <span class="string">"d"</span>.parse().unwrap());
             <span class="macro">assert_eq!</span>(
                 Flag::all(),
-                <span class="string">&quot;default,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit&quot;
+                <span class="string">"default,inherited,file_inherit,directory_inherit,limit_inherit,only_inherit"
                     </span>.parse()
                     .unwrap()
             );
 
             <span class="macro">assert_eq!</span>(
-                <span class="string">&quot;unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`, `default`&quot;</span>,
-                <span class="string">&quot;bad_flag&quot;</span>.parse::&lt;Flag&gt;().unwrap_err().to_string()
+                <span class="string">"unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`, `default`"</span>,
+                <span class="string">"bad_flag"</span>.parse::&lt;Flag&gt;().unwrap_err().to_string()
             );
         }
     }

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/qualifier.rs`."><title>qualifier.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0-nightly (fee5518cd 2023-11-05)" data-channel="nightly" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/qualifier.rs`."><title>qualifier.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e883e87179a81222.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0-nightly (3340d49d2 2023-12-12)" data-channel="nightly" data-search-js="search-cca444cbb68c36e9.js" data-settings-js="settings-fe03fdc259827cd2.js" ><script src="../../static.files/storage-bc37acceda91d44a.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-77dede896d6ac08e.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -275,17 +275,17 @@
 <span class="kw">use </span><span class="kw">crate</span>::unix;
 <span class="kw">use </span>std::fmt;
 <span class="kw">use </span>std::io;
-<span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+<span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
 </span><span class="kw">use </span>uuid::Uuid;
 
-<span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-</span><span class="kw">const </span>OWNER_NAME: <span class="kw-2">&amp;</span>str = <span class="string">&quot;&quot;</span>;
-<span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-</span><span class="kw">const </span>OTHER_NAME: <span class="kw-2">&amp;</span>str = <span class="string">&quot;&quot;</span>;
-<span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-</span><span class="kw">const </span>MASK_NAME: <span class="kw-2">&amp;</span>str = <span class="string">&quot;&quot;</span>;
-<span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
-</span><span class="kw">const </span>EVERYONE_NAME: <span class="kw-2">&amp;</span>str = <span class="string">&quot;&quot;</span>;
+<span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
+</span><span class="kw">const </span>OWNER_NAME: <span class="kw-2">&amp;</span>str = <span class="string">""</span>;
+<span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
+</span><span class="kw">const </span>OTHER_NAME: <span class="kw-2">&amp;</span>str = <span class="string">""</span>;
+<span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
+</span><span class="kw">const </span>MASK_NAME: <span class="kw-2">&amp;</span>str = <span class="string">""</span>;
+<span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
+</span><span class="kw">const </span>EVERYONE_NAME: <span class="kw-2">&amp;</span>str = <span class="string">""</span>;
 
 <span class="doccomment">/// A Qualifier specifies the principal that is allowed/denied access to a
 /// resource.
@@ -294,18 +294,18 @@
     User(unix::uid_t),
     Group(unix::gid_t),
 
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span>Guid(Uuid),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>UserObj,
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>GroupObj,
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>Other,
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>Mask,
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
     </span>Everyone,
 
     Unknown(String),
@@ -313,20 +313,20 @@
 
 <span class="kw">impl </span>Qualifier {
     <span class="doccomment">/// Create qualifier object from a GUID.
-    </span><span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    </span><span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">pub fn </span>from_guid(guid: Uuid) -&gt; io::Result&lt;Qualifier&gt; {
         <span class="kw">let </span>qualifier = <span class="kw">match </span>unix::guid_to_id(guid)<span class="question-mark">? </span>{
             (<span class="prelude-val">Some</span>(uid), <span class="prelude-val">None</span>) =&gt; Qualifier::User(uid),
             (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(gid)) =&gt; Qualifier::Group(gid),
             (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; Qualifier::Guid(guid),
-            <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;guid_to_id bug&quot;</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">"guid_to_id bug"</span>),
         };
 
         <span class="prelude-val">Ok</span>(qualifier)
     }
 
     <span class="doccomment">/// Create qualifier object from a user name.
-    </span><span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    </span><span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">pub fn </span>user_named(name: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;Qualifier&gt; {
         <span class="kw">match </span>unix::name_to_uid(name) {
             <span class="prelude-val">Ok</span>(uid) =&gt; <span class="prelude-val">Ok</span>(Qualifier::User(uid)),
@@ -338,7 +338,7 @@
     }
 
     <span class="doccomment">/// Create qualifier object from a user name.
-    </span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span><span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub fn </span>user_named(name: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;Qualifier&gt; {
         <span class="kw">match </span>name {
             OWNER_NAME =&gt; <span class="prelude-val">Ok</span>(Qualifier::UserObj),
@@ -350,7 +350,7 @@
     }
 
     <span class="doccomment">/// Create qualifier object from a group name.
-    </span><span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    </span><span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">pub fn </span>group_named(name: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;Qualifier&gt; {
         <span class="kw">match </span>unix::name_to_gid(name) {
             <span class="prelude-val">Ok</span>(gid) =&gt; <span class="prelude-val">Ok</span>(Qualifier::Group(gid)),
@@ -359,7 +359,7 @@
     }
 
     <span class="doccomment">/// Create qualifier object from a group name.
-    </span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span><span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub fn </span>group_named(name: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;Qualifier&gt; {
         <span class="kw">match </span>name {
             OWNER_NAME =&gt; <span class="prelude-val">Ok</span>(Qualifier::GroupObj),
@@ -371,40 +371,40 @@
     }
 
     <span class="doccomment">/// Create qualifier from mask.
-    </span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span><span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub fn </span>mask_named(name: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;Qualifier&gt; {
         <span class="kw">match </span>name {
             MASK_NAME =&gt; <span class="prelude-val">Ok</span>(Qualifier::Mask),
-            s =&gt; fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;unknown mask name: {s:?}&quot;</span>)),
+            s =&gt; fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"unknown mask name: {s:?}"</span>)),
         }
     }
 
     <span class="doccomment">/// Create qualifier from other.
-    </span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span><span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub fn </span>other_named(name: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;Qualifier&gt; {
         <span class="kw">match </span>name {
             OTHER_NAME =&gt; <span class="prelude-val">Ok</span>(Qualifier::Other),
-            s =&gt; fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;unknown other name: {s:?}&quot;</span>)),
+            s =&gt; fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"unknown other name: {s:?}"</span>)),
         }
     }
 
     <span class="doccomment">/// Create qualifier from everyone.
-    </span><span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    </span><span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
     </span><span class="kw">pub fn </span>everyone_named(name: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;Qualifier&gt; {
         <span class="kw">match </span>name {
             EVERYONE_NAME =&gt; <span class="prelude-val">Ok</span>(Qualifier::Everyone),
-            s =&gt; fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;unknown everyone name: {s:?}&quot;</span>)),
+            s =&gt; fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"unknown everyone name: {s:?}"</span>)),
         }
     }
 
     <span class="doccomment">/// Return the GUID for the user/group.
-    </span><span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    </span><span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">pub fn </span>guid(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; io::Result&lt;Uuid&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             Qualifier::User(uid) =&gt; unix::uid_to_guid(<span class="kw-2">*</span>uid),
             Qualifier::Group(gid) =&gt; unix::gid_to_guid(<span class="kw-2">*</span>gid),
             Qualifier::Guid(guid) =&gt; <span class="prelude-val">Ok</span>(<span class="kw-2">*</span>guid),
-            Qualifier::Unknown(tag) =&gt; fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;unknown tag: {tag:?}&quot;</span>)),
+            Qualifier::Unknown(tag) =&gt; fail_custom(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"unknown tag: {tag:?}"</span>)),
         }
     }
 
@@ -413,15 +413,15 @@
         <span class="kw">let </span>result = <span class="kw">match </span><span class="self">self </span>{
             Qualifier::User(uid) =&gt; unix::uid_to_name(<span class="kw-2">*</span>uid)<span class="question-mark">?</span>,
             Qualifier::Group(gid) =&gt; unix::gid_to_name(<span class="kw-2">*</span>gid)<span class="question-mark">?</span>,
-            <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+            <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
             </span>Qualifier::Guid(guid) =&gt; guid.to_string(),
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Qualifier::UserObj | Qualifier::GroupObj =&gt; OWNER_NAME.to_string(),
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Qualifier::Other =&gt; OTHER_NAME.to_string(),
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Qualifier::Mask =&gt; MASK_NAME.to_string(),
-            <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+            <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
             </span>Qualifier::Everyone =&gt; EVERYONE_NAME.to_string(),
 
             Qualifier::Unknown(s) =&gt; s.clone(),
@@ -434,21 +434,21 @@
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>Qualifier {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
-            Qualifier::User(uid) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;user:{uid}&quot;</span>),
-            Qualifier::Group(gid) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;group:{gid}&quot;</span>),
-            <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
-            </span>Qualifier::Guid(guid) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;guid:{guid}&quot;</span>),
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-            </span>Qualifier::UserObj =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;user&quot;</span>),
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-            </span>Qualifier::GroupObj =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;group&quot;</span>),
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-            </span>Qualifier::Other =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;other&quot;</span>),
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-            </span>Qualifier::Mask =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;mask&quot;</span>),
-            <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
-            </span>Qualifier::Everyone =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;everyone&quot;</span>),
-            Qualifier::Unknown(s) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;unknown:{s}&quot;</span>),
+            Qualifier::User(uid) =&gt; <span class="macro">write!</span>(f, <span class="string">"user:{uid}"</span>),
+            Qualifier::Group(gid) =&gt; <span class="macro">write!</span>(f, <span class="string">"group:{gid}"</span>),
+            <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
+            </span>Qualifier::Guid(guid) =&gt; <span class="macro">write!</span>(f, <span class="string">"guid:{guid}"</span>),
+            <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
+            </span>Qualifier::UserObj =&gt; <span class="macro">write!</span>(f, <span class="string">"user"</span>),
+            <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
+            </span>Qualifier::GroupObj =&gt; <span class="macro">write!</span>(f, <span class="string">"group"</span>),
+            <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
+            </span>Qualifier::Other =&gt; <span class="macro">write!</span>(f, <span class="string">"other"</span>),
+            <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
+            </span>Qualifier::Mask =&gt; <span class="macro">write!</span>(f, <span class="string">"mask"</span>),
+            <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
+            </span>Qualifier::Everyone =&gt; <span class="macro">write!</span>(f, <span class="string">"everyone"</span>),
+            Qualifier::Unknown(s) =&gt; <span class="macro">write!</span>(f, <span class="string">"unknown:{s}"</span>),
         }
     }
 }
@@ -460,35 +460,35 @@
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
     <span class="doccomment">/// Retrieve `user_id` and `group_id` of unix entity with specified name.
-    </span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    </span><span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">fn </span>getent(name: <span class="kw-2">&amp;</span>str) -&gt; (u32, u32) {
         <span class="kw">use </span>std::str::FromStr;
 
-        <span class="kw">let </span>cmd = std::process::Command::new(<span class="string">&quot;getent&quot;</span>)
-            .arg(<span class="string">&quot;passwd&quot;</span>)
+        <span class="kw">let </span>cmd = std::process::Command::new(<span class="string">"getent"</span>)
+            .arg(<span class="string">"passwd"</span>)
             .arg(name)
             .output()
-            .expect(<span class="string">&quot;Valid command&quot;</span>);
-        <span class="kw">let </span>out = String::from_utf8(cmd.stdout).expect(<span class="string">&quot;Valid utf8&quot;</span>);
-        <span class="kw">let </span>tokens = out.split(<span class="string">&#39;:&#39;</span>).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+            .expect(<span class="string">"Valid command"</span>);
+        <span class="kw">let </span>out = String::from_utf8(cmd.stdout).expect(<span class="string">"Valid utf8"</span>);
+        <span class="kw">let </span>tokens = out.split(<span class="string">':'</span>).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
         <span class="macro">assert_eq!</span>(tokens[<span class="number">0</span>], name);
 
-        <span class="kw">let </span>user_id = u32::from_str(tokens[<span class="number">2</span>]).expect(<span class="string">&quot;Valid uid&quot;</span>);
-        <span class="kw">let </span>group_id = u32::from_str(tokens[<span class="number">3</span>]).expect(<span class="string">&quot;Valid gid&quot;</span>);
+        <span class="kw">let </span>user_id = u32::from_str(tokens[<span class="number">2</span>]).expect(<span class="string">"Valid uid"</span>);
+        <span class="kw">let </span>group_id = u32::from_str(tokens[<span class="number">3</span>]).expect(<span class="string">"Valid gid"</span>);
 
         (user_id, group_id)
     }
 
     <span class="attr">#[test]
-    #[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    #[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">fn </span>test_from_guid() {
         <span class="kw">let </span>user =
-            Qualifier::from_guid(Uuid::parse_str(<span class="string">&quot;ffffeeee-dddd-cccc-bbbb-aaaa00000059&quot;</span>).unwrap())
+            Qualifier::from_guid(Uuid::parse_str(<span class="string">"ffffeeee-dddd-cccc-bbbb-aaaa00000059"</span>).unwrap())
                 .ok();
         <span class="macro">assert_eq!</span>(user, <span class="prelude-val">Some</span>(Qualifier::User(<span class="number">89</span>)));
 
         <span class="kw">let </span>group =
-            Qualifier::from_guid(Uuid::parse_str(<span class="string">&quot;abcdefab-cdef-abcd-efab-cdef00000059&quot;</span>).unwrap())
+            Qualifier::from_guid(Uuid::parse_str(<span class="string">"abcdefab-cdef-abcd-efab-cdef00000059"</span>).unwrap())
                 .ok();
         <span class="macro">assert_eq!</span>(group, <span class="prelude-val">Some</span>(Qualifier::Group(<span class="number">89</span>)));
 
@@ -498,44 +498,44 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_user_named() {
-        <span class="kw">let </span>user = Qualifier::user_named(<span class="string">&quot;89&quot;</span>).ok();
+        <span class="kw">let </span>user = Qualifier::user_named(<span class="string">"89"</span>).ok();
         <span class="macro">assert_eq!</span>(user, <span class="prelude-val">Some</span>(Qualifier::User(<span class="number">89</span>)));
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
         </span>{
-            <span class="kw">let </span>user = Qualifier::user_named(<span class="string">&quot;_spotlight&quot;</span>).ok();
+            <span class="kw">let </span>user = Qualifier::user_named(<span class="string">"_spotlight"</span>).ok();
             <span class="macro">assert_eq!</span>(user, <span class="prelude-val">Some</span>(Qualifier::User(<span class="number">89</span>)));
 
-            <span class="kw">let </span>user = Qualifier::user_named(<span class="string">&quot;ffffeeee-dddd-cccc-bbbb-aaaa00000059&quot;</span>).ok();
+            <span class="kw">let </span>user = Qualifier::user_named(<span class="string">"ffffeeee-dddd-cccc-bbbb-aaaa00000059"</span>).ok();
             <span class="macro">assert_eq!</span>(user, <span class="prelude-val">Some</span>(Qualifier::User(<span class="number">89</span>)));
         }
 
-        <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
         </span>{
-            <span class="kw">let </span>(user_id, <span class="kw">_</span>) = getent(<span class="string">&quot;daemon&quot;</span>);
-            <span class="kw">let </span>user = Qualifier::user_named(<span class="string">&quot;daemon&quot;</span>).ok();
+            <span class="kw">let </span>(user_id, <span class="kw">_</span>) = getent(<span class="string">"daemon"</span>);
+            <span class="kw">let </span>user = Qualifier::user_named(<span class="string">"daemon"</span>).ok();
             <span class="macro">assert_eq!</span>(user, <span class="prelude-val">Some</span>(Qualifier::User(user_id)));
         }
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_group_named() {
-        <span class="kw">let </span>group = Qualifier::group_named(<span class="string">&quot;89&quot;</span>).ok();
+        <span class="kw">let </span>group = Qualifier::group_named(<span class="string">"89"</span>).ok();
         <span class="macro">assert_eq!</span>(group, <span class="prelude-val">Some</span>(Qualifier::Group(<span class="number">89</span>)));
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
         </span>{
-            <span class="kw">let </span>group = Qualifier::group_named(<span class="string">&quot;_spotlight&quot;</span>).ok();
+            <span class="kw">let </span>group = Qualifier::group_named(<span class="string">"_spotlight"</span>).ok();
             <span class="macro">assert_eq!</span>(group, <span class="prelude-val">Some</span>(Qualifier::Group(<span class="number">89</span>)));
 
-            <span class="kw">let </span>group = Qualifier::group_named(<span class="string">&quot;abcdefab-cdef-abcd-efab-cdef00000059&quot;</span>).ok();
+            <span class="kw">let </span>group = Qualifier::group_named(<span class="string">"abcdefab-cdef-abcd-efab-cdef00000059"</span>).ok();
             <span class="macro">assert_eq!</span>(group, <span class="prelude-val">Some</span>(Qualifier::Group(<span class="number">89</span>)));
         }
 
-        <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+        <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
         </span>{
-            <span class="kw">let </span>(<span class="kw">_</span>, group_id) = getent(<span class="string">&quot;daemon&quot;</span>);
-            <span class="kw">let </span>group = Qualifier::group_named(<span class="string">&quot;daemon&quot;</span>).ok();
+            <span class="kw">let </span>(<span class="kw">_</span>, group_id) = getent(<span class="string">"daemon"</span>);
+            <span class="kw">let </span>group = Qualifier::group_named(<span class="string">"daemon"</span>).ok();
             <span class="macro">assert_eq!</span>(group, <span class="prelude-val">Some</span>(Qualifier::Group(group_id)));
         }
     }

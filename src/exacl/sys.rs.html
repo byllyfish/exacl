@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/sys.rs`."><title>sys.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0-nightly (fee5518cd 2023-11-05)" data-channel="nightly" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/sys.rs`."><title>sys.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e883e87179a81222.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0-nightly (3340d49d2 2023-12-12)" data-channel="nightly" data-search-js="search-cca444cbb68c36e9.js" data-settings-js="settings-fe03fdc259827cd2.js" ><script src="../../static.files/storage-bc37acceda91d44a.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-77dede896d6ac08e.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -224,32 +224,32 @@
 
 <span class="comment">// Demangle some MacOS constants. Linux provides these as-is.
 
-</span><span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+</span><span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
 </span><span class="kw">pub const </span>ACL_READ: acl_perm_t = acl_perm_t_ACL_READ_DATA;
 
-<span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+<span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
 </span><span class="kw">pub const </span>ACL_WRITE: acl_perm_t = acl_perm_t_ACL_WRITE_DATA;
 
-<span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+<span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
 </span><span class="kw">pub const </span>ACL_EXECUTE: acl_perm_t = acl_perm_t_ACL_EXECUTE;
 
-<span class="comment">// Linux doesn&#39;t have ACL flags; adding acl_flag_t makes the code more orthogonal.
+<span class="comment">// Linux doesn't have ACL flags; adding acl_flag_t makes the code more orthogonal.
 // On FreeBSD, acl_flag_t is a u16.
-</span><span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+</span><span class="attr">#[cfg(target_os = <span class="string">"linux"</span>)]
 </span><span class="kw">pub type </span>acl_flag_t = u32;
 
-<span class="comment">// Linux doesn&#39;t have ACL_MAX_ENTRIES, so define it as 2 billion.
-</span><span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+<span class="comment">// Linux doesn't have ACL_MAX_ENTRIES, so define it as 2 billion.
+</span><span class="attr">#[cfg(target_os = <span class="string">"linux"</span>)]
 </span><span class="kw">pub const </span>ACL_MAX_ENTRIES: u32 = <span class="number">2_000_000_000</span>;
 
 <span class="comment">// MacOS and FreeBSD use acl_get_perm_np().
-</span><span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+</span><span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
 </span><span class="kw">pub unsafe fn </span>acl_get_perm(permset_d: acl_permset_t, perm: acl_perm_t) -&gt; ::std::os::raw::c_int {
     acl_get_perm_np(permset_d, perm)
 }
 
 <span class="doccomment">/// Non-portable ACL Permissions &amp; Flags (`macOS` only)
-</span><span class="attr">#[cfg(all(target_os = <span class="string">&quot;macos&quot;</span>, not(docsrs)))]
+</span><span class="attr">#[cfg(all(target_os = <span class="string">"macos"</span>, not(docsrs)))]
 </span><span class="kw">pub mod </span>np {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
@@ -275,7 +275,7 @@
 }
 
 <span class="doccomment">/// Non-portable ACL Permissions &amp; Flags (`FreeBSD` only)
-</span><span class="attr">#[cfg(all(target_os = <span class="string">&quot;freebsd&quot;</span>, not(docsrs)))]
+</span><span class="attr">#[cfg(all(target_os = <span class="string">"freebsd"</span>, not(docsrs)))]
 </span><span class="kw">pub mod </span>np {
     <span class="kw">use super</span>::{acl_flag_t, acl_perm_t};
 
@@ -350,65 +350,65 @@
     <span class="kw">pub const </span>ERANGE: i32 = <span class="kw">super</span>::ERANGE <span class="kw">as </span>i32;
     <span class="kw">pub const </span>ACL_MAX_ENTRIES: i32 = <span class="kw">super</span>::ACL_MAX_ENTRIES <span class="kw">as </span>i32;
 
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">pub const </span>ACL_TYPE_EXTENDED: acl_type_t = <span class="kw">super</span>::acl_type_t_ACL_TYPE_EXTENDED;
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub const </span>ACL_TYPE_ACCESS: acl_type_t = <span class="kw">super</span>::ACL_TYPE_ACCESS <span class="kw">as </span>acl_type_t;
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub const </span>ACL_TYPE_DEFAULT: acl_type_t = <span class="kw">super</span>::ACL_TYPE_DEFAULT <span class="kw">as </span>acl_type_t;
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
     </span><span class="kw">pub const </span>ACL_TYPE_NFS4: acl_type_t = <span class="kw">super</span>::ACL_TYPE_NFS4 <span class="kw">as </span>acl_type_t;
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
     </span><span class="kw">pub const </span>ACL_BRAND_UNKNOWN: i32 = <span class="kw">super</span>::ACL_BRAND_UNKNOWN <span class="kw">as </span>i32;
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
     </span><span class="kw">pub const </span>ACL_BRAND_POSIX: i32 = <span class="kw">super</span>::ACL_BRAND_POSIX <span class="kw">as </span>i32;
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
     </span><span class="kw">pub const </span>ACL_BRAND_NFS4: i32 = <span class="kw">super</span>::ACL_BRAND_NFS4 <span class="kw">as </span>i32;
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
     </span><span class="kw">pub const </span>ACL_ENTRY_TYPE_ALLOW: acl_entry_type_t =
         <span class="kw">super</span>::ACL_ENTRY_TYPE_ALLOW <span class="kw">as </span>acl_entry_type_t;
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
     </span><span class="kw">pub const </span>ACL_ENTRY_TYPE_DENY: acl_entry_type_t =
         <span class="kw">super</span>::ACL_ENTRY_TYPE_DENY <span class="kw">as </span>acl_entry_type_t;
 
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">pub const </span>ACL_FIRST_ENTRY: i32 = <span class="kw">super</span>::acl_entry_id_t_ACL_FIRST_ENTRY;
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub const </span>ACL_FIRST_ENTRY: i32 = <span class="kw">super</span>::ACL_FIRST_ENTRY <span class="kw">as </span>i32;
 
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">pub const </span>ACL_NEXT_ENTRY: i32 = <span class="kw">super</span>::acl_entry_id_t_ACL_NEXT_ENTRY;
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub const </span>ACL_NEXT_ENTRY: i32 = <span class="kw">super</span>::ACL_NEXT_ENTRY <span class="kw">as </span>i32;
 
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">pub const </span>O_SYMLINK: i32 = <span class="kw">super</span>::O_SYMLINK <span class="kw">as </span>i32;
 
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">pub const </span>ACL_EXTENDED_ALLOW: acl_tag_t = <span class="kw">super</span>::acl_tag_t_ACL_EXTENDED_ALLOW;
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">pub const </span>ACL_EXTENDED_DENY: acl_tag_t = <span class="kw">super</span>::acl_tag_t_ACL_EXTENDED_DENY;
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub const </span>ACL_USER_OBJ: acl_tag_t = <span class="kw">super</span>::ACL_USER_OBJ <span class="kw">as </span>acl_tag_t;
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub const </span>ACL_USER: acl_tag_t = <span class="kw">super</span>::ACL_USER <span class="kw">as </span>acl_tag_t;
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub const </span>ACL_GROUP_OBJ: acl_tag_t = <span class="kw">super</span>::ACL_GROUP_OBJ <span class="kw">as </span>acl_tag_t;
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub const </span>ACL_GROUP: acl_tag_t = <span class="kw">super</span>::ACL_GROUP <span class="kw">as </span>acl_tag_t;
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub const </span>ACL_MASK: acl_tag_t = <span class="kw">super</span>::ACL_MASK <span class="kw">as </span>acl_tag_t;
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">pub const </span>ACL_OTHER: acl_tag_t = <span class="kw">super</span>::ACL_OTHER <span class="kw">as </span>acl_tag_t;
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
     </span><span class="kw">pub const </span>ACL_EVERYONE: acl_tag_t = <span class="kw">super</span>::ACL_EVERYONE <span class="kw">as </span>acl_tag_t;
 
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">pub const </span>ID_TYPE_UID: i32 = <span class="kw">super</span>::ID_TYPE_UID <span class="kw">as </span>i32;
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">pub const </span>ID_TYPE_GID: i32 = <span class="kw">super</span>::ID_TYPE_GID <span class="kw">as </span>i32;
 
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
     </span><span class="kw">pub const </span>PC_ACL_NFS4: i32 = <span class="kw">super</span>::_PC_ACL_NFS4 <span class="kw">as </span>i32;
 
     <span class="attr">#[test]
@@ -419,18 +419,18 @@
         <span class="macro">assert!</span>(<span class="kw">super</span>::ENOMEM <span class="kw">as </span>i32 &gt;= <span class="number">0</span>);
         <span class="macro">assert!</span>(<span class="kw">super</span>::ACL_MAX_ENTRIES <span class="kw">as </span>i32 &gt;= <span class="number">0</span>);
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"linux"</span>)]
         </span><span class="macro">assert!</span>(<span class="kw">super</span>::ACL_FIRST_ENTRY <span class="kw">as </span>i32 &gt;= <span class="number">0</span>);
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"linux"</span>)]
         </span><span class="macro">assert!</span>(<span class="kw">super</span>::ACL_NEXT_ENTRY <span class="kw">as </span>i32 &gt;= <span class="number">0</span>);
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
         </span><span class="macro">assert!</span>(<span class="kw">super</span>::O_SYMLINK <span class="kw">as </span>i32 &gt;= <span class="number">0</span>);
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
         </span><span class="macro">assert!</span>(<span class="kw">super</span>::ID_TYPE_UID <span class="kw">as </span>i32 &gt;= <span class="number">0</span>);
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
         </span><span class="macro">assert!</span>(<span class="kw">super</span>::ID_TYPE_GID <span class="kw">as </span>i32 &gt;= <span class="number">0</span>);
     }
 }

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/perm.rs`."><title>perm.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0-nightly (fee5518cd 2023-11-05)" data-channel="nightly" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/perm.rs`."><title>perm.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e883e87179a81222.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="exacl" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0-nightly (3340d49d2 2023-12-12)" data-channel="nightly" data-search-js="search-cca444cbb68c36e9.js" data-settings-js="settings-fe03fdc259827cd2.js" ><script src="../../static.files/storage-bc37acceda91d44a.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-77dede896d6ac08e.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -497,7 +497,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::sys::<span class="kw-2">*</span>;
 
 <span class="kw">use </span>bitflags::bitflags;
-<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
 </span><span class="kw">use </span>serde::{de, ser, Deserialize, Serialize};
 <span class="kw">use </span>std::fmt;
 
@@ -518,79 +518,79 @@
         </span><span class="kw">const </span>EXECUTE = ACL_EXECUTE;
 
         <span class="doccomment">/// DELETE permission for a file.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>DELETE = np::ACL_DELETE;
 
         <span class="doccomment">/// APPEND_DATA permission for a file.
         /// Same as ADD_SUBDIRECTORY permission for a directory.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>APPEND = np::ACL_APPEND_DATA;
 
         <span class="doccomment">/// DELETE_CHILD permission for a directory.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>DELETE_CHILD = np::ACL_DELETE_CHILD;
 
         <span class="doccomment">/// READ_ATTRIBUTES permission for file or directory.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>READATTR = np::ACL_READ_ATTRIBUTES;
 
         <span class="doccomment">/// WRITE_ATTRIBUTES permission for a file or directory.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>WRITEATTR = np::ACL_WRITE_ATTRIBUTES;
 
         <span class="doccomment">/// READ_EXTATTRIBUTES permission for a file or directory.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>READEXTATTR = np::ACL_READ_EXTATTRIBUTES;
 
         <span class="doccomment">/// WRITE_EXTATTRIBUTES permission for a file or directory.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>WRITEEXTATTR = np::ACL_WRITE_EXTATTRIBUTES;
 
         <span class="doccomment">/// READ_SECURITY permission for a file or directory.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>READSECURITY = np::ACL_READ_SECURITY;
 
         <span class="doccomment">/// WRITE_SECURITY permission for a file or directory.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>WRITESECURITY = np::ACL_WRITE_SECURITY;
 
         <span class="doccomment">/// CHANGE_OWNER permission for a file or directory.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>CHOWN = np::ACL_CHANGE_OWNER;
 
         <span class="doccomment">/// SYNCHRONIZE permission (unsupported).
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))))]
         </span><span class="kw">const </span>SYNC = np::ACL_SYNCHRONIZE;
 
         <span class="doccomment">/// NFSv4 READ_DATA permission.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = <span class="string">"freebsd"</span>)))]
         </span><span class="kw">const </span>READ_DATA = np::ACL_READ_DATA;
 
         <span class="doccomment">/// NFSv4 WRITE_DATA permission.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = <span class="string">"freebsd"</span>)))]
         </span><span class="kw">const </span>WRITE_DATA = np::ACL_WRITE_DATA;
 
         <span class="doccomment">/// Posix specific permissions.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = <span class="string">"freebsd"</span>)))]
         </span><span class="kw">const </span>POSIX_SPECIFIC = <span class="self">Self</span>::READ.bits() | <span class="self">Self</span>::WRITE.bits() | <span class="self">Self</span>::EXECUTE.bits();
 
         <span class="doccomment">/// All NFSv4 specific permissions.
-        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">&quot;freebsd&quot;</span>))]
-        #[cfg_attr(docsrs, doc(cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)))]
+        </span><span class="attr">#[cfg(any(docsrs, target_os = <span class="string">"freebsd"</span>))]
+        #[cfg_attr(docsrs, doc(cfg(target_os = <span class="string">"freebsd"</span>)))]
         </span><span class="kw">const </span>NFS4_SPECIFIC = <span class="self">Self</span>::READ_DATA.bits() | <span class="self">Self</span>::WRITE_DATA.bits()
             | <span class="self">Self</span>::DELETE.bits() | <span class="self">Self</span>::APPEND.bits() | <span class="self">Self</span>::DELETE_CHILD.bits()
             | <span class="self">Self</span>::READATTR.bits() | <span class="self">Self</span>::WRITEATTR.bits() | <span class="self">Self</span>::READEXTATTR.bits()
@@ -599,22 +599,22 @@
     }
 }
 
-<span class="attr">#[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+<span class="attr">#[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
 </span><span class="kw">type </span>RevPermIter = std::iter::Rev&lt;BitIter&lt;Perm&gt;&gt;;
 
 <span class="comment">// `perm_iter` returns a platform-specific iterator over the permission bits.
 </span><span class="kw">impl </span>Perm {
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">fn </span>perm_iter(<span class="self">self</span>) -&gt; BitIter&lt;Perm&gt; {
         BitIter(<span class="self">self </span>&amp; Perm::all())
     }
 
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"linux"</span>)]
     </span><span class="kw">fn </span>perm_iter(<span class="self">self</span>) -&gt; RevPermIter {
         BitIter(<span class="self">self </span>&amp; Perm::all()).rev()
     }
 
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
     </span><span class="kw">fn </span>perm_iter(<span class="self">self</span>) -&gt; std::iter::Chain&lt;RevPermIter, BitIter&lt;Perm&gt;&gt; {
         BitIter(<span class="self">self </span>&amp; Perm::POSIX_SPECIFIC)
             .rev()
@@ -644,7 +644,7 @@
 }
 
 <span class="attr">#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = <span class="string">&quot;serde&quot;</span>, derive(Deserialize, Serialize))]
+#[cfg_attr(feature = <span class="string">"serde"</span>, derive(Deserialize, Serialize))]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 </span><span class="kw">pub enum </span>PermName {
@@ -656,43 +656,43 @@
 
     execute = Perm::EXECUTE.bits(),
 
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
     </span>read_data = Perm::READ_DATA.bits(),
 
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+    <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
     </span>write_data = Perm::WRITE_DATA.bits(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>delete = Perm::DELETE.bits(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>append = Perm::APPEND.bits(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>delete_child = Perm::DELETE_CHILD.bits(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>readattr = Perm::READATTR.bits(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>writeattr = Perm::WRITEATTR.bits(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>readextattr = Perm::READEXTATTR.bits(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>writeextattr = Perm::WRITEEXTATTR.bits(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>readsecurity = Perm::READSECURITY.bits(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>writesecurity = Perm::WRITESECURITY.bits(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>chown = Perm::CHOWN.bits(),
 
-    <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span>sync = Perm::SYNC.bits(),
 }
 
@@ -705,43 +705,43 @@
 
             Perm::EXECUTE =&gt; <span class="prelude-val">Some</span>(PermName::execute),
 
-            <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+            <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
             </span>Perm::READ_DATA =&gt; <span class="prelude-val">Some</span>(PermName::read_data),
 
-            <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+            <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
             </span>Perm::WRITE_DATA =&gt; <span class="prelude-val">Some</span>(PermName::write_data),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Perm::DELETE =&gt; <span class="prelude-val">Some</span>(PermName::delete),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Perm::APPEND =&gt; <span class="prelude-val">Some</span>(PermName::append),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Perm::DELETE_CHILD =&gt; <span class="prelude-val">Some</span>(PermName::delete_child),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Perm::READATTR =&gt; <span class="prelude-val">Some</span>(PermName::readattr),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Perm::WRITEATTR =&gt; <span class="prelude-val">Some</span>(PermName::writeattr),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Perm::READEXTATTR =&gt; <span class="prelude-val">Some</span>(PermName::readextattr),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Perm::WRITEEXTATTR =&gt; <span class="prelude-val">Some</span>(PermName::writeextattr),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Perm::READSECURITY =&gt; <span class="prelude-val">Some</span>(PermName::readsecurity),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Perm::WRITESECURITY =&gt; <span class="prelude-val">Some</span>(PermName::writesecurity),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Perm::CHOWN =&gt; <span class="prelude-val">Some</span>(PermName::chown),
 
-            <span class="attr">#[cfg(any(target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+            <span class="attr">#[cfg(any(target_os = <span class="string">"macos"</span>, target_os = <span class="string">"freebsd"</span>))]
             </span>Perm::SYNC =&gt; <span class="prelude-val">Some</span>(PermName::sync),
 
             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
@@ -764,10 +764,10 @@
         <span class="kw">let </span><span class="kw-2">mut </span>iter = <span class="self">self</span>.perm_iter();
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(perm) = iter.next() {
-            <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, PermName::from_perm(perm).unwrap())<span class="question-mark">?</span>;
+            <span class="macro">write!</span>(f, <span class="string">"{}"</span>, PermName::from_perm(perm).unwrap())<span class="question-mark">?</span>;
 
             <span class="kw">for </span>perm <span class="kw">in </span>iter {
-                <span class="macro">write!</span>(f, <span class="string">&quot;,{}&quot;</span>, PermName::from_perm(perm).unwrap())<span class="question-mark">?</span>;
+                <span class="macro">write!</span>(f, <span class="string">",{}"</span>, PermName::from_perm(perm).unwrap())<span class="question-mark">?</span>;
             }
         }
 
@@ -775,18 +775,18 @@
     }
 }
 
-<span class="doccomment">/// Parse an abbreviated permission, &quot;rwx&quot;, &quot;wx&quot;, &quot;r-x&quot; etc.
+<span class="doccomment">/// Parse an abbreviated permission, "rwx", "wx", "r-x" etc.
 ///
-/// Order doesn&#39;t matter. &quot;xwr&quot; is the same as &quot;rwx&quot;. Allow for &quot;r-x&quot; by
-/// ignoring any number of &#39;-&#39;. Don&#39;t allow r, w, or x to be repeated.
+/// Order doesn't matter. "xwr" is the same as "rwx". Allow for "r-x" by
+/// ignoring any number of '-'. Don't allow r, w, or x to be repeated.
 </span><span class="kw">fn </span>parse_perm_abbreviation(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Perm&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>perms = Perm::empty();
     <span class="kw">for </span>ch <span class="kw">in </span>s.chars() {
         <span class="kw">match </span>ch {
-            <span class="string">&#39;r&#39; </span><span class="kw">if </span>!perms.contains(Perm::READ) =&gt; perms |= Perm::READ,
-            <span class="string">&#39;w&#39; </span><span class="kw">if </span>!perms.contains(Perm::WRITE) =&gt; perms |= Perm::WRITE,
-            <span class="string">&#39;x&#39; </span><span class="kw">if </span>!perms.contains(Perm::EXECUTE) =&gt; perms |= Perm::EXECUTE,
-            <span class="string">&#39;-&#39; </span>=&gt; (),
+            <span class="string">'r' </span><span class="kw">if </span>!perms.contains(Perm::READ) =&gt; perms |= Perm::READ,
+            <span class="string">'w' </span><span class="kw">if </span>!perms.contains(Perm::WRITE) =&gt; perms |= Perm::WRITE,
+            <span class="string">'x' </span><span class="kw">if </span>!perms.contains(Perm::EXECUTE) =&gt; perms |= Perm::EXECUTE,
+            <span class="string">'-' </span>=&gt; (),
             <span class="comment">// Any other character is invalid.
             </span><span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
         }
@@ -808,7 +808,7 @@
     <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>result = Perm::empty();
 
-        <span class="kw">for </span>item <span class="kw">in </span>s.split(<span class="string">&#39;,&#39;</span>) {
+        <span class="kw">for </span>item <span class="kw">in </span>s.split(<span class="string">','</span>) {
             <span class="kw">let </span>word = item.trim();
             <span class="kw">if </span>!word.is_empty() {
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(perms) = parse_perm_abbreviation(word) {
@@ -823,7 +823,7 @@
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
 </span><span class="kw">impl </span>ser::Serialize <span class="kw">for </span>Perm {
     <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
     <span class="kw">where
@@ -840,24 +840,24 @@
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
-</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; de::Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>Perm {
+<span class="attr">#[cfg(feature = <span class="string">"serde"</span>)]
+</span><span class="kw">impl</span>&lt;<span class="lifetime">'de</span>&gt; de::Deserialize&lt;<span class="lifetime">'de</span>&gt; <span class="kw">for </span>Perm {
     <span class="kw">fn </span>deserialize&lt;D&gt;(deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
     <span class="kw">where
-        </span>D: de::Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
+        </span>D: de::Deserializer&lt;<span class="lifetime">'de</span>&gt;,
     {
         <span class="kw">struct </span>PermVisitor;
 
-        <span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; de::Visitor&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>PermVisitor {
+        <span class="kw">impl</span>&lt;<span class="lifetime">'de</span>&gt; de::Visitor&lt;<span class="lifetime">'de</span>&gt; <span class="kw">for </span>PermVisitor {
             <span class="kw">type </span>Value = Perm;
 
             <span class="kw">fn </span>expecting(<span class="kw-2">&amp;</span><span class="self">self</span>, formatter: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
-                formatter.write_str(<span class="string">&quot;list of permissions&quot;</span>)
+                formatter.write_str(<span class="string">"list of permissions"</span>)
             }
 
             <span class="kw">fn </span>visit_seq&lt;A&gt;(<span class="self">self</span>, <span class="kw-2">mut </span>seq: A) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Value, A::Error&gt;
             <span class="kw">where
-                </span>A: de::SeqAccess&lt;<span class="lifetime">&#39;de</span>&gt;,
+                </span>A: de::SeqAccess&lt;<span class="lifetime">'de</span>&gt;,
             {
                 <span class="kw">let </span><span class="kw-2">mut </span>perms: Perm = Perm::empty();
 
@@ -881,7 +881,7 @@
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
     <span class="attr">#[test]
-    #[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+    #[cfg(target_os = <span class="string">"macos"</span>)]
     </span><span class="kw">fn </span>test_perm_equivalences() {
         <span class="macro">assert_eq!</span>(acl_perm_t_ACL_READ_DATA, acl_perm_t_ACL_LIST_DIRECTORY);
         <span class="macro">assert_eq!</span>(acl_perm_t_ACL_WRITE_DATA, acl_perm_t_ACL_ADD_FILE);
@@ -891,68 +891,68 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_perm_display() {
-        <span class="macro">assert_eq!</span>(Perm::empty().to_string(), <span class="string">&quot;&quot;</span>);
+        <span class="macro">assert_eq!</span>(Perm::empty().to_string(), <span class="string">""</span>);
 
         <span class="kw">let </span>perms = Perm::READ | Perm::EXECUTE;
-        <span class="macro">assert_eq!</span>(perms.to_string(), <span class="string">&quot;read,execute&quot;</span>);
+        <span class="macro">assert_eq!</span>(perms.to_string(), <span class="string">"read,execute"</span>);
 
         <span class="kw">let </span>bad_perm = Perm::from_bits_retain(<span class="number">0x0080_0000</span>) | Perm::READ;
-        <span class="macro">assert_eq!</span>(bad_perm.to_string(), <span class="string">&quot;read&quot;</span>);
+        <span class="macro">assert_eq!</span>(bad_perm.to_string(), <span class="string">"read"</span>);
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
-        </span><span class="macro">assert_eq!</span>(Perm::all().to_string(), <span class="string">&quot;read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync&quot;</span>);
+        <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
+        </span><span class="macro">assert_eq!</span>(Perm::all().to_string(), <span class="string">"read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync"</span>);
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
-        </span><span class="macro">assert_eq!</span>(Perm::all().to_string(), <span class="string">&quot;read,write,execute&quot;</span>);
+        <span class="attr">#[cfg(target_os = <span class="string">"linux"</span>)]
+        </span><span class="macro">assert_eq!</span>(Perm::all().to_string(), <span class="string">"read,write,execute"</span>);
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
-        </span><span class="macro">assert_eq!</span>(Perm::all().to_string(), <span class="string">&quot;read,write,execute,read_data,write_data,append,readextattr,writeextattr,delete_child,readattr,writeattr,delete,readsecurity,writesecurity,chown,sync&quot;</span>);
+        <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
+        </span><span class="macro">assert_eq!</span>(Perm::all().to_string(), <span class="string">"read,write,execute,read_data,write_data,append,readextattr,writeextattr,delete_child,readattr,writeattr,delete,readsecurity,writesecurity,chown,sync"</span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_perm_fromstr() {
         <span class="kw">let </span>flags = Perm::READ | Perm::EXECUTE;
-        <span class="macro">assert_eq!</span>(flags, <span class="string">&quot;read, execute&quot;</span>.parse().unwrap());
-        <span class="macro">assert_eq!</span>(flags, <span class="string">&quot;rx&quot;</span>.parse().unwrap());
-        <span class="macro">assert_eq!</span>(flags, <span class="string">&quot;r-x&quot;</span>.parse().unwrap());
-        <span class="macro">assert_eq!</span>(flags, <span class="string">&quot;--x--r--&quot;</span>.parse().unwrap());
-        <span class="macro">assert_eq!</span>(flags, <span class="string">&quot;xr&quot;</span>.parse().unwrap());
-        <span class="macro">assert_eq!</span>(Perm::WRITE, <span class="string">&quot;w&quot;</span>.parse().unwrap());
-        <span class="macro">assert_eq!</span>(Perm::empty(), <span class="string">&quot;&quot;</span>.parse().unwrap());
+        <span class="macro">assert_eq!</span>(flags, <span class="string">"read, execute"</span>.parse().unwrap());
+        <span class="macro">assert_eq!</span>(flags, <span class="string">"rx"</span>.parse().unwrap());
+        <span class="macro">assert_eq!</span>(flags, <span class="string">"r-x"</span>.parse().unwrap());
+        <span class="macro">assert_eq!</span>(flags, <span class="string">"--x--r--"</span>.parse().unwrap());
+        <span class="macro">assert_eq!</span>(flags, <span class="string">"xr"</span>.parse().unwrap());
+        <span class="macro">assert_eq!</span>(Perm::WRITE, <span class="string">"w"</span>.parse().unwrap());
+        <span class="macro">assert_eq!</span>(Perm::empty(), <span class="string">""</span>.parse().unwrap());
 
         <span class="comment">// Duplicate abbreviations not supported.
-        </span><span class="macro">assert!</span>(<span class="string">&quot;rr&quot;</span>.parse::&lt;Perm&gt;().is_err());
+        </span><span class="macro">assert!</span>(<span class="string">"rr"</span>.parse::&lt;Perm&gt;().is_err());
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
         </span>{
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;unknown variant `q`, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`&quot;</span>, <span class="string">&quot; ,q &quot;</span>.parse::&lt;Perm&gt;().unwrap_err().to_string());
+            <span class="macro">assert_eq!</span>(<span class="string">"unknown variant `q`, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`"</span>, <span class="string">" ,q "</span>.parse::&lt;Perm&gt;().unwrap_err().to_string());
 
-            <span class="macro">assert_eq!</span>(Perm::all(), <span class="string">&quot;read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync&quot;</span>.parse().unwrap());
+            <span class="macro">assert_eq!</span>(Perm::all(), <span class="string">"read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync"</span>.parse().unwrap());
         }
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"linux"</span>)]
         </span>{
             <span class="macro">assert_eq!</span>(
-                <span class="string">&quot;unknown variant `qq`, expected one of `read`, `write`, `execute`&quot;</span>,
-                <span class="string">&quot; ,qq &quot;</span>.parse::&lt;Perm&gt;().unwrap_err().to_string()
+                <span class="string">"unknown variant `qq`, expected one of `read`, `write`, `execute`"</span>,
+                <span class="string">" ,qq "</span>.parse::&lt;Perm&gt;().unwrap_err().to_string()
             );
 
-            <span class="macro">assert_eq!</span>(Perm::all(), <span class="string">&quot;read,write,execute&quot;</span>.parse().unwrap());
+            <span class="macro">assert_eq!</span>(Perm::all(), <span class="string">"read,write,execute"</span>.parse().unwrap());
         }
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
         </span>{
             <span class="macro">assert_eq!</span>(
-                <span class="string">&quot;unknown variant `qq`, expected one of `read`, `write`, `execute`, `read_data`, `write_data`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`&quot;</span>,
-                <span class="string">&quot; ,qq &quot;</span>.parse::&lt;Perm&gt;().unwrap_err().to_string()
+                <span class="string">"unknown variant `qq`, expected one of `read`, `write`, `execute`, `read_data`, `write_data`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`"</span>,
+                <span class="string">" ,qq "</span>.parse::&lt;Perm&gt;().unwrap_err().to_string()
             );
 
-            <span class="macro">assert_eq!</span>(Perm::all(), <span class="string">&quot;read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync,read_data,write_data&quot;</span>.parse().unwrap());
+            <span class="macro">assert_eq!</span>(Perm::all(), <span class="string">"read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync,read_data,write_data"</span>.parse().unwrap());
         }
     }
 
     <span class="attr">#[test]
-    #[cfg(any(target_os = <span class="string">&quot;linux&quot;</span>, target_os = <span class="string">&quot;freebsd&quot;</span>))]
+    #[cfg(any(target_os = <span class="string">"linux"</span>, target_os = <span class="string">"freebsd"</span>))]
     </span><span class="kw">fn </span>test_perm_unix_permission() {
         <span class="comment">// Test that READ, WRITE, EXECUTE constant correspond to the same bits
         // as the permissions in unix mode.
@@ -974,11 +974,11 @@
         <span class="macro">assert!</span>(Perm::READ != Perm::WRITE);
         <span class="macro">assert!</span>(Perm::EXECUTE &gt;= Perm::EXECUTE);
 
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
         </span><span class="macro">assert!</span>(Perm::READ &lt; Perm::WRITE);
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"linux"</span>)]
         </span><span class="macro">assert!</span>(Perm::READ &gt; Perm::WRITE);
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;freebsd&quot;</span>)]
+        <span class="attr">#[cfg(target_os = <span class="string">"freebsd"</span>)]
         </span><span class="macro">assert!</span>(Perm::READ &gt; Perm::WRITE);
     }
 }
