@@ -37,7 +37,7 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
     // crate when any included header file changes.
     let mut builder = bindgen::Builder::default()
         .header(wrapper)
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .disable_header_comment()
         .layout_tests(false); // no layout tests for passwd/group structs.
 
