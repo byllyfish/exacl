@@ -33,7 +33,6 @@ bindings=$(find ./target/debug/build -name "bindings.rs")
 echo "Comparing $bindings and $prebuilt_bindings"
 
 diff_out="$(mktemp)"
-echo "$diff_out"
 trap '{ rm -f -- "$diff_out"; }' EXIT
 
 if diff "$bindings" "$prebuilt_bindings" >"$diff_out"; then
