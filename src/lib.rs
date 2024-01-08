@@ -86,7 +86,7 @@ use failx::fail_custom;
 ///
 /// # macOS
 ///
-/// The ACL only includes the extended entries beyond the normal permssion mode
+/// The ACL only includes the extended entries beyond the normal permission mode
 /// of the file. macOS provides several ACL entry flags to specify how entries
 /// may be inherited by directory sub-items. If there's no extended ACL for a
 /// file, this function may return zero entries.
@@ -194,7 +194,7 @@ fn _getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
 /// Each entry can only allow access; denying access using allow=false is not
 /// supported on Linux.
 ///
-/// The ACL *must* contain entries for the permssion modes of the file. Use
+/// The ACL *must* contain entries for the permission modes of the file. Use
 /// the [`AclEntry::allow_other`] and [`AclEntry::allow_mask`] functions to
 /// specify the mode's other and mask permissions. Use "" as the name for the
 /// file owner and group owner.
