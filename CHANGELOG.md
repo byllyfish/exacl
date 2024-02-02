@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.12.0] - 2024-02-02
+
+- Fix typo in rustdoc comments for getfacl/setfacl. (Thanks @sylvestre)
+- Support FreeBSD 14 in CI builds. (Thanks @asomers)
+- Run CI tests on macos-13 and macos-12.
+- Update `bitflags` and `uuid` dependency versions.
+- Update build version dependency for `bindgen`.
+- Fix clippy warnings.
+
 ## [0.11.0] - 2023-09-25
 
 - Upgrade `bitflags` to 2.4.0 from 1.x. `bitflags` is used to implement the Perm, Flag and AclOption API's.
