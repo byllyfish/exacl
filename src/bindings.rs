@@ -8,7 +8,8 @@
     clippy::unreadable_literal,
     deref_nullptr,  // https://github.com/rust-lang/rust-bindgen/issues/1651
     clippy::too_many_lines,
-    clippy::borrow_as_ptr
+    clippy::borrow_as_ptr,
+    clippy::struct_field_names
 )]
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
