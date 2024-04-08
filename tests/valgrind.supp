@@ -42,3 +42,23 @@
    fun:statx
    fun:_ZN3std3sys4unix2fs9try_statx*
 }
+
+# Suppressions updated for rust 1.77.1.
+
+{
+   Syscall param statx(file_name) points to unaddressable byte(s)
+   Memcheck:Param
+   statx(file_name)
+   fun:statx
+   fun:statx
+   fun:_ZN3std3sys3pal4unix2fs9try_statx*
+}
+
+{
+   Syscall param statx(buf) points to unaddressable byte(s)
+   Memcheck:Param
+   statx(buf)
+   fun:statx
+   fun:statx
+   fun:_ZN3std3sys3pal4unix2fs9try_statx*
+}
