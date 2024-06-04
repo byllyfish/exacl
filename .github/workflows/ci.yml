@@ -38,7 +38,7 @@ jobs:
     - name: Install dependencies (Linux)
       run: |
         sudo apt-get update
-        sudo apt-get -y install libacl1-dev acl shunit2 valgrind shellcheck
+        sudo apt-get -y install libacl1-dev acl shunit2 shellcheck
       if: runner.os == 'Linux'
     - name: Fetch
       run: cargo fetch
@@ -53,7 +53,9 @@ jobs:
     - name: Run integration tests
       run: ./tests/run_tests.sh
     - name: Run memory tests (Linux)
-      run: ./tests/run_tests.sh memcheck
+      run: |
+        sudo apt-get install -y valgrind
+        ./tests/run_tests.sh memcheck
       if: runner.os == 'Linux'
     - name: Run TMPFS tests (Linux)
       run: |
