@@ -5,9 +5,9 @@ task:
   name: CI / build (freebsd)
 
   matrix:
-    - name: CI / build (freebsd-13.2)
+    - name: CI / build (freebsd-13.3)
       freebsd_instance:
-        image_family: freebsd-13-2
+        image_family: freebsd-13-3
     - name: CI / build (freebsd-14.0)
       freebsd_instance:
         image_family: freebsd-14-0
