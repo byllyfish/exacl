@@ -1,5 +1,12 @@
 # Changelog
 
+## [HEAD] - tbd
+
+- Update CI builds to use FreeBSD 13.3, ubuntu-24.04, and macos-14.
+- Update versions of Github Actions used in CI.
+- Update valgrind suppressions for newer versions of Rust.
+- Fix clippy warnings.
+
 ## [0.12.0] - 2024-02-02
 
 - Fix typo in rustdoc comments for getfacl/setfacl. (Thanks @sylvestre)
