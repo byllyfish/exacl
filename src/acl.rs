@@ -44,7 +44,7 @@ pub struct Acl {
     acl: acl_t,
 
     /// Set to true if `acl` was set from the default ACL for a directory
-    /// using DEFAULT_ACL option. Used to return entries with the `DEFAULT`
+    /// using `DEFAULT_ACL` option. Used to return entries with the `DEFAULT`
     /// flag set.
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     default_acl: bool,
