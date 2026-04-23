@@ -73,19 +73,19 @@ fn test_setfacl_file() -> io::Result<()> {
 /// Get the type of filesystem from `df -Th` command output.
 #[cfg(target_os = "linux")]
 fn get_filesystem(path: &std::path::PathBuf) -> String {
-    let df = std::process::Command::new("df")
+    let mut df = std::process::Command::new("df")
         .arg("-Th")
         .arg(path)
         .stdout(std::process::Stdio::piped())
         .spawn()
         .expect("df is a valid unix command");
-    let sed = std::process::Command::new("sed")
+    let mut sed = std::process::Command::new("sed")
         .arg("1d")
         .stdin(df.stdout.unwrap())
         .stdout(std::process::Stdio::piped())
         .spawn()
         .expect("sed is a valid unix command");
-    let tr = std::process::Command::new("tr")
+    let mut tr = std::process::Command::new("tr")
         .arg("-s")
         .arg(" ")
         .stdin(sed.stdout.unwrap())
