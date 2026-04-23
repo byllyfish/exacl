@@ -53,7 +53,7 @@ mod bititer_tests {
             if self == 0 {
                 return None;
             }
-            Some(1 << (31 - self.leading_zeros()))
+            Some(1 << self.ilog2())
         }
     }
 

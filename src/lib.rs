@@ -40,13 +40,13 @@
 //! [`AclEntry`] structure contains five fields:
 //!
 //! - kind : [`AclEntryKind`] - the kind of entry (User, Group, Other, Mask,
-//!     or Unknown).
+//!   or Unknown).
 //! - name : [`String`] - name of the principal being given access. You can
-//!     use a user/group name, decimal uid/gid, or UUID (on macOS).
+//!   use a user/group name, decimal uid/gid, or UUID (on macOS).
 //! - perms : [`Perm`] - permission bits for the entry.
 //! - flags : [`Flag`] - flags indicating whether an entry is inherited, etc.
 //! - allow : [`bool`] - true if entry is allowed; false means deny. Linux only
-//!     supports allow=true.
+//!   supports allow=true.
 
 #![warn(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
@@ -391,7 +391,7 @@ fn trim_comment(line: &str) -> &str {
 pub fn to_string(entries: &[AclEntry]) -> io::Result<String> {
     let mut buf = Vec::<u8>::with_capacity(128);
     to_writer(&mut buf, entries)?;
-    String::from_utf8(buf).map_err(|err| io::Error::new(io::ErrorKind::Other, err))
+    String::from_utf8(buf).map_err(io::Error::other)
 }
 
 /// Read ACL entries from text.
