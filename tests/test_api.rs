@@ -81,14 +81,14 @@ fn get_filesystem(path: &std::path::PathBuf) -> String {
         .expect("df is a valid unix command");
     let mut sed = std::process::Command::new("sed")
         .arg("1d")
-        .stdin(df.stdout.unwrap())
+        .stdin(df.stdout.take().unwrap())
         .stdout(std::process::Stdio::piped())
         .spawn()
         .expect("sed is a valid unix command");
     let mut tr = std::process::Command::new("tr")
         .arg("-s")
         .arg(" ")
-        .stdin(sed.stdout.unwrap())
+        .stdin(sed.stdout.take().unwrap())
         .stdout(std::process::Stdio::piped())
         .spawn()
         .expect("tr is a valid unix command");
@@ -96,7 +96,7 @@ fn get_filesystem(path: &std::path::PathBuf) -> String {
         .arg("-d")
         .arg(" ")
         .arg("-f2")
-        .stdin(tr.stdout.unwrap())
+        .stdin(tr.stdout.take().unwrap())
         .output()
         .expect("cut is a valid unix command");
 
