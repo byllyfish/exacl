@@ -99,6 +99,11 @@ fn get_filesystem(path: &std::path::PathBuf) -> String {
         .stdin(tr.stdout.unwrap())
         .output()
         .expect("cut is a valid unix command");
+
+    df.wait().expect("df wait");
+    sed.wait().expect("sed wait");
+    tr.wait().expect("tr wait");
+
     String::from_utf8(cut.stdout)
         .expect("FS should be valid utf8")
         .trim_end()
@@ -113,7 +118,7 @@ fn test_too_many_entries() -> io::Result<()> {
 
     let path = std::env::temp_dir();
     let fs = get_filesystem(&path);
-    debug!("Running on filesystem: {{{}}} TMPDIR={:?}", fs, path);
+    debug!("Running on filesystem: {{{fs}}} TMPDIR={path:?}");
 
     let supported_fs = HashMap::from([
         ("brtfs", UNTESTED),
@@ -133,7 +138,7 @@ fn test_too_many_entries() -> io::Result<()> {
     );
     let max_entries = supported_fs[fs.as_str()];
     if max_entries == UNTESTED {
-        debug!("Filesystem {} is not tested!", fs);
+        debug!("Filesystem {fs} is not tested!");
     }
 
     let mut entries = vec![
@@ -167,7 +172,7 @@ fn test_too_many_entries() -> io::Result<()> {
 
     // Last entry is one too many.
     let err = setfacl(&files, &entries, None).unwrap_err();
-    debug!("Got error as expected: {}", err);
+    debug!("Got error as expected: {err}");
     assert!(
         err.to_string().contains("No space left on device")
             || err.to_string().contains("Argument list too long")
