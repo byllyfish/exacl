@@ -14,7 +14,7 @@ where
     T: fmt::Debug,
 {
     let err = io::Error::last_os_error();
-    debug!("{}({:?}) returned {}, err={}", func, arg, ret, err);
+    debug!("{func}({arg:?}) returned {ret}, err={err}");
     err
 }
 
@@ -25,7 +25,7 @@ where
 {
     assert!(ret > 0);
     let err = io::Error::from_raw_os_error(ret);
-    debug!("{}({:?}) returned {}, err={}", func, arg, ret, err);
+    debug!("{func}({arg:?}) returned {ret}, err={err}");
     err
 }
 
@@ -48,7 +48,7 @@ where
 
 /// Return a custom [`io::Result`] with the given message.
 pub fn fail_custom<U>(msg: &str) -> io::Result<U> {
-    Err(io::Error::new(io::ErrorKind::Other, msg))
+    Err(io::Error::other(msg))
 }
 
 /// Return a custom [`io::Error`] that prefixes the given error.

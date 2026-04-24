@@ -345,7 +345,7 @@ impl Acl {
         for entry in self.entries()? {
             writeln!(buf, "{entry}")?;
         }
-        String::from_utf8(buf).map_err(|err| io::Error::new(io::ErrorKind::Other, err))
+        String::from_utf8(buf).map_err(io::Error::other)
     }
 
     /// Return true if ACL is empty.
@@ -390,7 +390,7 @@ fn is_non_directory(path: &Path, symlink: bool) -> bool {
         path.metadata()
     };
 
-    result.map_or(false, |meta| !meta.is_dir())
+    result.is_ok_and(|meta| !meta.is_dir())
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -415,7 +415,7 @@ mod acl_tests {
         assert_eq!(entries.len(), 3);
 
         for entry in &entries {
-            debug!("{}", entry);
+            debug!("{entry}");
         }
 
         Ok(())

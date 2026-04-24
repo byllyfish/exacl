@@ -120,7 +120,7 @@ fn dump_acl(path: &Path, options: AclOption, format: Format) -> io::Result<()> {
             panic!("serde not supported");
         }
         Format::Std => exacl::to_writer(io::stdout(), &entries)?,
-    };
+    }
 
     Ok(())
 }

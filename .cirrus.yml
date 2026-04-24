@@ -5,12 +5,9 @@ task:
   name: CI / build (freebsd)
 
   matrix:
-    - name: CI / build (freebsd-13.3)
+    - name: CI / build (freebsd-14.3)
       freebsd_instance:
-        image_family: freebsd-13-3
-    - name: CI / build (freebsd-14.0)
-      freebsd_instance:
-        image_family: freebsd-14-0
+        image_family: freebsd-14-3
 
   sysinfo_script:
     # Record info about the test environment.
@@ -29,8 +26,8 @@ task:
     - pkg info
 
   setup_script:
-    # Install Rust.
-    - pkg install -y bash llvm11
+    # Install Rust. Note: bindgen requires llvm's development libraries.
+    - pkg install -y bash llvm15
     - curl https://sh.rustup.rs -sSf --output rustup.sh
     - sh rustup.sh -y
     # Install shunit2.
