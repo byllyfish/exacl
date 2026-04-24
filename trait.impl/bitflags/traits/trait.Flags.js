@@ -1,3 +1,9 @@
-(function() {var implementors = {
-"exacl":[["impl Flags for <a class=\"struct\" href=\"exacl/struct.AclOption.html\" title=\"struct exacl::AclOption\">AclOption</a>"],["impl Flags for <a class=\"struct\" href=\"exacl/struct.Flag.html\" title=\"struct exacl::Flag\">Flag</a>"],["impl Flags for <a class=\"struct\" href=\"exacl/struct.Perm.html\" title=\"struct exacl::Perm\">Perm</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {
+    const implementors = Object.fromEntries([["exacl",[["impl Flags for <a class=\"struct\" href=\"exacl/struct.AclOption.html\" title=\"struct exacl::AclOption\">AclOption</a>",0],["impl Flags for <a class=\"struct\" href=\"exacl/struct.Flag.html\" title=\"struct exacl::Flag\">Flag</a>",0],["impl Flags for <a class=\"struct\" href=\"exacl/struct.Perm.html\" title=\"struct exacl::Perm\">Perm</a>",0]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":59,"fragment_lengths":[359]}
