@@ -15,7 +15,7 @@ jobs:
 
     permissions:
       contents: write  # for peaceiris/actions-gh-pages to push pages branch
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
     - name: Harden Runner
