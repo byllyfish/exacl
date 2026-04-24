@@ -26,8 +26,8 @@ task:
     - pkg info
 
   setup_script:
-    # Install Rust.
-    - pkg install -y bash llvm11
+    # Install Rust. Note: bindgen requires llvm's development libraries.
+    - pkg install -y bash llvm15
     - curl https://sh.rustup.rs -sSf --output rustup.sh
     - sh rustup.sh -y
     # Install shunit2.
