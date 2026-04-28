@@ -446,12 +446,12 @@ mod acl_tests {
         // displays it as `user`.
         assert_eq!(
             acl.to_string()?,
-            r#"allow::group:_spotlight:read,write,execute
+            r"allow::group:_spotlight:read,write,execute
 allow::user:11501:read,write,execute
 allow::user:11502:read,write,execute
 allow::user:11503:read,write,execute
 deny:file_inherit,directory_inherit:group:11504:read,write,execute
-"#
+"
         );
 
         let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;

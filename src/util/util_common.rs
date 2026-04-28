@@ -18,7 +18,7 @@ pub fn xacl_free<T>(ptr: *mut T) {
 pub fn xacl_is_empty(acl: acl_t) -> bool {
     let mut entry: acl_entry_t = ptr::null_mut();
 
-    !xacl_get_entry(acl, sg::ACL_FIRST_ENTRY, &mut entry)
+    !xacl_get_entry(acl, sg::ACL_FIRST_ENTRY, &raw mut entry)
 }
 
 /// Return next entry in ACL.
@@ -44,7 +44,7 @@ pub fn xacl_foreach<F: FnMut(acl_entry_t) -> io::Result<()>>(
 
     assert!(!acl.is_null());
     loop {
-        if !xacl_get_entry(acl, entry_id, &mut entry) {
+        if !xacl_get_entry(acl, entry_id, &raw mut entry) {
             break;
         }
         assert!(!entry.is_null());
@@ -78,7 +78,7 @@ pub fn xacl_init(capacity: usize) -> io::Result<acl_t> {
 pub fn xacl_create_entry(acl: &mut acl_t) -> io::Result<acl_entry_t> {
     let mut entry: acl_entry_t = ptr::null_mut();
 
-    let ret = unsafe { acl_create_entry(&mut *acl, &mut entry) };
+    let ret = unsafe { acl_create_entry(&raw mut *acl, &raw mut entry) };
     if ret != 0 {
         return fail_err(ret, "acl_create_entry", ());
     }
@@ -90,7 +90,7 @@ pub fn xacl_create_entry(acl: &mut acl_t) -> io::Result<acl_entry_t> {
 pub fn xacl_get_tag_type(entry: acl_entry_t) -> io::Result<acl_tag_t> {
     let mut tag: acl_tag_t = 0;
 
-    let ret = unsafe { acl_get_tag_type(entry, &mut tag) };
+    let ret = unsafe { acl_get_tag_type(entry, &raw mut tag) };
     if ret != 0 {
         return fail_err(ret, "acl_get_tag_type", ());
     }
@@ -102,7 +102,7 @@ pub fn xacl_get_tag_type(entry: acl_entry_t) -> io::Result<acl_tag_t> {
 pub fn xacl_get_perm(entry: acl_entry_t) -> io::Result<Perm> {
     let mut permset: acl_permset_t = std::ptr::null_mut();
 
-    let ret = unsafe { acl_get_permset(entry, &mut permset) };
+    let ret = unsafe { acl_get_permset(entry, &raw mut permset) };
     if ret != 0 {
         return fail_err(ret, "acl_get_permset", ());
     }
@@ -135,7 +135,7 @@ pub fn xacl_set_tag_type(entry: acl_entry_t, tag: acl_tag_t) -> io::Result<()> {
 pub fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
     let mut permset: acl_permset_t = std::ptr::null_mut();
 
-    let ret_get = unsafe { acl_get_permset(entry, &mut permset) };
+    let ret_get = unsafe { acl_get_permset(entry, &raw mut permset) };
     if ret_get != 0 {
         return fail_err(ret_get, "acl_get_permset", ());
     }
