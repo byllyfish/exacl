@@ -108,7 +108,7 @@ const fn not_implemented<T>() -> Result<T> {
     Err(Error::NotImplemented)
 }
 
-impl<'a, 'b> ser::Serializer for &mut EnumSerializer<'a, 'b> {
+impl ser::Serializer for &mut EnumSerializer<'_, '_> {
     type Ok = ();
     type Error = Error;
 
@@ -271,7 +271,7 @@ impl<'a, 'b> ser::Serializer for &mut EnumSerializer<'a, 'b> {
     }
 }
 
-impl<'a, 'b> ser::SerializeSeq for &mut EnumSerializer<'a, 'b> {
+impl ser::SerializeSeq for &mut EnumSerializer<'_, '_> {
     type Ok = ();
     type Error = Error;
 
@@ -287,7 +287,7 @@ impl<'a, 'b> ser::SerializeSeq for &mut EnumSerializer<'a, 'b> {
     }
 }
 
-impl<'a, 'b> ser::SerializeTuple for &mut EnumSerializer<'a, 'b> {
+impl ser::SerializeTuple for &mut EnumSerializer<'_, '_> {
     type Ok = ();
     type Error = Error;
 
@@ -303,7 +303,7 @@ impl<'a, 'b> ser::SerializeTuple for &mut EnumSerializer<'a, 'b> {
     }
 }
 
-impl<'a, 'b> ser::SerializeTupleStruct for &mut EnumSerializer<'a, 'b> {
+impl ser::SerializeTupleStruct for &mut EnumSerializer<'_, '_> {
     type Ok = ();
     type Error = Error;
 
@@ -319,7 +319,7 @@ impl<'a, 'b> ser::SerializeTupleStruct for &mut EnumSerializer<'a, 'b> {
     }
 }
 
-impl<'a, 'b> ser::SerializeTupleVariant for &mut EnumSerializer<'a, 'b> {
+impl ser::SerializeTupleVariant for &mut EnumSerializer<'_, '_> {
     type Ok = ();
     type Error = Error;
 
@@ -335,7 +335,7 @@ impl<'a, 'b> ser::SerializeTupleVariant for &mut EnumSerializer<'a, 'b> {
     }
 }
 
-impl<'a, 'b> ser::SerializeMap for &mut EnumSerializer<'a, 'b> {
+impl ser::SerializeMap for &mut EnumSerializer<'_, '_> {
     type Ok = ();
     type Error = Error;
 
@@ -358,7 +358,7 @@ impl<'a, 'b> ser::SerializeMap for &mut EnumSerializer<'a, 'b> {
     }
 }
 
-impl<'a, 'b> ser::SerializeStruct for &mut EnumSerializer<'a, 'b> {
+impl ser::SerializeStruct for &mut EnumSerializer<'_, '_> {
     type Ok = ();
     type Error = Error;
 
@@ -374,7 +374,7 @@ impl<'a, 'b> ser::SerializeStruct for &mut EnumSerializer<'a, 'b> {
     }
 }
 
-impl<'a, 'b> ser::SerializeStructVariant for &mut EnumSerializer<'a, 'b> {
+impl ser::SerializeStructVariant for &mut EnumSerializer<'_, '_> {
     type Ok = ();
     type Error = Error;
 
