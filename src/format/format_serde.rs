@@ -475,7 +475,7 @@ mod serialize_tests {
 
 struct EnumDeserializer<'de>(&'de str);
 
-impl<'de, 'a> de::Deserializer<'de> for &'a mut EnumDeserializer<'de> {
+impl<'de> de::Deserializer<'de> for &mut EnumDeserializer<'de> {
     type Error = Error;
 
     fn deserialize_any<V>(self, _visitor: V) -> Result<V::Value>
