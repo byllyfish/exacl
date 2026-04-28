@@ -42,7 +42,7 @@ pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
                 pwd.as_mut_ptr(),
                 buf.as_mut_ptr(),
                 buf.capacity(),
-                &mut result,
+                &raw mut result,
             )
         };
 
@@ -86,7 +86,7 @@ pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
                 grp.as_mut_ptr(),
                 buf.as_mut_ptr(),
                 buf.capacity(),
-                &mut result,
+                &raw mut result,
             )
         };
 
@@ -129,7 +129,7 @@ pub fn uid_to_name(uid: uid_t) -> io::Result<String> {
                 pwd.as_mut_ptr(),
                 buf.as_mut_ptr(),
                 buf.capacity(),
-                &mut result,
+                &raw mut result,
             )
         };
 
@@ -167,7 +167,7 @@ pub fn gid_to_name(gid: gid_t) -> io::Result<String> {
                 grp.as_mut_ptr(),
                 buf.as_mut_ptr(),
                 buf.capacity(),
-                &mut result,
+                &raw mut result,
             )
         };
 
@@ -230,7 +230,7 @@ pub fn guid_to_id(guid: Uuid) -> io::Result<(Option<uid_t>, Option<gid_t>)> {
     let mut bytes = guid.into_bytes();
 
     // On error, returns one of {EIO, ENOENT, EAUTH, EINVAL, ENOMEM}.
-    let ret = unsafe { mbr_uuid_to_id(bytes.as_mut_ptr(), &mut id_c, &mut idtype) };
+    let ret = unsafe { mbr_uuid_to_id(bytes.as_mut_ptr(), &raw mut id_c, &raw mut idtype) };
     if ret == sg::ENOENT {
         // GUID was not found.
         return Ok((None, None));

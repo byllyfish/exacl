@@ -142,7 +142,7 @@ fn xacl_get_flags_np(obj: *mut c_void) -> io::Result<Flag> {
     assert!(!obj.is_null());
 
     let mut flagset: acl_flagset_t = std::ptr::null_mut();
-    let ret = unsafe { acl_get_flagset_np(obj, &mut flagset) };
+    let ret = unsafe { acl_get_flagset_np(obj, &raw mut flagset) };
     if ret != 0 {
         return fail_err(ret, "acl_get_flagset_np", ());
     }
@@ -213,7 +213,7 @@ fn xacl_set_flags_np(obj: *mut c_void, flags: Flag) -> io::Result<()> {
     assert!(!obj.is_null());
 
     let mut flagset: acl_flagset_t = std::ptr::null_mut();
-    let ret_get = unsafe { acl_get_flagset_np(obj, &mut flagset) };
+    let ret_get = unsafe { acl_get_flagset_np(obj, &raw mut flagset) };
     if ret_get != 0 {
         return fail_err(ret_get, "acl_get_flagset_np", ());
     }
