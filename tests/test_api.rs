@@ -183,19 +183,19 @@ fn test_too_many_entries() -> io::Result<()> {
 
 #[test]
 fn test_reader_writer() -> io::Result<()> {
-    let input = r#"
+    let input = r"
     u:aaa:rwx#comment
     g:bbb:rwx
     u:ccc:rx
-    "#;
+    ";
 
     let entries = exacl::from_str(input)?;
     let actual = exacl::to_string(&entries)?;
 
-    let expected = r#"allow::user:aaa:read,write,execute
+    let expected = r"allow::user:aaa:read,write,execute
 allow::group:bbb:read,write,execute
 allow::user:ccc:read,execute
-"#;
+";
     assert_eq!(expected, actual);
 
     Ok(())

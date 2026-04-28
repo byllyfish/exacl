@@ -5,7 +5,7 @@
 set -eu
 
 # Space-separated list of ignored clippy lints.
-IGNORE="similar-names wildcard_imports use_self module_name_repetitions needless_raw_string_hashes unnecessary_debug_formatting"
+IGNORE="similar-names wildcard_imports use_self module_name_repetitions unnecessary_debug_formatting"
 
 allow=""
 for name in $IGNORE; do

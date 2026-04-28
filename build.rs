@@ -2,7 +2,7 @@ use std::env;
 use std::path::Path;
 
 #[cfg(feature = "buildtime_bindgen")]
-const BINDGEN_FAILURE_MSG: &str = r#"Could not generate bindings.
+const BINDGEN_FAILURE_MSG: &str = r"Could not generate bindings.
 
 On Linux, the 'sys/acl.h' file is installed by the `libacl1-dev` package. To 
 install this package, please use `apt-get install libacl1-dev`.
@@ -10,7 +10,7 @@ install this package, please use `apt-get install libacl1-dev`.
 If you still have problems, please create a GitHub issue at:
 https://github.com/byllyfish/exacl/issues
 
-"#;
+";
 
 fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
