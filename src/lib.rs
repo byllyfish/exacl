@@ -131,16 +131,16 @@ where
     P: AsRef<Path>,
     O: Into<Option<AclOption>>,
 {
-    _getfacl(path.as_ref(), options.into().unwrap_or_default())
+    my_getfacl(path.as_ref(), options.into().unwrap_or_default())
 }
 
 #[cfg(target_os = "macos")]
-fn _getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
+fn my_getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
     Acl::read(path, options)?.entries()
 }
 
 #[cfg(not(target_os = "macos"))]
-fn _getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
+fn my_getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
     if options.contains(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
         fail_custom("ACCESS_ACL and DEFAULT_ACL are mutually exclusive options")
     } else if options.intersects(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
@@ -233,11 +233,11 @@ where
     P: AsRef<Path>,
     O: Into<Option<AclOption>>,
 {
-    _setfacl(paths, entries, options.into().unwrap_or_default())
+    my_setfacl(paths, entries, options.into().unwrap_or_default())
 }
 
 #[cfg(target_os = "macos")]
-fn _setfacl<P>(paths: &[P], entries: &[AclEntry], options: AclOption) -> io::Result<()>
+fn my_setfacl<P>(paths: &[P], entries: &[AclEntry], options: AclOption) -> io::Result<()>
 where
     P: AsRef<Path>,
 {
@@ -250,7 +250,7 @@ where
 }
 
 #[cfg(not(target_os = "macos"))]
-fn _setfacl<P>(paths: &[P], entries: &[AclEntry], options: AclOption) -> io::Result<()>
+fn my_setfacl<P>(paths: &[P], entries: &[AclEntry], options: AclOption) -> io::Result<()>
 where
     P: AsRef<Path>,
 {
