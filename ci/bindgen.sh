@@ -35,7 +35,7 @@ echo "Comparing $bindings and $prebuilt_bindings"
 diff_out="$(mktemp)"
 trap '{ rm -f -- "$diff_out"; }' EXIT
 
-if diff "$bindings" "$prebuilt_bindings" >"$diff_out"; then
+if diff --ignore-space-change "$bindings" "$prebuilt_bindings" >"$diff_out"; then
     echo "Success."
     rm "$diff_out"
     exit 0

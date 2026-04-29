@@ -83,248 +83,248 @@ pub type acl_permset_t = *mut ::std::os::raw::c_int;
 pub type acl_flagset_t = *mut u16;
 pub type acl_entry_t = *mut ::std::os::raw::c_void;
 pub type acl_t = *mut ::std::os::raw::c_void;
-extern "C" {
+unsafe extern "C" {
     pub fn acl_add_flag_np(_flagset_d: acl_flagset_t, _flag: acl_flag_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_add_perm(_permset_d: acl_permset_t, _perm: acl_perm_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_calc_mask(_acl_p: *mut acl_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_clear_flags_np(_flagset_d: acl_flagset_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_clear_perms(_permset_d: acl_permset_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_copy_entry(_dest_d: acl_entry_t, _src_d: acl_entry_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_copy_ext(_buf_p: *mut ::std::os::raw::c_void, _acl: acl_t, _size: isize) -> isize;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_copy_int(_buf_p: *const ::std::os::raw::c_void) -> acl_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_create_entry(
         _acl_p: *mut acl_t,
         _entry_p: *mut acl_entry_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_create_entry_np(
         _acl_p: *mut acl_t,
         _entry_p: *mut acl_entry_t,
         _index: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_delete_entry(_acl: acl_t, _entry_d: acl_entry_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_delete_entry_np(_acl: acl_t, _index: ::std::os::raw::c_int)
         -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_delete_fd_np(
         _filedes: ::std::os::raw::c_int,
         _type: acl_type_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_delete_file_np(
         _path_p: *const ::std::os::raw::c_char,
         _type: acl_type_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_delete_link_np(
         _path_p: *const ::std::os::raw::c_char,
         _type: acl_type_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_delete_def_file(_path_p: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_delete_def_link_np(_path_p: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_delete_flag_np(
         _flagset_d: acl_flagset_t,
         _flag: acl_flag_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_delete_perm(_permset_d: acl_permset_t, _perm: acl_perm_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_dup(_acl: acl_t) -> acl_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_free(_obj_p: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_from_text(_buf_p: *const ::std::os::raw::c_char) -> acl_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_get_brand_np(
         _acl: acl_t,
         _brand_p: *mut ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_get_entry(
         _acl: acl_t,
         _entry_id: ::std::os::raw::c_int,
         _entry_p: *mut acl_entry_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_get_fd(_fd: ::std::os::raw::c_int) -> acl_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_get_fd_np(fd: ::std::os::raw::c_int, _type: acl_type_t) -> acl_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_get_file(_path_p: *const ::std::os::raw::c_char, _type: acl_type_t) -> acl_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_get_entry_type_np(
         _entry_d: acl_entry_t,
         _entry_type_p: *mut acl_entry_type_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_get_link_np(_path_p: *const ::std::os::raw::c_char, _type: acl_type_t) -> acl_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_get_qualifier(_entry_d: acl_entry_t) -> *mut ::std::os::raw::c_void;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_get_flag_np(_flagset_d: acl_flagset_t, _flag: acl_flag_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_get_perm_np(_permset_d: acl_permset_t, _perm: acl_perm_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_get_flagset_np(
         _entry_d: acl_entry_t,
         _flagset_p: *mut acl_flagset_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_get_permset(
         _entry_d: acl_entry_t,
         _permset_p: *mut acl_permset_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_get_tag_type(
         _entry_d: acl_entry_t,
         _tag_type_p: *mut acl_tag_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_init(_count: ::std::os::raw::c_int) -> acl_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_set_fd(_fd: ::std::os::raw::c_int, _acl: acl_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_set_fd_np(
         _fd: ::std::os::raw::c_int,
         _acl: acl_t,
         _type: acl_type_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_set_file(
         _path_p: *const ::std::os::raw::c_char,
         _type: acl_type_t,
         _acl: acl_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_set_entry_type_np(
         _entry_d: acl_entry_t,
         _entry_type: acl_entry_type_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_set_link_np(
         _path_p: *const ::std::os::raw::c_char,
         _type: acl_type_t,
         _acl: acl_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_set_flagset_np(
         _entry_d: acl_entry_t,
         _flagset_d: acl_flagset_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_set_permset(
         _entry_d: acl_entry_t,
         _permset_d: acl_permset_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_set_qualifier(
         _entry_d: acl_entry_t,
         _tag_qualifier_p: *const ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_set_tag_type(_entry_d: acl_entry_t, _tag_type: acl_tag_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_size(_acl: acl_t) -> isize;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_to_text(_acl: acl_t, _len_p: *mut isize) -> *mut ::std::os::raw::c_char;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_to_text_np(
         _acl: acl_t,
         _len_p: *mut isize,
         _flags: ::std::os::raw::c_int,
     ) -> *mut ::std::os::raw::c_char;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_valid(_acl: acl_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_valid_fd_np(
         _fd: ::std::os::raw::c_int,
         _type: acl_type_t,
         _acl: acl_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_valid_file_np(
         _path_p: *const ::std::os::raw::c_char,
         _type: acl_type_t,
         _acl: acl_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_valid_link_np(
         _path_p: *const ::std::os::raw::c_char,
         _type: acl_type_t,
         _acl: acl_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_is_trivial_np(
         _acl: acl_t,
         _trivialp: *mut ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn acl_strip_np(_acl: acl_t, recalculate_mask: ::std::os::raw::c_int) -> acl_t;
 }
 #[repr(C)]
@@ -335,7 +335,7 @@ pub struct group {
     pub gr_gid: gid_t,
     pub gr_mem: *mut *mut ::std::os::raw::c_char,
 }
-extern "C" {
+unsafe extern "C" {
     pub fn getgrgid_r(
         arg1: gid_t,
         arg2: *mut group,
@@ -344,7 +344,7 @@ extern "C" {
         arg5: *mut *mut group,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn getgrnam_r(
         arg1: *const ::std::os::raw::c_char,
         arg2: *mut group,
@@ -368,7 +368,7 @@ pub struct passwd {
     pub pw_expire: time_t,
     pub pw_fields: ::std::os::raw::c_int,
 }
-extern "C" {
+unsafe extern "C" {
     pub fn getpwnam_r(
         arg1: *const ::std::os::raw::c_char,
         arg2: *mut passwd,
@@ -377,7 +377,7 @@ extern "C" {
         arg5: *mut *mut passwd,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn getpwuid_r(
         arg1: uid_t,
         arg2: *mut passwd,
@@ -386,13 +386,13 @@ extern "C" {
         arg5: *mut *mut passwd,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn pathconf(
         arg1: *const ::std::os::raw::c_char,
         arg2: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_long;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn lpathconf(
         arg1: *const ::std::os::raw::c_char,
         arg2: ::std::os::raw::c_int,
