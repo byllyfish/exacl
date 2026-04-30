@@ -6,7 +6,7 @@ use crate::sys::*;
 use crate::util::util_common;
 
 use scopeguard::defer;
-use std::ffi::{c_void, CString};
+use std::ffi::{CString, c_void};
 use std::io;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;

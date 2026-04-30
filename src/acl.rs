@@ -633,11 +633,9 @@ allow::other::read,write,execute
             let acl = Acl::from_entries(&entries).unwrap();
 
             #[cfg(target_os = "linux")]
-            let expected =
-                "allow::user::read\nallow::user:500:execute\nallow::group::read\nallow::mask::read,execute\nallow::other::read\n";
+            let expected = "allow::user::read\nallow::user:500:execute\nallow::group::read\nallow::mask::read,execute\nallow::other::read\n";
             #[cfg(target_os = "freebsd")]
-            let expected =
-                "allow::group::read\nallow::other::read\nallow::user:500:execute\nallow::user::read\nallow::mask::read,execute\n";
+            let expected = "allow::group::read\nallow::other::read\nallow::user:500:execute\nallow::user::read\nallow::mask::read,execute\n";
             assert_eq!(acl.to_string().unwrap(), expected);
 
             entries.push(AclEntry::allow_group("", Perm::WRITE, None));

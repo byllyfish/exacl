@@ -11,7 +11,7 @@
 //!
 //! To get/set the default ACL (on Linux), use the -d option.
 
-use exacl::{getfacl, setfacl, AclEntry, AclOption};
+use exacl::{AclEntry, AclOption, getfacl, setfacl};
 use std::io;
 use std::path::{Path, PathBuf};
 use std::process;

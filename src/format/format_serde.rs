@@ -2,7 +2,7 @@
 //! These are used when `serde` is available
 
 use serde::de::{self, IntoDeserializer, Visitor};
-use serde::{ser, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, ser};
 use std::fmt;
 use std::io;
 

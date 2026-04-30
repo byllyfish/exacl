@@ -6,7 +6,7 @@ use crate::sys::*;
 
 use bitflags::bitflags;
 #[cfg(feature = "serde")]
-use serde::{de, ser, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de, ser};
 use std::fmt;
 
 bitflags! {
@@ -408,13 +408,19 @@ mod perm_tests {
         assert_eq!(bad_perm.to_string(), "read");
 
         #[cfg(target_os = "macos")]
-        assert_eq!(Perm::all().to_string(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync");
+        assert_eq!(
+            Perm::all().to_string(),
+            "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync"
+        );
 
         #[cfg(target_os = "linux")]
         assert_eq!(Perm::all().to_string(), "read,write,execute");
 
         #[cfg(target_os = "freebsd")]
-        assert_eq!(Perm::all().to_string(), "read,write,execute,read_data,write_data,append,readextattr,writeextattr,delete_child,readattr,writeattr,delete,readsecurity,writesecurity,chown,sync");
+        assert_eq!(
+            Perm::all().to_string(),
+            "read,write,execute,read_data,write_data,append,readextattr,writeextattr,delete_child,readattr,writeattr,delete,readsecurity,writesecurity,chown,sync"
+        );
     }
 
     #[test]
@@ -433,7 +439,10 @@ mod perm_tests {
 
         #[cfg(target_os = "macos")]
         {
-            assert_eq!("unknown variant `q`, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`", " ,q ".parse::<Perm>().unwrap_err().to_string());
+            assert_eq!(
+                "unknown variant `q`, expected one of `read`, `write`, `execute`, `delete`, `append`, `delete_child`, `readattr`, `writeattr`, `readextattr`, `writeextattr`, `readsecurity`, `writesecurity`, `chown`, `sync`",
+                " ,q ".parse::<Perm>().unwrap_err().to_string()
+            );
 
             assert_eq!(Perm::all(), "read,write,execute,delete,append,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,sync".parse().unwrap());
         }

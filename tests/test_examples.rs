@@ -61,7 +61,10 @@ fn test_linux_acl_default() -> io::Result<()> {
     }
     acl.append(&mut default_acl);
 
-    assert_eq!(exacl::to_string(&acl)?, "allow::user::read,write,execute\nallow::group::read,write,execute\nallow::other::\nallow::group:accounting:read,write,execute\nallow:default:user::read,write,execute\nallow:default:group::read,write,execute\nallow:default:other::\nallow:default:group:accounting:read,write,execute\n");
+    assert_eq!(
+        exacl::to_string(&acl)?,
+        "allow::user::read,write,execute\nallow::group::read,write,execute\nallow::other::\nallow::group:accounting:read,write,execute\nallow:default:user::read,write,execute\nallow:default:group::read,write,execute\nallow:default:other::\nallow:default:group:accounting:read,write,execute\n"
+    );
     //exacl::setfacl(&["./tmp/dir"], &acl, None)?;
 
     Ok(())
