@@ -6,7 +6,7 @@ use crate::sys::*;
 
 use bitflags::bitflags;
 #[cfg(feature = "serde")]
-use serde::{de, ser, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de, ser};
 use std::fmt;
 
 bitflags! {
@@ -319,7 +319,10 @@ mod flag_tests {
                     .unwrap()
             );
 
-            assert_eq!("unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`", "bad_flag".parse::<Flag>().unwrap_err().to_string());
+            assert_eq!(
+                "unknown variant `bad_flag`, expected one of `inherited`, `file_inherit`, `directory_inherit`, `limit_inherit`, `only_inherit`",
+                "bad_flag".parse::<Flag>().unwrap_err().to_string()
+            );
         }
 
         #[cfg(target_os = "linux")]

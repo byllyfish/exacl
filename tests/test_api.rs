@@ -1,7 +1,7 @@
 //! API Tests for exacl module.
 
 use ctor::ctor;
-use exacl::{getfacl, setfacl, AclEntry, AclOption, Perm};
+use exacl::{AclEntry, AclOption, Perm, getfacl, setfacl};
 use log::debug;
 use std::io;
 
@@ -27,20 +27,24 @@ fn test_getfacl_file() -> io::Result<()> {
     #[cfg(target_os = "macos")]
     {
         let result = getfacl(&file, AclOption::DEFAULT_ACL);
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("macOS does not support default ACL"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("macOS does not support default ACL")
+        );
     }
 
     // Test default ACL (should be error; files don't have default ACL).
     #[cfg(target_os = "linux")]
     {
         let result = getfacl(&file, AclOption::DEFAULT_ACL);
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("Permission denied"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("Permission denied")
+        );
     }
 
     // Test default ACL (should be error; files don't have default ACL).
@@ -241,7 +245,10 @@ fn test_exclusive_acloptions() {
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn test_from_mode() {
     let acl_7777 = exacl::to_string(&exacl::from_mode(0o7777)).unwrap();
-    assert_eq!(acl_7777, "allow::user::read,write,execute\nallow::group::read,write,execute\nallow::other::read,write,execute\n");
+    assert_eq!(
+        acl_7777,
+        "allow::user::read,write,execute\nallow::group::read,write,execute\nallow::other::read,write,execute\n"
+    );
 
     let acl_000 = exacl::to_string(&exacl::from_mode(0o000)).unwrap();
     assert_eq!(acl_000, "allow::user::\nallow::group::\nallow::other::\n");

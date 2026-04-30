@@ -246,7 +246,7 @@ pub fn guid_to_id(guid: Uuid) -> io::Result<(Option<uid_t>, Option<gid_t>)> {
         _ => {
             return fail_custom(&format!(
                 "mbr_uuid_to_id: Unknown idtype {idtype:?} for guid {guid:?}"
-            ))
+            ));
         }
     };
 

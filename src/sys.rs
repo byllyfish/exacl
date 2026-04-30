@@ -27,7 +27,7 @@ pub const ACL_MAX_ENTRIES: u32 = 2_000_000_000;
 // MacOS and FreeBSD use acl_get_perm_np().
 #[cfg(any(target_os = "macos", target_os = "freebsd"))]
 pub unsafe fn acl_get_perm(permset_d: acl_permset_t, perm: acl_perm_t) -> ::std::os::raw::c_int {
-    acl_get_perm_np(permset_d, perm)
+    unsafe { acl_get_perm_np(permset_d, perm) }
 }
 
 /// Non-portable ACL Permissions & Flags (`macOS` only)

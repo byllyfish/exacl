@@ -8,7 +8,7 @@ use crate::util::util_common;
 
 use log::debug;
 use scopeguard::defer;
-use std::ffi::{c_void, CString};
+use std::ffi::{CString, c_void};
 use std::io;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
@@ -239,7 +239,7 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
 fn xacl_get_entry_type(entry: acl_entry_t) -> io::Result<acl_entry_type_t> {
     let mut entry_type: acl_entry_type_t = 0;
 
-    let ret = unsafe { acl_get_entry_type_np(entry, &mut entry_type) };
+    let ret = unsafe { acl_get_entry_type_np(entry, &raw mut entry_type) };
     if ret != 0 {
         return fail_err(ret, "acl_get_entry_type_np", ());
     }
@@ -272,7 +272,7 @@ fn xacl_get_flags(acl: acl_t, entry: acl_entry_t) -> io::Result<Flag> {
     }
 
     let mut flagset: acl_flagset_t = std::ptr::null_mut();
-    let ret = unsafe { acl_get_flagset_np(entry, &mut flagset) };
+    let ret = unsafe { acl_get_flagset_np(entry, &raw mut flagset) };
     if ret != 0 {
         return fail_err(ret, "acl_get_flagset_np", ());
     }
@@ -326,7 +326,7 @@ pub fn xacl_set_tag_qualifier(
 ) -> io::Result<()> {
     if !allow {
         xacl_set_entry_type(entry, sg::ACL_ENTRY_TYPE_DENY)?;
-    };
+    }
 
     match qualifier {
         Qualifier::User(uid) => {
@@ -366,7 +366,7 @@ fn xacl_set_flags(entry: acl_entry_t, flags: Flag) -> io::Result<()> {
     }
 
     let mut flagset: acl_flagset_t = std::ptr::null_mut();
-    let ret_get = unsafe { acl_get_flagset_np(entry, &mut flagset) };
+    let ret_get = unsafe { acl_get_flagset_np(entry, &raw mut flagset) };
     if ret_get != 0 {
         return fail_err(ret_get, "acl_get_flagset_np", ());
     }
@@ -428,7 +428,7 @@ pub fn xacl_add_entry(
 
 fn xacl_get_brand(acl: acl_t) -> io::Result<i32> {
     let mut brand: i32 = 0;
-    let ret = unsafe { acl_get_brand_np(acl, &mut brand) };
+    let ret = unsafe { acl_get_brand_np(acl, &raw mut brand) };
     if ret != 0 {
         return fail_err(ret, "acl_get_brand_np", ());
     }
@@ -456,7 +456,7 @@ fn log_brand(func: &str, acl: acl_t) -> io::Result<()> {
         value => value.to_string(),
     };
 
-    debug!("{}: acl {}", func, brand);
+    debug!("{func}: acl {brand}");
 
     Ok(())
 }

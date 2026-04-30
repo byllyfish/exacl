@@ -299,7 +299,7 @@ fn parse_allow(value: &str) -> Result<bool, format::Error> {
         s => {
             return Err(format::Error::Message(format!(
                 "Unknown variant `{s}`, expected one of `allow`, `deny`"
-            )))
+            )));
         }
     };
     Ok(result)
