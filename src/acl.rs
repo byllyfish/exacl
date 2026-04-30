@@ -490,7 +490,7 @@ deny:file_inherit,directory_inherit:group:11504:read,write,execute
 
         assert_eq!(
             acl.to_string()?,
-            r#"allow::user::read,write,execute
+            r"allow::user::read,write,execute
 allow::user:11501:read,write,execute
 allow::user:11502:read,write,execute
 allow::user:11503:read,write,execute
@@ -498,7 +498,7 @@ allow::group::read,write,execute
 allow::group:bin:read,write,execute
 allow::mask::read,write,execute
 allow::other::read,write,execute
-"#
+"
         );
 
         let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
