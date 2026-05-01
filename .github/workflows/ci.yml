@@ -83,8 +83,8 @@ jobs:
       uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
     - name: Install dependencies (Linux)
       run: |
-        sudo apt-get update
-        sudo apt-get -y install curl build-essential libacl1-dev libclang-dev shunit2 shellcheck
+        apt-get update
+        apt-get -y install curl build-essential libacl1-dev libclang-dev shunit2 shellcheck
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
     - name: Fetch
