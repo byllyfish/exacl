@@ -84,7 +84,7 @@ jobs:
     - name: Install dependencies (Linux)
       run: |
         apt-get update
-        apt-get -y install curl build-essential libacl1-dev libclang-dev shunit2 shellcheck
+        apt-get -y install curl build-essential libacl1-dev libclang-dev acl shunit2 shellcheck
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
         df -Th $HOME
