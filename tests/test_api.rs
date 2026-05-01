@@ -118,7 +118,7 @@ fn get_filesystem(path: &std::path::PathBuf) -> String {
 #[cfg(target_os = "linux")]
 fn test_too_many_entries() -> io::Result<()> {
     use std::collections::HashMap;
-    const UNTESTED: u32 = 65535;
+    const UNTESTED: usize = 65535;
 
     let path = std::env::temp_dir();
     let fs = get_filesystem(&path);
@@ -135,6 +135,7 @@ fn test_too_many_entries() -> io::Result<()> {
         ("ext4", 507),
         ("gpfs", UNTESTED),
         ("nss", UNTESTED),
+        ("overlay", 5461), // assume xfs is underlying filesystem
     ]);
     assert!(
         supported_fs.contains_key(fs.as_str()),
@@ -151,12 +152,12 @@ fn test_too_many_entries() -> io::Result<()> {
         AclEntry::allow_other(Perm::empty(), None),
         AclEntry::allow_mask(Perm::READ, None),
     ];
-    let max_entries = max_entries.saturating_sub(u32::try_from(entries.len()).unwrap());
+    let max_entries = max_entries.saturating_sub(entries.len());
 
     let offset = 500;
     for i in 0..max_entries {
         entries.push(AclEntry::allow_user(
-            &(offset + i as usize).to_string(),
+            (offset + i).to_string().as_str(),
             Perm::READ,
             None,
         ));
@@ -169,7 +170,7 @@ fn test_too_many_entries() -> io::Result<()> {
 
     // Add last entry.
     entries.push(AclEntry::allow_user(
-        (u32::MAX - 1).to_string().as_str(),
+        (offset + max_entries + 1).to_string().as_str(),
         Perm::READ,
         None,
     ));
