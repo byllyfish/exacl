@@ -135,7 +135,7 @@ fn test_too_many_entries() -> io::Result<()> {
         ("ext4", 507),
         ("gpfs", UNTESTED),
         ("nss", UNTESTED),
-        ("overlay", 5461), // assume xfs is underlying filesystem
+        ("overlay", 507), // assume ext4 is underlying filesystem (Github Action)
     ]);
     assert!(
         supported_fs.contains_key(fs.as_str()),
