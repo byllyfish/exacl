@@ -60,7 +60,7 @@ oneTimeSetUp() {
     fi
 
     # Check that we are not root user.
-    if [ "$ME_NUM" = "0" ] ; then
+    if [ "$ME_NUM" = "0" ]; then
         echo "FAILURE: Do not run as root!"
         exit 1
     fi
