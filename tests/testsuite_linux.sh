@@ -59,6 +59,12 @@ oneTimeSetUp() {
         exit 1
     fi
 
+    # Check that we are not root user.
+    if [ "$ME_NUM" = "0" ] ; then
+        echo "FAILURE: Do not run as root!"
+        exit 1
+    fi
+
     # Use temp directory managed by shunit2.
     DIR="$SHUNIT_TMPDIR"
     FILE1="$DIR/file1"

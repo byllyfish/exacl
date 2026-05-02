@@ -78,6 +78,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ubuntu:26.04
+      # Use UID 1001 to match the host runner user
+      options: --user 1001
     steps:
     - name: Checkout
       uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
