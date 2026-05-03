@@ -65,6 +65,12 @@ oneTimeSetUp() {
         exit 1
     fi
 
+    # Check that $ME and $MY_GROUP are not empty.
+    if [ -z "$ME" ] || [ -z "$MY_GROUP" ]; then
+        echo "FAILURE: User name or group name is empty (user=$ME, group=$MY_GROUP)"
+        exit 1
+    fi
+
     # Use temp directory managed by shunit2.
     DIR="$SHUNIT_TMPDIR"
     FILE1="$DIR/file1"
