@@ -59,6 +59,18 @@ oneTimeSetUp() {
         exit 1
     fi
 
+    # Check that we are not root user.
+    if [ "$ME_NUM" = "0" ]; then
+        echo "FAILURE: Do not run as root!"
+        exit 1
+    fi
+
+    # Check that $ME and $MY_GROUP are not empty.
+    if [ -z "$ME" ] || [ -z "$MY_GROUP" ]; then
+        echo "FAILURE: User name or group name is empty (user=$ME, group=$MY_GROUP)"
+        exit 1
+    fi
+
     # Use temp directory managed by shunit2.
     DIR="$SHUNIT_TMPDIR"
     FILE1="$DIR/file1"
@@ -84,47 +96,47 @@ testReadAclFromMissingFile() {
 
 testReadAclForFile1() {
     msg=$($EXACL $FILE1)
-    assertEquals 0 $?
+    assertEquals "exit1" 0 $?
     assertEquals \
         "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "-rw-------" "$(fileperms $FILE1)"
     isReadable "$FILE1" && isWritable "$FILE1"
-    assertEquals 0 $?
+    assertEquals "exit2" 0 $?
 
     # Add ACL entry for current user to "write-only". (Note: owner still has read access)
     setfacl -m "u:$ME:w" "$FILE1"
 
     msg=$($EXACL $FILE1)
-    assertEquals 0 $?
+    assertEquals "exit3" 0 $?
     assertEquals \
         "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "-rw--w----" "$(fileperms $FILE1)"
     isReadable "$FILE1" && isWritable "$FILE1"
-    assertEquals 0 $?
+    assertEquals "exit4" 0 $?
 
     # Remove owner read perm.
     chmod u-rw "$FILE1"
 
     assertEquals "-----w----" "$(fileperms $FILE1)"
     ! isReadable "$FILE1" && ! isWritable "$FILE1"
-    assertEquals 0 $?
+    assertEquals "exit5" 0 $?
 
     # Add ACL entry for current group to "allow write".
     setfacl -m "g:$MY_GROUP:w" "$FILE1"
 
     msg=$($EXACL $FILE1)
-    assertEquals 0 $?
+    assertEquals "exit6" 0 $?
     assertEquals \
         "[{kind:user,name:,perms:[],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[write],flags:[],allow:true},{kind:mask,name:,perms:[write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "-----w----" "$(fileperms $FILE1)"
     ! isReadable "$FILE1" && ! isWritable "$FILE1"
-    assertEquals 0 $?
+    assertEquals "exit7" 0 $?
 
     # Reset permissions.
     chmod 600 "$FILE1"
