@@ -117,7 +117,7 @@ jobs:
     - name: Run Tests
       uses: vmactions/freebsd-vm@v1
       with:
-        release: 15.0
+        release: "15.0"
         usesh: true
         copyback: false
         prepare: |
