@@ -43,11 +43,22 @@ fi
 
 echo "Differences exist."
 
-# FreeBSD 14 includes several additional ACL API's that are not used.
+# FreeBSD 14 & 15 include several additional ACL API's that are not used.
 # Check the diff output against the approved diff output.
-freebsd_diff="./bindgen/bindings_freebsd14.diff"
 
 if [ "$target" = "freebsd" ]; then
+    release="$(freebsd_release)"
+    echo "Running on FreeBSD: $release"
+
+    case "$release" in
+    15.*)
+        freebsd_diff="./bindgen/bindings_freebsd15.diff"
+        ;;
+    *)
+        freebsd_diff="./bindgen/bindings_freebsd14.diff"
+        ;;
+    esac
+
     echo "Comparing diff output ($diff_out) and $freebsd_diff"
     if diff "$diff_out" "$freebsd_diff"; then
         echo "Success (FreeBSD)."
