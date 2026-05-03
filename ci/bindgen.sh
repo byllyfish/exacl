@@ -49,11 +49,13 @@ freebsd_diff="./bindgen/bindings_freebsd14.diff"
 
 if [ "$target" = "freebsd" ]; then
     echo "Comparing diff output ($diff_out) and $freebsd_diff"
-    diff "$diff_out" "$freebsd_diff"
-    echo "Success."
-    exit 0
-else
-    cat "$diff_out"
+    if diff "$diff_out" "$freebsd_diff"; then
+        echo "Success (FreeBSD)."
+        exit 0
+    fi
 fi
+
+echo "==== Failure: Differences in bindings! ===="
+cat "$diff_out"
 
 exit 1
