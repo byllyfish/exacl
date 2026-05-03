@@ -134,9 +134,8 @@ jobs:
           mdmfs -o nfsv4acls -s 5m md /tmp/exacl_nfsv4acls
           mount
           env
-          pkg info
           # Install Rust.
-          pkg install -y bash llvm15
+          pkg install -y bash curl llvm15
           curl https://sh.rustup.rs -sSf --output rustup.sh
           sh rustup.sh -y
           # Install shunit2.
