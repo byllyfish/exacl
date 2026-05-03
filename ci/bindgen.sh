@@ -47,7 +47,7 @@ echo "Differences exist."
 # Check the diff output against the approved diff output.
 
 if [ "$target" = "freebsd" ]; then
-    release="$(freebsd_release)"
+    release="$(freebsd-version)"
     echo "Running on FreeBSD: $release"
 
     case "$release" in
