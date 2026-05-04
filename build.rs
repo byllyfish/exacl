@@ -78,6 +78,19 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
         "ID_TYPE_GID",
     ];
 
+    // FreeBSD: Specify acl functions by exact name that we want to exclude.
+    // The reason is that FreeBSD 14 & 15 include additional `_np` functions
+    // that we don't use.
+    #[cfg(not(target_os = "freebsd"))]
+    let blocked_funcs: [&str; 0] = [];
+    #[cfg(target_os = "freebsd")]
+    let blocked_funcs = [
+        "acl_cmp_np",
+        "acl_equiv_mode_np",
+        "acl_extended_(file|file_nofollow|link)_np",
+        "acl_from_mode_np",
+    ];
+
     for type_ in &types {
         builder = builder.allowlist_type(type_);
     }
@@ -88,6 +101,10 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
 
     for var_ in &vars {
         builder = builder.allowlist_var(var_);
+    }
+
+    for blocked_func in &blocked_funcs {
+        builder = builder.blocklist_function(blocked_func);
     }
 
     // Generate the bindings.
