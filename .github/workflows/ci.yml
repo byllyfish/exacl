@@ -87,7 +87,6 @@ jobs:
         apt-get -y install curl build-essential libacl1-dev libclang-dev acl shunit2 shellcheck
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-        df -Th $HOME
     - name: Fetch
       run: cargo fetch
     - name: Build (no-serde)
@@ -109,7 +108,7 @@ jobs:
     - name: Bindgen Check
       run: ./ci/bindgen.sh
 
-  build-freebsd-15:
+  build-freebsd:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -140,8 +139,7 @@ jobs:
           env
           # Install Rust.
           pkg install -y bash curl llvm15
-          curl https://sh.rustup.rs -sSf --output rustup.sh
-          sh rustup.sh -y
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           # Install shunit2.
           mkdir -p /tmp/bin
           curl https://raw.githubusercontent.com/kward/shunit2/master/shunit2 -sSf --output /tmp/bin/shunit2
