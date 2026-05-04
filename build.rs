@@ -80,7 +80,7 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
 
     // FreeBSD: Specify acl functions by exact name that we want to exclude.
     // The reason is that FreeBSD 14 & 15 include additional `_np` functions
-    // that we don't use (and transitively bring in a `mode_t` type).
+    // that we don't use.
     #[cfg(not(target_os = "freebsd"))]
     let blocked_funcs: [&str; 0] = [];
     #[cfg(target_os = "freebsd")]
