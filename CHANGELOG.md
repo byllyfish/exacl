@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.13.0] - 2026-05-04
+## [0.13.0] - 2026-05-05
 
 - No new features. No bugs fixed. Maintenance changes only.
 - Change Rust Edition from "2021" to "2024". Set MSRV to "1.85" (previously unset). Re-format source code with `cargo fmt`.
