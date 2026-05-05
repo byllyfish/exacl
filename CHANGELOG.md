@@ -1,11 +1,19 @@
 # Changelog
 
-## [HEAD] - tbd
+## [0.13.0] - 2026-05-05
 
-- Update CI builds to use FreeBSD 13.3, ubuntu-24.04, and macos-14.
-- Update versions of Github Actions used in CI.
-- Update valgrind suppressions for newer versions of Rust.
-- Fix clippy warnings.
+- No new features. No bugs fixed. Maintenance changes only.
+- Change Rust Edition from "2021" to "2024". Set MSRV to "1.85" (previously unset). Re-format source code with `cargo fmt`.
+- Update `bindgen` build dependency to 0.72.1.
+- Update `ctor` dev dependency to 0.11.1.
+- Bump `bitflags`, `log`, and `uuid` dependencies to newer point releases in Cargo.toml.
+- Update packaged bindings for newer bindgen (`extern "C"` to `unsafe extern "C"`).
+- Rename private `_getfacl` and `_setfacl` helper functions as `my_getfacl` and `my_setfacl` to fix a clippy complaint.
+- Fix new clippy warnings.
+- Add `ubuntu:2026-04` to CI testing using a container. Tests now guard against running as root.
+- Update CI builds to use FreeBSD 15.0 and 14.4; stop using cirrus-ci.
+- Update CI builds to latest Linux/MacOS choices.
+- Update valgrind suppressions.
 
 ## [0.12.0] - 2024-02-02
 
