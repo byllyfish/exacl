@@ -28,10 +28,14 @@
 //!
 //! ## API
 //!
-//! This module provides two high level functions, [`getfacl`] and [`setfacl`].
+//! This module provides two cross-platform, path-based high level functions,
+//! [`getfacl`] and [`setfacl`].
 //!
 //! - [`getfacl`] retrieves the ACL for a file or directory.
 //! - [`setfacl`] sets the ACL for files or directories.
+//!
+//! On macOS, [`extended_acl_presence`] safely detects an extended ACL through
+//! an already-open file descriptor without re-resolving a pathname.
 //!
 //! On Linux and `FreeBSD`, the ACL contains entries for the default ACL, if
 //! present.
@@ -73,10 +77,55 @@ pub use perm::Perm;
 use acl::Acl;
 use failx::custom_err;
 use std::io::{self, BufRead};
+#[cfg(any(docsrs, target_os = "macos"))]
+use std::os::fd::BorrowedFd;
 use std::path::Path;
 
 #[cfg(not(target_os = "macos"))]
 use failx::fail_custom;
+
+/// Whether a macOS filesystem object has an extended access control list.
+#[cfg(any(docsrs, target_os = "macos"))]
+#[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[must_use = "the observed ACL presence must be handled"]
+pub enum ExtendedAclPresence {
+    /// No extended ACL is attached to the object.
+    Absent,
+    /// An extended ACL is attached to the object.
+    Present,
+}
+
+/// Detect whether the object referenced by `fd` has a macOS extended ACL.
+///
+/// This queries the retained descriptor directly. It does not resolve a
+/// pathname, duplicate or close the descriptor, or decode ACL entries.
+///
+/// The result is a point-in-time observation. Another process with sufficient
+/// authority may alter the ACL after this function returns.
+///
+/// # Errors
+///
+/// Returns an [`io::Error`] when ACL retrieval fails for any reason other than
+/// macOS reporting that no extended ACL is attached, or when releasing the
+/// native ACL object fails.
+#[cfg(any(docsrs, target_os = "macos"))]
+#[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+pub fn extended_acl_presence(fd: BorrowedFd<'_>) -> io::Result<ExtendedAclPresence> {
+    #[cfg(target_os = "macos")]
+    {
+        util::xacl_extended_acl_presence(fd)
+    }
+
+    #[cfg(all(docsrs, not(target_os = "macos")))]
+    {
+        let _ = fd;
+        Err(io::Error::new(
+            io::ErrorKind::Unsupported,
+            "extended ACL presence is only available on macOS",
+        ))
+    }
+}
 
 /// Get access control list (ACL) for a file or directory.
 ///

@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+- Add a safe macOS-only `extended_acl_presence` API that inspects a retained
+  file descriptor directly without re-resolving a pathname or decoding entries.
+
 ## [0.13.0] - 2026-05-05
 
 - No new features. No bugs fixed. Maintenance changes only.

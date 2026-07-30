@@ -5,9 +5,163 @@ use exacl::{AclEntry, AclOption, Perm, getfacl, setfacl};
 use log::debug;
 use std::io;
 
+#[cfg(target_os = "macos")]
+use exacl::{ExtendedAclPresence, Flag, extended_acl_presence};
+#[cfg(target_os = "macos")]
+use std::fs::File;
+#[cfg(target_os = "macos")]
+use std::os::fd::AsFd;
+#[cfg(target_os = "macos")]
+use std::path::PathBuf;
+#[cfg(target_os = "macos")]
+use std::time::{SystemTime, UNIX_EPOCH};
+
 #[ctor]
 fn init() {
     env_logger::init();
+}
+
+#[cfg(target_os = "macos")]
+fn persistent_acl_fixture(label: &str) -> PathBuf {
+    let timestamp_nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system time should follow the Unix epoch")
+        .as_nanos();
+    std::env::temp_dir().join(format!(
+        "exacl-fd-presence-{}-{timestamp_nanos}-{label}",
+        std::process::id()
+    ))
+}
+
+#[test]
+#[cfg(target_os = "macos")]
+#[ignore = "physical macOS ACL receipt; retains its unique fixtures for inspection"]
+fn physical_extended_acl_presence_is_bound_to_the_retained_fd() -> io::Result<()> {
+    let principal = std::env::var("USER").map_err(|error| {
+        io::Error::new(
+            io::ErrorKind::InvalidInput,
+            format!("USER must identify an ACL principal: {error}"),
+        )
+    })?;
+    let original_path = persistent_acl_fixture("original");
+    let retained_path = persistent_acl_fixture("retained");
+    let inverse_original_path = persistent_acl_fixture("inverse-original");
+    let inverse_retained_path = persistent_acl_fixture("inverse-retained");
+    let inherited_dir = persistent_acl_fixture("inherited-dir");
+    let inherited_child = inherited_dir.join("child");
+    let inherited_child_dir = inherited_dir.join("child-dir");
+
+    eprintln!(
+        "physical ACL receipt platform: os={} arch={}",
+        std::env::consts::OS,
+        std::env::consts::ARCH
+    );
+    eprintln!(
+        "retained physical ACL fixtures: {}, {}, {}, {}, {}",
+        original_path.display(),
+        retained_path.display(),
+        inverse_original_path.display(),
+        inverse_retained_path.display(),
+        inherited_dir.display()
+    );
+
+    let _original_creator = File::create_new(&original_path)?;
+    let retained = File::open(&original_path)?;
+    assert_eq!(
+        extended_acl_presence(retained.as_fd())?,
+        ExtendedAclPresence::Absent,
+        "a clean read-only regular-file descriptor must report Absent"
+    );
+
+    let allow = AclEntry::allow_user(&principal, Perm::READ, None::<Flag>);
+    setfacl(&[&original_path], std::slice::from_ref(&allow), None)?;
+    assert_eq!(
+        extended_acl_presence(retained.as_fd())?,
+        ExtendedAclPresence::Present,
+        "an ALLOW ACL must report Present through the retained read-only descriptor"
+    );
+    retained.metadata()?;
+
+    let deny = AclEntry::deny_user(&principal, Perm::WRITE, None::<Flag>);
+    setfacl(&[&original_path], &[deny], None)?;
+    assert_eq!(
+        extended_acl_presence(retained.as_fd())?,
+        ExtendedAclPresence::Present,
+        "a DENY ACL must report Present through the retained read-only descriptor"
+    );
+
+    setfacl(&[&original_path], &[], None)?;
+    assert_eq!(
+        extended_acl_presence(retained.as_fd())?,
+        ExtendedAclPresence::Absent,
+        "clearing the ACL must return the retained descriptor to Absent"
+    );
+
+    setfacl(&[&original_path], &[allow], None)?;
+    std::fs::rename(&original_path, &retained_path)?;
+    let _replacement_creator = File::create_new(&original_path)?;
+    let replacement = File::open(&original_path)?;
+    assert_eq!(
+        extended_acl_presence(retained.as_fd())?,
+        ExtendedAclPresence::Present,
+        "the retained descriptor must not follow a replacement at its old pathname"
+    );
+    assert_eq!(
+        extended_acl_presence(replacement.as_fd())?,
+        ExtendedAclPresence::Absent,
+        "the read-only replacement descriptor must remain ACL-free"
+    );
+
+    std::fs::create_dir(&inherited_dir)?;
+    let clean_directory = File::open(&inherited_dir)?;
+    assert_eq!(
+        extended_acl_presence(clean_directory.as_fd())?,
+        ExtendedAclPresence::Absent,
+        "a clean read-only directory descriptor must report Absent"
+    );
+    let inheritable = AclEntry::allow_user(
+        &principal,
+        Perm::READ,
+        Flag::FILE_INHERIT | Flag::DIRECTORY_INHERIT,
+    );
+    setfacl(&[&inherited_dir], &[inheritable], None)?;
+    let _child_creator = File::create_new(&inherited_child)?;
+    let child = File::open(&inherited_child)?;
+    assert_eq!(
+        extended_acl_presence(child.as_fd())?,
+        ExtendedAclPresence::Present,
+        "a read-only child-file descriptor must observe its inherited ACL"
+    );
+    std::fs::create_dir(&inherited_child_dir)?;
+    let child_directory = File::open(&inherited_child_dir)?;
+    assert_eq!(
+        extended_acl_presence(child_directory.as_fd())?,
+        ExtendedAclPresence::Present,
+        "a read-only child-directory descriptor must observe its inherited ACL"
+    );
+
+    let _inverse_creator = File::create_new(&inverse_original_path)?;
+    let inverse_retained = File::open(&inverse_original_path)?;
+    std::fs::rename(&inverse_original_path, &inverse_retained_path)?;
+    let _inverse_replacement_creator = File::create_new(&inverse_original_path)?;
+    let inverse_replacement = File::open(&inverse_original_path)?;
+    let inverse_allow = AclEntry::allow_user(&principal, Perm::READ, None::<Flag>);
+    setfacl(
+        &[&inverse_original_path],
+        &[inverse_allow],
+        None::<AclOption>,
+    )?;
+    assert_eq!(
+        extended_acl_presence(inverse_retained.as_fd())?,
+        ExtendedAclPresence::Absent,
+        "an ACL-bearing replacement must not alter the retained original descriptor"
+    );
+    assert_eq!(
+        extended_acl_presence(inverse_replacement.as_fd())?,
+        ExtendedAclPresence::Present,
+        "the ACL-bearing read-only replacement descriptor must report Present"
+    );
+    Ok(())
 }
 
 #[test]

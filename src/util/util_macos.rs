@@ -1,3 +1,4 @@
+use crate::ExtendedAclPresence;
 use crate::bititer::BitIter;
 use crate::failx::*;
 use crate::flag::Flag;
@@ -9,6 +10,8 @@ use crate::util::util_common;
 use scopeguard::defer;
 use std::ffi::{CString, c_void};
 use std::io;
+use std::os::fd::{AsRawFd, BorrowedFd, RawFd};
+use std::os::raw::c_int;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 use uuid::Uuid;
@@ -24,6 +27,57 @@ fn path_exists(path: &Path, symlink_only: bool) -> bool {
     } else {
         path.exists()
     }
+}
+
+pub(crate) fn xacl_extended_acl_presence(fd: BorrowedFd<'_>) -> io::Result<ExtendedAclPresence> {
+    xacl_extended_acl_presence_with(
+        fd.as_raw_fd(),
+        |raw_fd, acl_type| {
+            // SAFETY: `BorrowedFd` keeps `raw_fd` open for this call, Darwin's
+            // getter does not retain it, and `acl_type` is the platform's valid
+            // extended-ACL constant.
+            unsafe { acl_get_fd_np(raw_fd, acl_type) }
+        },
+        |acl| {
+            // SAFETY: `acl` is the non-null allocation returned by the getter.
+            // It has not been freed or otherwise used, this closure is invoked
+            // exactly once, and the pointer is never used after this call.
+            unsafe { crate::sys::acl_free(acl.cast::<c_void>()) }
+        },
+        io::Error::last_os_error,
+    )
+}
+
+fn xacl_extended_acl_presence_with<GetAcl, FreeAcl, LastOsError>(
+    fd: RawFd,
+    get_acl: GetAcl,
+    free_acl: FreeAcl,
+    mut last_os_error: LastOsError,
+) -> io::Result<ExtendedAclPresence>
+where
+    GetAcl: FnOnce(RawFd, acl_type_t) -> acl_t,
+    FreeAcl: FnOnce(acl_t) -> c_int,
+    LastOsError: FnMut() -> io::Error,
+{
+    let acl = get_acl(fd, sg::ACL_TYPE_EXTENDED);
+    if acl.is_null() {
+        let error = last_os_error();
+        log::debug!("acl_get_fd_np({fd}, ACL_TYPE_EXTENDED) returned null: {error}");
+        return if error.raw_os_error() == Some(sg::ENOENT) {
+            Ok(ExtendedAclPresence::Absent)
+        } else {
+            Err(error)
+        };
+    }
+
+    let free_result = free_acl(acl);
+    if free_result != 0 {
+        let error = last_os_error();
+        log::debug!("acl_free returned {free_result}: {error}");
+        return Err(error);
+    }
+
+    Ok(ExtendedAclPresence::Present)
 }
 
 /// Get the native ACL for a specific file or directory.
@@ -261,6 +315,162 @@ pub const fn xacl_is_posix(_acl: acl_t) -> bool {
 #[cfg(test)]
 mod util_macos_test {
     use super::*;
+    use std::cell::Cell;
+
+    fn fake_acl() -> acl_t {
+        std::ptr::NonNull::<_acl>::dangling().as_ptr()
+    }
+
+    #[test]
+    fn fd_acl_presence_maps_null_enoent_to_absent_without_freeing() {
+        let free_calls = Cell::new(0);
+        let errno_calls = Cell::new(0);
+
+        let presence = xacl_extended_acl_presence_with(
+            41,
+            |fd, acl_type| {
+                assert_eq!(fd, 41);
+                assert_eq!(acl_type, sg::ACL_TYPE_EXTENDED);
+                std::ptr::null_mut()
+            },
+            |_| {
+                free_calls.set(free_calls.get() + 1);
+                0
+            },
+            || {
+                errno_calls.set(errno_calls.get() + 1);
+                io::Error::from_raw_os_error(sg::ENOENT)
+            },
+        )
+        .unwrap();
+
+        assert_eq!(presence, ExtendedAclPresence::Absent);
+        assert_eq!(free_calls.get(), 0);
+        assert_eq!(errno_calls.get(), 1);
+    }
+
+    #[test]
+    fn fd_acl_presence_preserves_null_error_without_freeing() {
+        let free_calls = Cell::new(0);
+        let errno_calls = Cell::new(0);
+
+        let error = xacl_extended_acl_presence_with(
+            42,
+            |fd, acl_type| {
+                assert_eq!(fd, 42);
+                assert_eq!(acl_type, sg::ACL_TYPE_EXTENDED);
+                std::ptr::null_mut()
+            },
+            |_| {
+                free_calls.set(free_calls.get() + 1);
+                0
+            },
+            || {
+                errno_calls.set(errno_calls.get() + 1);
+                io::Error::from_raw_os_error(sg::ENOTSUP)
+            },
+        )
+        .unwrap_err();
+
+        assert_eq!(error.raw_os_error(), Some(sg::ENOTSUP));
+        assert_eq!(free_calls.get(), 0);
+        assert_eq!(errno_calls.get(), 1);
+    }
+
+    #[test]
+    fn fd_acl_presence_rejects_every_other_null_errno() {
+        const DARWIN_EBADF: i32 = 9;
+        const DARWIN_EOPNOTSUPP: i32 = 102;
+
+        for raw_errno in [
+            DARWIN_EBADF,
+            sg::EINVAL,
+            sg::ENOMEM,
+            DARWIN_EOPNOTSUPP,
+            sg::ENOTSUP,
+            0,
+        ] {
+            let free_calls = Cell::new(0);
+            let errno_calls = Cell::new(0);
+            let error = xacl_extended_acl_presence_with(
+                45,
+                |_, _| std::ptr::null_mut(),
+                |_| {
+                    free_calls.set(free_calls.get() + 1);
+                    0
+                },
+                || {
+                    errno_calls.set(errno_calls.get() + 1);
+                    io::Error::from_raw_os_error(raw_errno)
+                },
+            )
+            .unwrap_err();
+
+            assert_eq!(error.raw_os_error(), Some(raw_errno));
+            assert_eq!(free_calls.get(), 0);
+            assert_eq!(errno_calls.get(), 1);
+        }
+    }
+
+    #[test]
+    fn fd_acl_presence_reports_present_and_frees_exactly_once() {
+        let expected_acl = fake_acl();
+        let free_calls = Cell::new(0);
+        let errno_calls = Cell::new(0);
+
+        let presence = xacl_extended_acl_presence_with(
+            43,
+            |fd, acl_type| {
+                assert_eq!(fd, 43);
+                assert_eq!(acl_type, sg::ACL_TYPE_EXTENDED);
+                expected_acl
+            },
+            |acl| {
+                assert_eq!(acl, expected_acl);
+                free_calls.set(free_calls.get() + 1);
+                0
+            },
+            || {
+                errno_calls.set(errno_calls.get() + 1);
+                io::Error::from_raw_os_error(sg::EINVAL)
+            },
+        )
+        .unwrap();
+
+        assert_eq!(presence, ExtendedAclPresence::Present);
+        assert_eq!(free_calls.get(), 1);
+        assert_eq!(errno_calls.get(), 0);
+    }
+
+    #[test]
+    fn fd_acl_presence_preserves_free_error_without_retrying() {
+        let expected_acl = fake_acl();
+        let free_calls = Cell::new(0);
+        let errno_calls = Cell::new(0);
+
+        let error = xacl_extended_acl_presence_with(
+            44,
+            |fd, acl_type| {
+                assert_eq!(fd, 44);
+                assert_eq!(acl_type, sg::ACL_TYPE_EXTENDED);
+                expected_acl
+            },
+            |acl| {
+                assert_eq!(acl, expected_acl);
+                free_calls.set(free_calls.get() + 1);
+                -1
+            },
+            || {
+                errno_calls.set(errno_calls.get() + 1);
+                io::Error::from_raw_os_error(sg::EINVAL)
+            },
+        )
+        .unwrap_err();
+
+        assert_eq!(error.raw_os_error(), Some(sg::EINVAL));
+        assert_eq!(free_calls.get(), 1);
+        assert_eq!(errno_calls.get(), 1);
+    }
 
     #[test]
     fn test_acl_init() {
