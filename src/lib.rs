@@ -85,8 +85,6 @@ use std::path::Path;
 use failx::fail_custom;
 
 /// Whether a macOS filesystem object has an extended access control list.
-#[cfg(any(docsrs, target_os = "macos"))]
-#[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[must_use = "the observed ACL presence must be handled"]
 pub enum ExtendedAclPresence {
@@ -109,21 +107,11 @@ pub enum ExtendedAclPresence {
 /// Returns an [`io::Error`] when ACL retrieval fails for any reason other than
 /// macOS reporting that no extended ACL is attached, or when releasing the
 /// native ACL object fails.
-#[cfg(any(docsrs, target_os = "macos"))]
-#[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
 pub fn extended_acl_presence(fd: BorrowedFd<'_>) -> io::Result<ExtendedAclPresence> {
-    #[cfg(target_os = "macos")]
-    {
-        util::xacl_extended_acl_presence(fd)
-    }
-
-    #[cfg(all(docsrs, not(target_os = "macos")))]
-    {
-        let _ = fd;
-        Err(io::Error::new(
-            io::ErrorKind::Unsupported,
-            "extended ACL presence is only available on macOS",
-        ))
+    if Acl::exists_fd(fd, AclOption::empty())? {
+        Ok(ExtendedAclPresence::Present)
+    } else {
+        Ok(ExtendedAclPresence::Absent)
     }
 }
 
