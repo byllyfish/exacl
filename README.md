@@ -44,10 +44,16 @@ setfacl(&["./tmp/foo"], &acl, None)?;
 
 ## API
 
-This module provides two high level functions, `getfacl` and `setfacl`.
+This module provides two cross-platform, path-based high level functions,
+`getfacl` and `setfacl`.
 
 - `getfacl` retrieves the ACL for a file or directory.
 - `setfacl` sets the ACL for files or directories.
+
+On macOS, `extended_acl_presence` safely detects an extended ACL through an
+already-open file descriptor without re-resolving a pathname. Only the native
+no-ACL result is reported as absent; every other inspection failure is returned
+as an error.
 
 On Linux and FreeBSD, the ACL contains entries for the default ACL, if
 present.

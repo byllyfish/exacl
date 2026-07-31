@@ -9,6 +9,7 @@ use crate::util::util_common;
 use scopeguard::defer;
 use std::ffi::{CString, c_void};
 use std::io;
+use std::os::fd::{AsRawFd, BorrowedFd};
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 use uuid::Uuid;
@@ -24,6 +25,25 @@ fn path_exists(path: &Path, symlink_only: bool) -> bool {
     } else {
         path.exists()
     }
+}
+
+/// Check if there is a native ACL for the given file descriptor. If the file
+/// has an ACL beyond the base permissions, return `true`.
+pub fn xacl_exists_fd(fd: BorrowedFd<'_>) -> io::Result<bool> {
+    let raw_fd = fd.as_raw_fd();
+    let acl = unsafe { acl_get_fd_np(raw_fd, acl_type_t_ACL_TYPE_EXTENDED) };
+
+    if acl.is_null() {
+        let err = log_err("null", "acl_get_fd_np", raw_fd);
+        if err.raw_os_error() == Some(sg::ENOENT) {
+            // `ENOENT` means there is no "extended" ACL.
+            return Ok(false);
+        }
+        return Err(err);
+    }
+
+    xacl_free(acl);
+    Ok(true)
 }
 
 /// Get the native ACL for a specific file or directory.

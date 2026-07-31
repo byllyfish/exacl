@@ -13,6 +13,7 @@ use crate::util::*;
 use bitflags::bitflags;
 use scopeguard::{self, ScopeGuard};
 use std::io;
+use std::os::fd::BorrowedFd;
 use std::path::Path;
 
 bitflags! {
@@ -59,6 +60,25 @@ impl Acl {
             acl,
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             default_acl,
+        }
+    }
+
+    /// Return true if the file descriptor has an ACL that extends the base
+    /// permissions of the file.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    pub fn exists_fd(fd: BorrowedFd<'_>, _options: AclOption) -> io::Result<bool> {
+        // TODO: Handle options.
+        #[cfg(target_os = "macos")]
+        {
+            xacl_exists_fd(fd)
+        }
+
+        #[cfg(not(target_os = "macos"))]
+        {
+            fail_custom("`exists_fd` is only implemented on macOS")
         }
     }
 
