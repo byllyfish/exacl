@@ -33,37 +33,36 @@ fn persistent_acl_fixture(label: &str) -> PathBuf {
     ))
 }
 
-#[test]
 #[cfg(target_os = "macos")]
-#[ignore = "physical macOS ACL receipt; retains its unique fixtures for inspection"]
-fn physical_extended_acl_presence_is_bound_to_the_retained_fd() -> io::Result<()> {
-    let principal = std::env::var("USER").map_err(|error| {
+fn acl_principal() -> io::Result<String> {
+    std::env::var("USER").map_err(|error| {
         io::Error::new(
             io::ErrorKind::InvalidInput,
             format!("USER must identify an ACL principal: {error}"),
         )
-    })?;
-    let original_path = persistent_acl_fixture("original");
-    let retained_path = persistent_acl_fixture("retained");
-    let inverse_original_path = persistent_acl_fixture("inverse-original");
-    let inverse_retained_path = persistent_acl_fixture("inverse-retained");
-    let inherited_dir = persistent_acl_fixture("inherited-dir");
-    let inherited_child = inherited_dir.join("child");
-    let inherited_child_dir = inherited_dir.join("child-dir");
+    })
+}
 
+#[cfg(target_os = "macos")]
+fn announce_physical_fixtures(fixtures: &[&PathBuf]) {
     eprintln!(
         "physical ACL receipt platform: os={} arch={}",
         std::env::consts::OS,
         std::env::consts::ARCH
     );
-    eprintln!(
-        "retained physical ACL fixtures: {}, {}, {}, {}, {}",
-        original_path.display(),
-        retained_path.display(),
-        inverse_original_path.display(),
-        inverse_retained_path.display(),
-        inherited_dir.display()
-    );
+    for fixture in fixtures {
+        eprintln!("retained physical ACL fixture: {}", fixture.display());
+    }
+}
+
+#[test]
+#[cfg(target_os = "macos")]
+#[ignore = "physical macOS ACL receipt; retains its unique fixtures for inspection"]
+fn physical_file_acl_lifecycle_tracks_the_retained_fd() -> io::Result<()> {
+    let principal = acl_principal()?;
+    let original_path = persistent_acl_fixture("lifecycle-original");
+    let renamed_path = persistent_acl_fixture("lifecycle-renamed");
+    announce_physical_fixtures(&[&original_path, &renamed_path]);
 
     let _original_creator = File::create_new(&original_path)?;
     let retained = File::open(&original_path)?;
@@ -80,7 +79,6 @@ fn physical_extended_acl_presence_is_bound_to_the_retained_fd() -> io::Result<()
         ExtendedAclPresence::Present,
         "an ALLOW ACL must report Present through the retained read-only descriptor"
     );
-    retained.metadata()?;
 
     let deny = AclEntry::deny_user(&principal, Perm::WRITE, None::<Flag>);
     setfacl(&[&original_path], &[deny], None)?;
@@ -97,8 +95,11 @@ fn physical_extended_acl_presence_is_bound_to_the_retained_fd() -> io::Result<()
         "clearing the ACL must return the retained descriptor to Absent"
     );
 
+    // The retained descriptor must track its file object, not its pathname:
+    // re-apply an ACL, move the file away, and put a clean file at the old
+    // name. Retained reports Present; the clean replacement reports Absent.
     setfacl(&[&original_path], &[allow], None)?;
-    std::fs::rename(&original_path, &retained_path)?;
+    std::fs::rename(&original_path, &renamed_path)?;
     let _replacement_creator = File::create_new(&original_path)?;
     let replacement = File::open(&original_path)?;
     assert_eq!(
@@ -111,6 +112,48 @@ fn physical_extended_acl_presence_is_bound_to_the_retained_fd() -> io::Result<()
         ExtendedAclPresence::Absent,
         "the read-only replacement descriptor must remain ACL-free"
     );
+    Ok(())
+}
+
+#[test]
+#[cfg(target_os = "macos")]
+#[ignore = "physical macOS ACL receipt; retains its unique fixtures for inspection"]
+fn physical_acl_bearing_replacement_does_not_leak_into_the_retained_fd() -> io::Result<()> {
+    let principal = acl_principal()?;
+    let original_path = persistent_acl_fixture("inverse-original");
+    let renamed_path = persistent_acl_fixture("inverse-renamed");
+    announce_physical_fixtures(&[&original_path, &renamed_path]);
+
+    let _original_creator = File::create_new(&original_path)?;
+    let retained = File::open(&original_path)?;
+    std::fs::rename(&original_path, &renamed_path)?;
+    let _replacement_creator = File::create_new(&original_path)?;
+    let replacement = File::open(&original_path)?;
+
+    let allow = AclEntry::allow_user(&principal, Perm::READ, None::<Flag>);
+    setfacl(&[&original_path], &[allow], None::<AclOption>)?;
+    assert_eq!(
+        extended_acl_presence(retained.as_fd())?,
+        ExtendedAclPresence::Absent,
+        "an ACL-bearing replacement must not alter the retained original descriptor"
+    );
+    assert_eq!(
+        extended_acl_presence(replacement.as_fd())?,
+        ExtendedAclPresence::Present,
+        "the ACL-bearing read-only replacement descriptor must report Present"
+    );
+    Ok(())
+}
+
+#[test]
+#[cfg(target_os = "macos")]
+#[ignore = "physical macOS ACL receipt; retains its unique fixtures for inspection"]
+fn physical_directory_inheritance_is_observed_through_retained_fds() -> io::Result<()> {
+    let principal = acl_principal()?;
+    let inherited_dir = persistent_acl_fixture("inherited-dir");
+    let inherited_child = inherited_dir.join("child");
+    let inherited_child_dir = inherited_dir.join("child-dir");
+    announce_physical_fixtures(&[&inherited_dir]);
 
     std::fs::create_dir(&inherited_dir)?;
     let clean_directory = File::open(&inherited_dir)?;
@@ -119,6 +162,7 @@ fn physical_extended_acl_presence_is_bound_to_the_retained_fd() -> io::Result<()
         ExtendedAclPresence::Absent,
         "a clean read-only directory descriptor must report Absent"
     );
+
     let inheritable = AclEntry::allow_user(
         &principal,
         Perm::READ,
@@ -138,28 +182,6 @@ fn physical_extended_acl_presence_is_bound_to_the_retained_fd() -> io::Result<()
         extended_acl_presence(child_directory.as_fd())?,
         ExtendedAclPresence::Present,
         "a read-only child-directory descriptor must observe its inherited ACL"
-    );
-
-    let _inverse_creator = File::create_new(&inverse_original_path)?;
-    let inverse_retained = File::open(&inverse_original_path)?;
-    std::fs::rename(&inverse_original_path, &inverse_retained_path)?;
-    let _inverse_replacement_creator = File::create_new(&inverse_original_path)?;
-    let inverse_replacement = File::open(&inverse_original_path)?;
-    let inverse_allow = AclEntry::allow_user(&principal, Perm::READ, None::<Flag>);
-    setfacl(
-        &[&inverse_original_path],
-        &[inverse_allow],
-        None::<AclOption>,
-    )?;
-    assert_eq!(
-        extended_acl_presence(inverse_retained.as_fd())?,
-        ExtendedAclPresence::Absent,
-        "an ACL-bearing replacement must not alter the retained original descriptor"
-    );
-    assert_eq!(
-        extended_acl_presence(inverse_replacement.as_fd())?,
-        ExtendedAclPresence::Present,
-        "the ACL-bearing read-only replacement descriptor must report Present"
     );
     Ok(())
 }
