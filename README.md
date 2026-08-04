@@ -1,6 +1,6 @@
 # Exacl
 
-[![CRATE]][crates] [![API]][docs] [![CI]][actions] [![BUILD]][cirrus] [![COV]][codecov]
+[![CRATE]][crates] [![API]][docs] [![CI]][actions] [![COV]][codecov]
 
 [CRATE]: https://img.shields.io/crates/v/exacl
 [crates]: https://crates.io/crates/exacl
@@ -8,8 +8,6 @@
 [actions]: https://github.com/byllyfish/exacl/actions?query=branch%3Amain
 [API]: https://docs.rs/exacl/badge.svg
 [docs]: https://byllyfish.github.io/exacl
-[BUILD]: https://api.cirrus-ci.com/github/byllyfish/exacl.svg
-[cirrus]: https://cirrus-ci.com/github/byllyfish/exacl
 [COV]: https://codecov.io/gh/byllyfish/exacl/branch/main/graph/badge.svg?token=SWkSyVc1w6
 [codecov]: https://codecov.io/gh/byllyfish/exacl
 
