@@ -1,17 +1,17 @@
 //! API Tests for exacl module.
 
-use ctor::ctor;
 use exacl::{AclEntry, AclOption, Perm, getfacl, setfacl};
 use log::debug;
 use std::io;
 
-#[ctor]
 fn init() {
-    env_logger::init();
+    let _ = env_logger::builder().is_test(true).try_init();
 }
 
 #[test]
 fn test_getfacl_file() -> io::Result<()> {
+    init();
+
     let file = tempfile::NamedTempFile::new()?;
     let entries = getfacl(&file, None)?;
 
@@ -65,6 +65,8 @@ fn test_getfacl_file() -> io::Result<()> {
 
 #[test]
 fn test_setfacl_file() -> io::Result<()> {
+    init();
+
     let file = tempfile::NamedTempFile::new()?;
     let mut entries = getfacl(&file, None)?;
 
@@ -117,6 +119,8 @@ fn get_filesystem(path: &std::path::PathBuf) -> String {
 #[test]
 #[cfg(target_os = "linux")]
 fn test_too_many_entries() -> io::Result<()> {
+    init();
+
     use std::collections::HashMap;
     const UNTESTED: usize = 65535;
 
@@ -188,6 +192,8 @@ fn test_too_many_entries() -> io::Result<()> {
 
 #[test]
 fn test_reader_writer() -> io::Result<()> {
+    init();
+
     let input = r"
     u:aaa:rwx#comment
     g:bbb:rwx
@@ -209,6 +215,8 @@ allow::user:ccc:read,execute
 #[test]
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn test_exclusive_acloptions() {
+    init();
+
     let path = "/tmp";
 
     let err1 = getfacl(path, AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL).unwrap_err();
@@ -227,6 +235,8 @@ fn test_exclusive_acloptions() {
 #[test]
 #[cfg(target_os = "macos")]
 fn test_exclusive_acloptions() {
+    init();
+
     let path = "/tmp";
 
     let err1 = getfacl(path, AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL).unwrap_err();
@@ -245,6 +255,8 @@ fn test_exclusive_acloptions() {
 #[test]
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 fn test_from_mode() {
+    init();
+
     let acl_7777 = exacl::to_string(&exacl::from_mode(0o7777)).unwrap();
     assert_eq!(
         acl_7777,
