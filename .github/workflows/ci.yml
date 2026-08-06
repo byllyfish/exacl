@@ -35,7 +35,7 @@ jobs:
     - name: Install dependencies (Linux)
       run: |
         sudo apt-get update
-        sudo apt-get -y install libacl1-dev acl shunit2 shellcheck
+        sudo apt-get -y install libacl1-dev acl shunit2 shellcheck valgrind
       if: runner.os == 'Linux'
     - name: Fetch
       run: cargo fetch
@@ -49,11 +49,8 @@ jobs:
       run: RUST_LOG=debug cargo test --features serde
     - name: Run integration tests
       run: ./tests/run_tests.sh
-    - name: Run memory tests (Linux)
-      run: |
-        sudo NEEDRESTART_MODE=l apt-get install -y valgrind
-        ./tests/run_tests.sh memcheck
-      if: runner.os == 'Linux'
+    - name: Run memory tests
+      run: ./tests/run_tests.sh memcheck
     - name: Run TMPFS tests (Linux)
       run: |
         mkdir /run/user/$UID/exacl
