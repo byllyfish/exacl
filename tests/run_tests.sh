@@ -49,7 +49,7 @@ if [ "$arg1" = "memcheck" ]; then
         export MEMCHECK="valgrind -q --error-exitcode=9 --leak-check=full --errors-for-leak-kinds=definite --suppressions=valgrind.supp --gen-suppressions=all"
         echo "Running tests with memcheck (valgrind $(valgrind --version))"
     elif [ "$OS" = "darwin" ] ; then
-        export MEMCHECK="leaks -quiet -atExit --"
+        export MEMCHECK="env MallocScribble=1 leaks -quiet -atExit --"
         echo "Running tests with memcheck (leaks)"
     else
         echo "memcheck not supported on $OS"
