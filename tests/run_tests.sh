@@ -19,7 +19,8 @@ if [ ! -f "$EXACL" ]; then
     exit 1
 fi
 
-if ! $EXACL valgrind.supp 2> /dev/null ; then
+serde_check="$($EXACL valgrind.supp 2>&1 1>/dev/null)"
+if [[ "$serde_check" = *"serde not supported"* ]]; then
     echo "!!! exacl must be compiled with serde support!"
     exit 1
 fi
@@ -29,7 +30,7 @@ unit_tests() {
         IS_EXECUTABLE="-perm +111"
     else
         IS_EXECUTABLE="-executable"
-    fi 
+    fi
     # Find executable files without file extensions.
     find ../target/debug/deps -type f $IS_EXECUTABLE -print | grep -vE '\w+\.\w+$'
 }
@@ -48,7 +49,7 @@ if [ "$arg1" = "memcheck" ]; then
     if [ "$OS" = "linux" ]; then
         export MEMCHECK="valgrind -q --error-exitcode=9 --leak-check=full --errors-for-leak-kinds=definite --suppressions=valgrind.supp --gen-suppressions=all"
         echo "Running tests with memcheck (valgrind $(valgrind --version))"
-    elif [ "$OS" = "darwin" ] ; then
+    elif [ "$OS" = "darwin" ]; then
         export MEMCHECK="env MallocScribble=1 leaks -quiet -atExit --"
         echo "Running tests with memcheck (leaks)"
     else

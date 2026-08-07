@@ -151,10 +151,13 @@ jobs:
           cargo test --no-run --features serde  # Compile only
           # Run tests on our mem-based FS with acls.
           export TMPDIR=/tmp/exacl_acls
+          echo "*** TMPDIR=$TMPDIR"
           cargo test --features serde
           export TMPDIR=/tmp/exacl_nfsv4acls
+          echo "*** TMPDIR=$TMPDIR"
           cargo test --features serde
           ./tests/run_tests.sh
           export TMPDIR=/tmp
+          echo "*** TMPDIR=$TMPDIR"
           ./ci/bindgen.sh
           ./ci/lint.sh
