@@ -62,3 +62,36 @@
    fun:statx
    fun:_ZN3std3sys3pal4unix2fs9try_statx*
 }
+
+# Suppression for a "leak" in thread allocation in run_tests.
+
+{
+   Thread startup in run_tests
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:alloc
+   fun:alloc_impl
+   fun:allocate
+   fun:{closure#0}<std::thread::thread::Inner, std::alloc::System>
+   fun:allocate_for_layout<core::mem::maybe_uninit::MaybeUninit<std::thread::thread::Inner>, alloc::sync::{impl#17}::new_uninit_in::{closure_env#0}<std::thread::thread::Inner, std::alloc::System>, fn(*mut u8) -> *mut alloc::sync::ArcInner<core::mem::maybe_uninit::MaybeUninit<std::thread::thread::Inner>>>
+   fun:new_uninit_in<std::thread::thread::Inner, std::alloc::System>
+   fun:_RNvMs_NtNtCs2AWtUsOyxgP_3std6thread6threadNtB4_6Thread3new
+   fun:_RNvNtNtCs2AWtUsOyxgP_3std6thread7current12init_current
+   fun:current_or_unnamed
+   fun:_RNvMNtNtNtCs2AWtUsOyxgP_3std4sync4mpmc7contextNtB2_7Context3new
+   fun:__rust_std_internal_init_fn
+   fun:call_once<fn() -> core::cell::Cell<core::option::Option<std::sync::mpmc::context::Context>>, ()>
+   fun:unwrap_or_else<core::cell::Cell<core::option::Option<std::sync::mpmc::context::Context>>, fn() -> core::cell::Cell<core::option::Option<std::sync::mpmc::context::Context>>>
+   fun:_RINvMs0_NtNtNtNtCs2AWtUsOyxgP_3std3sys12thread_local6native4lazyINtB6_7StorageINtNtCs4NRVxsYgnAr_4core4cell4CellINtNtB1j_6option6OptionNtNtNtNtBe_4sync4mpmc7context7ContextEEuE16get_or_init_slowNvNvNvMB2b_B29_4with7CONTEXT27___rust_std_internal_init_fnECs6jw1aKtzRha_4test
+   fun:get_or_init<core::cell::Cell<core::option::Option<std::sync::mpmc::context::Context>>, (), fn() -> core::cell::Cell<core::option::Option<std::sync::mpmc::context::Context>>>
+   fun:{closure#0}
+   fun:call_once<std::sync::mpmc::context::{impl#0}::with::CONTEXT::{constant#0}::{closure_env#0}, (core::option::Option<&mut core::option::Option<core::cell::Cell<core::option::Option<std::sync::mpmc::context::Context>>>>)>
+   fun:try_with<core::cell::Cell<core::option::Option<std::sync::mpmc::context::Context>>, std::sync::mpmc::context::{impl#0}::with::{closure_env#1}<std::sync::mpmc::list::{impl#3}::recv::{closure_env#1}<test::event::CompletedTest>, ()>, ()>
+   fun:with<std::sync::mpmc::list::{impl#3}::recv::{closure_env#1}<test::event::CompletedTest>, ()>
+   fun:_RNvMs1_NtNtNtCs2AWtUsOyxgP_3std4sync4mpmc4listINtB5_7ChannelNtNtCs6jw1aKtzRha_4test5event13CompletedTestE4recvB10_
+   fun:recv_deadline<test::event::CompletedTest>
+   fun:recv_timeout<test::event::CompletedTest>
+   fun:recv_timeout<test::event::CompletedTest>
+   fun:run_tests<test::console::run_tests_console::{closure_env#2}>
+}
