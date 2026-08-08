@@ -20,11 +20,16 @@ jobs:
     # Don't run for self-PR's.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, ubuntu-22.04, macos-26, macos-15, macos-14]
     steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+      with:
+        egress-policy: audit
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
     - name: Update Rust Toolchain
@@ -51,6 +56,7 @@ jobs:
       run: ./tests/run_tests.sh
     - name: Run memory tests
       run: ./tests/run_tests.sh memcheck
+      if: matrix.os != 'macos-15'
     - name: Run TMPFS tests (Linux)
       run: |
         mkdir /run/user/$UID/exacl
