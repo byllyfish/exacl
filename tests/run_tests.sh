@@ -2,7 +2,9 @@
 
 # Run all test suites.
 #
-# If run with `memcheck` argument, run all tests under valgrind.
+# If run with `memcheck` argument, run all tests under valgrind/leaks.
+#
+# These tests requires `serde` support.
 
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 
@@ -10,14 +12,27 @@ arg1="$1"
 script_dir=$(dirname "$0")
 cd "$script_dir" || exit 1
 
-if [ ! -f ../target/debug/examples/exacl ]; then
-    echo "exacl executable not found!"
+EXACL="../target/debug/examples/exacl"
+
+if [ ! -f "$EXACL" ]; then
+    echo "!!! exacl executable not found!"
+    exit 1
+fi
+
+serde_check="$($EXACL valgrind.supp 2>&1 1>/dev/null)"
+if [[ "$serde_check" = *"serde not supported"* ]]; then
+    echo "!!! exacl must be compiled with serde support!"
     exit 1
 fi
 
 unit_tests() {
+    if [ "$OS" = "darwin" ]; then
+        IS_EXECUTABLE="-perm +111"
+    else
+        IS_EXECUTABLE="-executable"
+    fi
     # Find executable files without file extensions.
-    find ../target/debug/deps -type f -executable -print | grep -vE '\w+\.\w+$'
+    find ../target/debug/deps -type f $IS_EXECUTABLE -print | grep -vE '\w+\.\w+$'
 }
 
 print_header() {
@@ -29,10 +44,18 @@ exit_status=0
 
 if [ "$arg1" = "memcheck" ]; then
     # Enable memory check command and re-run unit tests under memcheck.
-    export MEMCHECK="valgrind -q --error-exitcode=9 --leak-check=full --errors-for-leak-kinds=definite --suppressions=valgrind.supp --gen-suppressions=all"
+    # On Linux, we use `valgrind`. On macOS, the `leaks` tool.
 
-    vers=$(valgrind --version)
-    echo "Running tests with memcheck ($vers)"
+    if [ "$OS" = "linux" ]; then
+        export MEMCHECK="valgrind -q --error-exitcode=9 --leak-check=full --errors-for-leak-kinds=definite --suppressions=valgrind.supp --gen-suppressions=all"
+        echo "Running tests with memcheck (valgrind $(valgrind --version))"
+    elif [ "$OS" = "darwin" ]; then
+        export MEMCHECK="env MallocScribble=1 leaks -quiet -atExit --"
+        echo "Running tests with memcheck (leaks)"
+    else
+        echo "memcheck not supported on $OS"
+        exit 1
+    fi
     echo
 
     for test in $(unit_tests); do
@@ -44,6 +67,11 @@ if [ "$arg1" = "memcheck" ]; then
             exit_status=$status
         fi
     done
+fi
+
+# On macOS, stop using leaks for later tests. Leaks obscures the exit status and write extra stuff to stderr.
+if [ "$OS" = "darwin" ]; then
+    export MEMCHECK=
 fi
 
 for test in testsuite*_all.sh testsuite*_"$OS".sh; do

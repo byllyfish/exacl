@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "*" ]
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "main" ]
   schedule:
     # Every Saturday at 4:30 AM UTC.
     - cron:  '30 4 * * 6'
@@ -15,27 +17,34 @@ permissions:
 
 jobs:
   build:
+    # Don't run for self-PR's.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, ubuntu-22.04, macos-26, macos-15, macos-14]
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+      uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
       with:
         egress-policy: audit
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      with:
+        persist-credentials: false
     - name: Update Rust Toolchain
       run: rustup update
     - name: Install dependencies (macOS)
-      run: brew install shunit2 shellcheck shfmt
+      run: |
+        brew untap aws/tap
+        brew install shunit2 shellcheck shfmt
       if: runner.os == 'macOS'
     - name: Install dependencies (Linux)
       run: |
         sudo apt-get update
-        sudo apt-get -y install libacl1-dev acl shunit2 shellcheck
+        sudo apt-get -y install libacl1-dev acl shunit2 shellcheck valgrind
       if: runner.os == 'Linux'
     - name: Fetch
       run: cargo fetch
@@ -49,11 +58,10 @@ jobs:
       run: RUST_LOG=debug cargo test --features serde
     - name: Run integration tests
       run: ./tests/run_tests.sh
-    - name: Run memory tests (Linux)
-      run: |
-        sudo NEEDRESTART_MODE=l apt-get install -y valgrind
-        ./tests/run_tests.sh memcheck
-      if: runner.os == 'Linux'
+    - name: Run memory tests
+      run: ./tests/run_tests.sh memcheck
+      # macos-15: Leaks check seems to hang final 'Complete job' step in Github action?
+      if: matrix.os != 'macos-15'
     - name: Run TMPFS tests (Linux)
       run: |
         mkdir /run/user/$UID/exacl
@@ -75,12 +83,15 @@ jobs:
       run: ./ci/bindgen.sh
 
   build-ubuntu-26-04:
+    needs: build
     runs-on: ubuntu-latest
     container:
       image: ubuntu:26.04
     steps:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      with:
+        persist-credentials: false
     - name: Install dependencies (Linux)
       run: |
         apt-get update
@@ -109,6 +120,7 @@ jobs:
       run: ./ci/bindgen.sh
 
   build-freebsd:
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -117,6 +129,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      with:
+        persist-credentials: false
     - name: Run Tests
       uses: vmactions/freebsd-vm@77ed28d336d03fe19a3f4f7266c1d2c4714dd79d # v1.5.2
       with:
@@ -154,10 +168,13 @@ jobs:
           cargo test --no-run --features serde  # Compile only
           # Run tests on our mem-based FS with acls.
           export TMPDIR=/tmp/exacl_acls
+          echo "*** TMPDIR=$TMPDIR"
           cargo test --features serde
           export TMPDIR=/tmp/exacl_nfsv4acls
+          echo "*** TMPDIR=$TMPDIR"
           cargo test --features serde
           ./tests/run_tests.sh
           export TMPDIR=/tmp
+          echo "*** TMPDIR=$TMPDIR"
           ./ci/bindgen.sh
           ./ci/lint.sh

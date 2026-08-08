@@ -227,7 +227,7 @@ fn xacl_set_flags_np(obj: *mut c_void, flags: Flag) -> io::Result<()> {
 
     for flag in BitIter(flags) {
         let ret = unsafe { acl_add_flag_np(flagset, flag.bits()) };
-        debug_assert!(ret == 0);
+        debug_assert_eq!(ret, 0);
     }
 
     Ok(())

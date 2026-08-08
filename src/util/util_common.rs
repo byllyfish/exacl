@@ -149,7 +149,7 @@ pub fn xacl_set_perm(entry: acl_entry_t, perms: Perm) -> io::Result<()> {
 
     for perm in BitIter(perms) {
         let ret = unsafe { acl_add_perm(permset, perm.bits()) };
-        debug_assert!(ret == 0);
+        debug_assert_eq!(ret, 0);
     }
 
     Ok(())
