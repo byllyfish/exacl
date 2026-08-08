@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "*" ]
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "main" ]
   schedule:
     # Every Saturday at 4:30 AM UTC.
     - cron:  '30 4 * * 6'
@@ -15,6 +17,8 @@ permissions:
 
 jobs:
   build:
+    # Don't run for self-PR's.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -72,6 +76,7 @@ jobs:
       run: ./ci/bindgen.sh
 
   build-ubuntu-26-04:
+    needs: build
     runs-on: ubuntu-latest
     container:
       image: ubuntu:26.04
@@ -106,6 +111,7 @@ jobs:
       run: ./ci/bindgen.sh
 
   build-freebsd:
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
