@@ -63,7 +63,7 @@
    fun:_ZN3std3sys3pal4unix2fs9try_statx*
 }
 
-# Suppression for a "leak" in thread allocation in run_tests.
+# Suppression for a "leak" in thread allocation in run_tests (ubuntu 24.04)
 
 {
    Thread startup in run_tests
@@ -94,4 +94,19 @@
    fun:recv_timeout<test::event::CompletedTest>
    fun:recv_timeout<test::event::CompletedTest>
    fun:run_tests<test::console::run_tests_console::{closure_env#2}>
+}
+
+# Suppression for a "leak" in thread allocation in run_tests (ubuntu 22.04)
+
+{
+   Thread startup in run_tests
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:_RNvMs_NtNtCs2AWtUsOyxgP_3std6thread6threadNtB4_6Thread3new
+   fun:_RNvNtNtCs2AWtUsOyxgP_3std6thread7current12init_current
+   fun:_RNvMNtNtNtCs2AWtUsOyxgP_3std4sync4mpmc7contextNtB2_7Context3new
+   fun:_RINvMs0_NtNtNtNtCs2AWtUsOyxgP_3std3sys12thread_local6native4lazyINtB6_7StorageINtNtCs4NRVxsYgnAr_4core4cell4CellINtNtB1j_6option6OptionNtNtNtNtBe_4sync4mpmc7context7ContextEEuE16get_or_init_slowNvNvNvMB2b_B29_4with7CONTEXT27___rust_std_internal_init_fnECs6jw1aKtzRha_4test
+   fun:_RNvMs1_NtNtNtCs2AWtUsOyxgP_3std4sync4mpmc4listINtB5_7ChannelNtNtCs6jw1aKtzRha_4test5event13CompletedTestE4recvB10_
+   fun:_RNvNtCs6jw1aKtzRha_4test7console17run_tests_console
 }
