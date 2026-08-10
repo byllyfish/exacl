@@ -41,19 +41,6 @@ pub enum Qualifier {
 }
 
 impl Qualifier {
-    /// Create qualifier object from a GUID.
-    #[cfg(target_os = "macos")]
-    pub fn from_guid(guid: Uuid) -> io::Result<Qualifier> {
-        let qualifier = match unix::guid_to_id(guid)? {
-            (Some(uid), None) => Qualifier::User(uid),
-            (None, Some(gid)) => Qualifier::Group(gid),
-            (None, None) => Qualifier::Guid(guid),
-            _ => unreachable!("guid_to_id bug"),
-        };
-
-        Ok(qualifier)
-    }
-
     /// Create qualifier object from a user name.
     #[cfg(target_os = "macos")]
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
@@ -61,7 +48,8 @@ impl Qualifier {
             Ok(uid) => Ok(Qualifier::User(uid)),
             Err(err) => {
                 // Try to parse name as a GUID.
-                Uuid::parse_str(name).map_or(Err(err), Qualifier::from_guid)
+                Uuid::parse_str(name)
+                    .map_or(Err(err), |guid| Qualifier::Guid(guid).translate_guid())
             }
         }
     }
@@ -83,7 +71,8 @@ impl Qualifier {
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
         match unix::name_to_gid(name) {
             Ok(gid) => Ok(Qualifier::Group(gid)),
-            Err(err) => Uuid::parse_str(name).map_or(Err(err), Qualifier::from_guid),
+            Err(err) => Uuid::parse_str(name)
+                .map_or(Err(err), |guid| Qualifier::Guid(guid).translate_guid()),
         }
     }
 
@@ -96,6 +85,14 @@ impl Qualifier {
                 Ok(gid) => Ok(Qualifier::Group(gid)),
                 Err(err) => Err(err),
             },
+        }
+    }
+
+    /// Create qualifier object from a GUID/UUID.
+    pub fn guid_named(name: &str) -> io::Result<Qualifier> {
+        match Uuid::parse_str(name) {
+            Ok(guid) => Ok(Qualifier::Guid(guid)),
+            Err(_) => fail_custom(&format!("invalid guid: {name:?}")),
         }
     }
 
@@ -158,6 +155,22 @@ impl Qualifier {
 
         Ok(result)
     }
+
+    /// Convert GUID to a user or group ID.
+    #[cfg(target_os = "macos")]
+    pub fn translate_guid(&self) -> io::Result<Qualifier> {
+        if let Qualifier::Guid(guid) = self {
+            let qualifier = match unix::guid_to_id(*guid)? {
+                (Some(uid), None) => Qualifier::User(uid),
+                (None, Some(gid)) => Qualifier::Group(gid),
+                (None, None) => Qualifier::Guid(*guid),
+                _ => unreachable!("guid_to_id bug"),
+            };
+            Ok(qualifier)
+        } else {
+            fail_custom(&format!("not a guid: {self:?}"))
+        }
+    }
 }
 
 impl fmt::Display for Qualifier {
@@ -210,19 +223,20 @@ mod qualifier_tests {
 
     #[test]
     #[cfg(target_os = "macos")]
-    fn test_from_guid() {
+    fn test_translate_guid() {
         let user =
-            Qualifier::from_guid(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap())
-                .ok();
-        assert_eq!(user, Some(Qualifier::User(89)));
+            Qualifier::Guid(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap());
+        assert_eq!(user.translate_guid().ok(), Some(Qualifier::User(89)));
 
         let group =
-            Qualifier::from_guid(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap())
-                .ok();
-        assert_eq!(group, Some(Qualifier::Group(89)));
+            Qualifier::Guid(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap());
+        assert_eq!(group.translate_guid().ok(), Some(Qualifier::Group(89)));
 
-        let user = Qualifier::from_guid(Uuid::nil()).ok();
-        assert_eq!(user, Some(Qualifier::Guid(Uuid::nil())));
+        let user = Qualifier::Guid(Uuid::nil());
+        assert_eq!(
+            user.translate_guid().ok(),
+            Some(Qualifier::Guid(Uuid::nil()))
+        );
     }
 
     #[test]
@@ -267,5 +281,19 @@ mod qualifier_tests {
             let group = Qualifier::group_named("daemon").ok();
             assert_eq!(group, Some(Qualifier::Group(group_id)));
         }
+    }
+
+    #[test]
+    fn test_guid_named() {
+        let guid = Qualifier::guid_named("x").ok();
+        assert_eq!(guid, None);
+
+        let guid = Qualifier::guid_named("e08f1961-f45c-47c5-9cfd-d367de5874f8").ok();
+        assert_eq!(
+            guid,
+            Some(Qualifier::Guid(
+                Uuid::parse_str("e08f1961-f45c-47c5-9cfd-d367de5874f8").unwrap()
+            ))
+        );
     }
 }

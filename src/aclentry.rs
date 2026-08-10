@@ -26,6 +26,11 @@ pub enum AclEntryKind {
     /// Entry represents a group.
     Group,
 
+    /// Entry represents a GUID/UUID used in underlying ACL entry on macOS.
+    #[cfg(any(docsrs, target_os = "macos"))]
+    #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
+    Guid,
+
     /// Entry represents a Posix.1e "mask" entry.
     #[cfg(any(docsrs, target_os = "linux", target_os = "freebsd"))]
     #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
@@ -201,10 +206,21 @@ impl AclEntry {
             Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
 
             #[cfg(target_os = "macos")]
-            Qualifier::User(_) | Qualifier::Guid(_) => (AclEntryKind::User, qualifier.name()?),
+            Qualifier::User(_) => (AclEntryKind::User, qualifier.name()?),
 
             #[cfg(target_os = "macos")]
             Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name()?),
+
+            #[cfg(target_os = "macos")]
+            Qualifier::Guid(_) => {
+                let translated = qualifier.translate_guid()?;
+                match translated {
+                    Qualifier::User(_) => (AclEntryKind::User, translated.name()?),
+                    Qualifier::Group(_) => (AclEntryKind::Group, translated.name()?),
+                    Qualifier::Guid(_) => (AclEntryKind::Guid, translated.name()?),
+                    Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
+                }
+            }
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::User(_) | Qualifier::UserObj => (AclEntryKind::User, qualifier.name()?),
@@ -242,6 +258,8 @@ impl AclEntry {
         let qualifier = match self.kind {
             AclEntryKind::User => Qualifier::user_named(&self.name)?,
             AclEntryKind::Group => Qualifier::group_named(&self.name)?,
+            #[cfg(target_os = "macos")]
+            AclEntryKind::Guid => Qualifier::guid_named(&self.name)?,
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             AclEntryKind::Mask => Qualifier::mask_named(&self.name)?,
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
@@ -549,22 +567,29 @@ mod aclentry_tests {
 
     #[test]
     fn test_kind_fromstr() {
-        assert_eq!(AclEntryKind::User, "user".parse::<AclEntryKind>().unwrap());
-        assert_eq!(
-            AclEntryKind::Group,
-            "group".parse::<AclEntryKind>().unwrap()
-        );
-        assert_eq!(
-            AclEntryKind::Unknown,
-            "unknown".parse::<AclEntryKind>().unwrap()
-        );
+        let variants = [
+            (AclEntryKind::User, "user"),
+            (AclEntryKind::Group, "group"),
+            (AclEntryKind::Guid, "guid"),
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+            (AclEntryKind::Mask, "mask"),
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+            (AclEntryKind::Other, "other"),
+            #[cfg(target_os = "freebsd")]
+            (AclEntryKind::Everyone, "everyone"),
+            (AclEntryKind::Unknown, "unknown"),
+        ];
 
-        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(AclEntryKind::Mask, "mask".parse::<AclEntryKind>().unwrap());
+        for value in variants {
+            assert_eq!(value.0, value.1.parse::<AclEntryKind>().unwrap());
+        }
+    }
 
+    #[test]
+    fn test_kind_fromstr_unknown_variant() {
         #[cfg(target_os = "macos")]
         assert_eq!(
-            "unknown variant `x`, expected one of `user`, `group`, `unknown`",
+            "unknown variant `x`, expected one of `user`, `group`, `guid`, `unknown`",
             "x".parse::<AclEntryKind>().unwrap_err().to_string()
         );
 
@@ -578,6 +603,26 @@ mod aclentry_tests {
         assert_eq!(
             "unknown variant `x`, expected one of `user`, `group`, `mask`, `other`, `everyone`, `unknown`",
             "x".parse::<AclEntryKind>().unwrap_err().to_string()
+        );
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_entry_guid() {
+        use uuid::Uuid;
+
+        let entry = AclEntry {
+            kind: AclEntryKind::Guid,
+            name: "e08f1961-f45c-47c5-9cfd-d367de5874f8".to_string(),
+            perms: Perm::READ,
+            flags: Flag::empty(),
+            allow: true,
+        };
+
+        let qualifier = entry.qualifier().unwrap();
+        assert_eq!(
+            qualifier,
+            Qualifier::Guid(Uuid::parse_str("e08f1961-f45c-47c5-9cfd-d367de5874f8").unwrap())
         );
     }
 }

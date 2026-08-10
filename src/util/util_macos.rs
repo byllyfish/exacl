@@ -121,7 +121,7 @@ fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
     defer! { xacl_free(uuid_ptr) }
 
     let guid = unsafe { *uuid_ptr };
-    Qualifier::from_guid(guid)
+    Ok(Qualifier::Guid(guid))
 }
 
 /// Get tag and qualifier from the entry.
