@@ -481,7 +481,7 @@ testWriteAclGUID_nil() {
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:$nil_uuid,perms:[read],flags:[],allow:false}]" \
+        "[{kind:guid,name:$nil_uuid,perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 }
 

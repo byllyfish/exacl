@@ -89,6 +89,7 @@ impl Qualifier {
     }
 
     /// Create qualifier object from a GUID/UUID.
+    #[cfg(target_os = "macos")]
     pub fn guid_named(name: &str) -> io::Result<Qualifier> {
         match Uuid::parse_str(name) {
             Ok(guid) => Ok(Qualifier::Guid(guid)),
