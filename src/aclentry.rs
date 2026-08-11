@@ -570,6 +570,7 @@ mod aclentry_tests {
         let variants = [
             (AclEntryKind::User, "user"),
             (AclEntryKind::Group, "group"),
+            #[cfg(target_os = "macos")]
             (AclEntryKind::Guid, "guid"),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             (AclEntryKind::Mask, "mask"),

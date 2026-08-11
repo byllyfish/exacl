@@ -285,6 +285,7 @@ mod qualifier_tests {
     }
 
     #[test]
+    #[cfg(target_os = "macos")]
     fn test_guid_named() {
         let guid = Qualifier::guid_named("x").ok();
         assert_eq!(guid, None);
