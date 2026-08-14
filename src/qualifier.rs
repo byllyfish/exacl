@@ -136,10 +136,24 @@ impl Qualifier {
     }
 
     /// Return the name of the user/group.
-    pub fn name(&self) -> io::Result<String> {
+    ///
+    /// If `numeric` is true, return numeric uid/gid.
+    pub fn name(&self, numeric: bool) -> io::Result<String> {
         let result = match self {
-            Qualifier::User(uid) => unix::uid_to_name(*uid)?,
-            Qualifier::Group(gid) => unix::gid_to_name(*gid)?,
+            Qualifier::User(uid) => {
+                if numeric {
+                    uid.to_string()
+                } else {
+                    unix::uid_to_name(*uid)?
+                }
+            }
+            Qualifier::Group(gid) => {
+                if numeric {
+                    gid.to_string()
+                } else {
+                    unix::gid_to_name(*gid)?
+                }
+            }
             #[cfg(target_os = "macos")]
             Qualifier::Guid(guid) => guid.to_string(),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
@@ -203,6 +217,8 @@ mod qualifier_tests {
     use super::*;
 
     /// Retrieve `user_id` and `group_id` of unix entity with specified name.
+    /// TODO: Implement macOS version for testing using:
+    ///    `dscl . -read /Users/NAME UniqueID PrimaryGroupID`
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     fn getent(name: &str) -> (u32, u32) {
         use std::str::FromStr;
@@ -259,6 +275,8 @@ mod qualifier_tests {
             let (user_id, _) = getent("daemon");
             let user = Qualifier::user_named("daemon").ok();
             assert_eq!(user, Some(Qualifier::User(user_id)));
+            assert_eq!(user.name(false), "daemon");
+            assert_eq!(user.name(true), user_id.to_string());
         }
     }
 
@@ -297,5 +315,41 @@ mod qualifier_tests {
                 Uuid::parse_str("e08f1961-f45c-47c5-9cfd-d367de5874f8").unwrap()
             ))
         );
+    }
+
+    #[test]
+    fn test_name() {
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        let (user_id, group_id) = getent("daemon");
+        #[cfg(target_os = "macos")]
+        let (user_id, group_id) = (1, 1); // daemon
+
+        let user = Qualifier::User(user_id);
+        assert_eq!(user.name(false).unwrap(), "daemon");
+        assert_eq!(user.name(true).unwrap(), user_id.to_string());
+
+        let group = Qualifier::Group(group_id);
+        assert_eq!(group.name(false).unwrap(), "daemon");
+        assert_eq!(group.name(true).unwrap(), group_id.to_string());
+
+        #[cfg(target_os = "macos")]
+        {
+            let guid =
+                Qualifier::Guid(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap());
+            assert_eq!(
+                guid.name(false).unwrap(),
+                "abcdefab-cdef-abcd-efab-cdef00000059"
+            );
+            assert_eq!(
+                guid.name(true).unwrap(),
+                "abcdefab-cdef-abcd-efab-cdef00000059"
+            );
+            // You have to translate_guid() to get a User/Group before name()
+            // will work.
+            assert_eq!(
+                guid.translate_guid().unwrap().name(false).unwrap(),
+                "_spotlight"
+            );
+        }
     }
 }

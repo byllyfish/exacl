@@ -28,6 +28,9 @@ bitflags! {
         /// Get/set the ACL of the symlink itself (macOS only).
         const SYMLINK_ACL = 0b0100;
 
+        /// Retrieve numeric user and group ID's (or GUID's on maOS).
+        const NUMERIC_ACL = 0b1000;
+
         /// Ignore expected error when using DEFAULT_ACL on a file.
         #[doc(hidden)]
         const IGNORE_EXPECTED_FILE_ERR = 0b10000;
@@ -308,14 +311,17 @@ impl Acl {
 
     /// Return ACL as a vector of [`AclEntry`].
     ///
+    /// If `numeric` is true, retrieve the numeric uid/gid values instead of
+    /// translating them to names.
+    ///
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
-    pub fn entries(&self) -> io::Result<Vec<AclEntry>> {
+    pub fn entries(&self, numeric: bool) -> io::Result<Vec<AclEntry>> {
         let mut entries = Vec::<AclEntry>::with_capacity(8);
 
         xacl_foreach(self.acl, |entry_p| {
-            let entry = AclEntry::from_raw(entry_p, self.acl)?;
+            let entry = AclEntry::from_raw(entry_p, self.acl, numeric)?;
             entries.push(entry);
             Ok(())
         })?;
@@ -342,7 +348,7 @@ impl Acl {
     pub fn to_string(&self) -> io::Result<String> {
         use std::io::Write;
         let mut buf = Vec::new();
-        for entry in self.entries()? {
+        for entry in self.entries(false)? {
             writeln!(buf, "{entry}")?;
         }
         String::from_utf8(buf).map_err(io::Error::other)
@@ -406,7 +412,7 @@ mod acl_tests {
     fn test_read_acl() -> io::Result<()> {
         let file = tempfile::NamedTempFile::new()?;
         let acl = Acl::read(file.as_ref(), AclOption::empty())?;
-        let entries = acl.entries()?;
+        let entries = acl.entries(false)?;
 
         #[cfg(target_os = "macos")]
         assert_eq!(entries.len(), 0);
@@ -443,7 +449,7 @@ mod acl_tests {
         acl.write(file.as_ref(), AclOption::empty())?;
 
         // Even though the last entry is a group, the `acl_to_text` representation
-        // displays it as `user`.
+        // displays it as `user`. (FIXME: old comment? acl_to_text not used here)
         assert_eq!(
             acl.to_string()?,
             r"allow::group:_spotlight:read,write,execute
@@ -455,7 +461,7 @@ deny:file_inherit,directory_inherit:group:11504:read,write,execute
         );
 
         let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
-        let entries2 = acl2.entries()?;
+        let entries2 = acl2.entries(false)?;
 
         assert_eq!(entries2, entries);
 
@@ -502,7 +508,7 @@ allow::other::read,write,execute
         );
 
         let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
-        let mut entries2 = acl2.entries()?;
+        let mut entries2 = acl2.entries(false)?;
 
         // Before doing the comparison, add the mask entry.
         entries.push(AclEntry::allow_mask(rwx, None));
@@ -529,7 +535,7 @@ allow::other::read,write,execute
         acl.write(file.as_ref(), AclOption::empty())?;
 
         let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
-        let entries2 = acl2.entries()?;
+        let entries2 = acl2.entries(false)?;
 
         assert_eq!(entries2, entries);
 
@@ -589,7 +595,7 @@ allow::other::read,write,execute
         assert_ne!(acl.to_string()?, acl2.to_string()?);
 
         let default_acl = Acl::read(path, AclOption::DEFAULT_ACL)?;
-        let default_entries = default_acl.entries()?;
+        let default_entries = default_acl.entries(false)?;
         for entry in &default_entries {
             assert_eq!(entry.flags, Flag::DEFAULT);
         }

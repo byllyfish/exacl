@@ -14,8 +14,10 @@ fi
 
 ME=$(id -un)
 ME_NUM=$(id -u)
+ME_GUID=$(dscl . -read /Users/$ME GeneratedUID | awk '{print tolower($2)}')
 MY_GROUP=$(id -gn)
 MY_GROUP_NUM=$(id -g)
+MY_GROUP_GUID=$(dscl . -read /Groups/$MY_GROUP GeneratedUID | awk '{print tolower($2)}')
 
 # Return true if file is readable.
 isReadable() {
@@ -109,6 +111,49 @@ testReadAclForFile1() {
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[],allow:false},{kind:group,name:$MY_GROUP,perms:[write],flags:[],allow:true}]" \
+        "${msg//\"/}"
+
+    ! isReadable "$FILE1" && isWritable "$FILE1"
+    assertEquals 0 $?
+
+    # Re-add user write perm that we removed above. Clear the ACL.
+    chmod u+w "$FILE1"
+    chmod -N "$FILE1"
+}
+
+testReadAclForFile1_Numeric() {
+    # Same test as above, but using `--numeric` option.
+    msg=$($EXACL -n $FILE1)
+    assertEquals 0 $?
+    assertEquals "[]" "$msg"
+
+    isReadable "$FILE1" && isWritable "$FILE1"
+    assertEquals 0 $?
+
+    # Add ACL entry for current user to "deny read".
+    chmod +a "$ME deny read" "$FILE1"
+
+    msg=$($EXACL -n $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:guid,name:$ME_GUID,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"/}"
+
+    ! isReadable "$FILE1" && isWritable "$FILE1"
+    assertEquals 0 $?
+
+    # Remove user write perm.
+    chmod u-w "$FILE1"
+    ! isReadable "$FILE1" && ! isWritable "$FILE1"
+    assertEquals 0 $?
+
+    # Add ACL entry for current group to "allow write".
+    chmod +a "$MY_GROUP allow write" "$FILE1"
+
+    msg=$($EXACL -n $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:guid,name:$ME_GUID,perms:[read],flags:[],allow:false},{kind:guid,name:$MY_GROUP_GUID,perms:[write],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     ! isReadable "$FILE1" && isWritable "$FILE1"
