@@ -122,6 +122,84 @@ allow::everyone::readextattr,readattr,readsecurity,sync" \
         "${msg//\"/}"
 }
 
+testReadAclForFile1_Numeric() {
+    # Same as above, but uses --numeric option.
+    msg=$($EXACL -n -f std $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "allow::user::read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
+        "${msg//\"/}"
+
+    assertEquals "-rw-------" "$(fileperms $FILE1)"
+
+    # Add ACL entry for current user to "write-only".
+    setfacl -m "u:$ME:w::allow" "$FILE1"
+    assertEquals 0 $?
+
+    msg=$($EXACL -n -f std $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "allow::user:$ME_NUM:write_data
+allow::user::read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
+        "${msg//\"/}"
+
+    assertEquals "-rw-------" "$(fileperms $FILE1)"
+
+    # Deny execute access for user "777"
+    setfacl -m "g:777:execute::deny" "$FILE1"
+
+    msg=$($EXACL -n -f std $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "deny::group:777:execute
+allow::user:$ME_NUM:write_data
+allow::user::read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
+        "${msg//\"/}"
+
+    # Remove owner read perm.
+    chmod u-rw "$FILE1"
+    assertEquals "----------" "$(fileperms $FILE1)"
+
+    msg=$($EXACL -n -f std $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "allow::user::readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
+        "${msg//\"/}"
+
+    # Add ACL entry for current group to "allow write".
+    setfacl -m "g:$MY_GROUP:w::allow" "$FILE1"
+
+    msg=$($EXACL -n -f std $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "allow::group:$MY_GROUP_NUM:write_data
+allow::user::readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
+        "${msg//\"/}"
+
+    assertEquals "----------" "$(fileperms $FILE1)"
+
+    # Reset permissions.
+    chmod 600 "$FILE1"
+
+    msg=$($EXACL -n -f std $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "allow::user::read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
+        "${msg//\"/}"
+}
+
 testReadAclForDir1() {
     msg=$($EXACL -f std $DIR1)
     assertEquals 0 $?

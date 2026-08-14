@@ -170,6 +170,7 @@ jobs:
           export TMPDIR=/tmp/exacl_acls
           echo "*** TMPDIR=$TMPDIR"
           cargo test --features serde
+          ./tests/run_tests.sh
           export TMPDIR=/tmp/exacl_nfsv4acls
           echo "*** TMPDIR=$TMPDIR"
           cargo test --features serde
