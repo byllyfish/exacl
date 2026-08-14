@@ -620,8 +620,6 @@ mod aclentry_tests {
     #[test]
     #[cfg(target_os = "macos")]
     fn test_entry_guid() {
-        use uuid::Uuid;
-
         let entry = AclEntry {
             kind: AclEntryKind::Guid,
             name: "e08f1961-f45c-47c5-9cfd-d367de5874f8".to_string(),
@@ -633,7 +631,7 @@ mod aclentry_tests {
         let qualifier = entry.qualifier().unwrap();
         assert_eq!(
             qualifier,
-            Qualifier::Guid(Uuid::parse_str("e08f1961-f45c-47c5-9cfd-d367de5874f8").unwrap())
+            Qualifier::guid_named("e08f1961-f45c-47c5-9cfd-d367de5874f8").unwrap()
         );
     }
 }
