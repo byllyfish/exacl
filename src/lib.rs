@@ -97,7 +97,7 @@ use failx::fail_custom;
 ///
 /// [`AclOption::DEFAULT_ACL`] option is not supported on macOS.
 ///
-/// [`AclOption::NUMERIC_ACL`] option returns the GeneratedUID (GUID) on macOS
+/// [`AclOption::NUMERIC_ACL`] option returns the `GeneratedUID` (GUID) on macOS
 /// instead of translating to human-readable user/group names.
 ///
 /// # Linux

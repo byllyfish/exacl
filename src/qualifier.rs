@@ -91,10 +91,10 @@ impl Qualifier {
     /// Create qualifier object from a GUID/UUID.
     #[cfg(target_os = "macos")]
     pub fn guid_named(name: &str) -> io::Result<Qualifier> {
-        match Uuid::parse_str(name) {
-            Ok(guid) => Ok(Qualifier::Guid(guid)),
-            Err(_) => fail_custom(&format!("invalid guid: {name:?}")),
-        }
+        Uuid::parse_str(name).map_or_else(
+            |_| fail_custom(&format!("invalid guid: {name:?}")),
+            |guid| Ok(Qualifier::Guid(guid)),
+        )
     }
 
     /// Create qualifier from mask.
