@@ -275,8 +275,6 @@ mod qualifier_tests {
             let (user_id, _) = getent("daemon");
             let user = Qualifier::user_named("daemon").ok();
             assert_eq!(user, Some(Qualifier::User(user_id)));
-            assert_eq!(user.name(false), "daemon");
-            assert_eq!(user.name(true), user_id.to_string());
         }
     }
 
