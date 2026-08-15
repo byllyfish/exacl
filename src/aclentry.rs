@@ -607,22 +607,4 @@ mod aclentry_tests {
             "x".parse::<AclEntryKind>().unwrap_err().to_string()
         );
     }
-
-    #[test]
-    #[cfg(target_os = "macos")]
-    fn test_entry_guid() {
-        let entry = AclEntry {
-            kind: AclEntryKind::User,
-            name: "e08f1961-f45c-47c5-9cfd-d367de5874f8".to_string(),
-            perms: Perm::READ,
-            flags: Flag::empty(),
-            allow: true,
-        };
-
-        let qualifier = entry.qualifier().unwrap();
-        assert_eq!(
-            qualifier,
-            Qualifier::guid_named("e08f1961-f45c-47c5-9cfd-d367de5874f8").unwrap()
-        );
-    }
 }

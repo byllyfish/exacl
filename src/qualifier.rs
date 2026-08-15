@@ -88,15 +88,6 @@ impl Qualifier {
         }
     }
 
-    /// Create qualifier object from a GUID/UUID.
-    #[cfg(target_os = "macos")]
-    pub fn guid_named(name: &str) -> io::Result<Qualifier> {
-        Uuid::parse_str(name).map_or_else(
-            |_| fail_custom(&format!("invalid guid: {name:?}")),
-            |guid| Ok(Qualifier::Guid(guid)),
-        )
-    }
-
     /// Create qualifier from mask.
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     pub fn mask_named(name: &str) -> io::Result<Qualifier> {
@@ -298,21 +289,6 @@ mod qualifier_tests {
             let group = Qualifier::group_named("daemon").ok();
             assert_eq!(group, Some(Qualifier::Group(group_id)));
         }
-    }
-
-    #[test]
-    #[cfg(target_os = "macos")]
-    fn test_guid_named() {
-        let guid = Qualifier::guid_named("x").ok();
-        assert_eq!(guid, None);
-
-        let guid = Qualifier::guid_named("e08f1961-f45c-47c5-9cfd-d367de5874f8").ok();
-        assert_eq!(
-            guid,
-            Some(Qualifier::Guid(
-                Uuid::parse_str("e08f1961-f45c-47c5-9cfd-d367de5874f8").unwrap()
-            ))
-        );
     }
 
     #[test]

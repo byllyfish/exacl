@@ -11,8 +11,6 @@ use crate::perm::PermName;
 const ACLENTRYKINDS: &'static [(AclEntryKind, &'static str)] = &[
     (AclEntryKind::User, "user"),
     (AclEntryKind::Group, "group"),
-    #[cfg(target_os = "macos")]
-    (AclEntryKind::Guid, "guid"),
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     (AclEntryKind::Mask, "mask"),
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
