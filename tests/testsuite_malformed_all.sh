@@ -42,7 +42,7 @@ testInvalidKind() {
     assertEquals 1 $?
 
     if [ "$CURRENT_OS" = "Darwin" ]; then
-        expected='user, group, guid, unknown'
+        expected='user, group, unknown'
     elif [ "$CURRENT_OS" = "FreeBSD" ]; then
         expected='user, group, mask, other, everyone, unknown'
     else

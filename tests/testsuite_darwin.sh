@@ -136,7 +136,7 @@ testReadAclForFile1_Numeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:guid,name:$ME_GUID,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:$ME_GUID,perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     ! isReadable "$FILE1" && isWritable "$FILE1"
@@ -153,7 +153,7 @@ testReadAclForFile1_Numeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:guid,name:$ME_GUID,perms:[read],flags:[],allow:false},{kind:guid,name:$MY_GROUP_GUID,perms:[write],flags:[],allow:true}]" \
+        "[{kind:user,name:$ME_GUID,perms:[read],flags:[],allow:false},{kind:user,name:$MY_GROUP_GUID,perms:[write],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     ! isReadable "$FILE1" && isWritable "$FILE1"
@@ -531,7 +531,7 @@ testWriteAclGUID_nil_user() {
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:guid,name:$nil_uuid,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:$nil_uuid,perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     # Compare to ACL using `ls`.
@@ -552,7 +552,7 @@ testWriteAclGUID_nil_group() {
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:guid,name:$nil_uuid,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:$nil_uuid,perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     # Compare to ACL using `ls`.
@@ -561,31 +561,10 @@ testWriteAclGUID_nil_group() {
     assertEquals " 0: 00000000-0000-0000-0000-000000000000 deny read" "$msg"
 }
 
-testWriteAclGUID_nil_guid() {
-    # Set ACL for NIL-GUID *guid* to "deny write" using GUID.
-    nil_uuid="00000000-0000-0000-0000-000000000000"
-    input=$(quotifyJson "[{kind:guid,name:$nil_uuid,perms:[write],flags:[],allow:false}]")
-    msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
-    assertEquals 0 $?
-    assertEquals "" "$msg"
-
-    # Check ACL again.
-    msg=$($EXACL $FILE1)
-    assertEquals 0 $?
-    assertEquals \
-        "[{kind:guid,name:$nil_uuid,perms:[write],flags:[],allow:false}]" \
-        "${msg//\"/}"
-
-    # Compare to ACL using `ls`.
-    msg=$(getAcl $FILE1)
-    assertEquals 0 $?
-    assertEquals " 0: 00000000-0000-0000-0000-000000000000 deny write" "$msg"
-}
-
 testWriteAclGUID_random_guid() {
-    # Set ACL for RANDOM-GUID *guid* to "deny write" using GUID.
+    # Set ACL for RANDOM-GUID *user* to "deny write" using GUID.
     random_guid="e08f1961-f45c-47c5-9cfd-d367de5874f8"
-    input=$(quotifyJson "[{kind:guid,name:$random_guid,perms:[write],flags:[],allow:false}]")
+    input=$(quotifyJson "[{kind:user,name:$random_guid,perms:[write],flags:[],allow:false}]")
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
@@ -594,7 +573,7 @@ testWriteAclGUID_random_guid() {
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:guid,name:$random_guid,perms:[write],flags:[],allow:false}]" \
+        "[{kind:user,name:$random_guid,perms:[write],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     # Compare to ACL using `ls`. Note upper case change.

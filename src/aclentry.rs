@@ -26,11 +26,6 @@ pub enum AclEntryKind {
     /// Entry represents a group.
     Group,
 
-    /// Entry represents a GUID/UUID used in underlying ACL entry on macOS.
-    #[cfg(any(docsrs, target_os = "macos"))]
-    #[cfg_attr(docsrs, doc(cfg(target_os = "macos")))]
-    Guid,
-
     /// Entry represents a Posix.1e "mask" entry.
     #[cfg(any(docsrs, target_os = "linux", target_os = "freebsd"))]
     #[cfg_attr(docsrs, doc(cfg(any(target_os = "linux", target_os = "freebsd"))))]
@@ -215,7 +210,7 @@ impl AclEntry {
             Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name(numeric)?),
 
             #[cfg(target_os = "macos")] // Catch numeric GUID's here.
-            Qualifier::Guid(_) if numeric => (AclEntryKind::Guid, qualifier.name(numeric)?),
+            Qualifier::Guid(_) if numeric => (AclEntryKind::User, qualifier.name(numeric)?),
 
             #[cfg(target_os = "macos")]
             Qualifier::Guid(_) => {
@@ -223,7 +218,7 @@ impl AclEntry {
                 match translated {
                     Qualifier::User(_) => (AclEntryKind::User, translated.name(numeric)?),
                     Qualifier::Group(_) => (AclEntryKind::Group, translated.name(numeric)?),
-                    Qualifier::Guid(_) => (AclEntryKind::Guid, translated.name(numeric)?),
+                    Qualifier::Guid(_) => (AclEntryKind::User, translated.name(numeric)?),
                     Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
                 }
             }
@@ -268,8 +263,6 @@ impl AclEntry {
         let qualifier = match self.kind {
             AclEntryKind::User => Qualifier::user_named(&self.name)?,
             AclEntryKind::Group => Qualifier::group_named(&self.name)?,
-            #[cfg(target_os = "macos")]
-            AclEntryKind::Guid => Qualifier::guid_named(&self.name)?,
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             AclEntryKind::Mask => Qualifier::mask_named(&self.name)?,
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
@@ -580,8 +573,6 @@ mod aclentry_tests {
         let variants = [
             (AclEntryKind::User, "user"),
             (AclEntryKind::Group, "group"),
-            #[cfg(target_os = "macos")]
-            (AclEntryKind::Guid, "guid"),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             (AclEntryKind::Mask, "mask"),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
@@ -600,7 +591,7 @@ mod aclentry_tests {
     fn test_kind_fromstr_unknown_variant() {
         #[cfg(target_os = "macos")]
         assert_eq!(
-            "unknown variant `x`, expected one of `user`, `group`, `guid`, `unknown`",
+            "unknown variant `x`, expected one of `user`, `group`, `unknown`",
             "x".parse::<AclEntryKind>().unwrap_err().to_string()
         );
 
@@ -621,7 +612,7 @@ mod aclentry_tests {
     #[cfg(target_os = "macos")]
     fn test_entry_guid() {
         let entry = AclEntry {
-            kind: AclEntryKind::Guid,
+            kind: AclEntryKind::User,
             name: "e08f1961-f45c-47c5-9cfd-d367de5874f8".to_string(),
             perms: Perm::READ,
             flags: Flag::empty(),
