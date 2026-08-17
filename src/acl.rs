@@ -28,7 +28,7 @@ bitflags! {
         /// Get/set the ACL of the symlink itself (macOS only).
         const SYMLINK_ACL = 0b0100;
 
-        /// Retrieve numeric user and group ID's (or GUID's on maOS).
+        /// Retrieve numeric user and group ID's (decimal numbers).
         const NUMERIC_ACL = 0b1000;
 
         /// Ignore expected error when using DEFAULT_ACL on a file.
@@ -462,8 +462,12 @@ deny:file_inherit,directory_inherit:group:11504:read,write,execute
 
         let acl2 = Acl::read(file.as_ref(), AclOption::empty())?;
         let entries2 = acl2.entries(false)?;
-
         assert_eq!(entries2, entries);
+        assert_eq!(entries2[0].name, "_spotlight");
+
+        // Test numeric option.
+        let entries3 = acl2.entries(true)?;
+        assert_eq!(entries3[0].name, "89");
 
         Ok(())
     }
@@ -516,6 +520,12 @@ allow::other::read,write,execute
         entries.sort();
         entries2.sort();
         assert_eq!(entries2, entries);
+        assert_eq!(entries2[5].name, "bin");
+
+        // Test numeric option with "bin" group.
+        entries2 = acl2.entries(true)?;
+        entries2.sort();
+        assert_eq!(entries2[5].name, "1");
 
         Ok(())
     }

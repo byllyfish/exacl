@@ -14,10 +14,10 @@ fi
 
 ME=$(id -un)
 ME_NUM=$(id -u)
-ME_GUID=$(dscl . -read /Users/$ME GeneratedUID | awk '{print tolower($2)}')
+# ME_GUID=$(dscl . -read /Users/$ME GeneratedUID | awk '{print tolower($2)}')
 MY_GROUP=$(id -gn)
 MY_GROUP_NUM=$(id -g)
-MY_GROUP_GUID=$(dscl . -read /Groups/$MY_GROUP GeneratedUID | awk '{print tolower($2)}')
+# MY_GROUP_GUID=$(dscl . -read /Groups/$MY_GROUP GeneratedUID | awk '{print tolower($2)}')
 
 # Return true if file is readable.
 isReadable() {
@@ -136,7 +136,7 @@ testReadAclForFile1_Numeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:$ME_GUID,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:$ME_NUM,perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     ! isReadable "$FILE1" && isWritable "$FILE1"
@@ -153,7 +153,7 @@ testReadAclForFile1_Numeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:$ME_GUID,perms:[read],flags:[],allow:false},{kind:user,name:$MY_GROUP_GUID,perms:[write],flags:[],allow:true}]" \
+        "[{kind:user,name:$ME_NUM,perms:[read],flags:[],allow:false},{kind:group,name:$MY_GROUP_NUM,perms:[write],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     ! isReadable "$FILE1" && isWritable "$FILE1"

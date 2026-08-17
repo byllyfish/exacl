@@ -209,9 +209,6 @@ impl AclEntry {
             #[cfg(target_os = "macos")]
             Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name(numeric)?),
 
-            #[cfg(target_os = "macos")] // Catch numeric GUID's here.
-            Qualifier::Guid(_) if numeric => (AclEntryKind::User, qualifier.name(numeric)?),
-
             #[cfg(target_os = "macos")]
             Qualifier::Guid(_) => {
                 let translated = qualifier.translate_guid()?;
