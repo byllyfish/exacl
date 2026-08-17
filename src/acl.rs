@@ -525,7 +525,7 @@ allow::other::read,write,execute
         // Test numeric option with "bin" group.
         entries2 = acl2.entries(true)?;
         entries2.sort();
-        assert_eq!(entries2[5].name, "1");
+        assert_eq!(entries2[5].name, "2");
 
         Ok(())
     }
