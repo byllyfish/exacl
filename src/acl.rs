@@ -525,7 +525,11 @@ allow::other::read,write,execute
         // Test numeric option with "bin" group.
         entries2 = acl2.entries(true)?;
         entries2.sort();
-        assert_eq!(entries2[5].name, "2");
+        #[cfg(target_os = "linux")] // FIXME: test code should look these up.
+        let expected_gid = "2";
+        #[cfg(target_os = "freebsd")]
+        let expected_gid = "7";
+        assert_eq!(entries2[5].name, expected_gid);
 
         Ok(())
     }
