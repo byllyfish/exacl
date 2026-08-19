@@ -29,6 +29,21 @@ const MAX_BUFSIZE: usize = 1_048_576; // 1MB
 
 /// Convert user name to uid.
 pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
+    // Lookup user name using `getpwnam_r`.
+    if let Some(uid) = getpwnam(name)? {
+        return Ok(uid);
+    }
+
+    // Try to parse name as a decimal user ID.
+    if let Ok(num) = name.parse::<u32>() {
+        return Ok(num);
+    }
+
+    fail_custom(&format!("unknown user name: {name:?}"))
+}
+
+/// Convert user name to uid using `getpwnam_r` library call.
+fn getpwnam(name: &str) -> io::Result<Option<uid_t>> {
     let mut pwd = mem::MaybeUninit::<passwd>::uninit();
     let mut buf = Vec::<c_char>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
@@ -58,21 +73,31 @@ pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
         return fail_err(ret, "getpwnam_r", name);
     }
 
-    if !result.is_null() {
+    if result.is_null() {
+        Ok(None)
+    } else {
         let uid = unsafe { pwd.assume_init().pw_uid };
-        return Ok(uid);
+        Ok(Some(uid))
     }
-
-    // Try to parse name as a decimal user ID.
-    if let Ok(num) = name.parse::<u32>() {
-        return Ok(num);
-    }
-
-    fail_custom(&format!("unknown user name: {name:?}"))
 }
 
 /// Convert group name to gid.
 pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
+    // Lookup group name using `getgrnam_r`.
+    if let Some(gid) = getgrnam(name)? {
+        return Ok(gid);
+    }
+
+    // Try to parse name as a decimal group ID.
+    if let Ok(num) = name.parse::<u32>() {
+        return Ok(num);
+    }
+
+    fail_custom(&format!("unknown group name: {name:?}"))
+}
+
+/// Convert group name to gid using `getgrnam_r` library call.
+fn getgrnam(name: &str) -> io::Result<Option<gid_t>> {
     let mut grp = mem::MaybeUninit::<group>::uninit();
     let mut buf = Vec::<c_char>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
@@ -102,21 +127,25 @@ pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
         return fail_err(ret, "getgrnam_r", name);
     }
 
-    if !result.is_null() {
+    if result.is_null() {
+        Ok(None)
+    } else {
         let gid = unsafe { grp.assume_init().gr_gid };
-        return Ok(gid);
+        Ok(Some(gid))
     }
-
-    // Try to parse name as a decimal group ID.
-    if let Ok(num) = name.parse::<u32>() {
-        return Ok(num);
-    }
-
-    fail_custom(&format!("unknown group name: {name:?}"))
 }
 
 /// Convert uid to user name.
 pub fn uid_to_name(uid: uid_t) -> io::Result<String> {
+    if let Some(name) = getpwuid(uid)? {
+        return Ok(name);
+    }
+
+    Ok(uid.to_string())
+}
+
+/// Convert uid to name using `getpwuid_r` library call.
+fn getpwuid(uid: uid_t) -> io::Result<Option<String>> {
     let mut pwd = mem::MaybeUninit::<passwd>::uninit();
     let mut buf = Vec::<c_char>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
@@ -145,16 +174,25 @@ pub fn uid_to_name(uid: uid_t) -> io::Result<String> {
         return fail_err(ret, "getpwuid_r", uid);
     }
 
-    if !result.is_null() {
+    if result.is_null() {
+        Ok(None)
+    } else {
         let cstr = unsafe { CStr::from_ptr(pwd.assume_init().pw_name) };
-        return Ok(cstr.to_string_lossy().into_owned());
+        Ok(Some(cstr.to_string_lossy().into_owned()))
     }
-
-    Ok(uid.to_string())
 }
 
 /// Convert gid to group name.
 pub fn gid_to_name(gid: gid_t) -> io::Result<String> {
+    if let Some(name) = getgrgid(gid)? {
+        return Ok(name);
+    }
+
+    Ok(gid.to_string())
+}
+
+/// Convert gid to name using `getgruid_r` library call.
+fn getgrgid(gid: gid_t) -> io::Result<Option<String>> {
     let mut grp = mem::MaybeUninit::<group>::uninit();
     let mut buf = Vec::<c_char>::with_capacity(INITIAL_BUFSIZE);
     let mut result = ptr::null_mut();
@@ -183,12 +221,12 @@ pub fn gid_to_name(gid: gid_t) -> io::Result<String> {
         return fail_err(ret, "getgrgid_r", gid);
     }
 
-    if !result.is_null() {
+    if result.is_null() {
+        Ok(None)
+    } else {
         let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
-        return Ok(cstr.to_string_lossy().into_owned());
+        Ok(Some(cstr.to_string_lossy().into_owned()))
     }
-
-    Ok(gid.to_string())
 }
 
 /// Convert uid to GUID.

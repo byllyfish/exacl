@@ -14,8 +14,10 @@ fi
 
 ME=$(id -un)
 ME_NUM=$(id -u)
+# ME_GUID=$(dscl . -read /Users/$ME GeneratedUID | awk '{print tolower($2)}')
 MY_GROUP=$(id -gn)
 MY_GROUP_NUM=$(id -g)
+# MY_GROUP_GUID=$(dscl . -read /Groups/$MY_GROUP GeneratedUID | awk '{print tolower($2)}')
 
 # Return true if file is readable.
 isReadable() {
@@ -109,6 +111,49 @@ testReadAclForFile1() {
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:$ME,perms:[read],flags:[],allow:false},{kind:group,name:$MY_GROUP,perms:[write],flags:[],allow:true}]" \
+        "${msg//\"/}"
+
+    ! isReadable "$FILE1" && isWritable "$FILE1"
+    assertEquals 0 $?
+
+    # Re-add user write perm that we removed above. Clear the ACL.
+    chmod u+w "$FILE1"
+    chmod -N "$FILE1"
+}
+
+testReadAclForFile1_Numeric() {
+    # Same test as above, but using `--numeric` option.
+    msg=$($EXACL -n $FILE1)
+    assertEquals 0 $?
+    assertEquals "[]" "$msg"
+
+    isReadable "$FILE1" && isWritable "$FILE1"
+    assertEquals 0 $?
+
+    # Add ACL entry for current user to "deny read".
+    chmod +a "$ME deny read" "$FILE1"
+
+    msg=$($EXACL -n $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:$ME_NUM,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"/}"
+
+    ! isReadable "$FILE1" && isWritable "$FILE1"
+    assertEquals 0 $?
+
+    # Remove user write perm.
+    chmod u-w "$FILE1"
+    ! isReadable "$FILE1" && ! isWritable "$FILE1"
+    assertEquals 0 $?
+
+    # Add ACL entry for current group to "allow write".
+    chmod +a "$MY_GROUP allow write" "$FILE1"
+
+    msg=$($EXACL -n $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:$ME_NUM,perms:[read],flags:[],allow:false},{kind:group,name:$MY_GROUP_NUM,perms:[write],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     ! isReadable "$FILE1" && isWritable "$FILE1"
@@ -453,7 +498,7 @@ testWriteAclNumericGID() {
         "${msg//\"/}"
 }
 
-testWriteAclGUID() {
+testWriteAclGUID_group() {
     # Set ACL for _spotlight group to "deny read" using GUID.
     spotlight_group="ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000059"
     input=$(quotifyJson "[{kind:group,name:$spotlight_group,perms:[read],flags:[],allow:false}]")
@@ -467,10 +512,36 @@ testWriteAclGUID() {
     assertEquals \
         "[{kind:group,name:_spotlight,perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
+
+    # Compare to ACL using `ls`.
+    msg=$(getAcl $FILE1)
+    assertEquals 0 $?
+    assertEquals " 0: group:_spotlight deny read" "$msg"
 }
 
-testWriteAclGUID_nil() {
-    # Set ACL for _spotlight group to "deny read" using GUID.
+testWriteAclGUID_nil_user() {
+    # Set ACL for NIL-GUID *user* to "deny read" using GUID.
+    nil_uuid="00000000-0000-0000-0000-000000000000"
+    input=$(quotifyJson "[{kind:user,name:$nil_uuid,perms:[read],flags:[],allow:false}]")
+    msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Check ACL again. Note: change in kind.
+    msg=$($EXACL $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:$nil_uuid,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"/}"
+
+    # Compare to ACL using `ls`.
+    msg=$(getAcl $FILE1)
+    assertEquals 0 $?
+    assertEquals " 0: 00000000-0000-0000-0000-000000000000 deny read" "$msg"
+}
+
+testWriteAclGUID_nil_group() {
+    # Set ACL for NIL-GUID *group* to "deny read" using GUID.
     nil_uuid="00000000-0000-0000-0000-000000000000"
     input=$(quotifyJson "[{kind:group,name:$nil_uuid,perms:[read],flags:[],allow:false}]")
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
@@ -483,6 +554,32 @@ testWriteAclGUID_nil() {
     assertEquals \
         "[{kind:user,name:$nil_uuid,perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
+
+    # Compare to ACL using `ls`.
+    msg=$(getAcl $FILE1)
+    assertEquals 0 $?
+    assertEquals " 0: 00000000-0000-0000-0000-000000000000 deny read" "$msg"
+}
+
+testWriteAclGUID_random_guid() {
+    # Set ACL for RANDOM-GUID *user* to "deny write" using GUID.
+    random_guid="e08f1961-f45c-47c5-9cfd-d367de5874f8"
+    input=$(quotifyJson "[{kind:user,name:$random_guid,perms:[write],flags:[],allow:false}]")
+    msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Check ACL again.
+    msg=$($EXACL $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:$random_guid,perms:[write],flags:[],allow:false}]" \
+        "${msg//\"/}"
+
+    # Compare to ACL using `ls`. Note upper case change.
+    msg=$(getAcl $FILE1)
+    assertEquals 0 $?
+    assertEquals " 0: E08F1961-F45C-47C5-9CFD-D367DE5874F8 deny write" "$msg"
 }
 
 testDefaultAclFails() {

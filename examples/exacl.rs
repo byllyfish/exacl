@@ -10,6 +10,8 @@
 //! use the -s option.
 //!
 //! To get/set the default ACL (on Linux), use the -d option.
+//!
+//! To get the ACL without translating uid/gid's to names, use the -n option.
 
 use exacl::{AclEntry, AclOption, getfacl, setfacl};
 use std::io;
@@ -37,6 +39,10 @@ struct Opt {
     /// Get or set the ACL of a symlink itself.
     #[arg(short = 's', long)]
     symlink: bool,
+
+    /// Get ACL as numeric only.
+    #[arg(short = 'n', long)]
+    numeric: bool,
 
     /// Format of input or output.
     #[arg(value_enum, short = 'f', long, default_value = "json")]
@@ -71,6 +77,9 @@ fn main() {
     }
     if opt.symlink {
         options |= AclOption::SYMLINK_ACL;
+    }
+    if opt.numeric {
+        options |= AclOption::NUMERIC_ACL;
     }
 
     let exit_code = if opt.set {

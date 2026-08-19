@@ -41,19 +41,6 @@ pub enum Qualifier {
 }
 
 impl Qualifier {
-    /// Create qualifier object from a GUID.
-    #[cfg(target_os = "macos")]
-    pub fn from_guid(guid: Uuid) -> io::Result<Qualifier> {
-        let qualifier = match unix::guid_to_id(guid)? {
-            (Some(uid), None) => Qualifier::User(uid),
-            (None, Some(gid)) => Qualifier::Group(gid),
-            (None, None) => Qualifier::Guid(guid),
-            _ => unreachable!("guid_to_id bug"),
-        };
-
-        Ok(qualifier)
-    }
-
     /// Create qualifier object from a user name.
     #[cfg(target_os = "macos")]
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
@@ -61,7 +48,8 @@ impl Qualifier {
             Ok(uid) => Ok(Qualifier::User(uid)),
             Err(err) => {
                 // Try to parse name as a GUID.
-                Uuid::parse_str(name).map_or(Err(err), Qualifier::from_guid)
+                Uuid::parse_str(name)
+                    .map_or(Err(err), |guid| Qualifier::Guid(guid).translate_guid())
             }
         }
     }
@@ -83,7 +71,8 @@ impl Qualifier {
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
         match unix::name_to_gid(name) {
             Ok(gid) => Ok(Qualifier::Group(gid)),
-            Err(err) => Uuid::parse_str(name).map_or(Err(err), Qualifier::from_guid),
+            Err(err) => Uuid::parse_str(name)
+                .map_or(Err(err), |guid| Qualifier::Guid(guid).translate_guid()),
         }
     }
 
@@ -138,10 +127,24 @@ impl Qualifier {
     }
 
     /// Return the name of the user/group.
-    pub fn name(&self) -> io::Result<String> {
+    ///
+    /// If `numeric` is true, return numeric uid/gid.
+    pub fn name(&self, numeric: bool) -> io::Result<String> {
         let result = match self {
-            Qualifier::User(uid) => unix::uid_to_name(*uid)?,
-            Qualifier::Group(gid) => unix::gid_to_name(*gid)?,
+            Qualifier::User(uid) => {
+                if numeric {
+                    uid.to_string()
+                } else {
+                    unix::uid_to_name(*uid)?
+                }
+            }
+            Qualifier::Group(gid) => {
+                if numeric {
+                    gid.to_string()
+                } else {
+                    unix::gid_to_name(*gid)?
+                }
+            }
             #[cfg(target_os = "macos")]
             Qualifier::Guid(guid) => guid.to_string(),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
@@ -157,6 +160,22 @@ impl Qualifier {
         };
 
         Ok(result)
+    }
+
+    /// Convert GUID to a user or group ID.
+    #[cfg(target_os = "macos")]
+    pub fn translate_guid(&self) -> io::Result<Qualifier> {
+        if let Qualifier::Guid(guid) = self {
+            let qualifier = match unix::guid_to_id(*guid)? {
+                (Some(uid), None) => Qualifier::User(uid),
+                (None, Some(gid)) => Qualifier::Group(gid),
+                (None, None) => Qualifier::Guid(*guid),
+                _ => unreachable!("guid_to_id bug"),
+            };
+            Ok(qualifier)
+        } else {
+            fail_custom(&format!("not a guid: {self:?}"))
+        }
     }
 }
 
@@ -189,6 +208,8 @@ mod qualifier_tests {
     use super::*;
 
     /// Retrieve `user_id` and `group_id` of unix entity with specified name.
+    /// TODO: Implement macOS version for testing using:
+    ///    `dscl . -read /Users/NAME UniqueID PrimaryGroupID`
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     fn getent(name: &str) -> (u32, u32) {
         use std::str::FromStr;
@@ -210,19 +231,20 @@ mod qualifier_tests {
 
     #[test]
     #[cfg(target_os = "macos")]
-    fn test_from_guid() {
+    fn test_translate_guid() {
         let user =
-            Qualifier::from_guid(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap())
-                .ok();
-        assert_eq!(user, Some(Qualifier::User(89)));
+            Qualifier::Guid(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap());
+        assert_eq!(user.translate_guid().ok(), Some(Qualifier::User(89)));
 
         let group =
-            Qualifier::from_guid(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap())
-                .ok();
-        assert_eq!(group, Some(Qualifier::Group(89)));
+            Qualifier::Guid(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap());
+        assert_eq!(group.translate_guid().ok(), Some(Qualifier::Group(89)));
 
-        let user = Qualifier::from_guid(Uuid::nil()).ok();
-        assert_eq!(user, Some(Qualifier::Guid(Uuid::nil())));
+        let user = Qualifier::Guid(Uuid::nil());
+        assert_eq!(
+            user.translate_guid().ok(),
+            Some(Qualifier::Guid(Uuid::nil()))
+        );
     }
 
     #[test]
@@ -266,6 +288,42 @@ mod qualifier_tests {
             let (_, group_id) = getent("daemon");
             let group = Qualifier::group_named("daemon").ok();
             assert_eq!(group, Some(Qualifier::Group(group_id)));
+        }
+    }
+
+    #[test]
+    fn test_name() {
+        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+        let (user_id, group_id) = getent("daemon");
+        #[cfg(target_os = "macos")]
+        let (user_id, group_id) = (1, 1); // daemon
+
+        let user = Qualifier::User(user_id);
+        assert_eq!(user.name(false).unwrap(), "daemon");
+        assert_eq!(user.name(true).unwrap(), user_id.to_string());
+
+        let group = Qualifier::Group(group_id);
+        assert_eq!(group.name(false).unwrap(), "daemon");
+        assert_eq!(group.name(true).unwrap(), group_id.to_string());
+
+        #[cfg(target_os = "macos")]
+        {
+            let guid =
+                Qualifier::Guid(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap());
+            assert_eq!(
+                guid.name(false).unwrap(),
+                "abcdefab-cdef-abcd-efab-cdef00000059"
+            );
+            assert_eq!(
+                guid.name(true).unwrap(),
+                "abcdefab-cdef-abcd-efab-cdef00000059"
+            );
+            // You have to translate_guid() to get a User/Group before name()
+            // will work.
+            assert_eq!(
+                guid.translate_guid().unwrap().name(false).unwrap(),
+                "_spotlight"
+            );
         }
     }
 }

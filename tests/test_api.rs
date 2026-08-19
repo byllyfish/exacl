@@ -119,10 +119,10 @@ fn get_filesystem(path: &std::path::PathBuf) -> String {
 #[test]
 #[cfg(target_os = "linux")]
 fn test_too_many_entries() -> io::Result<()> {
-    init();
-
     use std::collections::HashMap;
     const UNTESTED: usize = 65535;
+
+    init();
 
     let path = std::env::temp_dir();
     let fs = get_filesystem(&path);

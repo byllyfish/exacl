@@ -194,32 +194,51 @@ impl AclEntry {
     }
 
     /// Return an `AclEntry` constructed from a native `acl_entry_t`.
-    pub(crate) fn from_raw(entry: acl_entry_t, acl: acl_t) -> io::Result<AclEntry> {
+    ///
+    /// If `numeric` is true, retrieve numeric uid/gid instead of translating
+    /// names.
+    pub(crate) fn from_raw(entry: acl_entry_t, acl: acl_t, numeric: bool) -> io::Result<AclEntry> {
         let (allow, qualifier, perms, flags) = xacl_get_entry(acl, entry)?;
 
         let (kind, name) = match qualifier {
             Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
 
             #[cfg(target_os = "macos")]
-            Qualifier::User(_) | Qualifier::Guid(_) => (AclEntryKind::User, qualifier.name()?),
+            Qualifier::User(_) => (AclEntryKind::User, qualifier.name(numeric)?),
 
             #[cfg(target_os = "macos")]
-            Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name()?),
+            Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name(numeric)?),
+
+            #[cfg(target_os = "macos")]
+            Qualifier::Guid(_) => {
+                let translated = qualifier.translate_guid()?;
+                match translated {
+                    Qualifier::User(_) | Qualifier::Guid(_) => {
+                        (AclEntryKind::User, translated.name(numeric)?)
+                    }
+                    Qualifier::Group(_) => (AclEntryKind::Group, translated.name(numeric)?),
+                    Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
+                }
+            }
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-            Qualifier::User(_) | Qualifier::UserObj => (AclEntryKind::User, qualifier.name()?),
+            Qualifier::User(_) | Qualifier::UserObj => {
+                (AclEntryKind::User, qualifier.name(numeric)?)
+            }
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-            Qualifier::Group(_) | Qualifier::GroupObj => (AclEntryKind::Group, qualifier.name()?),
+            Qualifier::Group(_) | Qualifier::GroupObj => {
+                (AclEntryKind::Group, qualifier.name(numeric)?)
+            }
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-            Qualifier::Mask => (AclEntryKind::Mask, qualifier.name()?),
+            Qualifier::Mask => (AclEntryKind::Mask, qualifier.name(numeric)?),
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-            Qualifier::Other => (AclEntryKind::Other, qualifier.name()?),
+            Qualifier::Other => (AclEntryKind::Other, qualifier.name(numeric)?),
 
             #[cfg(target_os = "freebsd")]
-            Qualifier::Everyone => (AclEntryKind::Everyone, qualifier.name()?),
+            Qualifier::Everyone => (AclEntryKind::Everyone, qualifier.name(numeric)?),
         };
 
         Ok(AclEntry {
@@ -549,19 +568,25 @@ mod aclentry_tests {
 
     #[test]
     fn test_kind_fromstr() {
-        assert_eq!(AclEntryKind::User, "user".parse::<AclEntryKind>().unwrap());
-        assert_eq!(
-            AclEntryKind::Group,
-            "group".parse::<AclEntryKind>().unwrap()
-        );
-        assert_eq!(
-            AclEntryKind::Unknown,
-            "unknown".parse::<AclEntryKind>().unwrap()
-        );
+        let variants = [
+            (AclEntryKind::User, "user"),
+            (AclEntryKind::Group, "group"),
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+            (AclEntryKind::Mask, "mask"),
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+            (AclEntryKind::Other, "other"),
+            #[cfg(target_os = "freebsd")]
+            (AclEntryKind::Everyone, "everyone"),
+            (AclEntryKind::Unknown, "unknown"),
+        ];
 
-        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        assert_eq!(AclEntryKind::Mask, "mask".parse::<AclEntryKind>().unwrap());
+        for value in variants {
+            assert_eq!(value.0, value.1.parse::<AclEntryKind>().unwrap());
+        }
+    }
 
+    #[test]
+    fn test_kind_fromstr_unknown_variant() {
         #[cfg(target_os = "macos")]
         assert_eq!(
             "unknown variant `x`, expected one of `user`, `group`, `unknown`",

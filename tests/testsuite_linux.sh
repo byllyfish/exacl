@@ -143,6 +143,56 @@ testReadAclForFile1() {
     setfacl -b "$FILE1"
 }
 
+testReadAclForFile1_Numeric() {
+    # Same as above, but uses --numeric option.
+    msg=$($EXACL -n $FILE1)
+    assertEquals "exit1" 0 $?
+    assertEquals \
+        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "${msg//\"/}"
+
+    assertEquals "-rw-------" "$(fileperms $FILE1)"
+    isReadable "$FILE1" && isWritable "$FILE1"
+    assertEquals "exit2" 0 $?
+
+    # Add ACL entry for current user to "write-only". (Note: owner still has read access)
+    setfacl -m "u:$ME:w" "$FILE1"
+
+    msg=$($EXACL -n $FILE1)
+    assertEquals "exit3" 0 $?
+    assertEquals \
+        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:user,name:$ME_NUM,perms:[write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "${msg//\"/}"
+
+    assertEquals "-rw--w----" "$(fileperms $FILE1)"
+    isReadable "$FILE1" && isWritable "$FILE1"
+    assertEquals "exit4" 0 $?
+
+    # Remove owner read perm.
+    chmod u-rw "$FILE1"
+
+    assertEquals "-----w----" "$(fileperms $FILE1)"
+    ! isReadable "$FILE1" && ! isWritable "$FILE1"
+    assertEquals "exit5" 0 $?
+
+    # Add ACL entry for current group to "allow write".
+    setfacl -m "g:$MY_GROUP:w" "$FILE1"
+
+    msg=$($EXACL -n $FILE1)
+    assertEquals "exit6" 0 $?
+    assertEquals \
+        "[{kind:user,name:,perms:[],flags:[],allow:true},{kind:user,name:$ME_NUM,perms:[write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP_NUM,perms:[write],flags:[],allow:true},{kind:mask,name:,perms:[write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "${msg//\"/}"
+
+    assertEquals "-----w----" "$(fileperms $FILE1)"
+    ! isReadable "$FILE1" && ! isWritable "$FILE1"
+    assertEquals "exit7" 0 $?
+
+    # Reset permissions.
+    chmod 600 "$FILE1"
+    setfacl -b "$FILE1"
+}
+
 testReadAclForDir1() {
     msg=$($EXACL $DIR1)
     assertEquals 0 $?
