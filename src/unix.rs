@@ -225,7 +225,7 @@ fn getgrgid(gid: gid_t) -> io::Result<Option<String>> {
         Ok(None)
     } else {
         let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
-        return Ok(Some(cstr.to_string_lossy().into_owned()))
+        Ok(Some(cstr.to_string_lossy().into_owned()))
     }
 }
 

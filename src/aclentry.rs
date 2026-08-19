@@ -213,9 +213,10 @@ impl AclEntry {
             Qualifier::Guid(_) => {
                 let translated = qualifier.translate_guid()?;
                 match translated {
-                    Qualifier::User(_) => (AclEntryKind::User, translated.name(numeric)?),
+                    Qualifier::User(_) | Qualifier::Guid(_) => {
+                        (AclEntryKind::User, translated.name(numeric)?)
+                    }
                     Qualifier::Group(_) => (AclEntryKind::Group, translated.name(numeric)?),
-                    Qualifier::Guid(_) => (AclEntryKind::User, translated.name(numeric)?),
                     Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
                 }
             }
