@@ -412,7 +412,7 @@ mod unix_tests {
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
-            let (user_id, _) = getent("daemon");
+            let (user_id, _) = helper::getent("daemon");
             assert_eq!(name_to_uid("daemon").ok(), Some(user_id));
         }
     }
@@ -432,7 +432,7 @@ mod unix_tests {
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
-            let (_, group_id) = getent("daemon");
+            let (_, group_id) = helper::getent("daemon");
             assert_eq!(name_to_gid("daemon").ok(), Some(group_id));
         }
     }
@@ -446,7 +446,7 @@ mod unix_tests {
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
-            let (user_id, _) = getent("daemon");
+            let (user_id, _) = helper::getent("daemon");
             assert_eq!(uid_to_name(user_id).unwrap(), "daemon");
         }
     }
@@ -460,7 +460,7 @@ mod unix_tests {
 
         #[cfg(any(target_os = "linux", target_os = "freebsd"))]
         {
-            let (_, group_id) = getent("daemon");
+            let (_, group_id) = helper::getent("daemon");
             assert_eq!(gid_to_name(group_id).unwrap(), "daemon");
         }
     }
