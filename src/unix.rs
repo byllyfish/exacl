@@ -376,9 +376,13 @@ pub mod helper {
     /// Test the `getent` test function using $USER and "daemon".
     #[test]
     fn test_getent() {
-        let user = std::env::var("USER").unwrap();
-        let result = getent(&user);
-        eprintln!("getent: {user} = {result:?}");
+        // $USER may not be set on container running as root.
+        if let Ok(user) = std::env::var("USER") {
+            let result = getent(&user);
+            eprintln!("getent: {user} = {result:?}");
+        } else {
+            eprintln!("$USER env var is not set.");
+        }
 
         let user = "daemon";
         let result = getent(user);
