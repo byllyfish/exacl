@@ -293,29 +293,109 @@ pub fn guid_to_id(guid: Uuid) -> io::Result<(Option<uid_t>, Option<gid_t>)> {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/// The `unix::helper` module contains a `getent` function that looks up a
+/// uid/gid for a specific user name. This module is provided for test code
+/// only.
 #[cfg(test)]
-mod unix_tests {
-    use super::*;
-
-    /// Retrieve `user_id` and `group_id` of unix entity with specified name.
+pub mod helper {
+    /// Retrieve `user_id` and `group_id` of unix user with specified name.
+    /// Equivalent to running `getent passwd NAME`.
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-    fn getent(name: &str) -> (u32, u32) {
+    pub fn getent(name: &str) -> (u32, u32) {
         use std::str::FromStr;
 
         let cmd = std::process::Command::new("getent")
-            .arg("passwd")
-            .arg(name)
+            .args(["passwd", name])
             .output()
-            .expect("Valid command");
-        let out = String::from_utf8(cmd.stdout).expect("Valid utf8");
+            .expect("failed to execute getent");
+
+        if !cmd.status.success() {
+            let error = String::from_utf8(cmd.stderr).expect("invalid utf8");
+            panic!("getent failed ({name}): {error:?}")
+        }
+
+        // Expected output:
+        // ```
+        // NAME:x:UID:GID:...
+        // ```
+
+        let out = String::from_utf8(cmd.stdout).expect("invalid utf8");
         let tokens = out.split(':').collect::<Vec<_>>();
         assert_eq!(tokens[0], name);
-
-        let user_id = u32::from_str(tokens[2]).expect("Valid uid");
-        let group_id = u32::from_str(tokens[3]).expect("Valid gid");
+        let user_id = u32::from_str(tokens[2]).expect("invalid uid");
+        let group_id = u32::from_str(tokens[3]).expect("invalid gid");
 
         (user_id, group_id)
     }
+
+    /// Retrieve `user_id` and `group_id` of unix entity with specified name.
+    ///  `dscl . -read /Users/NAME UniqueID PrimaryGroupID`
+    #[cfg(target_os = "macos")]
+    pub fn getent(name: &str) -> (u32, u32) {
+        use std::str::FromStr;
+
+        let cmd = std::process::Command::new("dscl")
+            .args([
+                ".",
+                "-read",
+                &format!("/Users/{name}"),
+                "UniqueID",
+                "PrimaryGroupID",
+            ])
+            .output()
+            .expect("failed to execute dscl");
+
+        if !cmd.status.success() {
+            let error = String::from_utf8(cmd.stderr).expect("invalid utf8");
+            panic!("dscl failed ({name}): {error:?}")
+        }
+
+        // Expected output:
+        // ```
+        // PrimaryGroupID: GID
+        // UniqueID: UID
+        // ```
+
+        let out = String::from_utf8(cmd.stdout).expect("invalid utf8");
+        let mut group_id = None;
+        let mut user_id = None;
+
+        for line in out.lines() {
+            // Split token pair on space character.
+            let tokens = line.split_once(' ').unwrap();
+            match tokens.0 {
+                "PrimaryGroupID:" => group_id = Some(u32::from_str(tokens.1).expect("invalid gid")),
+                "UniqueID:" => user_id = Some(u32::from_str(tokens.1).expect("invalid uid")),
+                _ => (),
+            }
+        }
+
+        (user_id.expect("no uid"), group_id.expect("no gid"))
+    }
+
+    /// Test the `getent` test function using $USER and "daemon".
+    #[test]
+    fn test_getent() {
+        let user = std::env::var("USER").unwrap();
+        let result = getent(&user);
+        eprintln!("getent: {user} = {result:?}");
+
+        let user = "daemon";
+        let result = getent(user);
+        eprintln!("getent: {user} = {result:?}");
+
+        #[cfg(target_os = "macos")]
+        {
+            let user = "_spotlight";
+            let result = getent(user);
+            eprintln!("getent: {user} = {result:?}");
+        }
+    }
+}
+
+#[cfg(test)]
+mod unix_tests {
+    use super::*;
 
     #[test]
     fn test_name_to_uid() {
