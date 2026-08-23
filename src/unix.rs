@@ -301,7 +301,7 @@ pub mod helper {
     /// Retrieve `user_id` and `group_id` of unix user with specified name.
     /// Equivalent to running `getent passwd NAME`.
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-    pub fn getent(name: &str) -> (u32, u32) {
+    pub(crate) fn getent(name: &str) -> (u32, u32) {
         use std::str::FromStr;
 
         let cmd = std::process::Command::new("getent")
@@ -331,7 +331,7 @@ pub mod helper {
     /// Retrieve `user_id` and `group_id` of unix entity with specified name.
     ///  `dscl . -read /Users/NAME UniqueID PrimaryGroupID`
     #[cfg(target_os = "macos")]
-    pub fn getent(name: &str) -> (u32, u32) {
+    pub(crate) fn getent(name: &str) -> (u32, u32) {
         use std::str::FromStr;
 
         let cmd = std::process::Command::new("dscl")
@@ -373,17 +373,43 @@ pub mod helper {
         (user_id.expect("no uid"), group_id.expect("no gid"))
     }
 
-    /// Test the `getent` test function using $USER and "daemon".
+    /// Return a valid username/uid pair.
+    pub(crate) fn valid_user() -> (String, u32) {
+        let name = if cfg!(target_os = "macos") {
+            "_spotlight"
+        } else {
+            "daemon"
+        };
+
+        let (uid, _) = getent(name);
+        (name.to_string(), uid)
+    }
+
+    /// Return a valid groupname/gid pair.
+    pub(crate) fn valid_group() -> (String, u32) {
+        let name = if cfg!(target_os = "macos") {
+            "_spotlight"
+        } else {
+            "daemon"
+        };
+
+        let (_, gid) = getent(name);
+        (name.to_string(), gid)
+    }
+
+    /// Return an anonymous (no name) uid.
+    pub(crate) fn anonymous_uid() -> u32 {
+        14987
+    }
+
+    /// Return an anonymous (no name) gid.
+    pub(crate) fn anonymous_gid() -> u32 {
+        14988
+    }
+
+    /// Test the `getent` test function.
     #[test]
     fn test_getent() {
-        // $USER may not be set on container running as root.
-        if let Ok(user) = std::env::var("USER") {
-            let result = getent(&user);
-            eprintln!("getent: {user} = {result:?}");
-        } else {
-            eprintln!("$USER env var is not set.");
-        }
-
         let user = "daemon";
         let result = getent(user);
         eprintln!("getent: {user} = {result:?}");
@@ -398,138 +424,189 @@ pub mod helper {
 }
 
 #[cfg(test)]
-mod unix_tests {
+mod tests {
     use super::*;
 
+    type TestResult = Result<(), Box<dyn std::error::Error>>;
+
+    /// Test invalid name in `name_to_uid`, `name_to_gid`, `getpwnam`, `getgrnam`.
     #[test]
-    fn test_name_to_uid() {
-        let msg = name_to_uid("").unwrap_err().to_string();
-        assert_eq!(msg, "unknown user name: \"\"");
+    fn test_invalid_name() -> TestResult {
+        let invalid_names = ["", "non_existant", "-1", " root", " 500", "4294967296"];
 
-        let msg = name_to_uid("non_existant").unwrap_err().to_string();
-        assert_eq!(msg, "unknown user name: \"non_existant\"");
-
-        assert_eq!(name_to_uid("500").ok(), Some(500));
-
-        #[cfg(target_os = "macos")]
-        assert_eq!(name_to_uid("_spotlight").ok(), Some(89));
-
-        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        {
-            let (user_id, _) = helper::getent("daemon");
-            assert_eq!(name_to_uid("daemon").ok(), Some(user_id));
+        for name in invalid_names {
+            let err = name_to_uid(name).unwrap_err();
+            assert_eq!(err.to_string(), format!("unknown user name: \"{name}\""));
         }
+
+        for name in invalid_names {
+            let err = name_to_gid(name).unwrap_err();
+            assert_eq!(err.to_string(), format!("unknown group name: \"{name}\""));
+        }
+
+        for name in invalid_names {
+            let result = getpwnam(name)?;
+            assert_eq!(result, None);
+        }
+
+        for name in invalid_names {
+            let result = getgrnam(name)?;
+            assert_eq!(result, None);
+        }
+
+        Ok(())
     }
 
+    /// Test valid numeric user name in `name_to_uid`, `name_to_gid`.
     #[test]
-    fn test_name_to_gid() {
-        let msg = name_to_gid("").unwrap_err().to_string();
-        assert_eq!(msg, "unknown group name: \"\"");
+    fn test_numeric_name() -> TestResult {
+        let numeric_names = ["500", "0", "1", "4294967295"];
 
-        let msg = name_to_gid("non_existant").unwrap_err().to_string();
-        assert_eq!(msg, "unknown group name: \"non_existant\"");
-
-        assert_eq!(name_to_gid("500").ok(), Some(500));
-
-        #[cfg(target_os = "macos")]
-        assert_eq!(name_to_gid("_spotlight").ok(), Some(89));
-
-        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        {
-            let (_, group_id) = helper::getent("daemon");
-            assert_eq!(name_to_gid("daemon").ok(), Some(group_id));
+        for name in numeric_names {
+            let result = name_to_uid(name)?;
+            assert_eq!(result, name.parse()?);
         }
+
+        for name in numeric_names {
+            let result = name_to_gid(name)?;
+            assert_eq!(result, name.parse()?);
+        }
+
+        for name in numeric_names {
+            let result = getpwnam(name)?;
+            assert_eq!(result, None);
+        }
+
+        for name in numeric_names {
+            let result = getgrnam(name)?;
+            assert_eq!(result, None);
+        }
+
+        Ok(())
     }
 
+    /// Test valid user name in `name_to_uid`, `uid_to_name`.
     #[test]
-    fn test_uid_to_name() {
-        assert_eq!(uid_to_name(1500).unwrap(), "1500");
+    fn test_valid_user() -> TestResult {
+        let (name, uid) = helper::valid_user();
 
-        #[cfg(target_os = "macos")]
-        assert_eq!(uid_to_name(89).unwrap(), "_spotlight");
+        let result = name_to_uid(&name)?;
+        assert_eq!(result, uid);
 
-        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        {
-            let (user_id, _) = helper::getent("daemon");
-            assert_eq!(uid_to_name(user_id).unwrap(), "daemon");
-        }
+        let result = uid_to_name(uid)?;
+        assert_eq!(result, name);
+
+        Ok(())
     }
 
+    /// Test anonymous uid in `uid_to_name`.
     #[test]
-    fn test_gid_to_name() {
-        assert_eq!(gid_to_name(1500).unwrap(), "1500");
+    fn test_anonymous_uid() -> TestResult {
+        let uid = helper::anonymous_uid();
 
-        #[cfg(target_os = "macos")]
-        assert_eq!(gid_to_name(89).unwrap(), "_spotlight");
+        let result = uid_to_name(uid)?;
+        assert_eq!(result, uid.to_string());
 
-        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        {
-            let (_, group_id) = helper::getent("daemon");
-            assert_eq!(gid_to_name(group_id).unwrap(), "daemon");
-        }
+        Ok(())
     }
 
+    /// Test valid group name in `name_to_gid`, `gid_to_name`.
+    #[test]
+    fn test_valid_group() -> TestResult {
+        let (name, gid) = helper::valid_group();
+
+        let result = name_to_gid(&name)?;
+        assert_eq!(result, gid);
+
+        let result = gid_to_name(gid)?;
+        assert_eq!(result, name);
+
+        Ok(())
+    }
+
+    /// Test anonymous gid in `gid_to_name`.
+    #[test]
+    fn test_anonymous_gid() -> TestResult {
+        let gid = helper::anonymous_gid();
+
+        let result = gid_to_name(gid)?;
+        assert_eq!(result, gid.to_string());
+
+        Ok(())
+    }
+
+    /// Test `uid_to_guid` converts uid to guid.
     #[test]
     #[cfg(target_os = "macos")]
-    fn test_uid_to_guid() {
-        assert_eq!(
-            uid_to_guid(89).ok(),
-            Some(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap())
-        );
+    fn test_uid_to_guid() -> TestResult {
+        let uids = [
+            (89u32, "ffffeeee-dddd-cccc-bbbb-aaaa00000059"),
+            (1500, "ffffeeee-dddd-cccc-bbbb-aaaa000005dc"),
+            (20, "ffffeeee-dddd-cccc-bbbb-aaaa00000014"),
+            (4294967295, "ffffeeee-dddd-cccc-bbbb-aaaaffffffff"),
+            (0, "ffffeeee-dddd-cccc-bbbb-aaaa00000000"),
+        ];
 
-        assert_eq!(
-            uid_to_guid(1500).ok(),
-            Some(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap())
-        );
+        for (uid, uuid) in uids {
+            let guid = uid_to_guid(uid)?;
+            let expected = Uuid::parse_str(uuid)?;
+            assert_eq!(guid, expected);
+        }
+
+        Ok(())
     }
 
+    /// Test `gid_to_guid` converts gid to guid.
     #[test]
     #[cfg(target_os = "macos")]
-    fn test_gid_to_guid() {
-        assert_eq!(
-            gid_to_guid(89).ok(),
-            Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap())
-        );
+    fn test_gid_to_guid() -> TestResult {
+        let gids = [
+            (89u32, "abcdefab-cdef-abcd-efab-cdef00000059"),
+            (1500, "aaaabbbb-cccc-dddd-eeee-ffff000005dc"),
+            (20, "abcdefab-cdef-abcd-efab-cdef00000014"),
+            (4294967295, "aaaabbbb-cccc-dddd-eeee-ffffffffffff"),
+            (0, "abcdefab-cdef-abcd-efab-cdef00000000"),
+        ];
 
-        assert_eq!(
-            gid_to_guid(1500).ok(),
-            Some(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap())
-        );
+        for (gid, uuid) in gids {
+            let guid = gid_to_guid(gid)?;
+            let expected = Uuid::parse_str(uuid)?;
+            assert_eq!(guid, expected);
+        }
 
-        assert_eq!(
-            gid_to_guid(20).ok(),
-            Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap())
-        );
+        Ok(())
     }
 
+    /// Test `guid_to_id` converts guid to a uid or gid, if possible.
     #[test]
     #[cfg(target_os = "macos")]
-    fn test_guid_to_id() {
-        assert_eq!(
-            guid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa00000059").unwrap()).unwrap(),
-            (Some(89), None)
-        );
+    fn test_guid_to_id() -> TestResult {
+        let uuids = [
+            ("ffffeeee-dddd-cccc-bbbb-aaaa00000059", (Some(89u32), None)),
+            ("ffffeeee-dddd-cccc-bbbb-aaaa000005dc", (Some(1500), None)),
+            ("abcdefab-cdef-abcd-efab-cdef00000059", (None, Some(89u32))),
+            ("aaaabbbb-cccc-dddd-eeee-ffff000005dc", (None, Some(1500))),
+            ("abcdefab-cdef-abcd-efab-cdef00000014", (None, Some(20))),
+            ("00000000-0000-0000-0000-000000000000", (None, None)),
+            ("ffffffff-ffff-ffff-ffff-ffffffffffff", (None, None)),
+            (
+                "ffffeeee-dddd-cccc-bbbb-aaaaffffffff",
+                (Some(4294967295), None),
+            ),
+            (
+                "aaaabbbb-cccc-dddd-eeee-ffffffffffff",
+                (None, Some(4294967295)),
+            ),
+            ("ffffeeee-dddd-cccc-bbbb-aaaa00000000", (Some(0), None)),
+            ("abcdefab-cdef-abcd-efab-cdef00000000", (None, Some(0))),
+        ];
 
-        assert_eq!(
-            guid_to_id(Uuid::parse_str("ffffeeee-dddd-cccc-bbbb-aaaa000005dc").unwrap()).unwrap(),
-            (Some(1500), None)
-        );
+        for (uuid, expected) in uuids {
+            let guid = Uuid::parse_str(uuid)?;
+            let id = guid_to_id(guid)?;
+            assert_eq!(id, expected);
+        }
 
-        assert_eq!(
-            guid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059").unwrap()).unwrap(),
-            (None, Some(89))
-        );
-
-        assert_eq!(
-            guid_to_id(Uuid::parse_str("aaaabbbb-cccc-dddd-eeee-ffff000005dc").unwrap()).unwrap(),
-            (None, Some(1500))
-        );
-
-        assert_eq!(
-            guid_to_id(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000014").unwrap()).unwrap(),
-            (None, Some(20))
-        );
-
-        assert_eq!(guid_to_id(Uuid::nil()).unwrap(), (None, None));
+        Ok(())
     }
 }
