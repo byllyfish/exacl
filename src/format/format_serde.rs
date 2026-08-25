@@ -788,14 +788,10 @@ mod deserialize_tests {
         struct Test;
 
         impl<'de> Visitor<'de> for Test {
-            type Value = String;
+            type Value = ();
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 write!(formatter, "failed")
-            }
-
-            fn visit_str<E>(self, s: &str) -> std::result::Result<Self::Value, E> {
-                Ok(s.to_owned())
             }
         }
 

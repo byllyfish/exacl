@@ -60,3 +60,16 @@ pub fn custom_err(msg: &str, err: &io::Error) -> io::Error {
 pub fn path_err(path: &Path, err: &io::Error) -> io::Error {
     io::Error::new(err.kind(), format!("File {path:?}: {err}"))
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_fail_from_err() {
+        let result: io::Result<u32> = fail_from_err(1, "test", "");
+        assert!(result.is_err());
+    }
+}
