@@ -297,14 +297,14 @@ pub fn guid_to_id(guid: Uuid) -> io::Result<(Option<uid_t>, Option<gid_t>)> {
 #[cfg(test)]
 pub mod helper {
     /// Init logging for tests.
-    pub(crate) fn init_logging() {
+    pub fn init_logging() {
         let _ = env_logger::builder().is_test(true).try_init();
     }
 
     /// Retrieve `user_id` and `group_id` of unix user with specified name.
     /// Equivalent to running `getent passwd NAME`.
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-    pub(crate) fn getent(name: &str) -> (u32, u32) {
+    pub fn getent(name: &str) -> (u32, u32) {
         use std::str::FromStr;
 
         let cmd = std::process::Command::new("getent")
@@ -334,7 +334,7 @@ pub mod helper {
     /// Retrieve `user_id` and `group_id` of unix entity with specified name.
     ///  `dscl . -read /Users/NAME UniqueID PrimaryGroupID`
     #[cfg(target_os = "macos")]
-    pub(crate) fn getent(name: &str) -> (u32, u32) {
+    pub fn getent(name: &str) -> (u32, u32) {
         use std::str::FromStr;
 
         let cmd = std::process::Command::new("dscl")
@@ -377,7 +377,7 @@ pub mod helper {
     }
 
     /// Return a valid username/uid pair.
-    pub(crate) fn valid_user() -> (String, u32) {
+    pub fn valid_user() -> (String, u32) {
         let name = if cfg!(target_os = "macos") {
             "_spotlight"
         } else {
@@ -389,7 +389,7 @@ pub mod helper {
     }
 
     /// Return a valid groupname/gid pair.
-    pub(crate) fn valid_group() -> (String, u32) {
+    pub fn valid_group() -> (String, u32) {
         let name = if cfg!(target_os = "macos") {
             "_spotlight"
         } else {
@@ -401,12 +401,12 @@ pub mod helper {
     }
 
     /// Return an anonymous (no name) uid.
-    pub(crate) fn anonymous_uid() -> u32 {
+    pub fn anonymous_uid() -> u32 {
         14987
     }
 
     /// Return an anonymous (no name) gid.
-    pub(crate) fn anonymous_gid() -> u32 {
+    pub fn anonymous_gid() -> u32 {
         14988
     }
 
@@ -595,7 +595,7 @@ mod tests {
             (89u32, "ffffeeee-dddd-cccc-bbbb-aaaa00000059"),
             (1500, "ffffeeee-dddd-cccc-bbbb-aaaa000005dc"),
             (20, "ffffeeee-dddd-cccc-bbbb-aaaa00000014"),
-            (4294967295, "ffffeeee-dddd-cccc-bbbb-aaaaffffffff"),
+            (4_294_967_295, "ffffeeee-dddd-cccc-bbbb-aaaaffffffff"),
             (0, "ffffeeee-dddd-cccc-bbbb-aaaa00000000"),
         ];
 
@@ -618,7 +618,7 @@ mod tests {
             (89u32, "abcdefab-cdef-abcd-efab-cdef00000059"),
             (1500, "aaaabbbb-cccc-dddd-eeee-ffff000005dc"),
             (20, "abcdefab-cdef-abcd-efab-cdef00000014"),
-            (4294967295, "aaaabbbb-cccc-dddd-eeee-ffffffffffff"),
+            (4_294_967_295, "aaaabbbb-cccc-dddd-eeee-ffffffffffff"),
             (0, "abcdefab-cdef-abcd-efab-cdef00000000"),
         ];
 
@@ -647,11 +647,11 @@ mod tests {
             ("ffffffff-ffff-ffff-ffff-ffffffffffff", (None, None)),
             (
                 "ffffeeee-dddd-cccc-bbbb-aaaaffffffff",
-                (Some(4294967295), None),
+                (Some(4_294_967_295), None),
             ),
             (
                 "aaaabbbb-cccc-dddd-eeee-ffffffffffff",
-                (None, Some(4294967295)),
+                (None, Some(4_294_967_295)),
             ),
             ("ffffeeee-dddd-cccc-bbbb-aaaa00000000", (Some(0), None)),
             ("abcdefab-cdef-abcd-efab-cdef00000000", (None, Some(0))),

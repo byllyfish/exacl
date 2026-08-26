@@ -787,7 +787,7 @@ mod deserialize_tests {
 
         struct Test;
 
-        impl<'de> Visitor<'de> for Test {
+        impl Visitor<'_> for Test {
             type Value = ();
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
