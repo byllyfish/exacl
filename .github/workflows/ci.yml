@@ -53,7 +53,7 @@ jobs:
     - name: Build (serde)
       run: cargo build --features serde
     - name: Unit Test (no-serde)
-      run: cargo test
+      run: RUST_LOG=debug cargo test
     - name: Unit Test (serde)
       run: RUST_LOG=debug cargo test --features serde
     - name: Run integration tests
@@ -169,7 +169,7 @@ jobs:
           # Run tests on our mem-based FS with acls.
           export TMPDIR=/tmp/exacl_acls
           echo "*** TMPDIR=$TMPDIR"
-          cargo test --features serde
+          RUST_LOG=debug cargo test --features serde
           ./tests/run_tests.sh
           export TMPDIR=/tmp/exacl_nfsv4acls
           echo "*** TMPDIR=$TMPDIR"

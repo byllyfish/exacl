@@ -293,11 +293,14 @@ pub fn guid_to_id(guid: Uuid) -> io::Result<(Option<uid_t>, Option<gid_t>)> {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// The `unix::helper` module contains a `getent` function that looks up a
-/// uid/gid for a specific user name. This module is provided for test code
-/// only.
+/// The `unix::helper` module contains helper functions for test code only.
 #[cfg(test)]
 pub mod helper {
+    /// Init logging for tests.
+    pub(crate) fn init_logging() {
+        let _ = env_logger::builder().is_test(true).try_init();
+    }
+
     /// Retrieve `user_id` and `group_id` of unix user with specified name.
     /// Equivalent to running `getent passwd NAME`.
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
@@ -432,6 +435,8 @@ mod tests {
     /// Test invalid name in `name_to_uid`, `name_to_gid`, `getpwnam`, `getgrnam`.
     #[test]
     fn test_invalid_name() -> TestResult {
+        helper::init_logging();
+
         let invalid_names = [
             "",
             "non_existant",
@@ -476,6 +481,8 @@ mod tests {
     /// Test valid numeric user name in `name_to_uid`, `name_to_gid`.
     #[test]
     fn test_numeric_name() -> TestResult {
+        helper::init_logging();
+
         let numeric_names = ["500", "0", "1", "4294967295"];
 
         for name in numeric_names {
@@ -504,6 +511,8 @@ mod tests {
     /// Test valid user name in `name_to_uid`, `uid_to_name`.
     #[test]
     fn test_valid_user() -> TestResult {
+        helper::init_logging();
+
         let (name, uid) = helper::valid_user();
 
         let result = name_to_uid(&name)?;
@@ -518,6 +527,8 @@ mod tests {
     /// Test anonymous uid in `uid_to_name`.
     #[test]
     fn test_anonymous_uid() -> TestResult {
+        helper::init_logging();
+
         let uid = helper::anonymous_uid();
 
         let result = uid_to_name(uid)?;
@@ -529,6 +540,8 @@ mod tests {
     /// Test valid group name in `name_to_gid`, `gid_to_name`.
     #[test]
     fn test_valid_group() -> TestResult {
+        helper::init_logging();
+
         let (name, gid) = helper::valid_group();
 
         let result = name_to_gid(&name)?;
@@ -543,6 +556,8 @@ mod tests {
     /// Test anonymous gid in `gid_to_name`.
     #[test]
     fn test_anonymous_gid() -> TestResult {
+        helper::init_logging();
+
         let gid = helper::anonymous_gid();
 
         let result = gid_to_name(gid)?;
@@ -555,6 +570,8 @@ mod tests {
     #[test]
     #[cfg(target_os = "macos")]
     fn test_uid_to_guid() -> TestResult {
+        helper::init_logging();
+
         let uids = [
             (89u32, "ffffeeee-dddd-cccc-bbbb-aaaa00000059"),
             (1500, "ffffeeee-dddd-cccc-bbbb-aaaa000005dc"),
@@ -576,6 +593,8 @@ mod tests {
     #[test]
     #[cfg(target_os = "macos")]
     fn test_gid_to_guid() -> TestResult {
+        helper::init_logging();
+
         let gids = [
             (89u32, "abcdefab-cdef-abcd-efab-cdef00000059"),
             (1500, "aaaabbbb-cccc-dddd-eeee-ffff000005dc"),
@@ -597,6 +616,8 @@ mod tests {
     #[test]
     #[cfg(target_os = "macos")]
     fn test_guid_to_id() -> TestResult {
+        helper::init_logging();
+
         let uuids = [
             ("ffffeeee-dddd-cccc-bbbb-aaaa00000059", (Some(89u32), None)),
             ("ffffeeee-dddd-cccc-bbbb-aaaa000005dc", (Some(1500), None)),
