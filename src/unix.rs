@@ -475,11 +475,15 @@ mod tests {
 
         // Test invalid group name with quote.
         let err = name_to_gid("\"").unwrap_err();
+        let msg = err.to_string();
         if cfg!(target_os = "linux") {
-            // Triggers NSS backend error on Linux (EIO).
-            assert_eq!(err.to_string(), "Input/output error (os error 5)");
+            // May trigger NSS backend error on Linux (EIO).
+            assert!(
+                (msg == "Input/output error (os error 5)")
+                    || (msg == "unknown group name: \"\\\"\"")
+            );
         } else {
-            assert_eq!(err.to_string(), "unknown group name: \"\\\"\"");
+            assert_eq!(msg, "unknown group name: \"\\\"\"");
         }
 
         // Test invalid user name with newline.
