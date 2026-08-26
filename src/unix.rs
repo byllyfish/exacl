@@ -432,7 +432,15 @@ mod tests {
     /// Test invalid name in `name_to_uid`, `name_to_gid`, `getpwnam`, `getgrnam`.
     #[test]
     fn test_invalid_name() -> TestResult {
-        let invalid_names = ["", "non_existant", "-1", " root", " 500", "4294967296"];
+        let invalid_names = [
+            "",
+            "non_existant",
+            "-1",         // negative
+            " root",      // begins with space
+            " 500",       // begins with space
+            "4294967296", // 2**32 is too big
+            "\u{1F600}",  // grinning face emoji
+        ];
 
         for name in invalid_names {
             let err = name_to_uid(name).unwrap_err();
@@ -453,6 +461,14 @@ mod tests {
             let result = getgrnam(name)?;
             assert_eq!(result, None);
         }
+
+        // Test invalid user name with quotes.
+        let err = name_to_uid("\"").unwrap_err();
+        assert_eq!(err.to_string(), "unknown user name: \"\\\"\"");
+
+        // Test invalid group name with quotes.
+        let err = name_to_gid("\"").unwrap_err();
+        assert_eq!(err.to_string(), "unknown group name: \"\\\"\"");
 
         Ok(())
     }
