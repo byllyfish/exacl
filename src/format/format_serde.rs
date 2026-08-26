@@ -91,7 +91,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Error::Message(msg) => write!(f, "{msg}"),
-            Error::NotImplemented => write!(f, "Not implemented"),
+            Error::NotImplemented => write!(f, "not implemented"),
         }
     }
 }
@@ -392,9 +392,26 @@ impl ser::SerializeStructVariant for &mut EnumSerializer<'_, '_> {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// Use this `not_impl!` macro to test that a result is NOT IMPLEMENTED.
+#[cfg(test)]
+macro_rules! not_impl {
+    ($ret:expr) => {
+        assert_eq!($ret.err().unwrap(), Error::NotImplemented)
+    };
+}
+
 #[cfg(test)]
 mod serialize_tests {
     use super::*;
+
+    #[test]
+    fn test_error() {
+        let err = Error::NotImplemented;
+        assert_eq!(format!("{err}"), "not implemented");
+
+        let result = <Error as ser::Error>::custom("foo");
+        assert_eq!(format!("{result}"), "foo");
+    }
 
     #[test]
     fn test_enum() {
@@ -418,10 +435,46 @@ mod serialize_tests {
     fn test_enum_serializer_unimplemented_methods() {
         struct Test;
 
-        macro_rules! not_impl {
-            ($ret:expr) => {
-                assert_eq!($ret.err().unwrap(), Error::NotImplemented)
-            };
+        fn seq_not_impl(mut es: &mut EnumSerializer) {
+            use ser::SerializeSeq;
+            not_impl!(es.serialize_element(&()));
+            not_impl!(es.end());
+        }
+
+        fn tuple_not_impl(mut es: &mut EnumSerializer) {
+            use ser::SerializeTuple;
+            not_impl!(es.serialize_element(&()));
+            not_impl!(es.end());
+        }
+
+        fn tuple_struct_not_impl(mut es: &mut EnumSerializer) {
+            use ser::SerializeTupleStruct;
+            not_impl!(es.serialize_field(&()));
+            not_impl!(es.end());
+        }
+
+        fn tuple_variant_not_impl(mut es: &mut EnumSerializer) {
+            use ser::SerializeTupleVariant;
+            not_impl!(es.serialize_field(&()));
+            not_impl!(es.end());
+        }
+        fn map_not_impl(mut es: &mut EnumSerializer) {
+            use ser::SerializeMap;
+            not_impl!(es.serialize_key(""));
+            not_impl!(es.serialize_value(&()));
+            not_impl!(es.end());
+        }
+
+        fn struct_not_impl(mut es: &mut EnumSerializer) {
+            use ser::SerializeStruct;
+            not_impl!(es.serialize_field("", &()));
+            not_impl!(es.end());
+        }
+
+        fn struct_variant_not_impl(mut es: &mut EnumSerializer) {
+            use ser::SerializeStructVariant;
+            not_impl!(es.serialize_field("", &()));
+            not_impl!(es.end());
         }
 
         impl fmt::Debug for Test {
@@ -461,6 +514,13 @@ mod serialize_tests {
                 not_impl!(es.serialize_map(None));
                 not_impl!(es.serialize_struct("", 0));
                 not_impl!(es.serialize_struct_variant("", 0, "", 0));
+                seq_not_impl(&mut es);
+                tuple_not_impl(&mut es);
+                tuple_struct_not_impl(&mut es);
+                tuple_variant_not_impl(&mut es);
+                map_not_impl(&mut es);
+                struct_not_impl(&mut es);
+                struct_variant_not_impl(&mut es);
 
                 f.write_str("Done.")
             }
@@ -719,5 +779,50 @@ mod deserialize_tests {
             "unknown variant `Unitx`, expected `Unit`",
             res.unwrap_err().to_string()
         );
+    }
+
+    #[test]
+    fn test_enum_deserializer_unimplemented_methods() {
+        use de::Deserializer;
+
+        struct Test;
+
+        impl Visitor<'_> for Test {
+            type Value = ();
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                write!(formatter, "failed")
+            }
+        }
+
+        let mut ed = EnumDeserializer("");
+        not_impl!(ed.deserialize_any(Test));
+        not_impl!(ed.deserialize_bool(Test));
+        not_impl!(ed.deserialize_byte_buf(Test));
+        not_impl!(ed.deserialize_bytes(Test));
+        not_impl!(ed.deserialize_char(Test));
+        not_impl!(ed.deserialize_f32(Test));
+        not_impl!(ed.deserialize_f64(Test));
+        not_impl!(ed.deserialize_i16(Test));
+        not_impl!(ed.deserialize_i32(Test));
+        not_impl!(ed.deserialize_i64(Test));
+        not_impl!(ed.deserialize_i8(Test));
+        not_impl!(ed.deserialize_identifier(Test));
+        not_impl!(ed.deserialize_ignored_any(Test));
+        not_impl!(ed.deserialize_map(Test));
+        not_impl!(ed.deserialize_newtype_struct("", Test));
+        not_impl!(ed.deserialize_option(Test));
+        not_impl!(ed.deserialize_seq(Test));
+        not_impl!(ed.deserialize_str(Test));
+        not_impl!(ed.deserialize_string(Test));
+        not_impl!(ed.deserialize_struct("", &[], Test));
+        not_impl!(ed.deserialize_tuple(0, Test));
+        not_impl!(ed.deserialize_tuple_struct("", 0, Test));
+        not_impl!(ed.deserialize_u16(Test));
+        not_impl!(ed.deserialize_u32(Test));
+        not_impl!(ed.deserialize_u64(Test));
+        not_impl!(ed.deserialize_u8(Test));
+        not_impl!(ed.deserialize_unit(Test));
+        not_impl!(ed.deserialize_unit_struct("", Test));
     }
 }
