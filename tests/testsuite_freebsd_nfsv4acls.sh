@@ -5,6 +5,9 @@
 set -u -o pipefail
 
 EXACL='../target/debug/examples/exacl'
+if [ ! -f "$EXACL" ]; then
+    EXACL='../target/release/examples/exacl'
+fi
 
 ME=$(id -un)
 ME_NUM=$(id -u)

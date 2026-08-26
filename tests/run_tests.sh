@@ -15,8 +15,12 @@ cd "$script_dir" || exit 1
 EXACL="../target/debug/examples/exacl"
 
 if [ ! -f "$EXACL" ]; then
-    echo "!!! exacl executable not found!"
-    exit 1
+    # Look for release build, if debug build is not found.
+    EXACL="../target/release/examples/exacl"
+    if [ ! -f "$EXACL" ]; then
+        echo "!!! exacl executable not found!"
+        exit 1
+    fi
 fi
 
 serde_check="$($EXACL valgrind.supp 2>&1 1>/dev/null)"
