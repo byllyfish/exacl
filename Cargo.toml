@@ -31,6 +31,11 @@ default = []
 
 buildtime_bindgen = ["bindgen"]
 
+# The _LABTEST feature is used to mock weird name/uid environments for testing.
+# This feature does not compile in --release mode.
+
+_LABTEST = []
+
 [dependencies]
 bitflags = "2.11.1"
 log = "0.4.29"
