@@ -628,5 +628,119 @@ testDuplicateEntry() {
         "${msg//\`/}"
 }
 
+testWriteAclToFile1_LabTest() {
+    # Set ACL for 🧪 to "deny read".
+    input=$(quotifyJson "[{kind:user,name:\"🧪\",perms:[read],flags:[],allow:false}]")
+    msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
+    if [ "$msg" = 'Invalid ACL: entry 0: unknown user name: "🧪"' ]; then
+        echo " _LABTEST not enabled."
+        return 0
+    fi
+    assertEquals "" "$msg"
+
+    # Read ACL.
+    msg=$($EXACL $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:🧪,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"/}"
+
+    # Set ACL for 777772 to "deny read".
+    input=$(quotifyJson "[{kind:user,name:777772,perms:[read],flags:[],allow:false}]")
+    msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Read ACL.
+    msg=$($EXACL $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:777772,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"/}"
+
+    # Set ACL for 777773 to "deny read".
+    input=$(quotifyJson "[{kind:user,name:777773,perms:[read],flags:[],allow:false}]")
+    msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Read ACL (note assymetry).
+    msg=$($EXACL $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:777772,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"/}"
+
+    # Set ACL for fbbc14b7-95f9-47a7-8ee8-1cccb9220943 to "deny read".
+    input=$(quotifyJson "[{kind:user,name:fbbc14b7-95f9-47a7-8ee8-1cccb9220943,perms:[read],flags:[],allow:false}]")
+    msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Read ACL.
+    msg=$($EXACL $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:fbbc14b7-95f9-47a7-8ee8-1cccb9220943,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"/}"
+}
+
+testWriteAclToFile1_LabTestNumeric() {
+    # Set ACL for 🧪 to "deny read".
+    input=$(quotifyJson "[{kind:user,name:\"🧪\",perms:[read],flags:[],allow:false}]")
+    msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
+    if [ "$msg" = 'Invalid ACL: entry 0: unknown user name: "🧪"' ]; then
+        echo " _LABTEST not enabled."
+        return 0
+    fi
+    assertEquals "" "$msg"
+
+    # Read ACL.
+    msg=$($EXACL -n $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:777771,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"/}"
+
+    # Set ACL for 777772 to "deny read".
+    input=$(quotifyJson "[{kind:user,name:777772,perms:[read],flags:[],allow:false}]")
+    msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Read ACL (note assymetry).
+    msg=$($EXACL -n $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:777773,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"/}"
+
+    # Set ACL for 777773 to "deny read".
+    input=$(quotifyJson "[{kind:user,name:777773,perms:[read],flags:[],allow:false}]")
+    msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Read ACL.
+    msg=$($EXACL -n $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:777773,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"/}"
+
+    # Set ACL for fbbc14b7-95f9-47a7-8ee8-1cccb9220943 to "deny read".
+    input=$(quotifyJson "[{kind:user,name:fbbc14b7-95f9-47a7-8ee8-1cccb9220943,perms:[read],flags:[],allow:false}]")
+    msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Read ACL.
+    msg=$($EXACL -n $FILE1)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:777774,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"/}"
+}
+
 # shellcheck disable=SC1091
 . shunit2
