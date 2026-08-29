@@ -6,12 +6,17 @@
 //! To set the ACL for myfile from JSON passed via stdin (complete replacement):
 //!     exacl --set myfile
 //!
+//! To set the ACL for myfile from JSON passed via command-line argument:
+//!     exacl --set --acl "[...]" myfile
+//!
 //! To get/set the ACL of a symlink itself, instead of the file it points to,
 //! use the -s option.
 //!
 //! To get/set the default ACL (on Linux), use the -d option.
 //!
 //! To get the ACL without translating uid/gid's to names, use the -n option.
+//!
+//! To use the delimited text format instead of JSON, use the `-f std` option.
 
 use exacl::{AclEntry, AclOption, getfacl, setfacl};
 use std::io;
@@ -24,7 +29,7 @@ use clap::Parser;
 #[command(name = "exacl", about = "Read or write a file's ACL.")]
 #[allow(clippy::struct_excessive_bools)]
 struct Opt {
-    /// Set file's ACL.
+    /// Set file's ACL from STDIN or `--acl` arguments.
     #[arg(long)]
     set: bool,
 
@@ -43,6 +48,10 @@ struct Opt {
     /// Get ACL as numeric only.
     #[arg(short = 'n', long)]
     numeric: bool,
+
+    /// Set ACL to specified value (may combine multiple ACL's).
+    #[arg(long)]
+    acl: Vec<String>,
 
     /// Format of input or output.
     #[arg(value_enum, short = 'f', long, default_value = "json")]
@@ -83,7 +92,10 @@ fn main() {
     }
 
     let exit_code = if opt.set {
-        set_acl(&opt.files, options, opt.format)
+        set_acl(&opt.files, options, opt.format, &opt.acl)
+    } else if !opt.acl.is_empty() {
+        eprintln!("Use of --acl requires --set");
+        EXIT_FAILURE
     } else {
         get_acl(&opt.files, options, opt.format)
     };
@@ -102,8 +114,8 @@ fn get_acl(paths: &[PathBuf], options: AclOption, format: Format) -> i32 {
     EXIT_SUCCESS
 }
 
-fn set_acl(paths: &[PathBuf], options: AclOption, format: Format) -> i32 {
-    let Some(entries) = read_input(format) else {
+fn set_acl(paths: &[PathBuf], options: AclOption, format: Format, acls: &[String]) -> i32 {
+    let Some(entries) = read_acl_input(format, acls) else {
         return EXIT_FAILURE;
     };
 
@@ -134,8 +146,31 @@ fn dump_acl(path: &Path, options: AclOption, format: Format) -> io::Result<()> {
     Ok(())
 }
 
-fn read_input(format: Format) -> Option<Vec<AclEntry>> {
-    let reader = io::BufReader::new(io::stdin());
+fn read_acl_input(format: Format, acls: &[String]) -> Option<Vec<AclEntry>> {
+    if acls.is_empty() {
+        // Read one ACL from stdin.
+        let Some(entries) = read_input(io::stdin(), format) else {
+            return None;
+        };
+        Some(entries)
+    } else {
+        // Read multiple ACLs and combine them.
+        let mut entries = vec![];
+        for acl in acls {
+            let Some(ents) = read_input(acl.as_bytes(), format) else {
+                return None;
+            };
+            entries.extend_from_slice(&ents);
+        }
+        Some(entries)
+    }
+}
+
+fn read_input<R>(source: R, format: Format) -> Option<Vec<AclEntry>>
+where
+    R: io::Read,
+{
+    let reader = io::BufReader::new(source);
 
     let entries: Vec<AclEntry> = match format {
         // Read JSON format.
