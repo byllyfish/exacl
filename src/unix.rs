@@ -88,25 +88,25 @@ fn getpwnam(name: &str) -> io::Result<Option<uid_t>> {
 
     if result.is_null() {
         #[cfg(feature = "_LABTEST")]
-        return labtest_mock_getpwnam(name);
+        return Ok(labtest_mock_getpwnam(name));
 
-        Ok(None)
-    } else {
-        let uid = unsafe { pwd.assume_init().pw_uid };
-        Ok(Some(uid))
+        #[cfg(not(feature = "_LABTEST"))]
+        return Ok(None);
     }
+
+    let uid = unsafe { pwd.assume_init().pw_uid };
+    Ok(Some(uid))
 }
 
 /// Mock additional name -> uid mappings for _LABTEST.
 #[cfg(all(debug_assertions, feature = "_LABTEST"))]
-fn labtest_mock_getpwnam(name: &str) -> io::Result<Option<uid_t>> {
-    let result = match name {
-        "\u{1F9EA}" => Some(777771),
-        "777772" => Some(777773),
-        "fbbc14b7-95f9-47a7-8ee8-1cccb9220943" => Some(777774),
+fn labtest_mock_getpwnam(name: &str) -> Option<uid_t> {
+    match name {
+        "\u{1F9EA}" => Some(777_771),
+        "777772" => Some(777_773),
+        "fbbc14b7-95f9-47a7-8ee8-1cccb9220943" => Some(777_774),
         _ => None,
-    };
-    Ok(result)
+    }
 }
 
 /// Convert group name to gid.
@@ -204,25 +204,25 @@ fn getpwuid(uid: uid_t) -> io::Result<Option<String>> {
 
     if result.is_null() {
         #[cfg(feature = "_LABTEST")]
-        return labtest_mock_getpwuid(uid);
+        return Ok(labtest_mock_getpwuid(uid));
 
-        Ok(None)
-    } else {
-        let cstr = unsafe { CStr::from_ptr(pwd.assume_init().pw_name) };
-        Ok(Some(cstr.to_string_lossy().into_owned()))
+        #[cfg(not(feature = "_LABTEST"))]
+        return Ok(None);
     }
+
+    let cstr = unsafe { CStr::from_ptr(pwd.assume_init().pw_name) };
+    Ok(Some(cstr.to_string_lossy().into_owned()))
 }
 
 /// Mock additional uid -> name mappings for _LABTEST.
 #[cfg(all(debug_assertions, feature = "_LABTEST"))]
-fn labtest_mock_getpwuid(uid: uid_t) -> io::Result<Option<String>> {
-    let result = match uid {
-        777771 => Some("\u{1F9EA}".into()),
-        777773 => Some("777772".into()),
-        777774 => Some("fbbc14b7-95f9-47a7-8ee8-1cccb9220943".into()),
+fn labtest_mock_getpwuid(uid: uid_t) -> Option<String> {
+    match uid {
+        777_771 => Some("\u{1F9EA}".into()),
+        777_773 => Some("777772".into()),
+        777_774 => Some("fbbc14b7-95f9-47a7-8ee8-1cccb9220943".into()),
         _ => None,
-    };
-    Ok(result)
+    }
 }
 
 /// Convert gid to group name.
@@ -718,9 +718,9 @@ mod tests {
         helper::init_logging();
 
         let users = [
-            ("\u{1F9EA}", 777771),
-            ("777772", 777773),
-            ("fbbc14b7-95f9-47a7-8ee8-1cccb9220943", 777774),
+            ("\u{1F9EA}", 777_771),
+            ("777772", 777_773),
+            ("fbbc14b7-95f9-47a7-8ee8-1cccb9220943", 777_774),
         ];
 
         for (name, uid) in users {

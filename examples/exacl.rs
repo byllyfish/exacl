@@ -149,17 +149,12 @@ fn dump_acl(path: &Path, options: AclOption, format: Format) -> io::Result<()> {
 fn read_acl_input(format: Format, acls: &[String]) -> Option<Vec<AclEntry>> {
     if acls.is_empty() {
         // Read one ACL from stdin.
-        let Some(entries) = read_input(io::stdin(), format) else {
-            return None;
-        };
-        Some(entries)
+        read_input(io::stdin(), format)
     } else {
         // Read multiple ACLs and combine them.
         let mut entries = vec![];
         for acl in acls {
-            let Some(ents) = read_input(acl.as_bytes(), format) else {
-                return None;
-            };
+            let ents = read_input(acl.as_bytes(), format)?;
             entries.extend_from_slice(&ents);
         }
         Some(entries)
