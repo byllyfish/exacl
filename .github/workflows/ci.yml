@@ -96,7 +96,8 @@ jobs:
       run: |
         export DEBIAN_FRONTEND=noninteractive
         apt-get update
-        apt-get -y install curl build-essential libacl1-dev acl shunit2 shellcheck
+        # Need `libclang-dev` for bindgen.
+        apt-get -y install curl build-essential libacl1-dev libclang-dev acl shunit2 shellcheck
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
     - name: Fetch
