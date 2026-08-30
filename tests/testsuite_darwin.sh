@@ -708,7 +708,7 @@ testWriteAclToFile1_LabTestNumeric() {
     assertEquals 0 $?
     assertEquals "" "$msg"
 
-    # Read ACL (note assymetry).
+    # Read ACL (note asymmetry).
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
