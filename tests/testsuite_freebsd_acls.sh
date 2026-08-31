@@ -641,13 +641,13 @@ testWriteAclToFile1_LabTest() {
     assertEquals \
         "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:user,name:777772,perms:[read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
-    
+
     # Set ACL for fbbc14b7-95f9-47a7-8ee8-1cccb9220943 to "allow read".
     input=$(quotifyJson "[{kind:user,name:fbbc14b7-95f9-47a7-8ee8-1cccb9220943,perms:[read],flags:[],allow:true}]")
     msg=$($EXACL --set --acl "$input" --acl "$required" $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
-    
+
     # Read ACL.
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
@@ -660,7 +660,7 @@ e}]" \
 testWriteAclToFile1_LabTestNumeric() {
     # The 3 required entries for Linux.
     required=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
- 
+
     # Set ACL for 🧪 to "allow read".
     input=$(quotifyJson "[{kind:user,name:\"🧪\",perms:[read],flags:[],allow:true}]")
     msg=$($EXACL --set --acl "$input" --acl "$required" $FILE1 2>&1)
@@ -669,7 +669,7 @@ testWriteAclToFile1_LabTestNumeric() {
         return 0
     fi
     assertEquals "" "$msg"
- 
+
     # Read ACL.
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?

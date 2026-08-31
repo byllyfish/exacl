@@ -709,14 +709,14 @@ testWriteAclToFile1_LabTest() {
         return 0
     fi
     assertEquals "" "$msg"
-    
+
     # Read ACL.
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:🧪,perms:[read_data],flags:[],allow:false}]" \
         "${msg//\"/}"
-    
+
     # Set ACL for 777772 to "deny read".
     input=$(quotifyJson "[{kind:user,name:777772,perms:[read_data],flags:[],allow:false}]")
     msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
@@ -742,18 +742,18 @@ testWriteAclToFile1_LabTest() {
     assertEquals \
         "[{kind:user,name:777772,perms:[read_data],flags:[],allow:false}]" \
         "${msg//\"/}"
-    
+
     # Set ACL for fbbc14b7-95f9-47a7-8ee8-1cccb9220943 to "deny read".
     input=$(quotifyJson "[{kind:user,name:fbbc14b7-95f9-47a7-8ee8-1cccb9220943,perms:[read_data],flags:[],allow:false}]")
     msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
-    
+
     # Read ACL.
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:fbbc14b7-95f9-47a7-8ee8-1cccb9220943,perms:[read_data],flags:[],allow:false}]"\
+        "[{kind:user,name:fbbc14b7-95f9-47a7-8ee8-1cccb9220943,perms:[read_data],flags:[],allow:false}]" \
         "${msg//\"/}"
 }
 
@@ -766,14 +766,14 @@ testWriteAclToFile1_LabTestNumeric() {
         return 0
     fi
     assertEquals "" "$msg"
-    
+
     # Read ACL.
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
         "[{kind:user,name:777771,perms:[read_data],flags:[],allow:false}]" \
         "${msg//\"/}"
-    
+
     # Set ACL for 777772 to "deny read".
     input=$(quotifyJson "[{kind:user,name:777772,perms:[read_data],flags:[],allow:false}]")
     msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
@@ -799,18 +799,18 @@ testWriteAclToFile1_LabTestNumeric() {
     assertEquals \
         "[{kind:user,name:777773,perms:[read_data],flags:[],allow:false}]" \
         "${msg//\"/}"
-    
+
     # Set ACL for fbbc14b7-95f9-47a7-8ee8-1cccb9220943 to "deny read".
     input=$(quotifyJson "[{kind:user,name:fbbc14b7-95f9-47a7-8ee8-1cccb9220943,perms:[read_data],flags:[],allow:false}]")
     msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
-    
+
     # Read ACL.
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777774,perms:[read_data],flags:[],allow:false}]"\
+        "[{kind:user,name:777774,perms:[read_data],flags:[],allow:false}]" \
         "${msg//\"/}"
 }
 
