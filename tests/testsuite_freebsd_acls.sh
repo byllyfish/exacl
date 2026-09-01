@@ -652,8 +652,7 @@ testWriteAclToFile1_LabTest() {
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:user,name:fbbc14b7-95f9-47a7-8ee8-1cccb9220943,perms:[read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:tru
-e}]" \
+        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:user,name:fbbc14b7-95f9-47a7-8ee8-1cccb9220943,perms:[read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 }
 
