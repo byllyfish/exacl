@@ -52,10 +52,15 @@ bitflags! {
 
 impl Flag {
     // On FreeBSD, acl_flag_t is a u16. On Linux and macOS, acl_flag_t is a u32.
-    // To appease the linter, provide a helper function to cast Flag to u32.
+    // To appease the linter, provide helper functions to cast Flag to/from u32.
     const fn as_u32(self) -> u32 {
         #[allow(clippy::unnecessary_cast)]
         return self.bits() as u32;
+    }
+
+    const fn from_u32(bits: u32) -> Flag {
+        #[allow(clippy::cast_possible_truncation)]
+        Flag::from_bits_retain(bits as acl_flag_t)
     }
 }
 
@@ -65,7 +70,7 @@ impl BitIterable for Flag {
             return None;
         }
         let low_bit = 1u32 << self.bits().trailing_zeros();
-        Some(Flag::from_bits_retain(low_bit as acl_flag_t))
+        Some(Flag::from_u32(low_bit))
     }
 
     fn msb(self) -> Option<Self> {
@@ -77,7 +82,7 @@ impl BitIterable for Flag {
             return None;
         }
         let high_bit = 1u32 << (MAX_BITS - self.bits().leading_zeros());
-        Some(Flag::from_bits_retain(high_bit as acl_flag_t))
+        Some(Flag::from_u32(high_bit))
     }
 }
 
