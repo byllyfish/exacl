@@ -11,7 +11,7 @@
 //   "\u{1F9EA}"  (test tube emoji)           777771
 //   "777772"                                 777773
 //   "fbbc14b7-95f9-47a7-8ee8-1cccb9220943"   777774
-//
+//   <placeholder for non-UTF8>               777775
 
 use crate::failx::*;
 use crate::sys::{getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, group, passwd, sg};
@@ -210,8 +210,12 @@ fn getpwuid(uid: uid_t) -> io::Result<Option<String>> {
         return Ok(None);
     }
 
+    // A Rust `String` can only store valid UTF-8. It is possible for the
+    // system to return a C String that contains non-UTF-8 bytes. When this
+    // happens we return None, as if the name does not exist.
     let cstr = unsafe { CStr::from_ptr(pwd.assume_init().pw_name) };
-    Ok(Some(cstr.to_string_lossy().into_owned()))
+    let name = cstr.to_str().ok();
+    Ok(name.map(std::convert::Into::into))
 }
 
 /// Mock additional uid -> name mappings for _LABTEST.
@@ -265,11 +269,15 @@ fn getgrgid(gid: gid_t) -> io::Result<Option<String>> {
     }
 
     if result.is_null() {
-        Ok(None)
-    } else {
-        let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
-        Ok(Some(cstr.to_string_lossy().into_owned()))
+        return Ok(None);
     }
+
+    // A Rust `String` can only store valid UTF-8. It is possible for the
+    // system to return a C String that contains non-UTF-8 bytes. When this
+    // happens we return None, as if the name does not exist.
+    let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
+    let name = cstr.to_str().ok();
+    Ok(name.map(std::convert::Into::into))
 }
 
 /// Convert uid to GUID.
@@ -721,6 +729,7 @@ mod tests {
             ("\u{1F9EA}", 777_771),
             ("777772", 777_773),
             ("fbbc14b7-95f9-47a7-8ee8-1cccb9220943", 777_774),
+            ("777775", 777_775), // placeholder for testing non-UTF-8 name
         ];
 
         for (name, uid) in users {
