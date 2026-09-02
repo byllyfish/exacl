@@ -240,5 +240,13 @@ testInvalidStdFormat() {
         "${msg//\`/}"
 }
 
+testInvalidStdFormatUsingArg() {
+    msg=$($EXACL -f std --set --acl "group:a:read" --acl "user:x" non_existant 2>&1)
+    assertEquals 1 $?
+    assertEquals \
+        "Std parser error: Unknown ACL format: user:x" \
+        "${msg//\`/}"
+}
+
 # shellcheck disable=SC1091
 . shunit2

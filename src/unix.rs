@@ -1,4 +1,17 @@
 //! Implements utilities for converting user/group names to uid/gid.
+//
+// This module supports a `_LABTEST` feature that adds the following
+// name/uid mappings. These are designed to catch some edge cases in testing.
+// To use the _LABTEST feature, code has to be explicitly compiled by cargo in
+// debug mode with the _LABTEST feature enabled. You can detect code is
+// compiled with _LABTEST by using the 🧪 emoji as a user name.
+//
+//   NAME                                     UID
+//   ----                                     ------
+//   "\u{1F9EA}"  (test tube emoji)           777771
+//   "777772"                                 777773
+//   "fbbc14b7-95f9-47a7-8ee8-1cccb9220943"   777774
+//
 
 use crate::failx::*;
 use crate::sys::{getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, group, passwd, sg};
@@ -20,7 +33,7 @@ pub use crate::sys::{gid_t, uid_t};
 // by calling sysconf with SC_GETPW_R_SIZE_MAX or SC_GETGR_R_SIZE_MAX. Rather
 // than calling sysconf, this code hard-wires the default value and quadruples
 // the buffer size as needed, up to a maximum of 1MB.
-
+//
 // SC_GETPW_R_SIZE_MAX/SC_GETGR_R_SIZE_MAX default to 1024 on vanilla Ubuntu
 // and 4096 on macOS/FreeBSD. We start the initial buffer size at 4096 bytes.
 
@@ -74,10 +87,25 @@ fn getpwnam(name: &str) -> io::Result<Option<uid_t>> {
     }
 
     if result.is_null() {
-        Ok(None)
-    } else {
-        let uid = unsafe { pwd.assume_init().pw_uid };
-        Ok(Some(uid))
+        #[cfg(feature = "_LABTEST")]
+        return Ok(labtest_mock_getpwnam(name));
+
+        #[cfg(not(feature = "_LABTEST"))]
+        return Ok(None);
+    }
+
+    let uid = unsafe { pwd.assume_init().pw_uid };
+    Ok(Some(uid))
+}
+
+/// Mock additional name -> uid mappings for _LABTEST.
+#[cfg(all(debug_assertions, feature = "_LABTEST"))]
+fn labtest_mock_getpwnam(name: &str) -> Option<uid_t> {
+    match name {
+        "\u{1F9EA}" => Some(777_771),
+        "777772" => Some(777_773),
+        "fbbc14b7-95f9-47a7-8ee8-1cccb9220943" => Some(777_774),
+        _ => None,
     }
 }
 
@@ -175,10 +203,25 @@ fn getpwuid(uid: uid_t) -> io::Result<Option<String>> {
     }
 
     if result.is_null() {
-        Ok(None)
-    } else {
-        let cstr = unsafe { CStr::from_ptr(pwd.assume_init().pw_name) };
-        Ok(Some(cstr.to_string_lossy().into_owned()))
+        #[cfg(feature = "_LABTEST")]
+        return Ok(labtest_mock_getpwuid(uid));
+
+        #[cfg(not(feature = "_LABTEST"))]
+        return Ok(None);
+    }
+
+    let cstr = unsafe { CStr::from_ptr(pwd.assume_init().pw_name) };
+    Ok(Some(cstr.to_string_lossy().into_owned()))
+}
+
+/// Mock additional uid -> name mappings for _LABTEST.
+#[cfg(all(debug_assertions, feature = "_LABTEST"))]
+fn labtest_mock_getpwuid(uid: uid_t) -> Option<String> {
+    match uid {
+        777_771 => Some("\u{1F9EA}".into()),
+        777_773 => Some("777772".into()),
+        777_774 => Some("fbbc14b7-95f9-47a7-8ee8-1cccb9220943".into()),
+        _ => None,
     }
 }
 
@@ -655,12 +698,37 @@ mod tests {
             ),
             ("ffffeeee-dddd-cccc-bbbb-aaaa00000000", (Some(0), None)),
             ("abcdefab-cdef-abcd-efab-cdef00000000", (None, Some(0))),
+            ("ffffeeeeddddccccbbbbaaaa000005dc", (Some(1500), None)),
+            ("abcdefabcdefabcdefabcdef00000000", (None, Some(0))),
         ];
 
         for (uuid, expected) in uuids {
             let guid = Uuid::parse_str(uuid)?;
             let id = guid_to_id(guid)?;
             assert_eq!(id, expected);
+        }
+
+        Ok(())
+    }
+
+    /// Test the `_LABTEST` feature.
+    #[test]
+    #[cfg(feature = "_LABTEST")]
+    fn test_labtest() -> TestResult {
+        helper::init_logging();
+
+        let users = [
+            ("\u{1F9EA}", 777_771),
+            ("777772", 777_773),
+            ("fbbc14b7-95f9-47a7-8ee8-1cccb9220943", 777_774),
+        ];
+
+        for (name, uid) in users {
+            let result = getpwnam(name)?;
+            assert_eq!(result, Some(uid));
+
+            let result = getpwuid(uid)?;
+            assert_eq!(result, Some(name.into()));
         }
 
         Ok(())
