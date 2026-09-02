@@ -729,7 +729,6 @@ mod tests {
             ("\u{1F9EA}", 777_771),
             ("777772", 777_773),
             ("fbbc14b7-95f9-47a7-8ee8-1cccb9220943", 777_774),
-            ("777775", 777_775), // placeholder for testing non-UTF-8 name
         ];
 
         for (name, uid) in users {
@@ -739,6 +738,10 @@ mod tests {
             let result = getpwuid(uid)?;
             assert_eq!(result, Some(name.into()));
         }
+
+        // Test placeholder for non-UTF-8 name.
+        let result = uid_to_name(777_775)?;
+        assert_eq!(result, "777775");
 
         Ok(())
     }
