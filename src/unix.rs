@@ -4,14 +4,18 @@
 // name/uid mappings. These are designed to catch some edge cases in testing.
 // To use the _LABTEST feature, code has to be explicitly compiled by cargo in
 // debug mode with the _LABTEST feature enabled. You can detect code is
-// compiled with _LABTEST by using the 🧪 emoji as a user name.
+// compiled with _LABTEST by using the 🧪 emoji as a user name. The group name
+// mapping is tested on FreeBSD by adding the group name manually to /etc/group.
 //
-//   NAME                                     UID
-//   ----                                     ------
+//   USER NAME                                UID
+//   ---------                                ------
 //   "\u{1F9EA}"  (test tube emoji)           777771
 //   "777772"                                 777773
 //   "fbbc14b7-95f9-47a7-8ee8-1cccb9220943"   777774
-//   <placeholder for non-UTF8>               777775
+//
+//   GROUP NAME                               GID
+//   ----------                               ------
+//   é (using latin1 encoding)                777775
 
 use crate::failx::*;
 use crate::sys::{getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, group, passwd, sg};
@@ -739,8 +743,10 @@ mod tests {
             assert_eq!(result, Some(name.into()));
         }
 
-        // Test placeholder for non-UTF-8 name.
-        let result = uid_to_name(777_775)?;
+        // Test non-UTF-8 group name on systems where it was added.
+        // Even when a group name is available, the result should be the GID
+        // in decimal.
+        let result = gid_to_name(777_775)?;
         assert_eq!(result, "777775");
 
         Ok(())

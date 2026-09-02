@@ -160,6 +160,7 @@ jobs:
           mkdir -p /tmp/bin
           curl https://raw.githubusercontent.com/kward/shunit2/master/shunit2 -sSf --output /tmp/bin/shunit2
           chmod ugo+x /tmp/bin/shunit2
+          ./ci/add-nonutf8-group.sh
         run: |
           . $HOME/.cargo/env
           # Set up path for shunit2.
