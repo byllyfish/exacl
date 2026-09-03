@@ -20,7 +20,7 @@ jobs:
     # Don't run for self-PR's.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 6
     strategy:
       fail-fast: false
       matrix:
@@ -60,8 +60,8 @@ jobs:
       run: ./tests/run_tests.sh
     - name: Run memory tests
       run: ./tests/run_tests.sh memcheck
-      # macos-15: Leaks check seems to hang final 'Complete job' step in Github action?
-      if: matrix.os != 'macos-15'
+      # macos-15, macos-14: Leaks check seems to hang final 'Complete job' step in Github action?
+      if: matrix.os != 'macos-15' && matrix.os != 'macos-14'
     - name: Run TMPFS tests (Linux)
       run: |
         mkdir /run/user/$UID/exacl
