@@ -27,7 +27,7 @@ jobs:
         os: [ubuntu-24.04, ubuntu-22.04, macos-26, macos-15, macos-14]
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+      uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
       with:
         egress-policy: audit
     - name: Checkout
@@ -134,7 +134,7 @@ jobs:
       with:
         persist-credentials: false
     - name: Run Tests
-      uses: vmactions/freebsd-vm@77ed28d336d03fe19a3f4f7266c1d2c4714dd79d # v1.5.2
+      uses: vmactions/freebsd-vm@d0518f912576ae759075aa00fb9fe27037940271 # v1.5.4
       with:
         release: "${{matrix.release}}"
         usesh: true
