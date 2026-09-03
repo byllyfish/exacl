@@ -27,7 +27,7 @@ jobs:
         os: [ubuntu-24.04, ubuntu-22.04, macos-26, macos-15, macos-14]
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+      uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
       with:
         egress-policy: audit
     - name: Checkout
@@ -55,13 +55,13 @@ jobs:
     - name: Unit Test (no-serde)
       run: RUST_LOG=debug cargo test
     - name: Unit Test (serde)
-      run: RUST_LOG=debug cargo test --features serde
+      run: RUST_LOG=debug cargo test --features serde,_LABTEST
     - name: Run integration tests
       run: ./tests/run_tests.sh
     - name: Run memory tests
       run: ./tests/run_tests.sh memcheck
-      # macos-15: Leaks check seems to hang final 'Complete job' step in Github action?
-      if: matrix.os != 'macos-15'
+      # macos-15, macos-14: Leaks check seems to hang final 'Complete job' step in Github action?
+      if: matrix.os != 'macos-15' && matrix.os != 'macos-14'
     - name: Run TMPFS tests (Linux)
       run: |
         mkdir /run/user/$UID/exacl
@@ -94,7 +94,9 @@ jobs:
         persist-credentials: false
     - name: Install dependencies (Linux)
       run: |
+        export DEBIAN_FRONTEND=noninteractive
         apt-get update
+        # Need `libclang-dev` for bindgen.
         apt-get -y install curl build-essential libacl1-dev libclang-dev acl shunit2 shellcheck
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
@@ -107,7 +109,7 @@ jobs:
     - name: Unit Test (no-serde)
       run: RUST_LOG=debug cargo test
     - name: Unit Test (serde)
-      run: RUST_LOG=debug cargo test --features serde
+      run: RUST_LOG=debug cargo test --features serde,_LABTEST
     - name: Run integration tests
       run:  setpriv --reuid=1001 --regid=1001 --clear-groups ./tests/run_tests.sh
     - name: Lint Check
@@ -132,7 +134,7 @@ jobs:
       with:
         persist-credentials: false
     - name: Run Tests
-      uses: vmactions/freebsd-vm@77ed28d336d03fe19a3f4f7266c1d2c4714dd79d # v1.5.2
+      uses: vmactions/freebsd-vm@d0518f912576ae759075aa00fb9fe27037940271 # v1.5.4
       with:
         release: "${{matrix.release}}"
         usesh: true
@@ -158,6 +160,7 @@ jobs:
           mkdir -p /tmp/bin
           curl https://raw.githubusercontent.com/kward/shunit2/master/shunit2 -sSf --output /tmp/bin/shunit2
           chmod ugo+x /tmp/bin/shunit2
+          ./ci/add-nonutf8-group.sh
         run: |
           . $HOME/.cargo/env
           # Set up path for shunit2.
@@ -169,11 +172,11 @@ jobs:
           # Run tests on our mem-based FS with acls.
           export TMPDIR=/tmp/exacl_acls
           echo "*** TMPDIR=$TMPDIR"
-          RUST_LOG=debug cargo test --features serde
+          RUST_LOG=debug cargo test --features serde,_LABTEST
           ./tests/run_tests.sh
           export TMPDIR=/tmp/exacl_nfsv4acls
           echo "*** TMPDIR=$TMPDIR"
-          cargo test --features serde
+          RUST_LOG=debug cargo test --features serde,_LABTEST
           ./tests/run_tests.sh
           export TMPDIR=/tmp
           echo "*** TMPDIR=$TMPDIR"
