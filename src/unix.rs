@@ -4,14 +4,18 @@
 // name/uid mappings. These are designed to catch some edge cases in testing.
 // To use the _LABTEST feature, code has to be explicitly compiled by cargo in
 // debug mode with the _LABTEST feature enabled. You can detect code is
-// compiled with _LABTEST by using the 🧪 emoji as a user name.
+// compiled with _LABTEST by using the 🧪 emoji as a user name. The group name
+// mapping is tested on FreeBSD by adding the group name manually to /etc/group.
 //
-//   NAME                                     UID
-//   ----                                     ------
+//   USER NAME                                UID
+//   ---------                                ------
 //   "\u{1F9EA}"  (test tube emoji)           777771
 //   "777772"                                 777773
 //   "fbbc14b7-95f9-47a7-8ee8-1cccb9220943"   777774
 //
+//   GROUP NAME                               GID
+//   ----------                               ------
+//   é (using latin1 encoding)                777775
 
 use crate::failx::*;
 use crate::sys::{getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, group, passwd, sg};
@@ -210,8 +214,12 @@ fn getpwuid(uid: uid_t) -> io::Result<Option<String>> {
         return Ok(None);
     }
 
+    // A Rust `String` can only store valid UTF-8. It is possible for the
+    // system to return a C String that contains non-UTF-8 bytes. When this
+    // happens we return None, as if the name does not exist.
     let cstr = unsafe { CStr::from_ptr(pwd.assume_init().pw_name) };
-    Ok(Some(cstr.to_string_lossy().into_owned()))
+    let name = cstr.to_str().ok();
+    Ok(name.map(std::convert::Into::into))
 }
 
 /// Mock additional uid -> name mappings for _LABTEST.
@@ -265,11 +273,15 @@ fn getgrgid(gid: gid_t) -> io::Result<Option<String>> {
     }
 
     if result.is_null() {
-        Ok(None)
-    } else {
-        let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
-        Ok(Some(cstr.to_string_lossy().into_owned()))
+        return Ok(None);
     }
+
+    // A Rust `String` can only store valid UTF-8. It is possible for the
+    // system to return a C String that contains non-UTF-8 bytes. When this
+    // happens we return None, as if the name does not exist.
+    let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
+    let name = cstr.to_str().ok();
+    Ok(name.map(std::convert::Into::into))
 }
 
 /// Convert uid to GUID.
@@ -730,6 +742,12 @@ mod tests {
             let result = getpwuid(uid)?;
             assert_eq!(result, Some(name.into()));
         }
+
+        // Test non-UTF-8 group name on systems where it was added.
+        // Even when a group name is available, the result should be the GID
+        // in decimal.
+        let result = gid_to_name(777_775)?;
+        assert_eq!(result, "777775");
 
         Ok(())
     }
