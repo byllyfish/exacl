@@ -280,7 +280,7 @@ fn getgrgid(gid: gid_t) -> io::Result<Option<String>> {
     // system to return a C String that contains non-UTF-8 bytes. When this
     // happens we return None, as if the name does not exist.
     let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
-    return Ok(Some(cstr.to_string_lossy().into_owned()));
+    Ok(Some(cstr.to_string_lossy().into_owned()))
 
     //let name = cstr.to_str().ok();
     //Ok(name.map(std::convert::Into::into))
