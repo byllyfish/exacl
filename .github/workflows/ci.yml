@@ -60,8 +60,8 @@ jobs:
       run: ./tests/run_tests.sh
     - name: Run memory tests
       run: ./tests/run_tests.sh memcheck
-      # macos-15: Leaks check seems to hang final 'Complete job' step in Github action?
-      if: matrix.os != 'macos-15'
+      # macos-15, macos-14: Leaks check seems to hang final 'Complete job' step in Github action?
+      if: matrix.os != 'macos-15' && matrix.os != 'macos-14'
     - name: Run TMPFS tests (Linux)
       run: |
         mkdir /run/user/$UID/exacl
