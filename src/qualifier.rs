@@ -55,10 +55,7 @@ impl Qualifier {
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
         match name {
             OWNER_NAME => Ok(Qualifier::UserObj),
-            s => match unix::name_to_uid(s) {
-                Ok(uid) => Ok(Qualifier::User(uid)),
-                Err(err) => Err(err),
-            },
+            s => unix::name_to_uid(s).map(Qualifier::User),
         }
     }
 
@@ -76,10 +73,7 @@ impl Qualifier {
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
         match name {
             OWNER_NAME => Ok(Qualifier::GroupObj),
-            s => match unix::name_to_gid(s) {
-                Ok(gid) => Ok(Qualifier::Group(gid)),
-                Err(err) => Err(err),
-            },
+            s => unix::name_to_gid(s).map(Qualifier::Group),
         }
     }
 
