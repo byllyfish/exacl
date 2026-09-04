@@ -196,7 +196,7 @@ impl AclEntry {
     /// Return an `AclEntry` constructed from a native `acl_entry_t`.
     ///
     /// If `numeric` is true, retrieve numeric uid/gid instead of translating
-    /// names.
+    /// names. On macOS, `numeric` returns the GUID.
     pub(crate) fn from_raw(entry: acl_entry_t, acl: acl_t, numeric: bool) -> io::Result<AclEntry> {
         let (allow, qualifier, perms, flags) = xacl_get_entry(acl, entry)?;
 
@@ -208,6 +208,9 @@ impl AclEntry {
 
             #[cfg(target_os = "macos")]
             Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name(numeric)?),
+
+            #[cfg(target_os = "macos")]
+            Qualifier::Guid(_) if numeric => (AclEntryKind::User, qualifier.name(true)?),
 
             #[cfg(target_os = "macos")]
             Qualifier::Guid(_) => {

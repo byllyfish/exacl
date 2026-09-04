@@ -17,10 +17,10 @@ fi
 
 ME=$(id -un)
 ME_NUM=$(id -u)
-# ME_GUID=$(dscl . -read /Users/$ME GeneratedUID | awk '{print tolower($2)}')
+ME_GUID=$(dscl . -read /Users/$ME GeneratedUID | awk '{print tolower($2)}')
 MY_GROUP=$(id -gn)
 MY_GROUP_NUM=$(id -g)
-# MY_GROUP_GUID=$(dscl . -read /Groups/$MY_GROUP GeneratedUID | awk '{print tolower($2)}')
+MY_GROUP_GUID=$(dscl . -read /Groups/$MY_GROUP GeneratedUID | awk '{print tolower($2)}')
 
 # Return true if file is readable.
 isReadable() {
@@ -139,7 +139,7 @@ testReadAclForFile1_Numeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:$ME_NUM,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:{$ME_GUID},perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     ! isReadable "$FILE1" && isWritable "$FILE1"
@@ -156,7 +156,7 @@ testReadAclForFile1_Numeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:$ME_NUM,perms:[read],flags:[],allow:false},{kind:group,name:$MY_GROUP_NUM,perms:[write],flags:[],allow:true}]" \
+        "[{kind:user,name:{$ME_GUID},perms:[read],flags:[],allow:false},{kind:user,name:{$MY_GROUP_GUID},perms:[write],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     ! isReadable "$FILE1" && isWritable "$FILE1"
@@ -703,7 +703,7 @@ testWriteAclToFile1_LabTestNumeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777771,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:{ffffeeee-dddd-cccc-bbbb-aaaa000bde2b},perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     # Set ACL for 777772 to "deny read".
@@ -716,7 +716,7 @@ testWriteAclToFile1_LabTestNumeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777773,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:{ffffeeee-dddd-cccc-bbbb-aaaa000bde2d},perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     # Set ACL for 777773 to "deny read".
@@ -729,7 +729,7 @@ testWriteAclToFile1_LabTestNumeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777773,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:{ffffeeee-dddd-cccc-bbbb-aaaa000bde2d},perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     # Set ACL for fbbc14b7-95f9-47a7-8ee8-1cccb9220943 to "deny read".
@@ -742,7 +742,7 @@ testWriteAclToFile1_LabTestNumeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777774,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:{ffffeeee-dddd-cccc-bbbb-aaaa000bde2e},perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 }
 

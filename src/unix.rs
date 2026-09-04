@@ -672,7 +672,7 @@ mod tests {
 
         for (name, value) in test_cases {
             let guid = name_to_guid(name);
-            assert_eq!(guid, value, "name=`{}`", name);
+            assert_eq!(guid, value, "name=`{name}`");
         }
 
         Ok(())
