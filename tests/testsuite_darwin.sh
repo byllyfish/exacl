@@ -503,8 +503,9 @@ testWriteAclNumericGID() {
 
 testWriteAclGUID_group() {
     # Set ACL for _spotlight group to "deny read" using GUID.
-    spotlight_group="ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000059"
-    input=$(quotifyJson "[{kind:group,name:$spotlight_group,perms:[read],flags:[],allow:false}]")
+    spotlight_group="{ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000059}"
+    input=$(quotifyJson "[{kind:group,name:SPOTLIGHT_GROUP,perms:[read],flags:[],allow:false}]")
+    input=${input/SPOTLIGHT_GROUP/$spotlight_group}
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
@@ -524,8 +525,9 @@ testWriteAclGUID_group() {
 
 testWriteAclGUID_nil_user() {
     # Set ACL for NIL-GUID *user* to "deny read" using GUID.
-    nil_uuid="00000000-0000-0000-0000-000000000000"
-    input=$(quotifyJson "[{kind:user,name:$nil_uuid,perms:[read],flags:[],allow:false}]")
+    nil_uuid="{00000000-0000-0000-0000-000000000000}"
+    input=$(quotifyJson "[{kind:user,name:NIL_UUID,perms:[read],flags:[],allow:false}]")
+    input=${input/NIL_UUID/$nil_uuid}
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
@@ -545,8 +547,9 @@ testWriteAclGUID_nil_user() {
 
 testWriteAclGUID_nil_group() {
     # Set ACL for NIL-GUID *group* to "deny read" using GUID.
-    nil_uuid="00000000-0000-0000-0000-000000000000"
-    input=$(quotifyJson "[{kind:group,name:$nil_uuid,perms:[read],flags:[],allow:false}]")
+    nil_uuid="{00000000-0000-0000-0000-000000000000}"
+    input=$(quotifyJson "[{kind:group,name:NIL_UUID,perms:[read],flags:[],allow:false}]")
+    input=${input/NIL_UUID/$nil_uuid}
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
@@ -566,8 +569,9 @@ testWriteAclGUID_nil_group() {
 
 testWriteAclGUID_random_guid() {
     # Set ACL for RANDOM-GUID *user* to "deny write" using GUID.
-    random_guid="e08f1961-f45c-47c5-9cfd-d367de5874f8"
-    input=$(quotifyJson "[{kind:user,name:$random_guid,perms:[write],flags:[],allow:false}]")
+    random_guid="{e08f1961-f45c-47c5-9cfd-d367de5874f8}"
+    input=$(quotifyJson "[{kind:user,name:RANDOM_GUID,perms:[write],flags:[],allow:false}]")
+    input=${input/RANDOM_GUID/$random_guid}
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"

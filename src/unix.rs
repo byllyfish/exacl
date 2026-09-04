@@ -15,7 +15,7 @@
 //
 //   GROUP NAME                               GID
 //   ----------                               ------
-//   é (using latin1 encoding)                777775
+//   é (non-UTF8 bytes; latin1 encoding)      777775
 
 use crate::failx::*;
 use crate::sys::{getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, group, passwd, sg};
@@ -282,6 +282,18 @@ fn getgrgid(gid: gid_t) -> io::Result<Option<String>> {
     let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
     let name = cstr.to_str().ok();
     Ok(name.map(std::convert::Into::into))
+}
+
+/// Parse a user/group name as a UUID. The UUID must be in curly braces.
+/// It must be in hyphenated format.
+#[cfg(target_os = "macos")]
+pub fn name_to_guid(name: &str) -> Option<Uuid> {
+    if name.starts_with('{') {
+        // `Uuid::try_parse` checks for the closing brace.
+        Uuid::try_parse(name).ok()
+    } else {
+        None
+    }
 }
 
 /// Convert uid to GUID.
@@ -636,6 +648,32 @@ mod tests {
 
         let result = gid_to_name(gid)?;
         assert_eq!(result, gid.to_string());
+
+        Ok(())
+    }
+
+    /// Test `name_to_guid` converts name to a guid.
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_name_to_guid() -> TestResult {
+        helper::init_logging();
+
+        let test_cases = [
+            ("{00000000-0000-0000-0000-000000000000}", Some(Uuid::nil())),
+            ("{00000000000000000000000000000000}", None), // must be hypenated
+            ("00000000000000000000000000000000", None),   // braces required
+            ("00000000-0000-0000-0000-000000000000", None), // braces required
+            ("{00000000-0000-0000-0000-000000000000", None), // braces required
+            (
+                "{abcdefab-cdef-abcd-efab-cdef00000059}",
+                Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059")?),
+            ),
+        ];
+
+        for (name, value) in test_cases {
+            let guid = name_to_guid(name);
+            assert_eq!(guid, value, "name=`{}`", name);
+        }
 
         Ok(())
     }
