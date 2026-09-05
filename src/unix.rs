@@ -59,8 +59,8 @@ const CURLY_BRACE: char = '{';
 pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
     if !name.starts_with(CURLY_BRACE) {
         // Try to parse name as a decimal user ID.
-        if let Ok(gid) = name.parse::<u32>() {
-            return Ok(gid);
+        if let Ok(uid) = name.parse::<uid_t>() {
+            return Ok(uid);
         }
         // Lookup user name using `getpwnam_r`.
         if let Some(uid) = getpwnam(name)? {
@@ -134,7 +134,7 @@ fn labtest_mock_getpwnam(name: &str) -> Option<uid_t> {
 pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
     if !name.starts_with(CURLY_BRACE) {
         // Try to parse name as a decimal group ID.
-        if let Ok(gid) = name.parse::<u32>() {
+        if let Ok(gid) = name.parse::<gid_t>() {
             return Ok(gid);
         }
         // Lookup group name using `getgrnam_r`.
@@ -186,8 +186,16 @@ fn getgrnam(name: &str) -> io::Result<Option<gid_t>> {
 }
 
 /// Convert uid to user name.
+///
+/// If we look up the user name and it doesn't exist, return the original `uid`
+/// as a decimal string.
+///
+/// If we look up the user name but it's is a decimal number that could be
+/// confused for a `uid`, return the original `uid` as a decimal string.
 pub fn uid_to_name(uid: uid_t) -> io::Result<String> {
-    if let Some(name) = getpwuid(uid)? {
+    if let Some(name) = getpwuid(uid)?
+        && name.parse::<uid_t>().is_err()
+    {
         return Ok(name);
     }
 
@@ -252,8 +260,16 @@ fn labtest_mock_getpwuid(uid: uid_t) -> Option<String> {
 }
 
 /// Convert gid to group name.
+///
+/// If we look up the group name and it doesn't exist, return the original `gid`
+/// as a decimal string.
+///
+/// If we look up the group name but it's is a decimal number that could be
+/// confused for a `gid`, return the original `gid` as a decimal string.
 pub fn gid_to_name(gid: gid_t) -> io::Result<String> {
-    if let Some(name) = getgrgid(gid)? {
+    if let Some(name) = getgrgid(gid)?
+        && name.parse::<gid_t>().is_err()
+    {
         return Ok(name);
     }
 
@@ -800,19 +816,15 @@ mod tests {
             assert_eq!(result, Some(name.into()));
         }
 
-        // Test that `name_to_uid` for "777772" returns uid=777772.
-        let result = name_to_uid("777772")?;
-        assert_eq!(result, 777_772);
-
-        // Test that `name_to_gid` for "777772" returns gid=777772.
-        let result = name_to_gid("777772")?;
-        assert_eq!(result, 777_772);
+        // Test some edge cases.
+        assert_eq!(name_to_uid("777772")?, 777_772);
+        assert_eq!(uid_to_name(777_773)?, "777773");
+        assert_eq!(name_to_gid("777772")?, 777_772);
 
         // Test non-UTF-8 group name on systems where it was added.
         // Even when a group name is available, the result should be the GID
         // in decimal.
-        let result = gid_to_name(777_775)?;
-        assert_eq!(result, "777775");
+        assert_eq!(gid_to_name(777_775)?, "777775");
 
         Ok(())
     }
