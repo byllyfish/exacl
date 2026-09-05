@@ -15,7 +15,7 @@
 //
 //   GROUP NAME                               GID
 //   ----------                               ------
-//   é (using latin1 encoding)                777775
+//   é (non-UTF8 bytes; latin1 encoding)      777775
 
 use crate::failx::*;
 use crate::sys::{getgrgid_r, getgrnam_r, getpwnam_r, getpwuid_r, group, passwd, sg};
@@ -44,16 +44,28 @@ pub use crate::sys::{gid_t, uid_t};
 const INITIAL_BUFSIZE: usize = 4096; // 4KB
 const MAX_BUFSIZE: usize = 1_048_576; // 1MB
 
-/// Convert user name to uid.
-pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
-    // Lookup user name using `getpwnam_r`.
-    if let Some(uid) = getpwnam(name)? {
-        return Ok(uid);
-    }
+// A name that starts with a left curly brace '{' is treated differently
+// by `name_to_uid` and `name_to_gid`. It represents an underlying GUID or
+// SID.
 
-    // Try to parse name as a decimal user ID.
-    if let Ok(num) = name.parse::<u32>() {
-        return Ok(num);
+const CURLY_BRACE: char = '{';
+
+/// Convert user name to uid.
+///
+/// 1. If `name` begins with a curly brace, stop and return failure.
+/// 2. If `name` is a valid decimal number [0..2^32-1], return it as uid.
+/// 3. Look up `name` using `getpwnam` and return uid if found.
+/// 4. Otherwise, stop and return failure.
+pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
+    if !name.starts_with(CURLY_BRACE) {
+        // Try to parse name as a decimal user ID.
+        if let Ok(uid) = name.parse::<uid_t>() {
+            return Ok(uid);
+        }
+        // Lookup user name using `getpwnam_r`.
+        if let Some(uid) = getpwnam(name)? {
+            return Ok(uid);
+        }
     }
 
     fail_custom(&format!("unknown user name: {name:?}"))
@@ -114,15 +126,21 @@ fn labtest_mock_getpwnam(name: &str) -> Option<uid_t> {
 }
 
 /// Convert group name to gid.
+///
+/// 1. If `name` begins with a curly brace, stop and return failure.
+/// 2. If `name` is a valid decimal number [0..2^32-1], return it as gid.
+/// 3. Look up `name` using `getgrnam` and return gid if found.
+/// 4. Otherwise, stop and return failure.
 pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
-    // Lookup group name using `getgrnam_r`.
-    if let Some(gid) = getgrnam(name)? {
-        return Ok(gid);
-    }
-
-    // Try to parse name as a decimal group ID.
-    if let Ok(num) = name.parse::<u32>() {
-        return Ok(num);
+    if !name.starts_with(CURLY_BRACE) {
+        // Try to parse name as a decimal group ID.
+        if let Ok(gid) = name.parse::<gid_t>() {
+            return Ok(gid);
+        }
+        // Lookup group name using `getgrnam_r`.
+        if let Some(gid) = getgrnam(name)? {
+            return Ok(gid);
+        }
     }
 
     fail_custom(&format!("unknown group name: {name:?}"))
@@ -168,8 +186,16 @@ fn getgrnam(name: &str) -> io::Result<Option<gid_t>> {
 }
 
 /// Convert uid to user name.
+///
+/// If we look up the user name and it doesn't exist, return the original `uid`
+/// as a decimal string.
+///
+/// If we look up the user name but it's is a decimal number that could be
+/// confused for a `uid`, return the original `uid` as a decimal string.
 pub fn uid_to_name(uid: uid_t) -> io::Result<String> {
-    if let Some(name) = getpwuid(uid)? {
+    if let Some(name) = getpwuid(uid)?
+        && name.parse::<uid_t>().is_err()
+    {
         return Ok(name);
     }
 
@@ -234,8 +260,16 @@ fn labtest_mock_getpwuid(uid: uid_t) -> Option<String> {
 }
 
 /// Convert gid to group name.
+///
+/// If we look up the group name and it doesn't exist, return the original `gid`
+/// as a decimal string.
+///
+/// If we look up the group name but it's is a decimal number that could be
+/// confused for a `gid`, return the original `gid` as a decimal string.
 pub fn gid_to_name(gid: gid_t) -> io::Result<String> {
-    if let Some(name) = getgrgid(gid)? {
+    if let Some(name) = getgrgid(gid)?
+        && name.parse::<gid_t>().is_err()
+    {
         return Ok(name);
     }
 
@@ -282,6 +316,18 @@ fn getgrgid(gid: gid_t) -> io::Result<Option<String>> {
     let cstr = unsafe { CStr::from_ptr(grp.assume_init().gr_name) };
     let name = cstr.to_str().ok();
     Ok(name.map(std::convert::Into::into))
+}
+
+/// Parse a user/group name as a UUID. The UUID must be in curly braces.
+/// It must be in hyphenated format.
+#[cfg(target_os = "macos")]
+pub fn name_to_guid(name: &str) -> Option<Uuid> {
+    if name.starts_with(CURLY_BRACE) {
+        // `Uuid::try_parse` checks for the closing brace.
+        Uuid::try_parse(name).ok()
+    } else {
+        None
+    }
 }
 
 /// Convert uid to GUID.
@@ -502,6 +548,7 @@ mod tests {
             "\u{1F600}",  // grinning face emoji
             ":",
             ",",
+            "{",
         ];
 
         for name in invalid_names {
@@ -557,7 +604,7 @@ mod tests {
     fn test_numeric_name() -> TestResult {
         helper::init_logging();
 
-        let numeric_names = ["500", "0", "1", "4294967295"];
+        let numeric_names = ["500", "0", "1", "4294967295", "000004294967295"];
 
         for name in numeric_names {
             let result = name_to_uid(name)?;
@@ -636,6 +683,32 @@ mod tests {
 
         let result = gid_to_name(gid)?;
         assert_eq!(result, gid.to_string());
+
+        Ok(())
+    }
+
+    /// Test `name_to_guid` converts name to a guid.
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_name_to_guid() -> TestResult {
+        helper::init_logging();
+
+        let test_cases = [
+            ("{00000000-0000-0000-0000-000000000000}", Some(Uuid::nil())),
+            ("{00000000000000000000000000000000}", None), // must be hypenated
+            ("00000000000000000000000000000000", None),   // braces required
+            ("00000000-0000-0000-0000-000000000000", None), // braces required
+            ("{00000000-0000-0000-0000-000000000000", None), // braces required
+            (
+                "{abcdefab-cdef-abcd-efab-cdef00000059}",
+                Some(Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059")?),
+            ),
+        ];
+
+        for (name, value) in test_cases {
+            let guid = name_to_guid(name);
+            assert_eq!(guid, value, "name=`{name}`");
+        }
 
         Ok(())
     }
@@ -743,11 +816,15 @@ mod tests {
             assert_eq!(result, Some(name.into()));
         }
 
+        // Test some edge cases.
+        assert_eq!(name_to_uid("777772")?, 777_772);
+        assert_eq!(uid_to_name(777_773)?, "777773");
+        assert_eq!(name_to_gid("777772")?, 777_772);
+
         // Test non-UTF-8 group name on systems where it was added.
         // Even when a group name is available, the result should be the GID
         // in decimal.
-        let result = gid_to_name(777_775)?;
-        assert_eq!(result, "777775");
+        assert_eq!(gid_to_name(777_775)?, "777775");
 
         Ok(())
     }

@@ -17,10 +17,10 @@ fi
 
 ME=$(id -un)
 ME_NUM=$(id -u)
-# ME_GUID=$(dscl . -read /Users/$ME GeneratedUID | awk '{print tolower($2)}')
+ME_GUID=$(dscl . -read /Users/$ME GeneratedUID | awk '{print tolower($2)}')
 MY_GROUP=$(id -gn)
 MY_GROUP_NUM=$(id -g)
-# MY_GROUP_GUID=$(dscl . -read /Groups/$MY_GROUP GeneratedUID | awk '{print tolower($2)}')
+MY_GROUP_GUID=$(dscl . -read /Groups/$MY_GROUP GeneratedUID | awk '{print tolower($2)}')
 
 # Return true if file is readable.
 isReadable() {
@@ -62,6 +62,7 @@ oneTimeSetUp() {
     # Use temp directory managed by shunit2.
     DIR="$SHUNIT_TMPDIR"
     FILE1="$DIR/file1"
+    FILE2="$DIR/file2"
     DIR1="$DIR/dir1"
     LINK1="$DIR/link1"
     LINK2="$DIR/link2"
@@ -69,6 +70,7 @@ oneTimeSetUp() {
     # Create empty file, dir, and links.
     umask 077
     touch "$FILE1"
+    touch "$FILE2"
     mkdir "$DIR1"
     ln -s link1_to_nowhere "$LINK1"
     ln -s file1 "$LINK2"
@@ -139,7 +141,7 @@ testReadAclForFile1_Numeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:$ME_NUM,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:{$ME_GUID},perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     ! isReadable "$FILE1" && isWritable "$FILE1"
@@ -156,7 +158,7 @@ testReadAclForFile1_Numeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:$ME_NUM,perms:[read],flags:[],allow:false},{kind:group,name:$MY_GROUP_NUM,perms:[write],flags:[],allow:true}]" \
+        "[{kind:user,name:{$ME_GUID},perms:[read],flags:[],allow:false},{kind:user,name:{$MY_GROUP_GUID},perms:[write],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     ! isReadable "$FILE1" && isWritable "$FILE1"
@@ -503,8 +505,9 @@ testWriteAclNumericGID() {
 
 testWriteAclGUID_group() {
     # Set ACL for _spotlight group to "deny read" using GUID.
-    spotlight_group="ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000059"
-    input=$(quotifyJson "[{kind:group,name:$spotlight_group,perms:[read],flags:[],allow:false}]")
+    spotlight_group="{ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000059}"
+    input=$(quotifyJson "[{kind:group,name:SPOTLIGHT_GROUP,perms:[read],flags:[],allow:false}]")
+    input=${input/SPOTLIGHT_GROUP/$spotlight_group}
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
@@ -524,8 +527,9 @@ testWriteAclGUID_group() {
 
 testWriteAclGUID_nil_user() {
     # Set ACL for NIL-GUID *user* to "deny read" using GUID.
-    nil_uuid="00000000-0000-0000-0000-000000000000"
-    input=$(quotifyJson "[{kind:user,name:$nil_uuid,perms:[read],flags:[],allow:false}]")
+    nil_uuid="{00000000-0000-0000-0000-000000000000}"
+    input=$(quotifyJson "[{kind:user,name:NIL_UUID,perms:[read],flags:[],allow:false}]")
+    input=${input/NIL_UUID/$nil_uuid}
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
@@ -545,8 +549,9 @@ testWriteAclGUID_nil_user() {
 
 testWriteAclGUID_nil_group() {
     # Set ACL for NIL-GUID *group* to "deny read" using GUID.
-    nil_uuid="00000000-0000-0000-0000-000000000000"
-    input=$(quotifyJson "[{kind:group,name:$nil_uuid,perms:[read],flags:[],allow:false}]")
+    nil_uuid="{00000000-0000-0000-0000-000000000000}"
+    input=$(quotifyJson "[{kind:group,name:NIL_UUID,perms:[read],flags:[],allow:false}]")
+    input=${input/NIL_UUID/$nil_uuid}
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
@@ -566,8 +571,9 @@ testWriteAclGUID_nil_group() {
 
 testWriteAclGUID_random_guid() {
     # Set ACL for RANDOM-GUID *user* to "deny write" using GUID.
-    random_guid="e08f1961-f45c-47c5-9cfd-d367de5874f8"
-    input=$(quotifyJson "[{kind:user,name:$random_guid,perms:[write],flags:[],allow:false}]")
+    random_guid="{e08f1961-f45c-47c5-9cfd-d367de5874f8}"
+    input=$(quotifyJson "[{kind:user,name:RANDOM_GUID,perms:[write],flags:[],allow:false}]")
+    input=${input/RANDOM_GUID/$random_guid}
     msg=$(echo "$input" | $EXACL --set $FILE1 2>&1)
     assertEquals 0 $?
     assertEquals "" "$msg"
@@ -664,11 +670,11 @@ testWriteAclToFile1_LabTest() {
     assertEquals 0 $?
     assertEquals "" "$msg"
 
-    # Read ACL (note assymetry).
+    # Read ACL.
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777772,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:777773,perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     # Set ACL for fbbc14b7-95f9-47a7-8ee8-1cccb9220943 to "deny read".
@@ -699,7 +705,7 @@ testWriteAclToFile1_LabTestNumeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777771,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:{ffffeeee-dddd-cccc-bbbb-aaaa000bde2b},perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     # Set ACL for 777772 to "deny read".
@@ -712,7 +718,7 @@ testWriteAclToFile1_LabTestNumeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777773,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:{ffffeeee-dddd-cccc-bbbb-aaaa000bde2c},perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     # Set ACL for 777773 to "deny read".
@@ -725,7 +731,7 @@ testWriteAclToFile1_LabTestNumeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777773,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:{ffffeeee-dddd-cccc-bbbb-aaaa000bde2d},perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     # Set ACL for fbbc14b7-95f9-47a7-8ee8-1cccb9220943 to "deny read".
@@ -738,8 +744,50 @@ testWriteAclToFile1_LabTestNumeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777774,perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:{ffffeeee-dddd-cccc-bbbb-aaaa000bde2e},perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
+}
+
+# This test verifies that an ACL copied from 1 file to another executes properly even
+# on the weird _LABTEST system.
+testCopyAcl_LabTest() {
+    input="[
+        {kind:user,name:\"🧪\",perms:[read],flags:[],allow:false},
+        {kind:user,name:777772,perms:[read],flags:[],allow:false},
+        {kind:user,name:777773,perms:[read],flags:[],allow:false},
+        {kind:user,name:fbbc14b7-95f9-47a7-8ee8-1cccb9220943,perms:[read],flags:[],allow:false},
+        {kind:group,name:777775,perms:[read],flags:[],allow:false}
+    ]"
+    input=$(quotifyJson "$input")
+    msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
+    if [ "$msg" = 'Invalid ACL: entry 0: unknown user name: "🧪"' ]; then
+        echo " _LABTEST not enabled."
+        return 0
+    fi
+    assertEquals "" "$msg"
+
+    # Copy ACL from FILE1 to FILE2.
+    msg=$($EXACL -n $FILE1 | $EXACL --set $FILE2 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Numeric ACL's are equal.
+    acl1=$($EXACL -n $FILE1)
+    acl2=$($EXACL -n $FILE2)
+    assertEquals "$acl1" "$acl2"
+
+    # Human-readable ACL's are equal.
+    acl1=$($EXACL -f std $FILE1)
+    acl2=$($EXACL -f std $FILE2)
+    assertEquals "$acl1" "$acl2"
+
+    expected="\
+deny::user:🧪:read
+deny::user:777772:read
+deny::user:777773:read
+deny::user:fbbc14b7-95f9-47a7-8ee8-1cccb9220943:read
+deny::group:777775:read"
+    assertEquals "$acl1" "$expected"
 }
 
 # shellcheck disable=SC1091

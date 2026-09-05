@@ -467,7 +467,7 @@ deny:file_inherit,directory_inherit:group:11504:read,write,execute
 
         // Test numeric option.
         let entries3 = acl2.entries(true)?;
-        assert_eq!(entries3[0].name, "89");
+        assert_eq!(entries3[0].name, "{abcdefab-cdef-abcd-efab-cdef00000059}");
 
         Ok(())
     }

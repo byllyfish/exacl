@@ -46,11 +46,7 @@ impl Qualifier {
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
         match unix::name_to_uid(name) {
             Ok(uid) => Ok(Qualifier::User(uid)),
-            Err(err) => {
-                // Try to parse name as a GUID.
-                Uuid::parse_str(name)
-                    .map_or(Err(err), |guid| Qualifier::Guid(guid).translate_guid())
-            }
+            Err(err) => unix::name_to_guid(name).map_or(Err(err), Qualifier::from_guid),
         }
     }
 
@@ -59,10 +55,7 @@ impl Qualifier {
     pub fn user_named(name: &str) -> io::Result<Qualifier> {
         match name {
             OWNER_NAME => Ok(Qualifier::UserObj),
-            s => match unix::name_to_uid(s) {
-                Ok(uid) => Ok(Qualifier::User(uid)),
-                Err(err) => Err(err),
-            },
+            s => unix::name_to_uid(s).map(Qualifier::User),
         }
     }
 
@@ -71,8 +64,7 @@ impl Qualifier {
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
         match unix::name_to_gid(name) {
             Ok(gid) => Ok(Qualifier::Group(gid)),
-            Err(err) => Uuid::parse_str(name)
-                .map_or(Err(err), |guid| Qualifier::Guid(guid).translate_guid()),
+            Err(err) => unix::name_to_guid(name).map_or(Err(err), Qualifier::from_guid),
         }
     }
 
@@ -81,10 +73,7 @@ impl Qualifier {
     pub fn group_named(name: &str) -> io::Result<Qualifier> {
         match name {
             OWNER_NAME => Ok(Qualifier::GroupObj),
-            s => match unix::name_to_gid(s) {
-                Ok(gid) => Ok(Qualifier::Group(gid)),
-                Err(err) => Err(err),
-            },
+            s => unix::name_to_gid(s).map(Qualifier::Group),
         }
     }
 
@@ -115,6 +104,12 @@ impl Qualifier {
         }
     }
 
+    /// Create qualifier from GUID and translate it. Used internally.
+    #[cfg(target_os = "macos")]
+    fn from_guid(guid: Uuid) -> io::Result<Qualifier> {
+        Qualifier::Guid(guid).translate_guid()
+    }
+
     /// Return the GUID for the user/group.
     #[cfg(target_os = "macos")]
     pub fn guid(&self) -> io::Result<Uuid> {
@@ -131,22 +126,12 @@ impl Qualifier {
     /// If `numeric` is true, return numeric uid/gid.
     pub fn name(&self, numeric: bool) -> io::Result<String> {
         let result = match self {
-            Qualifier::User(uid) => {
-                if numeric {
-                    uid.to_string()
-                } else {
-                    unix::uid_to_name(*uid)?
-                }
-            }
-            Qualifier::Group(gid) => {
-                if numeric {
-                    gid.to_string()
-                } else {
-                    unix::gid_to_name(*gid)?
-                }
-            }
+            Qualifier::User(uid) if numeric => uid.to_string(),
+            Qualifier::User(uid) => unix::uid_to_name(*uid)?,
+            Qualifier::Group(gid) if numeric => gid.to_string(),
+            Qualifier::Group(gid) => unix::gid_to_name(*gid)?,
             #[cfg(target_os = "macos")]
-            Qualifier::Guid(guid) => guid.to_string(),
+            Qualifier::Guid(guid) => guid.as_braced().to_string(),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::UserObj | Qualifier::GroupObj => OWNER_NAME.to_string(),
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
@@ -246,7 +231,7 @@ mod tests {
         // Test a user GUID on macOS.
         #[cfg(target_os = "macos")]
         {
-            let result = Qualifier::user_named("ffffeeee-dddd-cccc-bbbb-aaaa00000059")?;
+            let result = Qualifier::user_named("{ffffeeee-dddd-cccc-bbbb-aaaa00000059}")?;
             assert_eq!(result, Qualifier::User(89));
         }
 
@@ -268,7 +253,7 @@ mod tests {
         // Test a group GUID on macOS.
         #[cfg(target_os = "macos")]
         {
-            let result = Qualifier::group_named("abcdefab-cdef-abcd-efab-cdef00000059")?;
+            let result = Qualifier::group_named("{abcdefab-cdef-abcd-efab-cdef00000059}")?;
             assert_eq!(result, Qualifier::Group(89));
         }
 
@@ -295,8 +280,8 @@ mod tests {
             // Test `name` method on a Guid on macOS (numeric has no effect).
             let uuid = Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059")?;
             let guid = Qualifier::Guid(uuid);
-            assert_eq!(guid.name(false)?, "abcdefab-cdef-abcd-efab-cdef00000059");
-            assert_eq!(guid.name(true)?, "abcdefab-cdef-abcd-efab-cdef00000059");
+            assert_eq!(guid.name(false)?, "{abcdefab-cdef-abcd-efab-cdef00000059}");
+            assert_eq!(guid.name(true)?, "{abcdefab-cdef-abcd-efab-cdef00000059}");
         }
 
         Ok(())

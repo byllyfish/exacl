@@ -28,12 +28,14 @@ oneTimeSetUp() {
     # Use temp directory managed by shunit2.
     DIR="$SHUNIT_TMPDIR"
     FILE1="$DIR/file1"
+    FILE2="$DIR/file2"
     DIR1="$DIR/dir1"
     LINK1="$DIR/link1"
 
     # Create empty file, dir, and link.
     umask 077
     touch "$FILE1"
+    touch "$FILE2"
     mkdir "$DIR1"
     ln -s link1_to_nowhere "$LINK1"
 }
@@ -736,11 +738,11 @@ testWriteAclToFile1_LabTest() {
     assertEquals 0 $?
     assertEquals "" "$msg"
 
-    # Read ACL (note asymmetry).
+    # Read ACL.
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777772,perms:[read_data],flags:[],allow:false}]" \
+        "[{kind:user,name:777773,perms:[read_data],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     # Set ACL for fbbc14b7-95f9-47a7-8ee8-1cccb9220943 to "deny read".
@@ -780,14 +782,14 @@ testWriteAclToFile1_LabTestNumeric() {
     assertEquals 0 $?
     assertEquals "" "$msg"
 
-    # Read ACL. (note asymmetry)
+    # Read ACL.
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777773,perms:[read_data],flags:[],allow:false}]" \
+        "[{kind:user,name:777772,perms:[read_data],flags:[],allow:false}]" \
         "${msg//\"/}"
 
-    # Set ACL for 777773 to "allow read".
+    # Set ACL for 777773 to "deny read".
     input=$(quotifyJson "[{kind:user,name:777773,perms:[read_data],flags:[],allow:false}]")
     msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
     assertEquals 0 $?
@@ -812,6 +814,48 @@ testWriteAclToFile1_LabTestNumeric() {
     assertEquals \
         "[{kind:user,name:777774,perms:[read_data],flags:[],allow:false}]" \
         "${msg//\"/}"
+}
+
+# This test verifies that an ACL copied from 1 file to another executes properly even
+# on the weird _LABTEST system.
+testCopyAcl_LabTest() {
+    input="[
+        {kind:user,name:\"🧪\",perms:[read_data],flags:[],allow:false},
+        {kind:user,name:777772,perms:[read_data],flags:[],allow:false},
+        {kind:user,name:777773,perms:[read_data],flags:[],allow:false},
+        {kind:user,name:fbbc14b7-95f9-47a7-8ee8-1cccb9220943,perms:[read_data],flags:[],allow:false},
+        {kind:group,name:777775,perms:[read_data],flags:[],allow:false}
+    ]"
+    input=$(quotifyJson "$input")
+    msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
+    if [ "$msg" = 'Invalid ACL: entry 0: unknown user name: "🧪"' ]; then
+        echo " _LABTEST not enabled."
+        return 0
+    fi
+    assertEquals "" "$msg"
+
+    # Copy ACL from FILE1 to FILE2.
+    msg=$($EXACL -n $FILE1 | $EXACL --set $FILE2 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Numeric ACL's are equal.
+    acl1=$($EXACL -n $FILE1)
+    acl2=$($EXACL -n $FILE2)
+    assertEquals "$acl1" "$acl2"
+
+    # Human-readable ACL's are equal.
+    acl1=$($EXACL -f std $FILE1)
+    acl2=$($EXACL -f std $FILE2)
+    assertEquals "$acl1" "$acl2"
+
+    expected="\
+deny::user:🧪:read_data
+deny::user:777772:read_data
+deny::user:777773:read_data
+deny::user:fbbc14b7-95f9-47a7-8ee8-1cccb9220943:read_data
+deny::group:777775:read_data"
+    assertEquals "$acl1" "$expected"
 }
 
 # shellcheck disable=SC1091
