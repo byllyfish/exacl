@@ -716,5 +716,50 @@ testWriteAclToFile1_LabTestNumeric() {
         "${msg//\"/}"
 }
 
+# This test verifies that an ACL copied from 1 file to another executes properly even
+# on the weird _LABTEST system.
+testCopyAcl_LabTest() {
+    # The 3 required entries for Linux.
+    required=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
+
+    input="[
+        {kind:user,name:\"🧪\",perms:[read],flags:[],allow:true},
+        {kind:user,name:777772,perms:[read],flags:[],allow:true},
+        {kind:user,name:777773,perms:[read],flags:[],allow:true},
+        {kind:user,name:fbbc14b7-95f9-47a7-8ee8-1cccb9220943,perms:[read],flags:[],allow:true},
+        {kind:group,name:777775,perms:[read],flags:[],allow:true}
+    ]"
+    input=$(quotifyJson "$input")
+    msg=$($EXACL --set --acl "$input" --acl "$required" $FILE1 2>&1)
+    if [ "$msg" = 'Invalid ACL: entry 0: unknown user name: "🧪"' ]; then
+        echo " _LABTEST not enabled."
+        return 0
+    fi
+    assertEquals "" "$msg"
+
+    # Copy ACL from FILE1 to FILE2.
+    msg=$($EXACL -n $FILE1 | $EXACL --set $FILE2 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Numeric ACL's are equal.
+    acl1=$($EXACL -n $FILE1)
+    acl2=$($EXACL -n $FILE2)
+    assertEquals "$acl1" "$acl2"
+
+    # Human-readable ACL's are equal.
+    acl1=$($EXACL -f std $FILE1)
+    acl2=$($EXACL -f std $FILE2)
+    assertEquals "$acl1" "$acl2"
+
+    expected="\
+allow::user:🧪:read
+allow::user:777772:read
+allow::user:777773:read
+allow::user:fbbc14b7-95f9-47a7-8ee8-1cccb9220943:read
+allow::group:777775:read"
+    assertEquals "$acl1" "$expected"
+}
+
 # shellcheck disable=SC1091
 . shunit2
