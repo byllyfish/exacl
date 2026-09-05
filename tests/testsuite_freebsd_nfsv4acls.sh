@@ -736,11 +736,11 @@ testWriteAclToFile1_LabTest() {
     assertEquals 0 $?
     assertEquals "" "$msg"
 
-    # Read ACL (note asymmetry).
+    # Read ACL.
     msg=$($EXACL $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777772,perms:[read_data],flags:[],allow:false}]" \
+        "[{kind:user,name:777773,perms:[read_data],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     # Set ACL for fbbc14b7-95f9-47a7-8ee8-1cccb9220943 to "deny read".
