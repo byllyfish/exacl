@@ -855,11 +855,15 @@ testCopyAcl_LabTest() {
     assertEquals "$acl1" "$acl2"
 
     expected="\
+allow::user::read,write
 allow::user:🧪:read
 allow::user:777772:read
 allow::user:777773:read
 allow::user:fbbc14b7-95f9-47a7-8ee8-1cccb9220943:read
-allow::group:777775:read"
+allow::group::
+allow::group:777775:read
+allow::mask::read
+allow::other::"
     assertEquals "$acl1" "$expected"
 }
 
