@@ -44,16 +44,24 @@ pub use crate::sys::{gid_t, uid_t};
 const INITIAL_BUFSIZE: usize = 4096; // 4KB
 const MAX_BUFSIZE: usize = 1_048_576; // 1MB
 
+// A name that starts with a left curly brace '{' is treated differently
+// by `name_to_uid` and `name_to_gid`. It represents an underlying GUID or
+// SID.
+
+const CURLY_BRACE: char = '{';
+
 /// Convert user name to uid.
 pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
-    // Lookup user name using `getpwnam_r`.
-    if let Some(uid) = getpwnam(name)? {
-        return Ok(uid);
-    }
+    if !name.starts_with(CURLY_BRACE) {
+        // Lookup user name using `getpwnam_r`.
+        if let Some(uid) = getpwnam(name)? {
+            return Ok(uid);
+        }
 
-    // Try to parse name as a decimal user ID.
-    if let Ok(num) = name.parse::<u32>() {
-        return Ok(num);
+        // Try to parse name as a decimal user ID.
+        if let Ok(num) = name.parse::<u32>() {
+            return Ok(num);
+        }
     }
 
     fail_custom(&format!("unknown user name: {name:?}"))
@@ -115,14 +123,16 @@ fn labtest_mock_getpwnam(name: &str) -> Option<uid_t> {
 
 /// Convert group name to gid.
 pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
-    // Lookup group name using `getgrnam_r`.
-    if let Some(gid) = getgrnam(name)? {
-        return Ok(gid);
-    }
+    if !name.starts_with(CURLY_BRACE) {
+        // Lookup group name using `getgrnam_r`.
+        if let Some(gid) = getgrnam(name)? {
+            return Ok(gid);
+        }
 
-    // Try to parse name as a decimal group ID.
-    if let Ok(num) = name.parse::<u32>() {
-        return Ok(num);
+        // Try to parse name as a decimal group ID.
+        if let Ok(num) = name.parse::<u32>() {
+            return Ok(num);
+        }
     }
 
     fail_custom(&format!("unknown group name: {name:?}"))
@@ -288,7 +298,7 @@ fn getgrgid(gid: gid_t) -> io::Result<Option<String>> {
 /// It must be in hyphenated format.
 #[cfg(target_os = "macos")]
 pub fn name_to_guid(name: &str) -> Option<Uuid> {
-    if name.starts_with('{') {
+    if name.starts_with(CURLY_BRACE) {
         // `Uuid::try_parse` checks for the closing brace.
         Uuid::try_parse(name).ok()
     } else {
@@ -514,6 +524,7 @@ mod tests {
             "\u{1F600}",  // grinning face emoji
             ":",
             ",",
+            "{",
         ];
 
         for name in invalid_names {
@@ -569,7 +580,7 @@ mod tests {
     fn test_numeric_name() -> TestResult {
         helper::init_logging();
 
-        let numeric_names = ["500", "0", "1", "4294967295"];
+        let numeric_names = ["500", "0", "1", "4294967295", "000004294967295"];
 
         for name in numeric_names {
             let result = name_to_uid(name)?;
