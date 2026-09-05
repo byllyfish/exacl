@@ -28,12 +28,14 @@ oneTimeSetUp() {
     # Use temp directory managed by shunit2.
     DIR="$SHUNIT_TMPDIR"
     FILE1="$DIR/file1"
+    FILE2="$DIR/file2"
     DIR1="$DIR/dir1"
     LINK1="$DIR/link1"
 
     # Create empty file, dir, and link.
     umask 077
     touch "$FILE1"
+    touch "$FILE2"
     mkdir "$DIR1"
     ln -s link1_to_nowhere "$LINK1"
 }
