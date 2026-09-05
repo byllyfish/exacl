@@ -716,7 +716,7 @@ testWriteAclToFile1_LabTestNumeric() {
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:{ffffeeee-dddd-cccc-bbbb-aaaa000bde2d},perms:[read],flags:[],allow:false}]" \
+        "[{kind:user,name:{ffffeeee-dddd-cccc-bbbb-aaaa000bde2c},perms:[read],flags:[],allow:false}]" \
         "${msg//\"/}"
 
     # Set ACL for 777773 to "deny read".

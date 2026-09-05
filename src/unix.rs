@@ -51,16 +51,20 @@ const MAX_BUFSIZE: usize = 1_048_576; // 1MB
 const CURLY_BRACE: char = '{';
 
 /// Convert user name to uid.
+///
+/// 1. If `name` begins with a curly brace, stop and return failure.
+/// 2. If `name` is a valid decimal number [0..2^32-1], return it as uid.
+/// 3. Look up `name` using `getpwnam` and return uid if found.
+/// 4. Otherwise, stop and return failure.
 pub fn name_to_uid(name: &str) -> io::Result<uid_t> {
     if !name.starts_with(CURLY_BRACE) {
+        // Try to parse name as a decimal user ID.
+        if let Ok(gid) = name.parse::<u32>() {
+            return Ok(gid);
+        }
         // Lookup user name using `getpwnam_r`.
         if let Some(uid) = getpwnam(name)? {
             return Ok(uid);
-        }
-
-        // Try to parse name as a decimal user ID.
-        if let Ok(num) = name.parse::<u32>() {
-            return Ok(num);
         }
     }
 
@@ -122,16 +126,20 @@ fn labtest_mock_getpwnam(name: &str) -> Option<uid_t> {
 }
 
 /// Convert group name to gid.
+///
+/// 1. If `name` begins with a curly brace, stop and return failure.
+/// 2. If `name` is a valid decimal number [0..2^32-1], return it as gid.
+/// 3. Look up `name` using `getgrnam` and return gid if found.
+/// 4. Otherwise, stop and return failure.
 pub fn name_to_gid(name: &str) -> io::Result<gid_t> {
     if !name.starts_with(CURLY_BRACE) {
+        // Try to parse name as a decimal group ID.
+        if let Ok(gid) = name.parse::<u32>() {
+            return Ok(gid);
+        }
         // Lookup group name using `getgrnam_r`.
         if let Some(gid) = getgrnam(name)? {
             return Ok(gid);
-        }
-
-        // Try to parse name as a decimal group ID.
-        if let Ok(num) = name.parse::<u32>() {
-            return Ok(num);
         }
     }
 
@@ -791,6 +799,14 @@ mod tests {
             let result = getpwuid(uid)?;
             assert_eq!(result, Some(name.into()));
         }
+
+        // Test that `name_to_uid` for "777772" returns uid=777772.
+        let result = name_to_uid("777772")?;
+        assert_eq!(result, 777_772);
+
+        // Test that `name_to_gid` for "777772" returns gid=777772.
+        let result = name_to_gid("777772")?;
+        assert_eq!(result, 777_772);
 
         // Test non-UTF-8 group name on systems where it was added.
         // Even when a group name is available, the result should be the GID
