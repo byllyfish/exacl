@@ -780,14 +780,14 @@ testWriteAclToFile1_LabTestNumeric() {
     assertEquals 0 $?
     assertEquals "" "$msg"
 
-    # Read ACL. (note asymmetry)
+    # Read ACL.
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:777773,perms:[read_data],flags:[],allow:false}]" \
+        "[{kind:user,name:777772,perms:[read_data],flags:[],allow:false}]" \
         "${msg//\"/}"
 
-    # Set ACL for 777773 to "allow read".
+    # Set ACL for 777773 to "deny read".
     input=$(quotifyJson "[{kind:user,name:777773,perms:[read_data],flags:[],allow:false}]")
     msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
     assertEquals 0 $?

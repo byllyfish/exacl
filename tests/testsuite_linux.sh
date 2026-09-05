@@ -782,11 +782,11 @@ testWriteAclToFile1_LabTestNumeric() {
     assertEquals 0 $?
     assertEquals "" "$msg"
 
-    # Read ACL (note asymmetry).
+    # Read ACL.
     msg=$($EXACL -n $FILE1)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:user,name:777773,perms:[read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:user,name:777772,perms:[read],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[read],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     # Set ACL for 777773 to "allow read".
