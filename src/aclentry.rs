@@ -47,9 +47,39 @@ pub enum AclEntryKind {
 
 /// ACL entry with allow/deny semantics.
 ///
+/// Each ACL entry is identified by a `kind` and a `name`. Together, these
+/// specify the user or group that is being given (or denied) access.
+///
+/// # Naming
+///
+/// The `name` field can specify a human-readable name, a numeric ID, or a
+/// platform-specific ID.
+///
+/// 1. If the name begins with a curly brace '{', it is treated as a
+///    platform-specific ID. On macOS, this is a GUID which must be enclosed
+///    in curly braces and formatted as a UUID in 8-4-4-4-12 format.
+///    Example: `{fbbc14b7-95f9-47a7-8ee8-1cccb9220943}`
+/// 2. If the name is a decimal integer in the range [0..2^32-1], it is treated
+///    as a UID or GID. Example: `501`
+/// 3. Otherwise, the name is converted to the underlying UID/GID using local
+///    API calls (e.g. getpwnam, getgrnam depending on `kind`).
+///    Example: `bin`
+///
+/// It is not possible to represent certain user or group names that may be
+/// present on unusual systems:
+///
+/// - Names that contain non-UTF-8 bytes.
+/// - Names that consist entirely of decimal digits in the range [0..2^32-1].
+/// - Names that begin with '{'.
+///
+/// With `setfacl`, you must use the numeric UID/GID instead of the
+/// invalid name.
+///
+/// If present, `getfacl` will return ACL entries with the `name` set to the
+/// decimal UID or GID instead of the invalid or ambiguous name.
+///
 /// ACL entries are ordered so sorting will automatically put the ACL in
 /// canonical order.
-///
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
@@ -58,7 +88,7 @@ pub struct AclEntry {
     pub kind: AclEntryKind,
 
     /// Name of the principal being given access. You can use a user/group name
-    /// or decimal uid/gid. On macOS you can use a UUID.
+    /// or decimal uid/gid. On macOS you can use a UUID in curly braces.
     pub name: String,
 
     /// Permission bits for the entry.
