@@ -1,9 +1,9 @@
 //! Implements utilities for converting user/group names to uid/gid.
 //
-// This module supports a `_LABTEST` feature that adds the following
+// This module supports a `_LABTEST` cfg flag that adds some synthetic
 // name/uid mappings. These are designed to catch some edge cases in testing.
-// To use the _LABTEST feature, code has to be explicitly compiled by cargo in
-// debug mode with the _LABTEST feature enabled. You can detect code is
+// To use the _LABTEST cfg flag, code has to be explicitly compiled by cargo in
+// debug mode with `RUSTFLAGS="--cfg _LABTEST"`. You can detect code is
 // compiled with _LABTEST by using the 🧪 emoji as a user name. The group name
 // mapping is tested on FreeBSD by adding the group name manually to /etc/group.
 //
@@ -103,10 +103,10 @@ fn getpwnam(name: &str) -> io::Result<Option<uid_t>> {
     }
 
     if result.is_null() {
-        #[cfg(feature = "_LABTEST")]
+        #[cfg(_LABTEST)]
         return Ok(labtest_mock_getpwnam(name));
 
-        #[cfg(not(feature = "_LABTEST"))]
+        #[cfg(not(_LABTEST))]
         return Ok(None);
     }
 
@@ -115,7 +115,7 @@ fn getpwnam(name: &str) -> io::Result<Option<uid_t>> {
 }
 
 /// Mock additional name -> uid mappings for _LABTEST.
-#[cfg(all(debug_assertions, feature = "_LABTEST"))]
+#[cfg(all(debug_assertions, _LABTEST))]
 fn labtest_mock_getpwnam(name: &str) -> Option<uid_t> {
     match name {
         "\u{1F9EA}" => Some(777_771),
@@ -233,10 +233,10 @@ fn getpwuid(uid: uid_t) -> io::Result<Option<String>> {
     }
 
     if result.is_null() {
-        #[cfg(feature = "_LABTEST")]
+        #[cfg(_LABTEST)]
         return Ok(labtest_mock_getpwuid(uid));
 
-        #[cfg(not(feature = "_LABTEST"))]
+        #[cfg(not(_LABTEST))]
         return Ok(None);
     }
 
@@ -249,7 +249,7 @@ fn getpwuid(uid: uid_t) -> io::Result<Option<String>> {
 }
 
 /// Mock additional uid -> name mappings for _LABTEST.
-#[cfg(all(debug_assertions, feature = "_LABTEST"))]
+#[cfg(all(debug_assertions, _LABTEST))]
 fn labtest_mock_getpwuid(uid: uid_t) -> Option<String> {
     match uid {
         777_771 => Some("\u{1F9EA}".into()),
@@ -796,9 +796,9 @@ mod tests {
         Ok(())
     }
 
-    /// Test the `_LABTEST` feature.
+    /// Test the `_LABTEST` cfg flag.
     #[test]
-    #[cfg(feature = "_LABTEST")]
+    #[cfg(_LABTEST)]
     fn test_labtest() -> TestResult {
         helper::init_logging();
 
