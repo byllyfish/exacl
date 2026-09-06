@@ -31,11 +31,6 @@ default = []
 
 buildtime_bindgen = ["bindgen"]
 
-# The _LABTEST feature is used to mock weird name/uid environments for testing.
-# This feature does not compile in --release mode.
-
-_LABTEST = []
-
 [dependencies]
 bitflags = "2.11.1"
 log = "0.4.29"
@@ -56,3 +51,6 @@ serde_json = "1.0.149"
 
 [package.metadata.docs.rs]
 rustc-args = ["--cfg", "docsrs"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(_LABTEST)'] }
