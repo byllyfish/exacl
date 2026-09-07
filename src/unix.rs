@@ -2,7 +2,7 @@
 //
 // This module supports a `_LABTEST` cfg flag that adds some synthetic
 // name/uid mappings. These are designed to catch some edge cases in testing.
-// To use the _LABTEST cfg flag, code has to be explicitly compiled by cargo in
+// To use the _LABTEST cfg flag, the code has to be explicitly compiled in
 // debug mode with `RUSTFLAGS="--cfg _LABTEST"`. You can detect code is
 // compiled with _LABTEST by using the 🧪 emoji as a user name. The group name
 // mapping is tested on FreeBSD by adding the group name manually to /etc/group.
@@ -191,10 +191,12 @@ fn getgrnam(name: &str) -> io::Result<Option<gid_t>> {
 /// as a decimal string.
 ///
 /// If we look up the user name but it's is a decimal number that could be
-/// confused for a `uid`, return the original `uid` as a decimal string.
+/// confused for a `uid` or it starts with '{', return the original `uid` as a
+/// decimal string.
 pub fn uid_to_name(uid: uid_t) -> io::Result<String> {
     if let Some(name) = getpwuid(uid)?
         && name.parse::<uid_t>().is_err()
+        && !name.starts_with(CURLY_BRACE)
     {
         return Ok(name);
     }
@@ -265,10 +267,12 @@ fn labtest_mock_getpwuid(uid: uid_t) -> Option<String> {
 /// as a decimal string.
 ///
 /// If we look up the group name but it's is a decimal number that could be
-/// confused for a `gid`, return the original `gid` as a decimal string.
+/// confused for a `gid` or it starts with '{', return the original `gid` as a
+/// decimal string.
 pub fn gid_to_name(gid: gid_t) -> io::Result<String> {
     if let Some(name) = getgrgid(gid)?
         && name.parse::<gid_t>().is_err()
+        && !name.starts_with(CURLY_BRACE)
     {
         return Ok(name);
     }

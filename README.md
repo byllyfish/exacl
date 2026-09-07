@@ -40,6 +40,14 @@ setfacl(&["./tmp/foo"], &acl, None)?;
 - Supports reading/writing of ACL's as delimited text.
 - Supports serde (optional) for easy reading/writing of ACL's to JSON, YAML and other common formats.
 
+There are two main flavors of ACL's: Posix and Extended.
+
+| Operating System | Posix |  Extended |
+| -----------------| -------- | -------- |
+| Linux | ✅ | ❌ |
+| macOS | ❌ | ✅ |
+| FreeBSD | ✅ | ✅ |
+
 ## API
 
 This module provides two high level functions, `getfacl` and `setfacl`.
