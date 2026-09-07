@@ -148,8 +148,8 @@ testReadAclForFile1() {
     setfacl -b "$FILE1"
 }
 
-testReadAclForFile1_Numeric() {
-    # Same as above, but uses --numeric option.
+testReadAclForFile1_Native() {
+    # Same as above, but uses --native option.
     msg=$($EXACL -n $FILE1)
     assertEquals "exit1" 0 $?
     assertEquals \
@@ -758,7 +758,7 @@ testWriteAclToFile1_LabTest() {
         "${msg//\"/}"
 }
 
-testWriteAclToFile1_LabTestNumeric() {
+testWriteAclToFile1_LabTestNative() {
     # The 3 required entries for Linux.
     required=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
 
@@ -844,7 +844,7 @@ testCopyAcl_LabTest() {
     assertEquals 0 $?
     assertEquals "" "$msg"
 
-    # Numeric ACL's are equal.
+    # Native ACL's are equal.
     acl1=$($EXACL -n $FILE1)
     acl2=$($EXACL -n $FILE2)
     assertEquals "$acl1" "$acl2"

@@ -658,7 +658,7 @@ testWriteAclToFile1_LabTest() {
         "${msg//\"/}"
 }
 
-testWriteAclToFile1_LabTestNumeric() {
+testWriteAclToFile1_LabTestNative() {
     # The 3 required entries for Linux.
     required=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
 
@@ -744,7 +744,7 @@ testCopyAcl_LabTest() {
     assertEquals 0 $?
     assertEquals "" "$msg"
 
-    # Numeric ACL's are equal.
+    # Native ACL's are equal.
     acl1=$($EXACL -n $FILE1)
     acl2=$($EXACL -n $FILE2)
     assertEquals "$acl1" "$acl2"

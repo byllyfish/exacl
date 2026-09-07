@@ -123,12 +123,13 @@ impl Qualifier {
 
     /// Return the name of the user/group.
     ///
-    /// If `numeric` is true, return numeric uid/gid.
-    pub fn name(&self, numeric: bool) -> io::Result<String> {
+    /// If `native` is true, return the numeric uid/gid or the underlying GUID
+    /// on macOS.
+    pub fn name(&self, native: bool) -> io::Result<String> {
         let result = match self {
-            Qualifier::User(uid) if numeric => uid.to_string(),
+            Qualifier::User(uid) if native => uid.to_string(),
             Qualifier::User(uid) => unix::uid_to_name(*uid)?,
-            Qualifier::Group(gid) if numeric => gid.to_string(),
+            Qualifier::Group(gid) if native => gid.to_string(),
             Qualifier::Group(gid) => unix::gid_to_name(*gid)?,
             #[cfg(target_os = "macos")]
             Qualifier::Guid(guid) => guid.as_braced().to_string(),
@@ -277,7 +278,7 @@ mod tests {
 
         #[cfg(target_os = "macos")]
         {
-            // Test `name` method on a Guid on macOS (numeric has no effect).
+            // Test `name` method on a Guid on macOS (native has no effect).
             let uuid = Uuid::parse_str("abcdefab-cdef-abcd-efab-cdef00000059")?;
             let guid = Qualifier::Guid(uuid);
             assert_eq!(guid.name(false)?, "{abcdefab-cdef-abcd-efab-cdef00000059}");

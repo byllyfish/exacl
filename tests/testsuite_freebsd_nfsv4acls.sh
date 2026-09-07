@@ -127,8 +127,8 @@ allow::everyone::readextattr,readattr,readsecurity,sync" \
         "${msg//\"/}"
 }
 
-testReadAclForFile1_Numeric() {
-    # Same as above, but uses --numeric option.
+testReadAclForFile1_Native() {
+    # Same as above, but uses --native option.
     msg=$($EXACL -n -f std $FILE1)
     assertEquals 0 $?
     assertEquals \
@@ -759,7 +759,7 @@ testWriteAclToFile1_LabTest() {
         "${msg//\"/}"
 }
 
-testWriteAclToFile1_LabTestNumeric() {
+testWriteAclToFile1_LabTestNative() {
     # Set ACL for 🧪 to "deny read".
     input=$(quotifyJson "[{kind:user,name:\"🧪\",perms:[read_data],flags:[],allow:false}]")
     msg=$($EXACL --set --acl "$input" $FILE1 2>&1)
@@ -839,7 +839,7 @@ testCopyAcl_LabTest() {
     assertEquals 0 $?
     assertEquals "" "$msg"
 
-    # Numeric ACL's are equal.
+    # Native ACL's are equal.
     acl1=$($EXACL -n $FILE1)
     acl2=$($EXACL -n $FILE2)
     assertEquals "$acl1" "$acl2"

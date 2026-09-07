@@ -28,8 +28,10 @@ bitflags! {
         /// Get/set the ACL of the symlink itself (macOS only).
         const SYMLINK_ACL = 0b0100;
 
-        /// Retrieve numeric user and group ID's (decimal numbers).
-        const NUMERIC_ACL = 0b1000;
+        /// Retrieve name representation that uses the lowest, native system
+        /// representation of each user or group. This is a numeric decimal
+        /// UID/GID on Linux/FreeBSD and a GUID on macOS.
+        const NATIVE_ID = 0b1000;
 
         /// Ignore expected error when using DEFAULT_ACL on a file.
         #[doc(hidden)]
@@ -311,17 +313,17 @@ impl Acl {
 
     /// Return ACL as a vector of [`AclEntry`].
     ///
-    /// If `numeric` is true, retrieve the numeric uid/gid values instead of
+    /// If `native` is true, retrieve the numeric uid/gid values instead of
     /// translating them to names.
     ///
     /// # Errors
     ///
     /// Returns an [`io::Error`] on failure.
-    pub fn entries(&self, numeric: bool) -> io::Result<Vec<AclEntry>> {
+    pub fn entries(&self, native: bool) -> io::Result<Vec<AclEntry>> {
         let mut entries = Vec::<AclEntry>::with_capacity(8);
 
         xacl_foreach(self.acl, |entry_p| {
-            let entry = AclEntry::from_raw(entry_p, self.acl, numeric)?;
+            let entry = AclEntry::from_raw(entry_p, self.acl, native)?;
             entries.push(entry);
             Ok(())
         })?;
@@ -465,7 +467,7 @@ deny:file_inherit,directory_inherit:group:11504:read,write,execute
         assert_eq!(entries2, entries);
         assert_eq!(entries2[0].name, "_spotlight");
 
-        // Test numeric option.
+        // Test native option.
         let entries3 = acl2.entries(true)?;
         assert_eq!(entries3[0].name, "{abcdefab-cdef-abcd-efab-cdef00000059}");
 
@@ -522,7 +524,7 @@ allow::other::read,write,execute
         assert_eq!(entries2, entries);
         assert_eq!(entries2[5].name, "bin");
 
-        // Test numeric option with "bin" group.
+        // Test native option with "bin" group.
         entries2 = acl2.entries(true)?;
         entries2.sort();
         #[cfg(target_os = "linux")] // FIXME: test code should look these up.

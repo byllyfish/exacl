@@ -225,53 +225,53 @@ impl AclEntry {
 
     /// Return an `AclEntry` constructed from a native `acl_entry_t`.
     ///
-    /// If `numeric` is true, retrieve numeric uid/gid instead of translating
-    /// names. On macOS, `numeric` returns the GUID.
-    pub(crate) fn from_raw(entry: acl_entry_t, acl: acl_t, numeric: bool) -> io::Result<AclEntry> {
+    /// If `native` is true, retrieve numeric uid/gid instead of translating
+    /// names. On macOS, `native` returns the GUID.
+    pub(crate) fn from_raw(entry: acl_entry_t, acl: acl_t, native: bool) -> io::Result<AclEntry> {
         let (allow, qualifier, perms, flags) = xacl_get_entry(acl, entry)?;
 
         let (kind, name) = match qualifier {
             Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
 
             #[cfg(target_os = "macos")]
-            Qualifier::User(_) => (AclEntryKind::User, qualifier.name(numeric)?),
+            Qualifier::User(_) => (AclEntryKind::User, qualifier.name(native)?),
 
             #[cfg(target_os = "macos")]
-            Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name(numeric)?),
+            Qualifier::Group(_) => (AclEntryKind::Group, qualifier.name(native)?),
 
             #[cfg(target_os = "macos")]
-            Qualifier::Guid(_) if numeric => (AclEntryKind::User, qualifier.name(true)?),
+            Qualifier::Guid(_) if native => (AclEntryKind::User, qualifier.name(true)?),
 
             #[cfg(target_os = "macos")]
             Qualifier::Guid(_) => {
                 let translated = qualifier.translate_guid()?;
                 match translated {
                     Qualifier::User(_) | Qualifier::Guid(_) => {
-                        (AclEntryKind::User, translated.name(numeric)?)
+                        (AclEntryKind::User, translated.name(native)?)
                     }
-                    Qualifier::Group(_) => (AclEntryKind::Group, translated.name(numeric)?),
+                    Qualifier::Group(_) => (AclEntryKind::Group, translated.name(native)?),
                     Qualifier::Unknown(s) => (AclEntryKind::Unknown, s),
                 }
             }
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::User(_) | Qualifier::UserObj => {
-                (AclEntryKind::User, qualifier.name(numeric)?)
+                (AclEntryKind::User, qualifier.name(native)?)
             }
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             Qualifier::Group(_) | Qualifier::GroupObj => {
-                (AclEntryKind::Group, qualifier.name(numeric)?)
+                (AclEntryKind::Group, qualifier.name(native)?)
             }
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-            Qualifier::Mask => (AclEntryKind::Mask, qualifier.name(numeric)?),
+            Qualifier::Mask => (AclEntryKind::Mask, qualifier.name(native)?),
 
             #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-            Qualifier::Other => (AclEntryKind::Other, qualifier.name(numeric)?),
+            Qualifier::Other => (AclEntryKind::Other, qualifier.name(native)?),
 
             #[cfg(target_os = "freebsd")]
-            Qualifier::Everyone => (AclEntryKind::Everyone, qualifier.name(numeric)?),
+            Qualifier::Everyone => (AclEntryKind::Everyone, qualifier.name(native)?),
         };
 
         Ok(AclEntry {
