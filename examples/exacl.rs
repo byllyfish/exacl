@@ -45,9 +45,9 @@ struct Opt {
     #[arg(short = 's', long)]
     symlink: bool,
 
-    /// Get ACL as numeric only.
+    /// Get ACL as native ID only.
     #[arg(short = 'n', long)]
-    numeric: bool,
+    native: bool,
 
     /// Set ACL to specified value (may combine multiple ACL's).
     #[arg(long)]
@@ -87,8 +87,8 @@ fn main() {
     if opt.symlink {
         options |= AclOption::SYMLINK_ACL;
     }
-    if opt.numeric {
-        options |= AclOption::NUMERIC_ACL;
+    if opt.native {
+        options |= AclOption::NATIVE_ID;
     }
 
     let exit_code = if opt.set {

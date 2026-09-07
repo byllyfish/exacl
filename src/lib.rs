@@ -97,7 +97,7 @@ use failx::fail_custom;
 ///
 /// [`AclOption::DEFAULT_ACL`] option is not supported on macOS.
 ///
-/// [`AclOption::NUMERIC_ACL`] option returns the `GeneratedUID` (GUID) on macOS
+/// [`AclOption::NATIVE_ID`] option returns the `GeneratedUID` (GUID) on macOS
 /// instead of translating to human-readable user/group names.
 ///
 /// # Linux
@@ -115,7 +115,7 @@ use failx::fail_custom;
 /// default ACL, if present for a directory path. When called with
 /// [`AclOption::DEFAULT_ACL`], `getfacl` may return zero entries.
 ///
-/// [`AclOption::NUMERIC_ACL`] option returns the numeric UID/GID instead of
+/// [`AclOption::NATIVE_ID`] option returns the numeric UID/GID instead of
 /// translating to human-readable user/group names.
 ///
 /// # Example
@@ -142,29 +142,29 @@ where
 
 #[cfg(target_os = "macos")]
 fn my_getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
-    let numeric = options.contains(AclOption::NUMERIC_ACL);
+    let native = options.contains(AclOption::NATIVE_ID);
 
-    Acl::read(path, options)?.entries(numeric)
+    Acl::read(path, options)?.entries(native)
 }
 
 #[cfg(not(target_os = "macos"))]
 fn my_getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
-    let numeric = options.contains(AclOption::NUMERIC_ACL);
+    let native = options.contains(AclOption::NATIVE_ID);
 
     if options.contains(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
         fail_custom("ACCESS_ACL and DEFAULT_ACL are mutually exclusive options")
     } else if options.intersects(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
-        Acl::read(path, options)?.entries(numeric)
+        Acl::read(path, options)?.entries(native)
     } else {
         let acl = Acl::read(path, options)?;
-        let mut entries = acl.entries(numeric)?;
+        let mut entries = acl.entries(native)?;
 
         if acl.is_posix() {
             let mut default = Acl::read(
                 path,
                 options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
             )?
-            .entries(numeric)?;
+            .entries(native)?;
 
             entries.append(&mut default);
         }
