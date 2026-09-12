@@ -53,6 +53,7 @@
 
 mod acl;
 mod aclentry;
+mod aclfile;
 mod bindings;
 mod bititer;
 mod failx;
@@ -71,9 +72,9 @@ pub use flag::Flag;
 pub use perm::Perm;
 
 use acl::Acl;
+use aclfile::{AclFile, AclFilePaths};
 use failx::custom_err;
 use std::io::{self, BufRead};
-use std::path::Path;
 
 #[cfg(not(target_os = "macos"))]
 use failx::fail_custom;
@@ -132,19 +133,18 @@ use failx::fail_custom;
 ///
 /// Returns an [`io::Error`] on failure.
 ///
-pub fn getfacl<P, O>(path: P, options: O) -> io::Result<Vec<AclEntry>>
+pub fn getfacl<'a, F, O>(file: F, options: O) -> io::Result<Vec<AclEntry>>
 where
-    P: AsRef<Path>,
+    F: Into<AclFile<'a>>,
     O: Into<Option<AclOption>>,
 {
-    my_getfacl(path.as_ref(), options.into().unwrap_or_default())
+    my_getfacl(&file.into(), options.into().unwrap_or_default())
 }
 
 #[cfg(target_os = "macos")]
-fn my_getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
+fn my_getfacl(file: &AclFile, options: AclOption) -> io::Result<Vec<AclEntry>> {
     let native = options.contains(AclOption::NATIVE_ID);
-
-    Acl::read(path, options)?.entries(native)
+    file.read(options)?.entries(native)
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -238,22 +238,22 @@ fn my_getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
 ///
 /// Returns an [`io::Error`] on failure.
 ///
-pub fn setfacl<P, O>(paths: &[P], entries: &[AclEntry], options: O) -> io::Result<()>
+pub fn setfacl<'a, P, O>(paths: P, entries: &[AclEntry], options: O) -> io::Result<()>
 where
-    P: AsRef<Path>,
+    P: AclFilePaths<'a>,
     O: Into<Option<AclOption>>,
 {
     my_setfacl(paths, entries, options.into().unwrap_or_default())
 }
 
 #[cfg(target_os = "macos")]
-fn my_setfacl<P>(paths: &[P], entries: &[AclEntry], options: AclOption) -> io::Result<()>
+fn my_setfacl<'a, P>(paths: P, entries: &[AclEntry], options: AclOption) -> io::Result<()>
 where
-    P: AsRef<Path>,
+    P: AclFilePaths<'a>,
 {
     let acl = Acl::from_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
-    for path in paths {
-        acl.write(path.as_ref(), options)?;
+    for file in paths.file_iter() {
+        file.write(&acl, options)?;
     }
 
     Ok(())

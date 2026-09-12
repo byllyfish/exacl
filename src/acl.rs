@@ -13,6 +13,7 @@ use crate::util::*;
 use bitflags::bitflags;
 use scopeguard::{self, ScopeGuard};
 use std::io;
+use std::os::fd::RawFd;
 use std::path::Path;
 
 bitflags! {
@@ -100,6 +101,33 @@ impl Acl {
         }
     }
 
+    pub fn read_fd(fd: RawFd, options: AclOption) -> io::Result<Acl> {
+        // TODO: fix redundant source code.
+        let default_acl = options.contains(AclOption::DEFAULT_ACL);
+
+        let result = xacl_get_fd(fd, default_acl);
+        match result {
+            Ok(acl) => Ok(Acl::new(acl, default_acl)),
+            Err(err) => {
+                // Trying to access the default ACL of a non-directory on Linux
+                // will return an error. We can catch this error and return an
+                // empty ACL instead; only if `IGNORE_EXPECTED_FILE_ERR` is set.
+                // (Linux returns permission denied. FreeBSD returns invalid
+                // argument.)
+                if default_acl
+                    && (err.kind() == io::ErrorKind::PermissionDenied
+                        || err.kind() == io::ErrorKind::InvalidInput)
+                    && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR)
+                {
+                    // Return an empty acl.
+                    Ok(Acl::new(xacl_init(1)?, default_acl))
+                } else {
+                    Err(err)
+                }
+            }
+        }
+    }
+
     /// Write ACL for the specified file.
     ///
     /// # Errors
@@ -122,11 +150,37 @@ impl Acl {
             ));
         }
 
+        // FIXME: Use map_err.
         if let Err(err) = xacl_set_file(path, self.acl, symlink_acl, default_acl) {
             return Err(path_err(path, &err));
         }
 
         Ok(())
+    }
+
+    /// Write ACL for the specified file.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] on failure.
+    pub fn write_fd(&self, fd: RawFd, options: AclOption) -> io::Result<()> {
+        // TODO: fix redundant source code.
+        let default_acl = options.contains(AclOption::DEFAULT_ACL);
+
+        // If we're writing a default ACL to a non-directory, and we
+        // specify the `IGNORE_EXPECTED_FILE_ERR` option, this function is a
+        // no-op if the ACL is empty.
+        if default_acl && is_non_directory_fd(fd) {
+            if self.is_empty() && options.contains(AclOption::IGNORE_EXPECTED_FILE_ERR) {
+                return Ok(());
+            }
+
+            return fail_custom(&format!(
+                "File {fd:?}: Non-directory does not have default ACL"
+            ));
+        }
+
+        xacl_set_fd(fd, self.acl, default_acl)
     }
 
     /// Compute mask.
@@ -397,6 +451,19 @@ fn is_non_directory(path: &Path, symlink: bool) -> bool {
     } else {
         path.metadata()
     };
+
+    result.is_ok_and(|meta| !meta.is_dir())
+}
+
+/// Return true if path exists and it's not a directory.
+fn is_non_directory_fd(fd: RawFd) -> bool {
+    // FIXME: Consider using BorrowedFd here instead.
+    use std::os::fd::{FromRawFd, IntoRawFd};
+    let file = unsafe { std::fs::File::from_raw_fd(fd) };
+    let result = file.metadata();
+
+    // Prevent File's destructor from closing the raw_fd prematurely.
+    let _ = file.into_raw_fd();
 
     result.is_ok_and(|meta| !meta.is_dir())
 }

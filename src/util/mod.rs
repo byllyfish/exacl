@@ -14,6 +14,8 @@
 //!    `xacl_get_entry` - retrieve contents from an ACL entry
 //!    `xacl_get_file`  - get ACL from file path
 //!    `xacl_set_file`  - set ACL for file path
+//!    `xacl_get_fd`    - get ACL for file descriptor
+//!    `xacl_set_fd`    - set ACL for file descriptor
 //!    `xacl_is_nfs4`   - return true if file path uses `NFSv4` ACL on `FreeBSD`
 
 mod util_common;
@@ -44,6 +46,6 @@ pub use util_linux::{
 
 #[cfg(target_os = "macos")]
 pub use util_macos::{
-    xacl_add_entry, xacl_foreach, xacl_free, xacl_get_entry, xacl_get_file, xacl_init,
-    xacl_is_empty, xacl_is_posix, xacl_set_file,
+    xacl_add_entry, xacl_foreach, xacl_free, xacl_get_entry, xacl_get_fd, xacl_get_file, xacl_init,
+    xacl_is_empty, xacl_is_posix, xacl_set_fd, xacl_set_file,
 };

@@ -9,6 +9,7 @@ use crate::util::util_common;
 use scopeguard::defer;
 use std::ffi::{CString, c_void};
 use std::io;
+use std::os::fd::RawFd;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 use uuid::Uuid;
@@ -62,6 +63,28 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
     Ok(acl)
 }
 
+pub fn xacl_get_fd(fd: RawFd, default_acl: bool) -> io::Result<acl_t> {
+    if default_acl {
+        return fail_custom("macOS does not support default ACL");
+    }
+
+    let acl = unsafe { acl_get_fd_np(fd, acl_type_t_ACL_TYPE_EXTENDED) };
+
+    if acl.is_null() {
+        let err = log_err("null", "acl_get_fd_np", fd);
+
+        // acl_get_fd_np can return NULL (ENOENT) if there is no ACL, so we
+        // return an empty ACL.
+        if err.raw_os_error() == Some(sg::ENOENT) {
+            return xacl_init(1);
+        }
+
+        return Err(err);
+    }
+
+    Ok(acl)
+}
+
 /// Set the acl for a symlink using `acl_set_fd`.
 fn xacl_set_file_symlink_alt(c_path: &CString, acl: acl_t) -> io::Result<()> {
     let fd = unsafe { open(c_path.as_ptr(), sg::O_SYMLINK) };
@@ -104,6 +127,20 @@ pub fn xacl_set_file(
             return xacl_set_file_symlink_alt(&c_path, acl);
         }
 
+        return Err(err);
+    }
+
+    Ok(())
+}
+
+pub fn xacl_set_fd(fd: RawFd, acl: acl_t, default_acl: bool) -> io::Result<()> {
+    if default_acl {
+        return fail_custom("macOS does not support default ACL");
+    }
+
+    let ret = unsafe { acl_set_fd(fd, acl) };
+    if ret != 0 {
+        let err = log_err(ret, "acl_set_fd", fd);
         return Err(err);
     }
 
