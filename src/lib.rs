@@ -148,23 +148,21 @@ fn my_getfacl(file: &AclFile, options: AclOption) -> io::Result<Vec<AclEntry>> {
 }
 
 #[cfg(not(target_os = "macos"))]
-fn my_getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
+fn my_getfacl(file: &AclFile, options: AclOption) -> io::Result<Vec<AclEntry>> {
     let native = options.contains(AclOption::NATIVE_ID);
 
     if options.contains(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
         fail_custom("ACCESS_ACL and DEFAULT_ACL are mutually exclusive options")
     } else if options.intersects(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
-        Acl::read(path, options)?.entries(native)
+        file.read(options)?.entries(native)
     } else {
         let acl = Acl::read(path, options)?;
         let mut entries = acl.entries(native)?;
 
         if acl.is_posix() {
-            let mut default = Acl::read(
-                path,
-                options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
-            )?
-            .entries(native)?;
+            let mut default = file
+                .read(options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR)?
+                .entries(native)?;
 
             entries.append(&mut default);
         }
@@ -238,21 +236,21 @@ fn my_getfacl(path: &Path, options: AclOption) -> io::Result<Vec<AclEntry>> {
 ///
 /// Returns an [`io::Error`] on failure.
 ///
-pub fn setfacl<'a, P, O>(paths: P, entries: &[AclEntry], options: O) -> io::Result<()>
+pub fn setfacl<'a, F, O>(files: F, entries: &[AclEntry], options: O) -> io::Result<()>
 where
-    P: AclFilePaths<'a>,
+    F: AclFilePaths<'a>,
     O: Into<Option<AclOption>>,
 {
-    my_setfacl(paths, entries, options.into().unwrap_or_default())
+    my_setfacl(files, entries, options.into().unwrap_or_default())
 }
 
 #[cfg(target_os = "macos")]
-fn my_setfacl<'a, P>(paths: P, entries: &[AclEntry], options: AclOption) -> io::Result<()>
+fn my_setfacl<'a, F>(files: F, entries: &[AclEntry], options: AclOption) -> io::Result<()>
 where
-    P: AclFilePaths<'a>,
+    F: AclFilePaths<'a>,
 {
     let acl = Acl::from_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
-    for file in paths.file_iter() {
+    for file in files.file_iter() {
         file.write(&acl, options)?;
     }
 
@@ -260,17 +258,17 @@ where
 }
 
 #[cfg(not(target_os = "macos"))]
-fn my_setfacl<P>(paths: &[P], entries: &[AclEntry], options: AclOption) -> io::Result<()>
+fn my_setfacl<'a, F>(files: &[F], entries: &[AclEntry], options: AclOption) -> io::Result<()>
 where
-    P: AsRef<Path>,
+    F: AclFilePaths<'a>,
 {
     if options.contains(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
         fail_custom("ACCESS_ACL and DEFAULT_ACL are mutually exclusive options")?;
     } else if options.intersects(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
         let acl = Acl::from_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
 
-        for path in paths {
-            acl.write(path.as_ref(), options)?;
+        for file in files {
+            file.write(&acl, options)?;
         }
     } else {
         let (access_acl, default_acl) =
@@ -280,19 +278,18 @@ where
             fail_custom("Invalid ACL: missing required entries")?;
         }
 
-        for path in paths {
-            let path = path.as_ref();
+        for file in files {
             if access_acl.is_posix() {
-                // Try to set default acl first. This will fail if path is not
+                // Try to set default acl first. This will fail if file is not
                 // a directory and default_acl is non-empty. This ordering
                 // avoids leaving the file's ACL in a partially changed state
                 // after an error (simply because it was a non-directory).
-                default_acl.write(
-                    path,
+                file.write(
+                    &default_acl,
                     options | AclOption::DEFAULT_ACL | AclOption::IGNORE_EXPECTED_FILE_ERR,
                 )?;
             }
-            access_acl.write(path, options)?;
+            file.write(&access_acl, options)?;
         }
     }
 

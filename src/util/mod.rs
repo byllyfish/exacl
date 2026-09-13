@@ -40,8 +40,8 @@ pub use util_freebsd::{
 
 #[cfg(target_os = "linux")]
 pub use util_linux::{
-    xacl_add_entry, xacl_foreach, xacl_free, xacl_get_entry, xacl_get_file, xacl_init,
-    xacl_is_empty, xacl_is_posix, xacl_set_file,
+    xacl_add_entry, xacl_foreach, xacl_free, xacl_get_entry, xacl_get_fd, xacl_get_file, xacl_init,
+    xacl_is_empty, xacl_is_posix, xacl_set_fd, xacl_set_file,
 };
 
 #[cfg(target_os = "macos")]

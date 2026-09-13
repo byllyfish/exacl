@@ -8,6 +8,7 @@ use crate::util::util_common;
 use scopeguard::defer;
 use std::ffi::{CString, c_void};
 use std::io;
+use std::os::fd::RawFd;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 
@@ -44,6 +45,13 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
     Ok(acl)
 }
 
+pub fn xacl_get_fd(fd: RawFd, default_acl: bool) -> io::Result<acl_t> {
+    // FIXME: This is a cheat. acl_get_fd() doesn't let you retrieve the
+    // default ACL of a directory, so try using /dev/fd/NN for now...
+    let path = format!("/dev/fd/{fd}");
+    xacl_get_file(path, false, default_acl)
+}
+
 pub fn xacl_set_file(
     path: &Path,
     acl: acl_t,
@@ -67,6 +75,13 @@ pub fn xacl_set_file(
     }
 
     Ok(())
+}
+
+pub fn xacl_set_fd(fd: RawFd, acl: acl_t, default_acl: bool) -> io::Result<()> {
+    // FIXME: This is a cheat. acl_set_fd() doesn't let you set the
+    // default ACL of a directory, so try using /dev/fd/NN for now...
+    let path = format!("/dev/fd/{fd}");
+    xacl_set_file(path, false, default_acl)
 }
 
 fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {
