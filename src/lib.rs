@@ -267,7 +267,7 @@ where
     } else if options.intersects(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
         let acl = Acl::from_entries(entries).map_err(|err| custom_err("Invalid ACL", &err))?;
 
-        for file in files {
+        for file in files.file_iter() {
             file.write(&acl, options)?;
         }
     } else {
@@ -278,7 +278,7 @@ where
             fail_custom("Invalid ACL: missing required entries")?;
         }
 
-        for file in files {
+        for file in files.file_iter() {
             if access_acl.is_posix() {
                 // Try to set default acl first. This will fail if file is not
                 // a directory and default_acl is non-empty. This ordering
