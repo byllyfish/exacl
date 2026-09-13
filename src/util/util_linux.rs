@@ -49,7 +49,7 @@ pub fn xacl_get_fd(fd: RawFd, default_acl: bool) -> io::Result<acl_t> {
     // FIXME: This is a cheat. acl_get_fd() doesn't let you retrieve the
     // default ACL of a directory, so try using /dev/fd/NN for now...
     let path = format!("/dev/fd/{fd}");
-    xacl_get_file(path, false, default_acl)
+    xacl_get_file(path.as_ref(), false, default_acl)
 }
 
 pub fn xacl_set_file(
@@ -81,7 +81,7 @@ pub fn xacl_set_fd(fd: RawFd, acl: acl_t, default_acl: bool) -> io::Result<()> {
     // FIXME: This is a cheat. acl_set_fd() doesn't let you set the
     // default ACL of a directory, so try using /dev/fd/NN for now...
     let path = format!("/dev/fd/{fd}");
-    xacl_set_file(path, false, default_acl)
+    xacl_set_file(path.as_ref(), acl, false, default_acl)
 }
 
 fn xacl_get_qualifier(entry: acl_entry_t) -> io::Result<Qualifier> {

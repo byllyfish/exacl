@@ -156,7 +156,7 @@ fn my_getfacl(file: &AclFile, options: AclOption) -> io::Result<Vec<AclEntry>> {
     } else if options.intersects(AclOption::ACCESS_ACL | AclOption::DEFAULT_ACL) {
         file.read(options)?.entries(native)
     } else {
-        let acl = Acl::read(path, options)?;
+        let acl = file.read(options)?;
         let mut entries = acl.entries(native)?;
 
         if acl.is_posix() {
@@ -258,7 +258,7 @@ where
 }
 
 #[cfg(not(target_os = "macos"))]
-fn my_setfacl<'a, F>(files: &[F], entries: &[AclEntry], options: AclOption) -> io::Result<()>
+fn my_setfacl<'a, F>(files: F, entries: &[AclEntry], options: AclOption) -> io::Result<()>
 where
     F: AclFilePaths<'a>,
 {
