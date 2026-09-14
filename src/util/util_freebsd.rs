@@ -10,6 +10,7 @@ use log::debug;
 use scopeguard::defer;
 use std::ffi::{CString, c_void};
 use std::io;
+use std::os::fd::RawFd;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 use std::ptr;
@@ -120,9 +121,7 @@ pub fn xacl_get_fd(fd: RawFd, default_acl: bool) -> io::Result<acl_t> {
 
     // `acl_get_fd_np` returns EINVAL when the ACL type is not appropriate for
     // the file system object. Retry with NFSv4 type.
-    if io::Error::last_os_error().raw_os_error() == Some(sg::EINVAL)
-        && xacl_is_nfs4_fd(fd, symlink_acl)?
-    {
+    if io::Error::last_os_error().raw_os_error() == Some(sg::EINVAL) && xacl_is_nfs4_fd(fd)? {
         // NFSv4 does not support default ACL.
         if default_acl {
             return fail_custom("Default ACL not supported");
@@ -143,7 +142,7 @@ pub fn xacl_get_fd(fd: RawFd, default_acl: bool) -> io::Result<acl_t> {
         _ => "acl_get_fd_np/?",
     };
 
-    fail_err("null", func, &c_path)
+    fail_err("null", func, fd)
 }
 
 fn xacl_set_file_symlink(path: &Path, acl: acl_t, default_acl: bool) -> io::Result<()> {
@@ -268,7 +267,7 @@ pub fn xacl_set_fd(fd: RawFd, acl: acl_t, default_acl: bool) -> io::Result<()> {
         // acl_set_file does not handle this case. (FIXME: Verify?)
         let ret = unsafe { acl_delete_fd_np(fd, sg::ACL_TYPE_DEFAULT) };
         if ret != 0 {
-            return fail_err(ret, "acl_delete_fd_np", &c_path);
+            return fail_err(ret, "acl_delete_fd_np", fd);
         }
         return Ok(());
     }
@@ -282,7 +281,7 @@ pub fn xacl_set_fd(fd: RawFd, acl: acl_t, default_acl: bool) -> io::Result<()> {
             sg::ACL_TYPE_NFS4 => "acl_set_fd_np/nfs4",
             _ => "acl_set_fd_np/?",
         };
-        return fail_err(ret, func, &c_path);
+        return fail_err(ret, func, fd);
     }
 
     Ok(())
@@ -560,7 +559,7 @@ pub fn xacl_is_nfs4(path: &Path, symlink: bool) -> io::Result<bool> {
 pub fn xacl_is_nfs4_fd(fd: RawFd) -> io::Result<bool> {
     let ret = unsafe { fpathconf(fd, sg::PC_ACL_NFS4) };
     if ret < 0 {
-        return fail_err(ret, "pathconf", symlink);
+        return fail_err(ret, "fpathconf", fd);
     }
 
     assert!(ret == 0 || ret == 1);
