@@ -60,9 +60,7 @@ fn bindgen_bindings(wrapper: &str, out_path: &Path) {
         #[cfg(target_os = "macos")]
         "close",
         #[cfg(target_os = "freebsd")]
-        "pathconf",
-        #[cfg(target_os = "freebsd")]
-        "lpathconf",
+        "[lf]?pathconf",
     ];
     let vars = [
         "ACL_.*",

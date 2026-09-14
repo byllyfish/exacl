@@ -34,8 +34,8 @@ pub use crate::sys::{acl_entry_t, acl_t};
 
 #[cfg(target_os = "freebsd")]
 pub use util_freebsd::{
-    xacl_add_entry, xacl_foreach, xacl_free, xacl_get_entry, xacl_get_file, xacl_init,
-    xacl_is_empty, xacl_is_nfs4, xacl_is_posix, xacl_set_file,
+    xacl_add_entry, xacl_foreach, xacl_free, xacl_get_entry, xacl_get_fd, xacl_get_file, xacl_init,
+    xacl_is_empty, xacl_is_nfs4, xacl_is_posix, xacl_set_fd, xacl_set_file,
 };
 
 #[cfg(target_os = "linux")]

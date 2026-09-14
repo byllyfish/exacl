@@ -125,7 +125,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn acl_delete_entry_np(_acl: acl_t, _index: ::std::os::raw::c_int)
-        -> ::std::os::raw::c_int;
+    -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn acl_delete_fd_np(
@@ -385,6 +385,12 @@ unsafe extern "C" {
         arg4: usize,
         arg5: *mut *mut passwd,
     ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn fpathconf(
+        arg1: ::std::os::raw::c_int,
+        arg2: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_long;
 }
 unsafe extern "C" {
     pub fn pathconf(
