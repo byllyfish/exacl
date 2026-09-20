@@ -790,5 +790,46 @@ deny::group:777775:read"
     assertEquals "$acl1" "$expected"
 }
 
+# Similar to testReadAclForFile1, but uses file descriptor instead of file path.
+testReadAclForFile1_FD() {
+    # Start with a clean ACL.
+    chmod -N "$FILE1"
+
+    # Open $FILE1 on fd=20.
+    exec 20<"$FILE1"
+
+    msg=$($EXACL --fd 20)
+    assertEquals 0 $?
+    assertEquals "[]" "$msg"
+
+    # Add ACL entry for current user to "deny read".
+    chmod +a "$ME deny read" "$FILE1"
+
+    msg=$($EXACL --fd 20)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"/}"
+
+    # Remove user write perm.
+    chmod u-w "$FILE1"
+
+    # Add ACL entry for current group to "allow write".
+    chmod +a "$MY_GROUP allow write" "$FILE1"
+
+    msg=$($EXACL --fd 20)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:$ME,perms:[read],flags:[],allow:false},{kind:group,name:$MY_GROUP,perms:[write],flags:[],allow:true}]" \
+        "${msg//\"/}"
+
+    # Re-add user write perm that we removed above. Clear the ACL.
+    chmod u+w "$FILE1"
+    chmod -N "$FILE1"
+
+    # Close descriptor.
+    exec 20<&-
+}
+
 # shellcheck disable=SC1091
 . shunit2
