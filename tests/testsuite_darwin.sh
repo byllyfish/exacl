@@ -831,5 +831,162 @@ testReadAclForFile1_FD() {
     exec 20<&-
 }
 
+# Similar to testReadAclForDir1, but uses file descriptor instead of file path.
+testReadAclForDir1_FD() {
+    # Start with a clean ACL.
+    chmod -N "$DIR1"
+
+    # Open $DIR1 on fd=21.
+    exec 21<"$DIR1"
+
+    msg=$($EXACL --fd 21)
+    assertEquals 0 $?
+    assertEquals "[]" "$msg"
+
+    # Add ACL entry for current user to "deny read" with inheritance flags.
+    chmod +a "$ME deny read,file_inherit,directory_inherit,only_inherit" "$DIR1"
+
+    msg=$($EXACL --fd 21)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:$ME,perms:[read],flags:[file_inherit,directory_inherit,only_inherit],allow:false}]" \
+        "${msg//\"/}"
+
+    isReadableDir "$DIR1"
+    assertEquals 0 $?
+
+    # Create subfile in DIR1.
+    subfile="$DIR1/subfile"
+    touch "$subfile"
+
+    ! isReadable "$subfile" && isWritable "$subfile"
+    assertEquals 0 $?
+
+    msg=$($EXACL $subfile)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:$ME,perms:[read],flags:[inherited],allow:false}]" \
+        "${msg//\"/}"
+
+    # Create subdirectory in DIR1.
+    subdir="$DIR1/subdir"
+    mkdir "$subdir"
+
+    msg=$($EXACL $subdir)
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:$ME,perms:[read],flags:[inherited,file_inherit,directory_inherit],allow:false}]" \
+        "${msg//\"/}"
+
+    # Clear directory ACL's so we can delete them.
+    chmod -a# 0 "$subdir"
+    chmod -a# 0 "$DIR1"
+
+    rmdir "$subdir"
+    rm "$subfile"
+
+    # Close descriptor.
+    exec 21<&-
+}
+
+# Similar to testWriteAclToFile1, but uses file descriptor instead of file path.
+testWriteAclToFile1_FD() {
+    # Open $FILE1 on fd=20.
+    exec 20<"$FILE1"
+
+    # Set ACL to empty.
+    input="[]"
+    msg=$(echo "$input" | $EXACL --set --fd 20 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Verify it's empty.
+    msg=$($EXACL $FILE1)
+    assertEquals 0 $?
+    assertEquals "[]" "$msg"
+
+    isReadable "$FILE1" && isWritable "$FILE1"
+    assertEquals 0 $?
+
+    # Rename $FILE1 to $FILE1.moved
+    mv "$FILE1" "$FILE1.moved"
+
+    # Set ACL for current user to "deny read".
+    input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]")
+    msg=$(echo "$input" | $EXACL --set --fd 20 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    ! isReadable "$FILE1.moved" && isWritable "$FILE1.moved"
+    assertEquals 0 $?
+
+    # Check ACL using ls.
+    msg=$(getAcl "$FILE1.moved")
+    assertEquals \
+        " 0: user:$ME deny read" \
+        "$msg"
+
+    # Check ACL again.
+    msg=$($EXACL "$FILE1.moved")
+    assertEquals 0 $?
+    assertEquals \
+        "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]" \
+        "${msg//\"/}"
+
+    # Move file back.
+    mv "$FILE1.moved" "$FILE1"
+
+    # Close descriptor.
+    exec 20<&-
+}
+
+# Similar to testWriteAclToDir1, but uses file descriptor instead of path.
+testWriteAclToDir1_FD() {
+    # Open $DIR1 on fd=21.
+    exec 21<"$DIR1"
+
+    # Set ACL to empty.
+    input="[]"
+    msg=$(echo "$input" | $EXACL --set --fd 21 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Verify it's empty.
+    msg=$($EXACL $DIR1)
+    assertEquals 0 $?
+    assertEquals "[]" "$msg"
+
+    isReadableDir "$DIR1"
+    assertEquals 0 $?
+
+    # Rename $DIR1 to $DIR1.moved
+    mv "$DIR1" "$DIR1.moved"
+
+    # Set ACL for current user to "deny read".
+    input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]")
+    msg=$(echo "$input" | $EXACL --set --fd 21 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    ! isReadable "$DIR1.moved"
+    assertEquals 0 $?
+
+    # Read ACL back.
+    msg=$($EXACL "$DIR1.moved")
+    assertEquals 0 $?
+    assertEquals "$input" "$msg"
+
+    # Rename file back.
+    mv "$DIR1.moved" "$DIR1"
+
+    # Set ACL back to empty. Without this, `shunit2` will fail to clean up the tmp dir.
+    msg=$($EXACL --set --fd 21 --acl "[]" 2>&1)
+    assertEquals 0 $?
+    assertEquals "" "$msg"
+
+    # Close descriptor.
+    exec 21<&-
+}
+
 # shellcheck disable=SC1091
 . shunit2
