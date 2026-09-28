@@ -858,5 +858,95 @@ deny::group:777775:read_data"
     assertEquals "$acl1" "$expected"
 }
 
+# Similar to testReadAclForFile1, but uses file descriptor.
+testReadAclForFile1_FD() {
+    # Open $FILE1 on fd=20.
+    exec 20<"$FILE1"
+
+    msg=$($EXACL -f std --fd 20)
+    assertEquals 0 $?
+    assertEquals \
+        "allow::user::read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
+        "${msg//\"/}"
+
+    assertEquals "-rw-------" "$(fileperms $FILE1)"
+
+    # Rename $FILE1 to $FILE1.moved
+    mv "$FILE1" "$FILE1.moved"
+
+    # Add ACL entry for current user to "write-only".
+    setfacl -m "u:$ME:w::allow" "$FILE1.moved"
+    assertEquals 0 $?
+
+    msg=$($EXACL -f std --fd 20)
+    assertEquals 0 $?
+    assertEquals \
+        "allow::user:$ME:write_data
+allow::user::read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
+        "${msg//\"/}"
+
+    assertEquals "-rw-------" "$(fileperms $FILE1.moved)"
+
+    # Deny execute access for user "777"
+    setfacl -m "g:777:execute::deny" "$FILE1.moved"
+
+    msg=$($EXACL -f std --fd 20)
+    assertEquals 0 $?
+    assertEquals \
+        "deny::group:777:execute
+allow::user:$ME:write_data
+allow::user::read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
+        "${msg//\"/}"
+
+    # Remove owner read perm.
+    chmod u-rw "$FILE1.moved"
+    assertEquals "----------" "$(fileperms $FILE1.moved)"
+
+    msg=$($EXACL -f std --fd 20)
+    assertEquals 0 $?
+    assertEquals \
+        "allow::user::readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
+        "${msg//\"/}"
+
+    # Add ACL entry for current group to "allow write".
+    setfacl -m "g:$MY_GROUP:w::allow" "$FILE1.moved"
+
+    msg=$($EXACL -f std --fd 20)
+    assertEquals 0 $?
+    assertEquals \
+        "allow::group:$MY_GROUP:write_data
+allow::user::readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
+        "${msg//\"/}"
+
+    # Rename the file back.
+    mv "$FILE1.moved" "$FILE1"
+
+    assertEquals "----------" "$(fileperms $FILE1)"
+
+    # Reset permissions.
+    chmod 600 "$FILE1"
+
+    msg=$($EXACL -f std --fd 20)
+    assertEquals 0 $?
+    assertEquals \
+        "allow::user::read_data,write_data,append,readextattr,writeextattr,readattr,writeattr,readsecurity,writesecurity,chown,sync
+allow::group::readextattr,readattr,readsecurity,sync
+allow::everyone::readextattr,readattr,readsecurity,sync" \
+        "${msg//\"/}"
+
+    # Close descriptor.
+    exec 20<&-
+}
+
 # shellcheck disable=SC1091
 . shunit2

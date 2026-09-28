@@ -867,5 +867,67 @@ allow::other::"
     assertEquals "$acl1" "$expected"
 }
 
+# Similar to testReadAclForFile1, but uses file descriptor.
+testReadAclForFile1_FD() {
+    # Open $FILE1 on fd=20.
+    exec 20<"$FILE1"
+
+    msg=$($EXACL --fd 20)
+    assertEquals "exit1" 0 $?
+    assertEquals \
+        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "${msg//\"/}"
+
+    assertEquals "-rw-------" "$(fileperms $FILE1)"
+    isReadable "$FILE1" && isWritable "$FILE1"
+    assertEquals "exit2" 0 $?
+
+    # Rename $FILE1 to $FILE1.moved
+    mv "$FILE1" "$FILE1.moved"
+
+    # Add ACL entry for current user to "write-only". (Note: owner still has read access)
+    setfacl -m "u:$ME:w" "$FILE1.moved"
+
+    msg=$($EXACL --fd 20)
+    assertEquals "exit3" 0 $?
+    assertEquals \
+        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "${msg//\"/}"
+
+    assertEquals "-rw--w----" "$(fileperms $FILE1.moved)"
+    isReadable "$FILE1.moved" && isWritable "$FILE1.moved"
+    assertEquals "exit4" 0 $?
+
+    # Remove owner read perm.
+    chmod u-rw "$FILE1.moved"
+
+    assertEquals "-----w----" "$(fileperms $FILE1.moved)"
+    ! isReadable "$FILE1.moved" && ! isWritable "$FILE1.moved"
+    assertEquals "exit5" 0 $?
+
+    # Add ACL entry for current group to "allow write".
+    setfacl -m "g:$MY_GROUP:w" "$FILE1.moved"
+
+    msg=$($EXACL --fd 20)
+    assertEquals "exit6" 0 $?
+    assertEquals \
+        "[{kind:user,name:,perms:[],flags:[],allow:true},{kind:user,name:$ME,perms:[write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:group,name:$MY_GROUP,perms:[write],flags:[],allow:true},{kind:mask,name:,perms:[write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "${msg//\"/}"
+
+    # Rename the file back.
+    mv "$FILE1.moved" "$FILE1"
+
+    assertEquals "-----w----" "$(fileperms $FILE1)"
+    ! isReadable "$FILE1" && ! isWritable "$FILE1"
+    assertEquals "exit7" 0 $?
+
+    # Reset permissions.
+    chmod 600 "$FILE1"
+    setfacl -b "$FILE1"
+
+    # Close descriptor.
+    exec 20<&-
+}
+
 # shellcheck disable=SC1091
 . shunit2
