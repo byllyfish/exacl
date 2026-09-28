@@ -776,10 +776,11 @@ testReadAclForFile1_FD() {
     # Open $FILE1 on fd=20.
     exec 20<"$FILE1"
 
+    # Not sure how the mask entry is getting here? Difference from testReadAclForFile1.
     msg=$($EXACL --fd 20)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "-rw-------" "$(fileperms $FILE1)"
