@@ -860,6 +860,10 @@ deny::group:777775:read_data"
 
 # Similar to testReadAclForFile1, but uses file descriptor.
 testReadAclForFile1_FD() {
+    # Start with a clean ACL.
+    setfacl -b "$FILE1"
+    chmod 600 "$FILE1"
+
     # Open $FILE1 on fd=20.
     exec 20<"$FILE1"
 
