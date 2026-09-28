@@ -46,10 +46,19 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
 }
 
 pub fn xacl_get_fd(fd: RawFd, default_acl: bool) -> io::Result<acl_t> {
-    // FIXME: This is a cheat. acl_get_fd() doesn't let you retrieve the
-    // default ACL of a directory, so try using /dev/fd/NN for now...
-    let path = format!("/dev/fd/{fd}");
-    xacl_get_file(path.as_ref(), false, default_acl)
+    if default_acl {
+        // FIXME: acl_get_fd() doesn't let you retrieve the default ACL
+        // of a directory, so try using /dev/fd/NN for now...
+        let path = format!("/dev/fd/{fd}");
+        return xacl_get_file(path.as_ref(), false, default_acl);
+    }
+
+    let acl = unsafe { acl_get_fd(fd) };
+    if acl.is_null() {
+        return fail_err("null", "acl_get_fd/access", fd);
+    }
+
+    Ok(acl)
 }
 
 pub fn xacl_set_file(
