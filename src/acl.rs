@@ -29,9 +29,9 @@ bitflags! {
         /// Get/set the ACL of the symlink itself (macOS only).
         const SYMLINK_ACL = 0b0100;
 
-        /// Retrieve name representation that uses the lowest, native system
-        /// representation of each user or group. This is a numeric decimal
-        /// UID/GID on Linux/FreeBSD and a GUID on macOS.
+        /// Retrieve the native, underlying system representation of each user
+        /// or group. This is a numeric decimal UID/GID on Linux/FreeBSD and a
+        /// GUID on macOS.
         const NATIVE_ID = 0b1000;
 
         /// Ignore expected error when using DEFAULT_ACL on a file.
