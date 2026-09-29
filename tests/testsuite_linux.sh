@@ -652,6 +652,14 @@ testSetDefault() {
     assertEquals \
         "[{kind:user,name:,perms:[execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
+
+    # Reset ACL back to the original.
+    input=$(quotifyJson "[{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]")
+    msg=$(echo "$input" | $EXACL --set $DIR1 2>&1)
+    assertEquals 0 $?
+    assertEquals \
+        "" \
+        "$msg"
 }
 
 testMissingFlags() {
