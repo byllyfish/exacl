@@ -879,11 +879,11 @@ testWriteAclToFile1_FD() {
     # Open $FILE1 on fd=20.
     exec 20<"$FILE1"
 
-    # Verify ACL.
+    # Verify ACL. (not sure why mask is here?)
     msg=$($EXACL --fd 20)
     assertEquals "verify acl" 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "-rw-------" "$(fileperms $FILE1)"
@@ -912,7 +912,7 @@ testWriteAclToFile1_FD() {
     mv "$FILE1.moved" "$FILE1"
 
     # Check ACL with getfacl.
-    msg=$(getfacl -cE $FILE1 2>/dev/null)
+    msg=$(getfacl -q $FILE1 2>/dev/null)
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
         "user::rw-
@@ -1000,7 +1000,7 @@ testWriteAclToDir1_FD() {
     assertEquals "drwxr-----" "$(fileperms $DIR1)"
 
     # Check ACL with getfacl.
-    msg=$(getfacl -cE $DIR1 2>/dev/null)
+    msg=$(getfacl -q $DIR1 2>/dev/null)
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
         "user::rwx
@@ -1043,7 +1043,7 @@ testWriteUnifiedAclToDir1_FD() {
         "${msg//\"/}"
 
     # Check ACL with getfacl.
-    msg=$(getfacl -cE $DIR1 2>/dev/null)
+    msg=$(getfacl -q $DIR1 2>/dev/null)
     assertEquals "check acl getfacl" 0 $?
     assertEquals \
         "user::rw-
