@@ -917,14 +917,14 @@ testWriteAclToFile1_FD() {
     assertEquals \
         "user::rw-
 user:$ME:r--
-group::rw-
+group::rw-		# effective: r--
 mask::r--
 other::---" \
         "${msg}"
 
     # Reset permissions.
-    chmod 600 "$FILE1"
     setfacl -b "$FILE1"
+    chmod 600 "$FILE1"
 
     # Re-verify ACL.
     msg=$($EXACL --fd 20)
@@ -956,12 +956,12 @@ testWriteAclToDir1_FD() {
     # Rename $DIR1 to $DIR1.moved
     mv "$DIR1" "$DIR1.moved"
 
-    # Set ACL for current user to "deny read". Fails on Linux.
+    # Set ACL for current user to "deny read". Fails due to brand mismatch.
     input=$(quotifyJson "[{kind:user,name:$ME,perms:[read],flags:[],allow:false}]")
     msg=$(echo "$input" | $EXACL --set --fd 21 2>&1)
     assertEquals 1 $?
     assertEquals \
-        "Invalid ACL: entry 0: allow=false is not supported on Linux" \
+        "Invalid argument (os error 22)" \
         "$msg"
 
     # Set ACL without mask entry.
@@ -1028,7 +1028,7 @@ testWriteUnifiedAclToDir1_FD() {
     exec 21<"$DIR1"
 
     # Set ACL with required entries.
-    input=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]")
+    input=$(quotifyJson "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write,execute],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]")
     msg=$(echo "$input" | $EXACL --set --fd 21 2>&1)
     assertEquals "set unified acl" 0 $?
     assertEquals \
@@ -1039,7 +1039,7 @@ testWriteUnifiedAclToDir1_FD() {
     msg=$($EXACL --fd 21)
     assertEquals "check acl again" 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]" \
+        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true},{kind:user,name:,perms:[read,write],flags:[default],allow:true},{kind:group,name:,perms:[read,write,execute],flags:[default],allow:true},{kind:other,name:,perms:[],flags:[default],allow:true}]" \
         "${msg//\"/}"
 
     # Check ACL with getfacl.
@@ -1048,10 +1048,16 @@ testWriteUnifiedAclToDir1_FD() {
     assertEquals \
         "user::rw-
 group::rw-
-other::---
-default:user::rw-
-default:group::rw-
-default:other::---" \
+other::---" \
+        "${msg}"
+
+    # Check default ACL with getfacl.
+    msg=$(getfacl -dq $DIR1 2>/dev/null)
+    assertEquals "check def acl getfacl" 0 $?
+    assertEquals \
+        "user::rw-
+group::rwx
+other::---" \
         "${msg}"
 
     # Close descriptor.
