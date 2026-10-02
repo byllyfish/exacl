@@ -831,6 +831,9 @@ testReadAclForFile1_FD() {
 
 # Similar to testReadAclForDir1, but uses file descriptor.
 testReadAclForDir1_FD() {
+    # Reset permissions.
+    chmod 700 "$DIR1"
+
     # Open $DIR1 on fd=21.
     exec 21<"$DIR1"
 
