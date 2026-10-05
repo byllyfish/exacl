@@ -134,7 +134,7 @@ jobs:
       with:
         persist-credentials: false
     - name: Run Tests
-      uses: vmactions/freebsd-vm@d0518f912576ae759075aa00fb9fe27037940271 # v1.5.4
+      uses: vmactions/freebsd-vm@a2f9a41fa97f6848b8c3b791087dfcdaa5b473ff # v1.5.8
       with:
         release: "${{matrix.release}}"
         usesh: true
