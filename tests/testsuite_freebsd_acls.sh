@@ -930,11 +930,20 @@ other::---" \
     msg=$($EXACL --fd 20)
     assertEquals "verify acl2" 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[read,write],flags:[],allow:true},{kind:group,name:,perms:[read,write],flags:[],allow:true},{kind:mask,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     # Close descriptor.
     exec 20<&-
+
+    # Re-verify ACL with getfacl.
+    msg=$(getfacl -q $FILE1 2>/dev/null)
+    assertEquals "check acl getfacl 2" 0 $?
+    assertEquals \
+        "user::rw-
+group::rw-
+other::---" \
+        "${msg}"
 }
 
 # Similar to testWriteAclToDir1, but uses file descriptor.
@@ -946,7 +955,7 @@ testWriteAclToDir1_FD() {
     msg=$($EXACL --fd 21)
     assertEquals 0 $?
     assertEquals \
-        "[{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
+        "[{kind:user,name:,perms:[read,write,execute],flags:[],allow:true},{kind:group,name:,perms:[],flags:[],allow:true},{kind:mask,name:,perms:[],flags:[],allow:true},{kind:other,name:,perms:[],flags:[],allow:true}]" \
         "${msg//\"/}"
 
     assertEquals "drwx------" "$(fileperms $DIR1)"
