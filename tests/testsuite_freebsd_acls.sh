@@ -941,7 +941,8 @@ other::---" \
     assertEquals "check acl getfacl 2" 0 $?
     assertEquals \
         "user::rw-
-group::rw-
+group::rw-		# effective: ---
+mask::---
 other::---" \
         "${msg}"
 }
