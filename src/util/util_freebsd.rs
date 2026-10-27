@@ -10,6 +10,7 @@ use log::debug;
 use scopeguard::defer;
 use std::ffi::{CString, c_void};
 use std::io;
+use std::os::fd::RawFd;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 use std::ptr;
@@ -104,6 +105,44 @@ pub fn xacl_get_file(path: &Path, symlink_acl: bool, default_acl: bool) -> io::R
     };
 
     fail_err("null", func, &c_path)
+}
+
+/// Get ACL from file descriptor.
+///
+/// This code first tries to obtain the Posix.1e ACL. If that's not appropriate
+/// for the file system object, we try to access the NFS4 ACL.
+pub fn xacl_get_fd(fd: RawFd, default_acl: bool) -> io::Result<acl_t> {
+    let mut acl_type = get_acl_type(ptr::null_mut(), default_acl);
+    let acl = unsafe { acl_get_fd_np(fd, acl_type) };
+
+    if !acl.is_null() {
+        return Ok(acl);
+    }
+
+    // `acl_get_fd_np` returns EINVAL when the ACL type is not appropriate for
+    // the file system object. Retry with NFSv4 type.
+    if io::Error::last_os_error().raw_os_error() == Some(sg::EINVAL) && xacl_is_nfs4_fd(fd)? {
+        // NFSv4 does not support default ACL.
+        if default_acl {
+            return fail_custom("Default ACL not supported");
+        }
+
+        acl_type = sg::ACL_TYPE_NFS4;
+        let nfs_acl = unsafe { acl_get_fd_np(fd, acl_type) };
+        if !nfs_acl.is_null() {
+            return Ok(nfs_acl);
+        }
+    }
+
+    // Report acl_type and path to file that failed.
+    let func = match acl_type {
+        sg::ACL_TYPE_ACCESS => "acl_get_fd_np/access",
+        sg::ACL_TYPE_DEFAULT => "acl_get_fd_np/default",
+        sg::ACL_TYPE_NFS4 => "acl_get_fd_np/nfs4",
+        _ => "acl_get_fd_np/?",
+    };
+
+    fail_err("null", func, fd)
 }
 
 fn xacl_set_file_symlink(path: &Path, acl: acl_t, default_acl: bool) -> io::Result<()> {
@@ -203,6 +242,46 @@ pub fn xacl_set_file(
             _ => "acl_set_file/?",
         };
         return fail_err(ret, func, &c_path);
+    }
+
+    Ok(())
+}
+
+pub fn xacl_set_fd(fd: RawFd, acl: acl_t, default_acl: bool) -> io::Result<()> {
+    let is_nfs4 = xacl_is_nfs4_fd(fd)?;
+
+    if default_acl && is_nfs4 {
+        return fail_custom("Default ACL not supported");
+    }
+
+    if !xacl_is_posix(acl) || is_nfs4 {
+        // Fix up the ACL to make sure that all entry types are set.
+        // FIXME: This mutates the acl, violating the immutable invariant.
+        xacl_repair_nfs4(acl)?;
+    }
+
+    log_brand("xacl_set_fd", acl)?;
+
+    if default_acl && xacl_is_empty(acl) {
+        // Special case to delete the ACL. The FreeBSD version of
+        // acl_set_file does not handle this case. (FIXME: Verify?)
+        let ret = unsafe { acl_delete_fd_np(fd, sg::ACL_TYPE_DEFAULT) };
+        if ret != 0 {
+            return fail_err(ret, "acl_delete_fd_np", fd);
+        }
+        return Ok(());
+    }
+
+    let acl_type = get_acl_type(acl, default_acl);
+    let ret = unsafe { acl_set_fd_np(fd, acl, acl_type) };
+    if ret != 0 {
+        let func = match acl_type {
+            sg::ACL_TYPE_ACCESS => "acl_set_fd_np/access",
+            sg::ACL_TYPE_DEFAULT => "acl_set_fd_np/default",
+            sg::ACL_TYPE_NFS4 => "acl_set_fd_np/nfs4",
+            _ => "acl_set_fd_np/?",
+        };
+        return fail_err(ret, func, fd);
     }
 
     Ok(())
@@ -471,6 +550,16 @@ pub fn xacl_is_nfs4(path: &Path, symlink: bool) -> io::Result<bool> {
 
     if ret < 0 {
         return fail_err(ret, "pathconf", symlink);
+    }
+
+    assert!(ret == 0 || ret == 1);
+    Ok(ret == 1)
+}
+
+pub fn xacl_is_nfs4_fd(fd: RawFd) -> io::Result<bool> {
+    let ret = unsafe { fpathconf(fd, sg::PC_ACL_NFS4) };
+    if ret < 0 {
+        return fail_err(ret, "fpathconf", fd);
     }
 
     assert!(ret == 0 || ret == 1);

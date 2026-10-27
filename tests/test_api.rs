@@ -3,6 +3,7 @@
 use exacl::{AclEntry, AclOption, Perm, getfacl, setfacl};
 use log::debug;
 use std::io;
+use std::os::fd::AsFd;
 
 fn init() {
     let _ = env_logger::builder().is_test(true).try_init();
@@ -64,6 +65,61 @@ fn test_getfacl_file() -> io::Result<()> {
 }
 
 #[test]
+fn test_getfacl_fd() -> io::Result<()> {
+    init();
+
+    let file = tempfile::NamedTempFile::new()?;
+    let entries = getfacl(file.as_fd(), None)?;
+
+    #[cfg(target_os = "macos")]
+    assert_eq!(entries.len(), 0);
+
+    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+    assert_eq!(entries.len(), 3);
+
+    debug!("test_getfacl_file: {}", exacl::to_string(&entries)?);
+
+    // Test default ACL on macOS (should fail).
+    #[cfg(target_os = "macos")]
+    {
+        let result = getfacl(file.as_fd(), AclOption::DEFAULT_ACL);
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("macOS does not support default ACL")
+        );
+    }
+
+    // Test default ACL (should be error; files don't have default ACL).
+    #[cfg(target_os = "linux")]
+    {
+        let result = getfacl(&file, AclOption::DEFAULT_ACL);
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("Permission denied")
+        );
+    }
+
+    // Test default ACL (should be error; files don't have default ACL).
+    #[cfg(target_os = "freebsd")]
+    {
+        let result = getfacl(&file, AclOption::DEFAULT_ACL);
+        // If file is using NFSv4 ACL, the error message will be
+        // "Default ACL not supported", otherwise the error message will be
+        // "Invalid argument".
+        let errmsg = result.unwrap_err().to_string();
+        assert!(
+            errmsg.contains("Default ACL not supported") || errmsg.contains("Invalid argument")
+        );
+    }
+
+    Ok(())
+}
+
+#[test]
 fn test_setfacl_file() -> io::Result<()> {
     init();
 
@@ -72,6 +128,19 @@ fn test_setfacl_file() -> io::Result<()> {
 
     entries.push(AclEntry::allow_user("500", Perm::READ, None));
     setfacl(&[file], &entries, None)?;
+
+    Ok(())
+}
+
+#[test]
+fn test_setfacl_fd() -> io::Result<()> {
+    init();
+
+    let file = tempfile::NamedTempFile::new()?;
+    let mut entries = getfacl(file.as_fd(), None)?;
+
+    entries.push(AclEntry::allow_user("500", Perm::READ, None));
+    setfacl(file.as_fd(), &entries, None)?;
 
     Ok(())
 }

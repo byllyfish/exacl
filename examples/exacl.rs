@@ -17,10 +17,14 @@
 //! To get the ACL without translating uid/gid's to names, use the -n option.
 //!
 //! To use the delimited text format instead of JSON, use the `-f std` option.
+//!
+//! You can also get/set extended ACL's using an open file descriptor using the
+//! `--fd` option.
 
 use exacl::{AclEntry, AclOption, getfacl, setfacl};
 use std::io;
-use std::path::{Path, PathBuf};
+use std::os::fd::{BorrowedFd, RawFd};
+use std::path::PathBuf;
 use std::process;
 
 use clap::Parser;
@@ -32,6 +36,11 @@ struct Opt {
     /// Set file's ACL from STDIN or `--acl` arguments.
     #[arg(long)]
     set: bool,
+
+    /// Set ACL to specified value (repeat to combine multiple ACL's).
+    /// If not provided, the ACL will be read from stdin.
+    #[arg(long, requires = "set")]
+    acl: Vec<String>,
 
     /// Get or set the access ACL.
     #[arg(short = 'a', long)]
@@ -49,17 +58,29 @@ struct Opt {
     #[arg(short = 'n', long)]
     native: bool,
 
-    /// Set ACL to specified value (may combine multiple ACL's).
-    #[arg(long)]
-    acl: Vec<String>,
-
     /// Format of input or output.
     #[arg(value_enum, short = 'f', long, default_value = "json")]
     format: Format,
 
-    /// Input files
-    #[arg()]
+    /// Input file descriptor to use instead of <FILES>.
+    #[arg(long, group = "input")]
+    fd: Option<RawFd>,
+
+    /// Input files.
+    #[arg(num_args = 1.., group = "input", required=true)]
     files: Vec<PathBuf>,
+}
+
+impl Opt {
+    /// Retrieve `AclOption` flags from command line options.
+    fn options(&self) -> AclOption {
+        let mut options = AclOption::empty();
+        options.set(AclOption::ACCESS_ACL, self.access);
+        options.set(AclOption::DEFAULT_ACL, self.default);
+        options.set(AclOption::SYMLINK_ACL, self.symlink);
+        options.set(AclOption::NATIVE_ID, self.native);
+        options
+    }
 }
 
 #[derive(Copy, Clone, Debug, clap::ValueEnum)]
@@ -77,27 +98,11 @@ fn main() {
 
     let opt = Opt::parse();
 
-    let mut options = AclOption::empty();
-    if opt.access {
-        options |= AclOption::ACCESS_ACL;
-    }
-    if opt.default {
-        options |= AclOption::DEFAULT_ACL;
-    }
-    if opt.symlink {
-        options |= AclOption::SYMLINK_ACL;
-    }
-    if opt.native {
-        options |= AclOption::NATIVE_ID;
-    }
-
-    let exit_code = if opt.set {
-        set_acl(&opt.files, options, opt.format, &opt.acl)
-    } else if !opt.acl.is_empty() {
-        eprintln!("Use of --acl requires --set");
-        EXIT_FAILURE
-    } else {
-        get_acl(&opt.files, options, opt.format)
+    let exit_code = match (opt.set, opt.fd) {
+        (false, None) => get_acl(&opt.files, opt.options(), opt.format),
+        (false, Some(fd)) => get_acl_fd(fd, opt.options(), opt.format),
+        (true, None) => set_acl(&opt.files, opt.options(), opt.format, &opt.acl),
+        (true, Some(fd)) => set_acl_fd(fd, opt.options(), opt.format, &opt.acl),
     };
 
     process::exit(exit_code);
@@ -105,10 +110,21 @@ fn main() {
 
 fn get_acl(paths: &[PathBuf], options: AclOption, format: Format) -> i32 {
     for path in paths {
-        if let Err(err) = dump_acl(path, options, format) {
+        if let Err(err) = getfacl(path, options).and_then(|entries| write_acl(&entries, format)) {
             eprintln!("{err}");
             return EXIT_FAILURE;
         }
+    }
+
+    EXIT_SUCCESS
+}
+
+fn get_acl_fd(fd: RawFd, options: AclOption, format: Format) -> i32 {
+    let fd = unsafe { BorrowedFd::borrow_raw(fd) };
+
+    if let Err(err) = getfacl(fd, options).and_then(|entries| write_acl(&entries, format)) {
+        eprintln!("{err}");
+        return EXIT_FAILURE;
     }
 
     EXIT_SUCCESS
@@ -127,23 +143,34 @@ fn set_acl(paths: &[PathBuf], options: AclOption, format: Format, acls: &[String
     EXIT_SUCCESS
 }
 
-fn dump_acl(path: &Path, options: AclOption, format: Format) -> io::Result<()> {
-    let entries = getfacl(path, options)?;
+fn set_acl_fd(fd: RawFd, options: AclOption, format: Format, acls: &[String]) -> i32 {
+    let Some(entries) = read_acl_input(format, acls) else {
+        return EXIT_FAILURE;
+    };
 
+    let fd = unsafe { BorrowedFd::borrow_raw(fd) };
+    if let Err(err) = setfacl(fd, &entries, options) {
+        eprintln!("{err}");
+        return EXIT_FAILURE;
+    }
+
+    EXIT_SUCCESS
+}
+
+fn write_acl(entries: &[AclEntry], format: Format) -> io::Result<()> {
     match format {
         #[cfg(feature = "serde")]
         Format::Json => {
             serde_json::to_writer(io::stdout(), &entries)?;
             println!(); // add newline
+            Ok(())
         }
         #[cfg(not(feature = "serde"))]
         Format::Json => {
             panic!("serde not supported");
         }
-        Format::Std => exacl::to_writer(io::stdout(), &entries)?,
+        Format::Std => exacl::to_writer(io::stdout(), entries),
     }
-
-    Ok(())
 }
 
 fn read_acl_input(format: Format, acls: &[String]) -> Option<Vec<AclEntry>> {
